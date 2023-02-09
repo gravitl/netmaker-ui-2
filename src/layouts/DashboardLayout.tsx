@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState, ReactNode, Key } from "react";
 import {
   DesktopOutlined,
   FileOutlined,
@@ -14,9 +14,9 @@ const { Header, Content, Footer, Sider } = Layout;
 type MenuItem = Required<MenuProps>["items"][number];
 
 function getItem(
-  label: React.ReactNode,
-  key: React.Key,
-  icon?: React.ReactNode,
+  label: ReactNode,
+  key: Key,
+  icon?: ReactNode,
   children?: MenuItem[]
 ): MenuItem {
   return {
