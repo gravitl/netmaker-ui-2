@@ -1,3 +1,44 @@
+import { Button, Card, Col, Row, Space } from 'antd';
+import { ArrowRightOutlined, PlusOutlined } from '@ant-design/icons';
+
 export default function DashboardPage() {
-  return <>hello</>;
+  return (
+    <>
+      <Row>
+        <Col>
+          <Space direction="vertical" size="middle">
+            <Card>
+              <h3>Start using Netmaker</h3>
+              <p>
+                Lorem ipsum dolor sit amet consectetur, adipisicing elit. Tempore impedit soluta reprehenderit quo velit
+                corporis assumenda vel enim sed repellat quibusdam molestias voluptatibus illum magni laborum
+                recusandae, odit saepe provident aliquam repudiandae iste nostrum, possimus at eligendi. Ab quibusdam
+                sunt voluptates corporis nesciunt rem, libero doloribus officiis architecto accusantium aliquam nisi
+                praesentium placeat explicabo tempore officia quia quod fuga quasi.
+              </p>
+              <div>
+                <Button type="link">
+                  <ArrowRightOutlined />
+                  Take the tutorial
+                </Button>
+              </div>
+            </Card>
+            <Card style={{ maxWidth: '30%' }}>
+              <h3>Add a host</h3>
+              <p>
+                Lorem ipsum dolor sit amet consectetur, adipisicing elit. Consequatur possimus ex quae veritatis
+                architecto esse.
+              </p>
+              <div>
+                <Button type="primary">
+                  <PlusOutlined />
+                  Get Started
+                </Button>
+              </div>
+            </Card>
+          </Space>
+        </Col>
+      </Row>
+    </>
+  );
 }
