@@ -1,3 +1,5 @@
+// this page is to show in SaaS mode, when getting backend URL and other config
+
 import { LoadingOutlined } from '@ant-design/icons';
 import { Col, Layout, Row, Space } from 'antd';
 
