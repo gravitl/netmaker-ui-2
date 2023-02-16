@@ -1,44 +1,73 @@
 import React, { useState } from 'react';
-import {
-  AppstoreOutlined,
-  BarChartOutlined,
-  CloudOutlined,
-  ShopOutlined,
-  TeamOutlined,
-  UploadOutlined,
-  UserOutlined,
-  VideoCameraOutlined,
-} from '@ant-design/icons';
-import type { MenuProps } from 'antd';
+import { AppstoreOutlined, UserOutlined } from '@ant-design/icons';
+import { Col, Divider, Input, List, MenuProps, Row } from 'antd';
 import { Layout, Menu, theme } from 'antd';
-import { Outlet } from 'react-router-dom';
+import { Link, Outlet } from 'react-router-dom';
+import VirtualList from 'rc-virtual-list';
+import { Network } from '../models/Network';
+import { Host } from '../models/Host';
 
-const { Content, Footer, Sider } = Layout;
+const { Content, Sider } = Layout;
 
-const items: MenuProps['items'] = [
-  UserOutlined,
-  VideoCameraOutlined,
-  UploadOutlined,
-  BarChartOutlined,
-  CloudOutlined,
-  AppstoreOutlined,
-  TeamOutlined,
-  ShopOutlined,
-].map((icon, index) => ({
+const sideNavItems: MenuProps['items'] = [
+  {
+    icon: UserOutlined,
+    label: 'Dashboard',
+  },
+  {
+    icon: AppstoreOutlined,
+    label: 'Remote Access',
+  },
+  {
+    icon: AppstoreOutlined,
+    label: 'Access Keys',
+  },
+].map((item, index) => ({
   key: String(index + 1),
-  icon: React.createElement(icon),
-  label: `nav ${index + 1}`,
+  icon: React.createElement(item.icon),
+  label: item.label,
+}));
+
+const sideNavBottomItems: MenuProps['items'] = [
+  {
+    icon: UserOutlined,
+    label: 'Aceix',
+  },
+].map((item, index) => ({
+  key: String(index + 1),
+  icon: React.createElement(item.icon),
+  label: item.label,
 }));
 
 const SIDE_NAV_EXPANDED_WIDTH = '200px';
 const SIDE_NAV_COLLAPSED_WIDTH = '80px';
+
+const dummyNets: Network[] = [
+  { name: 'home' },
+  { name: 'fast-net' },
+  { name: 'test-net' },
+  { name: 'arpanet' },
+  { name: 'internet' },
+];
+
+const dummyHosts: Host[] = [
+  { id: '123', name: 'Home Ubuntu' },
+  { id: '1234', name: 'Office Mac' },
+  { id: '12', name: "Kid's Windows" },
+];
+
+const NETWORKS_LIST_HEIGHT = 200;
+const HOSTS_LIST_HEIGHT = 200;
 
 export default function MainLayout() {
   const {
     token: { colorBgContainer },
   } = theme.useToken();
   const [collapsed, setCollapsed] = useState(false);
+  const [networks, setNetworks] = useState(dummyNets);
+  const [hosts, setHosts] = useState(dummyHosts);
 
+  // TODO: optimise how sidenav renders when collapsed
   return (
     <Layout hasSider>
       <Sider
@@ -58,8 +87,74 @@ export default function MainLayout() {
       >
         {/* logo */}
         <div style={{ height: 32, margin: 16, background: 'rgba(0, 0, 0, 0.2)' }} />
-        <Menu theme="light" mode="inline" defaultSelectedKeys={['1']} items={items} />
+        <Menu
+          theme="light"
+          mode="inline"
+          defaultSelectedKeys={['1']}
+          items={sideNavItems}
+          style={{ borderRight: 'none' }}
+        />
+
+        {/* networks */}
+        <Row align="middle" style={{ marginLeft: '28px', marginRight: '8px' }}>
+          <Col xs={12} style={{ height: '2rem' }}>
+            Networks
+          </Col>
+          <Col xs={12} style={{ height: '2rem' }}>
+            <Divider style={{ marginTop: '.7rem', marginBottom: '0px' }} />
+          </Col>
+          <Col xs={24}>
+            <Input placeholder="Search network..." size="small" />
+          </Col>
+        </Row>
+        <List>
+          <VirtualList data={networks} height={NETWORKS_LIST_HEIGHT} itemHeight={30} itemKey="name">
+            {(network: Network) => (
+              <List.Item key={network.name} style={{ borderBottom: 'none', height: '30px' }}>
+                <List.Item.Meta
+                  style={{ fontWeight: 'normal', height: '30px' }}
+                  title={<Link to={'#'}>{network.name}</Link>}
+                />
+              </List.Item>
+            )}
+          </VirtualList>
+        </List>
+
+        {/* hosts */}
+        <Row align="middle" style={{ marginLeft: '28px', marginRight: '8px' }}>
+          <Col xs={12} style={{ height: '2rem' }}>
+            Hosts
+          </Col>
+          <Col xs={12} style={{ height: '2rem' }}>
+            <Divider style={{ marginTop: '.7rem', marginBottom: '0px' }} />
+          </Col>
+          <Col xs={24}>
+            <Input placeholder="Search hosts..." size="small" />
+          </Col>
+        </Row>
+        <List>
+          <VirtualList data={hosts} height={HOSTS_LIST_HEIGHT} itemHeight={30} itemKey="id">
+            {(host: Host) => (
+              <List.Item key={host.id} style={{ borderBottom: 'none', height: '30px' }}>
+                <List.Item.Meta
+                  style={{ fontWeight: 'normal', height: '30px' }}
+                  title={<Link to={'#'}>{host.name}</Link>}
+                />
+              </List.Item>
+            )}
+          </VirtualList>
+        </List>
+
+        {/* bottom items */}
+        <Menu
+          theme="light"
+          mode="inline"
+          items={sideNavBottomItems}
+          style={{ borderRight: 'none', position: 'absolute', bottom: '0' }}
+        />
       </Sider>
+
+      {/* main content */}
       <Layout
         style={{
           transition: 'all 200ms',
@@ -69,7 +164,6 @@ export default function MainLayout() {
         <Content style={{ padding: 24, background: colorBgContainer, overflow: 'initial' }}>
           <Outlet />
         </Content>
-        <Footer style={{ textAlign: 'center' }}>Ant Design ©2023 Created by Ant UED</Footer>
       </Layout>
     </Layout>
   );

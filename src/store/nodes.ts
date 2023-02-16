@@ -1,5 +1,5 @@
 import { StateCreator } from 'zustand';
-import { Node } from '../models/node';
+import { Node } from '../models/Node';
 
 export interface INodeSlice {
   nodes: Node[];

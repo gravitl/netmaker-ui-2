@@ -1,0 +1,4 @@
+/* to allow for bottom sidenav items */
+.ant-layout-sider-children {
+  position: relative;
+}
