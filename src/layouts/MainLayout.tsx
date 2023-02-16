@@ -46,6 +46,7 @@ export default function MainLayout() {
         collapsed={collapsed}
         onCollapse={(value) => setCollapsed(value)}
         width={SIDE_NAV_EXPANDED_WIDTH}
+        theme="light"
         style={{
           overflow: 'auto',
           height: '100vh',
@@ -56,7 +57,7 @@ export default function MainLayout() {
         }}
       >
         {/* logo */}
-        <div style={{ height: 32, margin: 16, background: 'rgba(255, 255, 255, 0.2)' }} />
+        <div style={{ height: 32, margin: 16, background: 'rgba(0, 0, 0, 0.2)' }} />
         <Menu theme="light" mode="inline" defaultSelectedKeys={['1']} items={items} />
       </Sider>
       <Layout
