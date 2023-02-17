@@ -161,7 +161,7 @@ export default function MainLayout() {
           marginLeft: collapsed ? SIDE_NAV_COLLAPSED_WIDTH : SIDE_NAV_EXPANDED_WIDTH,
         }}
       >
-        <Content style={{ padding: 24, background: colorBgContainer, overflow: 'initial' }}>
+        <Content style={{ background: colorBgContainer, overflow: 'initial', minHeight: '100vh' }}>
           <Outlet />
         </Content>
       </Layout>

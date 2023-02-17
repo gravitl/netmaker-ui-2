@@ -1,10 +1,14 @@
-import { Button, Card, Col, Row, Space } from 'antd';
+import { Button, Card, Col, Layout, Row, Space } from 'antd';
 import { ArrowRightOutlined, PlusOutlined } from '@ant-design/icons';
 import UpgradeModal from '../components/UpgradeModal';
+import { Page } from '../models/Page';
 
-export default function DashboardPage() {
+export default function DashboardPage(props: Page) {
   return (
-    <>
+    <Layout.Content style={{ padding: props.isFullScreen ? 0 : 24 }}>
+      {/* <Row>
+        <Layout.Header></Layout.Header>
+      </Row> */}
       <Row>
         <Col>
           <Space direction="vertical" size="middle">
@@ -58,6 +62,6 @@ export default function DashboardPage() {
 
       {/* modals */}
       <UpgradeModal isOpen={false} />
-    </>
+    </Layout.Content>
   );
 }

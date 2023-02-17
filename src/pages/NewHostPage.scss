@@ -1,0 +1,18 @@
+.NewHostPage {
+  .os-button {
+    background-color: rgba($color: black, $alpha: .08);
+    border-radius: 4px;
+    width: 5rem;
+    height: 5rem;
+    padding-top: 1.2rem;
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+
+    .logo {
+      width: 70px;
+      height: 70px;
+      // background-color: blue;
+    }
+  }
+}
