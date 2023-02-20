@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { AppstoreOutlined, UserOutlined } from '@ant-design/icons';
-import { Col, Divider, Input, List, MenuProps, Row } from 'antd';
+import { Col, Divider, Input, List, MenuProps, Row, Switch } from 'antd';
 import { Layout, Menu, theme } from 'antd';
 import { Link, Outlet } from 'react-router-dom';
 import VirtualList from 'rc-virtual-list';
 import { Network } from '../models/Network';
 import { Host } from '../models/Host';
 import { getHostRoute } from '../utils/RouteUtils';
+import { useStore } from '../store/store';
 
 const { Content, Sider } = Layout;
 
@@ -22,17 +23,6 @@ const sideNavItems: MenuProps['items'] = [
   {
     icon: AppstoreOutlined,
     label: 'Access Keys',
-  },
-].map((item, index) => ({
-  key: String(index + 1),
-  icon: React.createElement(item.icon),
-  label: item.label,
-}));
-
-const sideNavBottomItems: MenuProps['items'] = [
-  {
-    icon: UserOutlined,
-    label: 'Aceix',
   },
 ].map((item, index) => ({
   key: String(index + 1),
@@ -64,9 +54,52 @@ export default function MainLayout() {
   const {
     token: { colorBgContainer },
   } = theme.useToken();
+  const currentTheme = useStore((state) => state.currentTheme);
+  const setCurrentTheme = useStore((state) => state.setCurrentTheme);
+
   const [collapsed, setCollapsed] = useState(false);
   const [networks, setNetworks] = useState(dummyNets);
   const [hosts, setHosts] = useState(dummyHosts);
+
+  const sideNavBottomItems: MenuProps['items'] = useMemo(
+    () =>
+      [
+        {
+          icon: UserOutlined,
+          label: 'Aceix',
+        },
+      ].map((item, index) => ({
+        key: String(index + 1),
+        icon: React.createElement(item.icon),
+        label: item.label,
+        children: [
+          {
+            style: {
+              padding: '1rem',
+            },
+            label: (
+              <div
+                style={{
+                  display: 'flex',
+                  flexFlow: 'row nowrap',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+              >
+                Dark mode
+                <Switch
+                  checked={currentTheme === 'dark'}
+                  onClick={() => {
+                    setCurrentTheme(currentTheme === 'dark' ? 'light' : 'dark');
+                  }}
+                />
+              </div>
+            ),
+          },
+        ],
+      })),
+    [currentTheme]
+  );
 
   // TODO: optimise how sidenav renders when collapsed
   return (
@@ -150,6 +183,7 @@ export default function MainLayout() {
         <Menu
           theme="light"
           mode="inline"
+          selectable={false}
           items={sideNavBottomItems}
           style={{ borderRight: 'none', position: 'absolute', bottom: '0' }}
         />

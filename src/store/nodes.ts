@@ -6,7 +6,7 @@ export interface INodeSlice {
   setNodes: (nodes: Node[]) => void;
 }
 
-const createNodeSlice: StateCreator<INodeSlice, [], [], INodeSlice> = (set) => ({
+const createNodeSlice: StateCreator<INodeSlice, [], [], INodeSlice> = (set, get) => ({
   nodes: [],
   setNodes: (nodes: Node[]) => set((state) => ({ nodes })),
 });
