@@ -167,11 +167,6 @@ export default function NewHostPage(props: Page) {
               <Row>
                 <Col xs={24}>
                   <h4 style={{ marginTop: 0 }}>Install with Powershell</h4>
-                  {/* <Typography.Text code copyable={{ tooltips: false }}>
-                    {
-                      '. { iwr -useb  https://raw.githubusercontent.com/gravitl/netmaker/master/scripts/netclient-install.ps1 } | iex; Netclient-Install -version "<your netmaker version>"'
-                    }
-                  </Typography.Text> */}
                   <Input.Group compact>
                     <Input
                       disabled

@@ -2,13 +2,20 @@ import { Button, Card, Col, Layout, Row, Space } from 'antd';
 import { ArrowRightOutlined, PlusOutlined } from '@ant-design/icons';
 import UpgradeModal from '../components/UpgradeModal';
 import { Page } from '../models/Page';
+import { AppRoutes } from '../routes';
+import { useNavigate } from 'react-router-dom';
 
 export default function DashboardPage(props: Page) {
+  const navigate = useNavigate();
+  const goToNewHostPage = () => {
+    navigate(AppRoutes.NEW_HOST_ROUTE);
+  };
+
   return (
     <Layout.Content style={{ padding: props.isFullScreen ? 0 : 24 }}>
-      {/* <Row>
+      <Row>
         <Layout.Header></Layout.Header>
-      </Row> */}
+      </Row>
       <Row>
         <Col>
           <Space direction="vertical" size="middle">
@@ -50,7 +57,7 @@ export default function DashboardPage(props: Page) {
                 architecto esse.
               </p>
               <div>
-                <Button type="primary">
+                <Button type="primary" onClick={goToNewHostPage}>
                   <PlusOutlined />
                   Get Started
                 </Button>
