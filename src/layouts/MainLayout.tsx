@@ -6,6 +6,7 @@ import { Link, Outlet } from 'react-router-dom';
 import VirtualList from 'rc-virtual-list';
 import { Network } from '../models/Network';
 import { Host } from '../models/Host';
+import { getHostRoute } from '../utils/RouteUtils';
 
 const { Content, Sider } = Layout;
 
@@ -138,7 +139,7 @@ export default function MainLayout() {
               <List.Item key={host.id} style={{ borderBottom: 'none', height: '30px' }}>
                 <List.Item.Meta
                   style={{ fontWeight: 'normal', height: '30px' }}
-                  title={<Link to={'#'}>{host.name}</Link>}
+                  title={<Link to={getHostRoute(host)}>{host.name}</Link>}
                 />
               </List.Item>
             )}

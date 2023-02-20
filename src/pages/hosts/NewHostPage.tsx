@@ -2,8 +2,9 @@ import { CopyOutlined, PlusOutlined } from '@ant-design/icons';
 import { Button, Card, Col, Divider, Input, Layout, List, Row, Steps } from 'antd';
 import { MouseEvent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Page } from '../models/Page';
-import { AppRoutes } from '../routes';
+import { PageProps } from '../../models/Page';
+import { AppRoutes } from '../../routes';
+
 import './NewHostPage.scss';
 
 type AvailableOses = 'windows' | 'macos' | 'linux' | 'freebsd' | 'docker';
@@ -17,7 +18,7 @@ const steps = [
   },
 ];
 
-export default function NewHostPage(props: Page) {
+export default function NewHostPage(props: PageProps) {
   const navigate = useNavigate();
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -30,7 +31,7 @@ export default function NewHostPage(props: Page) {
   };
 
   const onFinish = () => {
-    navigate(AppRoutes.HOSTS_ROUTE);
+    navigate(AppRoutes.HOST_ROUTE);
   };
 
   const onShowInstallGuide = (ev: MouseEvent, os: AvailableOses) => {

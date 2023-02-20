@@ -1,11 +1,11 @@
 import { Button, Card, Col, Layout, Row, Space } from 'antd';
 import { ArrowRightOutlined, PlusOutlined } from '@ant-design/icons';
 import UpgradeModal from '../components/UpgradeModal';
-import { Page } from '../models/Page';
+import { PageProps } from '../models/Page';
 import { AppRoutes } from '../routes';
 import { useNavigate } from 'react-router-dom';
 
-export default function DashboardPage(props: Page) {
+export default function DashboardPage(props: PageProps) {
   const navigate = useNavigate();
   const goToNewHostPage = () => {
     navigate(AppRoutes.NEW_HOST_ROUTE);

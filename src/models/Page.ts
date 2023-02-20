@@ -1,3 +1,3 @@
-export interface Page {
+export interface PageProps {
   isFullScreen: boolean;
 }
