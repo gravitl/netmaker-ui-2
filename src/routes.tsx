@@ -12,6 +12,7 @@ export class AppRoutes {
   static STARTUP_ROUTE = '/startup';
   static GETTING_STARTED_ROUTE = '/hello';
   static NEW_HOST_ROUTE = '/hosts-new';
+  static HOSTS_ROUTE = '/hosts';
 }
 
 const routes: RouteObject[] = [

@@ -1,10 +1,12 @@
 import { CopyOutlined, PlusOutlined } from '@ant-design/icons';
-import { Button, Card, Col, Divider, Input, Layout, List, Row, Steps, Typography } from 'antd';
-import { useState } from 'react';
+import { Button, Card, Col, Divider, Input, Layout, List, Row, Steps } from 'antd';
+import { MouseEvent, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Page } from '../models/Page';
+import { AppRoutes } from '../routes';
 import './NewHostPage.scss';
 
-type AvailableOses = 'windows' | 'mac' | 'linux' | 'freebsd' | 'docker';
+type AvailableOses = 'windows' | 'macos' | 'linux' | 'freebsd' | 'docker';
 
 const steps = [
   {
@@ -16,6 +18,8 @@ const steps = [
 ];
 
 export default function NewHostPage(props: Page) {
+  const navigate = useNavigate();
+
   const [currentStep, setCurrentStep] = useState(0);
   const [networks, setNetworks] = useState([]);
   const [selectedNetwork, setSelectedNetwork] = useState(null);
@@ -25,7 +29,19 @@ export default function NewHostPage(props: Page) {
     setCurrentStep(newStep);
   };
 
-  const onFinish = () => {};
+  const onFinish = () => {
+    navigate(AppRoutes.HOSTS_ROUTE);
+  };
+
+  const onShowInstallGuide = (ev: MouseEvent, os: AvailableOses) => {
+    const btnSelector = '.NewHostPage .os-button';
+    const activeBtnClass = 'active';
+    document.querySelectorAll(btnSelector).forEach((btn) => {
+      btn.classList.remove(activeBtnClass);
+    });
+    (ev.currentTarget as HTMLElement).classList.add(activeBtnClass);
+    setSelectedOs(os);
+  };
 
   if (networks.length === 1) {
     setSelectedNetwork(networks[0]);
@@ -105,80 +121,156 @@ export default function NewHostPage(props: Page) {
               <Divider />
               <Row style={{ height: '4rem' }} justify="center">
                 <Col xs={4} style={{ textAlign: 'center' }}>
-                  <div className="os-button">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <g clipPath="url(#clip0_503_48520)">
-                        <path d="M0 3.75V11.25H10.5V2.4375L0 3.75Z" fill="white" />
-                        <path d="M12 2.25V11.25H24V0.75L12 2.25Z" fill="white" />
-                        <path d="M12 12.75V21.75L24 23.25V12.75H12Z" fill="white" />
-                        <path d="M0 12.75V20.25L10.5 21.5625V12.75H0Z" fill="white" />
-                      </g>
-                      <defs>
-                        <clipPath id="clip0_503_48520">
-                          <rect width="24" height="24" fill="white" />
-                        </clipPath>
-                      </defs>
-                    </svg>
-
+                  <div className="os-button active" onClick={(ev) => onShowInstallGuide(ev, 'windows')}>
+                    <img src="/src/assets/icons/windows.svg" alt="windows icon" className="logo" />
                     <p>Windows</p>
                   </div>
                 </Col>
                 <Col xs={4} style={{ textAlign: 'center' }}>
-                  <div className="os-button">
-                    <div className="logo"></div>
+                  <div className="os-button" onClick={(ev) => onShowInstallGuide(ev, 'macos')}>
+                    <img src="/src/assets/icons/macos.svg" alt="macos icon" className="logo" />
                     <p>Mac</p>
                   </div>
                 </Col>
                 <Col xs={4} style={{ textAlign: 'center' }}>
-                  <div className="os-button">
-                    <div className="logo"></div>
+                  <div className="os-button" onClick={(ev) => onShowInstallGuide(ev, 'linux')}>
+                    <img src="/src/assets/icons/linux.svg" alt="linux icon" className="logo" />
                     <p>Linux</p>
                   </div>
                 </Col>
                 <Col xs={4} style={{ textAlign: 'center' }}>
-                  <div className="os-button">
-                    <div className="logo"></div>
+                  <div className="os-button" onClick={(ev) => onShowInstallGuide(ev, 'freebsd')}>
+                    <img src="/src/assets/icons/freebsd.svg" alt="freebsd icon" className="logo" />
                     <p>FreeBSD</p>
                   </div>
                 </Col>
                 <Col xs={4} style={{ textAlign: 'center' }}>
-                  <div className="os-button">
-                    <div className="logo"></div>
+                  <div className="os-button" onClick={(ev) => onShowInstallGuide(ev, 'docker')}>
+                    <img src="/src/assets/icons/docker.svg" alt="docker icon" className="logo" />
                     <p>Docker</p>
                   </div>
                 </Col>
               </Row>
 
+              {/* TODO: implement copy feature */}
               {/* content */}
               <Divider />
-              <Row>
-                <Col xs={24} style={{ textAlign: 'center' }}>
-                  <Button
-                    type="primary"
-                    href="https://fileserver.netmaker.org/latest/windows/netclient_x86.msi"
-                    style={{ width: '100%' }}
-                  >
-                    Download
-                  </Button>
-                  <small>Requires Windows 7 SP1 or later</small>
-                </Col>
-              </Row>
-              <Divider />
-              <Row>
-                <Col xs={24}>
-                  <h4 style={{ marginTop: 0 }}>Install with Powershell</h4>
-                  <Input.Group compact>
-                    <Input
-                      disabled
-                      style={{ width: 'calc(100% - 32px)' }}
-                      defaultValue="git@github.com:ant-design/ant-design.git"
-                    />
-                    {/* <Tooltip title="copy git url"> */}
-                    <Button icon={<CopyOutlined />} />
-                    {/* </Tooltip> */}
-                  </Input.Group>
-                </Col>
-              </Row>
+              {selectedOs === 'windows' && (
+                <>
+                  <Row>
+                    <Col xs={24} style={{ textAlign: 'center' }}>
+                      <Button
+                        type="primary"
+                        href="https://fileserver.netmaker.org/latest/windows/netclient_x86.msi"
+                        style={{ width: '100%' }}
+                      >
+                        Download
+                      </Button>
+                      <small>Requires Windows 7 SP1 or later</small>
+                    </Col>
+                  </Row>
+                  <Divider />
+                  <Row>
+                    <Col xs={24}>
+                      <h4 style={{ marginTop: 0 }}>Install with Powershell</h4>
+                      <Input.Group compact>
+                        <Input
+                          disabled
+                          style={{ width: 'calc(100% - 32px)' }}
+                          defaultValue={
+                            '. { iwr -useb  https://raw.githubusercontent.com/gravitl/netmaker/master/scripts/netclient-install.ps1 } | iex; Netclient-Install -version "<your netmaker version>"'
+                          }
+                        />
+                        <Button icon={<CopyOutlined />} />
+                      </Input.Group>
+                    </Col>
+                  </Row>
+                </>
+              )}
+
+              {selectedOs === 'macos' && (
+                <>
+                  <Row>
+                    <Col xs={24} style={{ textAlign: 'center' }}>
+                      <Button
+                        type="primary"
+                        href="https://fileserver.netmaker.org/latest/darwin/Netclient.pkg"
+                        style={{ width: '100%' }}
+                      >
+                        Download
+                      </Button>
+                      <small>Requires Mac OS High Sierra 10.13 or later</small>
+                    </Col>
+                  </Row>
+                  <Divider />
+                  <Row>
+                    <Col xs={24}>
+                      <h4 style={{ marginTop: 0 }}>Install with these command(s)</h4>
+                      <Input.TextArea
+                        rows={3}
+                        defaultValue={`brew tap gravitl/netclient\nbrew audit netclient\nbrew install netclient`}
+                        disabled
+                      />
+                    </Col>
+                  </Row>
+                </>
+              )}
+
+              {selectedOs === 'freebsd' && (
+                <>
+                  <Row>
+                    <Col xs={24}>
+                      <h4 style={{ marginTop: 0 }}>Install with these command(s)</h4>
+                      <Input.Group compact>
+                        <Input
+                          disabled
+                          style={{ width: 'calc(100% - 32px)' }}
+                          defaultValue={
+                            'curl -sfL https://raw.githubusercontent.com/gravitl/netmaker/master/scripts/netclient-install.sh | VERSION="<your netmaker version>" sh -'
+                          }
+                        />
+                        <Button icon={<CopyOutlined />} />
+                      </Input.Group>
+                    </Col>
+                  </Row>
+                </>
+              )}
+
+              {selectedOs === 'docker' && (
+                <>
+                  <Row>
+                    <Col xs={24}>
+                      <h4 style={{ marginTop: 0 }}>Check the docs for installation steps</h4>
+                      <Button
+                        style={{ width: '100%' }}
+                        type="primary"
+                        href="https://docs.netmaker.org/netclient.html#docker"
+                        target="_blank"
+                      >
+                        Go to Docs
+                      </Button>
+                    </Col>
+                  </Row>
+                </>
+              )}
+
+              {selectedOs === 'linux' && (
+                <>
+                  <Row>
+                    <Col xs={24}>
+                      <h4 style={{ marginTop: 0 }}>Check the docs for installation steps</h4>
+                      <Button
+                        style={{ width: '100%' }}
+                        type="primary"
+                        href="https://docs.netmaker.org/netclient.html#linux"
+                        target="_blank"
+                      >
+                        Go to Docs
+                      </Button>
+                    </Col>
+                  </Row>
+                </>
+              )}
             </Card>
           </Col>
         </Row>
