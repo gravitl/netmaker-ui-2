@@ -86,7 +86,7 @@ export default function MainLayout() {
                   alignItems: 'center',
                 }}
               >
-                Dark mode
+                Dark theme
                 <Switch
                   checked={currentTheme === 'dark'}
                   onClick={() => {
