@@ -1,12 +1,12 @@
 import { StateCreator } from 'zustand';
-import { Node } from '../models/node';
+import { Node } from '../models/Node';
 
 export interface INodeSlice {
   nodes: Node[];
   setNodes: (nodes: Node[]) => void;
 }
 
-const createNodeSlice: StateCreator<INodeSlice, [], [], INodeSlice> = (set) => ({
+const createNodeSlice: StateCreator<INodeSlice, [], [], INodeSlice> = (set, get) => ({
   nodes: [],
   setNodes: (nodes: Node[]) => set((state) => ({ nodes })),
 });

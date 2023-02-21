@@ -11,7 +11,7 @@ describe('App', () => {
 
   it('renders placeholder text', () => {
     act(() => {
-      expect(screen.getAllByText('Option 1').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('Dashboard').length).toBeGreaterThan(0);
     });
   });
 });

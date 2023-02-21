@@ -1,9 +1,10 @@
 import { useState, ReactNode, Key } from 'react';
 import { DesktopOutlined, FileOutlined, PieChartOutlined, TeamOutlined, UserOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
-import { Breadcrumb, Layout, Menu, theme } from 'antd';
+import { Layout, Menu, theme } from 'antd';
+import { Outlet } from 'react-router-dom';
 
-const { Header, Content, Footer, Sider } = Layout;
+const { Header, Content, Sider } = Layout;
 
 type MenuItem = Required<MenuProps>['items'][number];
 
@@ -31,35 +32,31 @@ export function DashboardLayout() {
   } = theme.useToken();
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
-      <Sider collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)}>
-        <div
-          style={{
-            height: 32,
-            margin: 16,
-            background: 'rgba(255, 255, 255, 0.2)',
-          }}
-        />
-        <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline" items={items} />
-      </Sider>
-      <Layout className="site-layout">
-        <Header style={{ padding: 0, background: colorBgContainer }} />
-        <Content style={{ margin: '0 16px' }}>
-          <Breadcrumb style={{ margin: '16px 0' }}>
-            <Breadcrumb.Item>User</Breadcrumb.Item>
-            <Breadcrumb.Item>Bill</Breadcrumb.Item>
-          </Breadcrumb>
-          <div
+    <Layout style={{ height: '100vh' }}>
+      <Header className="header" style={{ background: colorBgContainer }}>
+        <div className="logo" />
+        <Menu theme="light" mode="horizontal" defaultSelectedKeys={['2']} items={items} />
+      </Header>
+      <Layout>
+        <Sider collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)} width={200} theme="light">
+          <Menu
+            mode="inline"
+            defaultSelectedKeys={['1']}
+            defaultOpenKeys={['sub1']}
+            style={{ height: '100%', borderRight: 0 }}
+            items={items}
+          />
+        </Sider>
+        <Layout>
+          <Content
             style={{
               padding: 24,
-              minHeight: 360,
               background: colorBgContainer,
             }}
           >
-            Bill is a cat.
-          </div>
-        </Content>
-        <Footer style={{ textAlign: 'center' }}>Ant Design ©2023 Created by Ant UED</Footer>
+            <Outlet />
+          </Content>
+        </Layout>
       </Layout>
     </Layout>
   );
