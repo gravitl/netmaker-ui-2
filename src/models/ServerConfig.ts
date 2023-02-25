@@ -25,3 +25,11 @@ export interface ServerConfig {
   RCE: boolean; // "on"
   IsEE: boolean; // yes or no
 }
+
+export interface TenantConfig {
+  baseUrl: string;
+  jwt?: string;
+  email?: string;
+  username?: string;
+  tenantId?: string;
+}

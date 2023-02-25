@@ -66,8 +66,17 @@ export default function NewHostPage(props: PageProps) {
             <Card>
               <p style={{ marginTop: '0' }}>Select a network</p>
               <Input placeholder="Search network..." />
-              <List size="small" style={{ maxHeight: '50vh', overflow: 'auto', marginTop: '.5rem' }}>
-                <List.Item>
+              <List
+                size="small"
+                className="networks-list"
+                style={{ maxHeight: '50vh', overflow: 'auto', marginTop: '.5rem' }}
+              >
+                <List.Item
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => {
+                    onStepChange(1);
+                  }}
+                >
                   <List.Item.Meta title="Network 1" description="123.123.123.0/24, abc9::/8" />
                 </List.Item>
                 <List.Item>
