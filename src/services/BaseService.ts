@@ -20,6 +20,8 @@ export function getTenantConfig(): TenantConfig {
   // TODO: commit config in store
 }
 
+const API_PREFIX = '/api';
+
 export const baseService = axios.create({
-  baseURL: getTenantConfig().baseUrl,
+  baseURL: getTenantConfig().baseUrl + API_PREFIX,
 });
