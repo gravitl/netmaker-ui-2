@@ -39,13 +39,13 @@ const dummyNets: Network[] = [
   { netid: 'test-net' },
   { netid: 'arpanet' },
   { netid: 'internet' },
-];
+] as Network[];
 
 const dummyHosts: Host[] = [
   { id: '123', name: 'Home Ubuntu' },
   { id: '1234', name: 'Office Mac' },
   { id: '12', name: "Kid's Windows" },
-];
+] as Host[];
 
 const NETWORKS_LIST_HEIGHT = 200;
 const HOSTS_LIST_HEIGHT = 200;
