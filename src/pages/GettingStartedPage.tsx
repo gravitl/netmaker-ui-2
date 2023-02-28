@@ -1,4 +1,4 @@
-import { Button, Col, Layout, Row, Steps } from 'antd';
+import { Button, Col, Layout, Row, Steps, Typography } from 'antd';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppRoutes } from '../routes';
@@ -48,8 +48,10 @@ export default function GettingStartedPage() {
       <Content>
         <Row style={{ height: '100vh' }} align="middle">
           <Col xs={24} md={16} style={{ textAlign: 'center' }}>
-            <h3>{gettingStartedSteps[currentStep]?.label ?? ''}</h3>
-            <p>{gettingStartedSteps[currentStep]?.desc ?? ''}</p>
+            <Typography.Title level={4}>{gettingStartedSteps[currentStep]?.label ?? ''}</Typography.Title>
+            <Typography.Text>
+              <p>{gettingStartedSteps[currentStep]?.desc ?? ''}</p>
+            </Typography.Text>
             <Row justify="center">
               <Col>
                 <Steps

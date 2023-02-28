@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { AppstoreOutlined, UserOutlined } from '@ant-design/icons';
-import { Col, Divider, Input, List, MenuProps, Row, Switch } from 'antd';
+import { Col, Divider, Input, List, MenuProps, Row, Switch, Typography } from 'antd';
 import { Layout, Menu, theme } from 'antd';
 import { Link, Outlet } from 'react-router-dom';
 import VirtualList from 'rc-virtual-list';
@@ -34,18 +34,18 @@ const SIDE_NAV_EXPANDED_WIDTH = '200px';
 const SIDE_NAV_COLLAPSED_WIDTH = '80px';
 
 const dummyNets: Network[] = [
-  { name: 'home' },
-  { name: 'fast-net' },
-  { name: 'test-net' },
-  { name: 'arpanet' },
-  { name: 'internet' },
-];
+  { netid: 'home' },
+  { netid: 'fast-net' },
+  { netid: 'test-net' },
+  { netid: 'arpanet' },
+  { netid: 'internet' },
+] as Network[];
 
 const dummyHosts: Host[] = [
   { id: '123', name: 'Home Ubuntu' },
   { id: '1234', name: 'Office Mac' },
   { id: '12', name: "Kid's Windows" },
-];
+] as Host[];
 
 const NETWORKS_LIST_HEIGHT = 200;
 const HOSTS_LIST_HEIGHT = 200;
@@ -132,7 +132,7 @@ export default function MainLayout() {
         {/* networks */}
         <Row align="middle" style={{ marginLeft: '28px', marginRight: '8px' }}>
           <Col xs={12} style={{ height: '2rem' }}>
-            Networks
+            <Typography.Text>Networks</Typography.Text>
           </Col>
           <Col xs={12} style={{ height: '2rem' }}>
             <Divider style={{ marginTop: '.7rem', marginBottom: '0px' }} />
@@ -142,12 +142,12 @@ export default function MainLayout() {
           </Col>
         </Row>
         <List>
-          <VirtualList data={networks} height={NETWORKS_LIST_HEIGHT} itemHeight={30} itemKey="name">
+          <VirtualList data={networks} height={NETWORKS_LIST_HEIGHT} itemHeight={30} itemKey="netid">
             {(network: Network) => (
-              <List.Item key={network.name} style={{ borderBottom: 'none', height: '30px' }}>
+              <List.Item key={network.netid} style={{ borderBottom: 'none', height: '30px' }}>
                 <List.Item.Meta
                   style={{ fontWeight: 'normal', height: '30px' }}
-                  title={<Link to={'#'}>{network.name}</Link>}
+                  title={<Link to={'#'}>{network.netid}</Link>}
                 />
               </List.Item>
             )}
@@ -157,7 +157,7 @@ export default function MainLayout() {
         {/* hosts */}
         <Row align="middle" style={{ marginLeft: '28px', marginRight: '8px' }}>
           <Col xs={12} style={{ height: '2rem' }}>
-            Hosts
+            <Typography.Text>Hosts</Typography.Text>
           </Col>
           <Col xs={12} style={{ height: '2rem' }}>
             <Divider style={{ marginTop: '.7rem', marginBottom: '0px' }} />
