@@ -1,10 +1,9 @@
 import axios from 'axios';
+import { isSaasBuild } from '../main';
 import { TenantConfig } from '../models/ServerConfig';
 
 // function to resolve the particular SaaS tenant's backend URL, ...
 export function getTenantConfig(): TenantConfig {
-  const isSaasBuild = process.env.REACT_IS_SAAS_BUILD?.toLocaleLowerCase() === 'true';
-
   if (!isSaasBuild) {
     return {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
