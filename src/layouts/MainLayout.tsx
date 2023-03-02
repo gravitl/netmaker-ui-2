@@ -120,7 +120,7 @@ export default function MainLayout() {
         }}
       >
         {/* logo */}
-        <div style={{ height: 32, margin: 16, background: 'rgba(0, 0, 0, 0.2)' }} />
+        <img src="/src/assets/logo.png" alt="logo" style={{ width: '100%', padding: '1rem' }} />
         <Menu
           theme="light"
           mode="inline"

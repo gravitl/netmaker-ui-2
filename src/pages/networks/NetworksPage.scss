@@ -1,0 +1,9 @@
+.NetworksPage {
+  .header-card {
+    .ant-card-body {
+      height: 100%;
+      display: flex;
+      flex-flow: column nowrap;
+    }
+  }
+}

@@ -1,6 +1,6 @@
 import { Button, Card, Col, Layout, Row, Space } from 'antd';
 import { ArrowRightOutlined, PlusOutlined } from '@ant-design/icons';
-import UpgradeModal from '../components/UpgradeModal';
+import UpgradeModal from '../components/modals/upgrade-modal/UpgradeModal';
 import { PageProps } from '../models/Page';
 import { AppRoutes } from '../routes';
 import { useNavigate } from 'react-router-dom';

@@ -5,6 +5,7 @@ export default function LoginPage() {
 
   if (isSaasBuild) {
     window.location.href = process.env.REACT_APP_ACCOUNT_DASHBOARD_LOGIN_URL as string;
+    return;
   }
 
   return <>login page</>;

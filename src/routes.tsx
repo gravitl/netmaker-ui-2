@@ -7,6 +7,7 @@ import StartupPage from './pages/StartupPage';
 import MainLayout from './layouts/MainLayout';
 import NewHostPage from './pages/hosts/NewHostPage';
 import HostPage from './pages/hosts/HostPage';
+import NetworksPage from './pages/networks/NetworksPage';
 
 export class AppRoutes {
   static HOME_ROUTE = '/';
@@ -14,6 +15,7 @@ export class AppRoutes {
   static GETTING_STARTED_ROUTE = '/hello';
   static NEW_HOST_ROUTE = '/hosts-new';
   static HOST_ROUTE = '/hosts/:id';
+  static NETWORKS_ROUTE = '/networks';
 }
 
 const routes: RouteObject[] = [
@@ -25,6 +27,7 @@ const routes: RouteObject[] = [
       { path: '', element: <DashboardPage isFullScreen={false} /> },
       { path: AppRoutes.NEW_HOST_ROUTE.split('/').slice(1).join('/'), element: <NewHostPage isFullScreen /> },
       { path: AppRoutes.HOST_ROUTE.split('/').slice(1).join('/'), element: <HostPage isFullScreen /> },
+      { path: AppRoutes.NETWORKS_ROUTE.split('/').slice(1).join('/'), element: <NetworksPage isFullScreen /> },
     ],
   },
   { path: AppRoutes.GETTING_STARTED_ROUTE, element: <GettingStartedPage /> },
