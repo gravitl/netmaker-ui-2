@@ -166,7 +166,7 @@ export default function NetworksPage(props: PageProps) {
 
             <Row className="page-row-padding" justify="space-between">
               <Col xs={24}>
-                <Table columns={tableColumns} dataSource={networks} />
+                <Table columns={tableColumns} dataSource={networks} rowKey="netid" />
               </Col>
             </Row>
           </>
