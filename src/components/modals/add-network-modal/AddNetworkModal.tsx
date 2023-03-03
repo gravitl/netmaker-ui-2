@@ -7,6 +7,8 @@ import { useStore } from '@/store/store';
 import '../CustomModal.scss';
 import { AxiosError } from 'axios';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
+import { useNavigate } from 'react-router-dom';
+import { AppRoutes } from '@/routes';
 
 interface AddNetworkModalProps {
   isOpen: boolean;
@@ -19,6 +21,7 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
   const { token: themeToken } = theme.useToken();
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
+  const navigate = useNavigate();
 
   const [hasIpv4, setHasIpv4] = useState(true);
   const [hasIpv6, setHasIpv6] = useState(false);
@@ -27,9 +30,10 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
     try {
       const formData = await form.validateFields();
       const network = (await NetworksService.createNetwork(formData)).data;
-      // TODO: update store
       store.addNetwork(network);
       notify.success({ message: `Network ${network.netid} created` });
+      navigate(AppRoutes.NETWORKS_ROUTE);
+      // TODO: close modal
     } catch (err) {
       if (err instanceof AxiosError) {
         notify.error({

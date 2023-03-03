@@ -4,9 +4,13 @@ import UpgradeModal from '../components/modals/upgrade-modal/UpgradeModal';
 import { PageProps } from '../models/Page';
 import { AppRoutes } from '../routes';
 import { useNavigate } from 'react-router-dom';
+import AddNetworkModal from '@/components/modals/add-network-modal/AddNetworkModal';
+import { useState } from 'react';
 
 export default function DashboardPage(props: PageProps) {
   const navigate = useNavigate();
+
+  const [isAddNetworkModalOpen, setIsAddNetworkModalOpen] = useState(false);
 
   const goToNewHostPage = () => {
     navigate(AppRoutes.NEW_HOST_ROUTE);
@@ -44,7 +48,7 @@ export default function DashboardPage(props: PageProps) {
                 architecto esse.
               </p>
               <div>
-                <Button type="primary" onClick={() => navigate(AppRoutes.NETWORKS_ROUTE)}>
+                <Button type="primary" onClick={() => setIsAddNetworkModalOpen(true)}>
                   <PlusOutlined />
                   Get Started
                 </Button>
@@ -68,8 +72,9 @@ export default function DashboardPage(props: PageProps) {
         </Col>
       </Row>
 
-      {/* modals */}
+      {/* misc */}
       <UpgradeModal isOpen={false} />
+      <AddNetworkModal isOpen={isAddNetworkModalOpen} onCancel={() => setIsAddNetworkModalOpen(false)} />
     </Layout.Content>
   );
 }
