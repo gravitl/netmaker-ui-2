@@ -1,4 +1,4 @@
-import { isSaasBuild } from '../../main';
+import { isSaasBuild } from '../../services/BaseService';
 
 export default function LoginPage() {
   // TODO: check if user is logged in in before route hook

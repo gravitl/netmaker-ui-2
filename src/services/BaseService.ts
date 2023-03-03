@@ -1,13 +1,14 @@
 import axios from 'axios';
-import { isSaasBuild } from '../main';
 import { TenantConfig } from '../models/ServerConfig';
+
+export const isSaasBuild = import.meta.env.VITE_IS_SAAS_BUILD?.toLocaleLowerCase() === 'true';
 
 // function to resolve the particular SaaS tenant's backend URL, ...
 export function getTenantConfig(): TenantConfig {
   if (!isSaasBuild) {
     return {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      baseUrl: process.env.REACT_BASE_URL!,
+      baseUrl: import.meta.env.VITE_BASE_URL!,
     };
   }
 
