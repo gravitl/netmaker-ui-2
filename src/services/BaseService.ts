@@ -1,3 +1,4 @@
+import { useStore } from '@/store/store';
 import axios from 'axios';
 import { TenantConfig } from '../models/ServerConfig';
 
@@ -24,4 +25,17 @@ const API_PREFIX = '/api';
 
 export const baseService = axios.create({
   baseURL: getTenantConfig().baseUrl + API_PREFIX,
+});
+
+// token interceptor for axios
+baseService.interceptors.request.use((config) => {
+  const token = useStore.getState().jwt;
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  console.log(token);
+
+  return config;
 });

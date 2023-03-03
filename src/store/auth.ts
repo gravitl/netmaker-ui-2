@@ -7,7 +7,7 @@ export interface IAuthSlice {
   username: TenantConfig['username'];
   tenantId: TenantConfig['tenantId'];
   isLoggedIn: () => boolean;
-  setStore: (config: TenantConfig) => void;
+  setStore: (config: Partial<TenantConfig>) => void;
 }
 
 const createAuthSlice: StateCreator<IAuthSlice, [], [], IAuthSlice> = (set, get) => ({
@@ -23,6 +23,6 @@ const createAuthSlice: StateCreator<IAuthSlice, [], [], IAuthSlice> = (set, get)
   username: '',
 });
 
-export const AppSlice = {
-  createAppSlice: createAuthSlice,
+export const AuthSlice = {
+  createAuthSlice,
 };

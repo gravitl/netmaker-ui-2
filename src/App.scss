@@ -1,0 +1,43 @@
+/* to allow for bottom sidenav items */
+.ant-layout-sider-children {
+  position: relative;
+}
+
+.page-padding-y {
+  padding-top: 3.75rem;
+  padding-bottom: 7.5rem;
+}
+
+.page-padding-x {
+  padding-left: 5.125rem;
+  padding-right: 5.125rem;
+}
+
+.page-padding {
+  @extend .page-padding-y;
+  @extend .page-padding-x;
+}
+
+.page-row-padding-x {
+  padding-left: 5.125rem;
+  padding-right: 5.125rem;
+}
+
+.page-row-padding-y {
+  padding-top: 1.5rem;
+  padding-bottom: 1.5rem;
+}
+
+.page-row-padding-b {
+  padding-bottom: 1rem;
+}
+
+.page-row-padding-t {
+  padding-top: 1rem;
+}
+
+.page-row-padding {
+  @extend .page-row-padding-x;
+  @extend .page-row-padding-y;
+  @extend .page-row-padding-b;
+}

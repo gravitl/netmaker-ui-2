@@ -3,7 +3,7 @@ import { RouterProvider } from 'react-router-dom';
 import { router } from './routes';
 import { useStore } from './store/store';
 
-import './App.css';
+import './App.scss';
 
 function App() {
   const currentTheme = useStore((state) => state.currentTheme);

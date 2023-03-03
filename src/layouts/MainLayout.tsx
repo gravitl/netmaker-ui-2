@@ -2,30 +2,34 @@ import React, { useMemo, useState } from 'react';
 import { AppstoreOutlined, UserOutlined } from '@ant-design/icons';
 import { Col, Divider, Input, List, MenuProps, Row, Switch, Typography } from 'antd';
 import { Layout, Menu, theme } from 'antd';
-import { Link, Outlet } from 'react-router-dom';
+import { Link, Outlet, useNavigate } from 'react-router-dom';
 import VirtualList from 'rc-virtual-list';
 import { Network } from '../models/Network';
 import { Host } from '../models/Host';
 import { getHostRoute } from '../utils/RouteUtils';
 import { useStore } from '../store/store';
+import { AppRoutes } from '@/routes';
 
 const { Content, Sider } = Layout;
 
 const sideNavItems: MenuProps['items'] = [
   {
+    key: 'dashboard',
     icon: UserOutlined,
     label: 'Dashboard',
   },
   {
+    key: 'remote-access',
     icon: AppstoreOutlined,
     label: 'Remote Access',
   },
   {
+    key: 'enrollment-keys',
     icon: AppstoreOutlined,
-    label: 'Access Keys',
+    label: 'Enrollment Keys',
   },
-].map((item, index) => ({
-  key: String(index + 1),
+].map((item) => ({
+  key: item.key,
   icon: React.createElement(item.icon),
   label: item.label,
 }));
@@ -56,6 +60,7 @@ export default function MainLayout() {
   } = theme.useToken();
   const currentTheme = useStore((state) => state.currentTheme);
   const setCurrentTheme = useStore((state) => state.setCurrentTheme);
+  const navigate = useNavigate();
 
   const [collapsed, setCollapsed] = useState(false);
   const [networks, setNetworks] = useState(dummyNets);
@@ -127,6 +132,13 @@ export default function MainLayout() {
           defaultSelectedKeys={['1']}
           items={sideNavItems}
           style={{ borderRight: 'none' }}
+          onClick={(menu) => {
+            switch (menu.key) {
+              case 'dashboard':
+                navigate(AppRoutes.HOME_ROUTE);
+                break;
+            }
+          }}
         />
 
         {/* networks */}

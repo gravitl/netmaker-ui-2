@@ -1,7 +1,12 @@
 import { EditOutlined } from '@ant-design/icons';
-import { Button, Col, Divider, Form, Input, Modal, Radio, Row, Select, Switch, theme } from 'antd';
+import { Button, Col, Divider, Form, Input, Modal, notification, Row, Select, Switch, theme } from 'antd';
 import { MouseEvent, useState } from 'react';
+import { CreateNetworkDto } from '@/services/dtos/CreateNetworkDto';
+import { NetworksService } from '@/services/NetworksService';
+import { useStore } from '@/store/store';
 import '../CustomModal.scss';
+import { AxiosError } from 'axios';
+import { extractErrorMsg } from '@/utils/ServiceUtils';
 
 interface AddNetworkModalProps {
   isOpen: boolean;
@@ -10,11 +15,35 @@ interface AddNetworkModalProps {
 }
 
 export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwork, onCancel }: AddNetworkModalProps) {
-  const [form] = Form.useForm();
+  const [form] = Form.useForm<CreateNetworkDto>();
   const { token: themeToken } = theme.useToken();
+  const [notify, notifyCtx] = notification.useNotification();
+  const store = useStore();
 
   const [hasIpv4, setHasIpv4] = useState(true);
   const [hasIpv6, setHasIpv6] = useState(false);
+
+  const createNetwork = async () => {
+    try {
+      const formData = await form.validateFields();
+      const network = (await NetworksService.createNetwork(formData)).data;
+      // TODO: update store
+      store.addNetwork(network);
+      notify.success({ message: `Network ${network.netid} created` });
+    } catch (err) {
+      if (err instanceof AxiosError) {
+        notify.error({
+          message: 'Failed to create network',
+          description: extractErrorMsg(err),
+        });
+      }
+    }
+  };
+
+  // const onAddNetworkFormValueChange = (changedVals: any, vals: CreateNetworkDto) => {
+  //   console.log(changedVals);
+  //   console.log(vals);
+  // };
 
   return (
     <Modal
@@ -35,11 +64,13 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
         </div>
 
         <Form
+          name="add-network-form"
           form={form}
           layout="vertical"
-          // style={{ maxWidth: 600 }}
+          // onValuesChange={onAddNetworkFormValueChange}
+          initialValues={{ defaultacl: 'yes' }}
         >
-          <Form.Item label="Network name">
+          <Form.Item label="Network name" name="netid" rules={[{ required: true }]}>
             <Input placeholder="Network name" />
           </Form.Item>
 
@@ -62,8 +93,8 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
               {hasIpv4 && (
                 <Row>
                   <Col xs={24}>
-                    <Form.Item style={{ marginBottom: '0px' }}>
-                      <Input placeholder="Enter address range" />
+                    <Form.Item name="addressrange" style={{ marginBottom: '0px' }}>
+                      <Input placeholder="Enter address CIDR (eg: 192.168.1.0/24)" />
                     </Form.Item>
                   </Col>
                 </Row>
@@ -90,8 +121,8 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
               {hasIpv6 && (
                 <Row>
                   <Col xs={24}>
-                    <Form.Item style={{ marginBottom: '0px' }}>
-                      <Input placeholder="Enter address range" />
+                    <Form.Item name="addressrange6" style={{ marginBottom: '0px' }}>
+                      <Input placeholder="Enter address CIDR (eg: 2002::1234:abcd:ffff:c0a8:101/64)" />
                     </Form.Item>
                   </Col>
                 </Row>
@@ -111,24 +142,39 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
               <Row justify="space-between" style={{ marginBottom: hasIpv6 ? '.5rem' : '0px' }}>
                 <Col>Default Access Control</Col>
                 <Col xs={8}>
-                  <Select size="small" style={{ width: '100%' }}>
-                    <Select.Option>ALLOW</Select.Option>
-                    <Select.Option>DENY</Select.Option>
-                  </Select>
+                  <Form.Item name="defaultacl" style={{ marginBottom: '0px' }} rules={[{ required: true }]}>
+                    <Select
+                      size="small"
+                      style={{ width: '100%' }}
+                      options={[
+                        { label: 'ALLOW', value: 'yes' },
+                        { label: 'DENY', value: 'no' },
+                      ]}
+                    ></Select>
+                  </Form.Item>
                 </Col>
               </Row>
             </Col>
           </Row>
 
-          <Form.Item label="Default Client DNS">
+          <Form.Item label="Default Client DNS" name="defaultDns">
             <Input placeholder="Default Client DNS" />
           </Form.Item>
 
-          <Form.Item>
-            <Button type="primary">Create Network</Button>
-          </Form.Item>
+          <Row>
+            <Col xs={24} style={{ textAlign: 'right' }}>
+              <Form.Item>
+                <Button type="primary" onClick={createNetwork}>
+                  Create Network
+                </Button>
+              </Form.Item>
+            </Col>
+          </Row>
         </Form>
       </div>
+
+      {/* notify */}
+      {notifyCtx}
     </Modal>
   );
 }

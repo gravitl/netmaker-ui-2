@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 
 export default function DashboardPage(props: PageProps) {
   const navigate = useNavigate();
+
   const goToNewHostPage = () => {
     navigate(AppRoutes.NEW_HOST_ROUTE);
   };
@@ -43,7 +44,7 @@ export default function DashboardPage(props: PageProps) {
                 architecto esse.
               </p>
               <div>
-                <Button type="primary">
+                <Button type="primary" onClick={() => navigate(AppRoutes.NETWORKS_ROUTE)}>
                   <PlusOutlined />
                   Get Started
                 </Button>

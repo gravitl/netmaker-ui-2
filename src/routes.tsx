@@ -8,9 +8,11 @@ import MainLayout from './layouts/MainLayout';
 import NewHostPage from './pages/hosts/NewHostPage';
 import HostPage from './pages/hosts/HostPage';
 import NetworksPage from './pages/networks/NetworksPage';
+import LoginPage from './pages/auth/LoginPage';
 
 export class AppRoutes {
   static HOME_ROUTE = '/';
+  static LOGIN_ROUTE = '/login';
   static STARTUP_ROUTE = '/startup';
   static GETTING_STARTED_ROUTE = '/hello';
   static NEW_HOST_ROUTE = '/hosts-new';
@@ -32,6 +34,7 @@ const routes: RouteObject[] = [
   },
   { path: AppRoutes.GETTING_STARTED_ROUTE, element: <GettingStartedPage /> },
   { path: AppRoutes.STARTUP_ROUTE, element: <StartupPage /> },
+  { path: AppRoutes.LOGIN_ROUTE, element: <LoginPage /> },
 
   // fallback route
   { path: '*', element: <Error404Page /> },
