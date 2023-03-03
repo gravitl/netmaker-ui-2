@@ -18,6 +18,7 @@ export class AppRoutes {
   static NEW_HOST_ROUTE = '/hosts-new';
   static HOST_ROUTE = '/hosts/:id';
   static NETWORKS_ROUTE = '/networks';
+  static HOSTS_ROUTE = '/hosts';
 }
 
 const routes: RouteObject[] = [

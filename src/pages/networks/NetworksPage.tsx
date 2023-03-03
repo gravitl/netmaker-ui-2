@@ -2,7 +2,7 @@ import { Network } from '@/models/Network';
 import { AppRoutes } from '@/routes';
 import { PlusOutlined } from '@ant-design/icons';
 import { Button, Card, Col, Input, Layout, Row, Skeleton, Table, TableColumnsType, Typography } from 'antd';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import AddNetworkModal from '../../components/modals/add-network-modal/AddNetworkModal';
 import { PageProps } from '../../models/Page';
@@ -49,6 +49,14 @@ export default function NetworksPage(props: PageProps) {
       render: (date) => new Date(date).toLocaleString(),
     },
   ];
+
+  const filteredNetworks = useMemo(
+    () =>
+      networks.filter((network) => {
+        return network.netid.toLowerCase().includes(searchText.toLowerCase());
+      }),
+    [networks, searchText]
+  );
 
   const loadNetworks = async () => {
     await store.fetchNetworks();
@@ -166,7 +174,7 @@ export default function NetworksPage(props: PageProps) {
 
             <Row className="page-row-padding" justify="space-between">
               <Col xs={24}>
-                <Table columns={tableColumns} dataSource={networks} rowKey="netid" />
+                <Table columns={tableColumns} dataSource={filteredNetworks} rowKey="netid" />
               </Col>
             </Row>
           </>

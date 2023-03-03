@@ -51,8 +51,13 @@ export default function LoginPage(props: LoginPageProps) {
   return (
     <Layout style={{ height: '100vh', justifyContent: 'center', alignItems: 'center' }}>
       <Layout.Content
-        className="NetworksPage"
-        style={{ position: 'relative', height: '100%', width: '40%', padding: props.isFullScreen ? 0 : 24 }}
+        style={{
+          marginTop: '15vh',
+          position: 'relative',
+          height: 'fit-content',
+          width: '40%',
+          padding: props.isFullScreen ? 0 : 24,
+        }}
       >
         <Row>
           <Col xs={24}>
