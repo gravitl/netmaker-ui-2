@@ -44,11 +44,6 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
     }
   };
 
-  // const onAddNetworkFormValueChange = (changedVals: any, vals: CreateNetworkDto) => {
-  //   console.log(changedVals);
-  //   console.log(vals);
-  // };
-
   return (
     <Modal
       title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Create a Network</span>}
@@ -67,13 +62,7 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
           </Button>
         </div>
 
-        <Form
-          name="add-network-form"
-          form={form}
-          layout="vertical"
-          // onValuesChange={onAddNetworkFormValueChange}
-          initialValues={{ defaultacl: 'yes' }}
-        >
+        <Form name="add-network-form" form={form} layout="vertical" initialValues={{ defaultacl: 'yes' }}>
           <Form.Item label="Network name" name="netid" rules={[{ required: true }]}>
             <Input placeholder="Network name" />
           </Form.Item>
@@ -143,7 +132,7 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
             }}
           >
             <Col xs={24}>
-              <Row justify="space-between" style={{ marginBottom: hasIpv6 ? '.5rem' : '0px' }}>
+              <Row justify="space-between">
                 <Col>Default Access Control</Col>
                 <Col xs={8}>
                   <Form.Item name="defaultacl" style={{ marginBottom: '0px' }} rules={[{ required: true }]}>

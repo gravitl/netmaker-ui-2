@@ -1,3 +1,4 @@
+import { AccessKey } from './AccessKey';
 import { ExternalClient } from './ExternalClient';
 import { ProSettings } from './ProSettings';
 
@@ -13,16 +14,16 @@ export interface Network {
   defaultpostup: string;
   defaultpostdown: string;
   defaultkeepalive: number;
-  // accesskeys: Array<AccessKey>;
+  accesskeys: AccessKey[];
   externalclients: Array<ExternalClient>;
-  islocal: boolean;
-  isipv4: boolean;
-  isipv6: boolean;
+  islocal: 'yes' | 'no';
+  isipv4: 'yes' | 'no';
+  isipv6: 'yes' | 'no';
   localrange: string;
-  defaultudpholepunch: boolean;
+  defaultudpholepunch: 'yes' | 'no';
   defaultnatenabled: boolean;
   defaultextclientdns: string;
   defaultmtu: number;
-  defaultacl: boolean;
+  defaultacl: 'yes' | 'no';
   prosettings: ProSettings | undefined;
 }

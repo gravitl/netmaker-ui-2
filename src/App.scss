@@ -41,3 +41,17 @@
   @extend .page-row-padding-y;
   @extend .page-row-padding-b;
 }
+
+.tabbed-page-row-padding-x {
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+.tabbed-page-row-padding-y {
+  @extend .page-row-padding-y;
+}
+
+.tabbed-page-row-padding {
+  @extend .tabbed-page-row-padding-x;
+  @extend .tabbed-page-row-padding-y;
+}
