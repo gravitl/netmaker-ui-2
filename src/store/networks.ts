@@ -13,6 +13,7 @@ export interface INetworkSlice {
   addNetwork: (network: Network) => void;
   removeNetwork: (networkId: Network['netid']) => void;
   updateNetwork: (networkId: Network['netid'], newNetwork: Network) => void;
+  deleteNetwork: (networkId: Network['netid']) => void;
 }
 
 const createNetworkSlice: StateCreator<INetworkSlice, [], [], INetworkSlice> = (set, get) => ({
@@ -45,6 +46,9 @@ const createNetworkSlice: StateCreator<INetworkSlice, [], [], INetworkSlice> = (
         return network;
       }),
     }));
+  },
+  deleteNetwork(networkId) {
+    set((state) => ({ networks: state.networks.filter((network) => network.netid !== networkId) }));
   },
 });
 

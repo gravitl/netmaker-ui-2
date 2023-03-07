@@ -14,6 +14,10 @@ function createNetwork(payload: CreateNetworkDto) {
   return baseService.post<Network>(`${ApiRoutes.NETWORKS}`, payload);
 }
 
+function updateNetwork(networkId: Network['netid'], payload: Network) {
+  return baseService.put<Network>(`${ApiRoutes.NETWORKS}/${networkId}`, payload);
+}
+
 function deleteNetwork(networkId: Network['netid']) {
   return baseService.delete<void>(`${ApiRoutes.NETWORKS}/${networkId}`);
 }
@@ -45,6 +49,7 @@ function deleteDns(networkId: Network['netid'], dnsName: DNS['name']) {
 export const NetworksService = {
   getNetworks,
   createNetwork,
+  updateNetwork,
   deleteNetwork,
   createAccessKey,
   getAccessKeys,
