@@ -7,43 +7,43 @@ import { CreateEgressNodeDto } from './dtos/CreateEgressNodeDto';
 import { CreateIngressNodeDto } from './dtos/CreateIngressNodeDto';
 import { UpdateExternalClientDto } from './dtos/UpdateExternalClientDto';
 
-export function getNodes() {
+function getNodes() {
   return baseService.get<Node[]>(ApiRoutes.NODES);
 }
 
-export function approveNode(nodeId: Node['id'], networkId: Network['netid']) {
+function approveNode(nodeId: Node['id'], networkId: Network['netid']) {
   return baseService.post<void>(`${ApiRoutes.NODES}/${networkId}/${nodeId}/approve`);
 }
 
-export function createEgressNode(nodeId: Node['id'], networkId: Network['netid'], payload: CreateEgressNodeDto) {
+function createEgressNode(nodeId: Node['id'], networkId: Network['netid'], payload: CreateEgressNodeDto) {
   return baseService.post<Node>(`${ApiRoutes.NODES}/${networkId}/${nodeId}/creategateway`, payload);
 }
 
-export function createExternalClient(nodeId: Node['id'], networkId: Network['netid']) {
+function createExternalClient(nodeId: Node['id'], networkId: Network['netid']) {
   return baseService.post<void>(`${ApiRoutes.EXTERNAL_CLIENTS}/${networkId}/${nodeId}`);
 }
 
-export function createIngressNode(nodeId: Node['id'], networkId: Network['netid'], payload: CreateIngressNodeDto) {
+function createIngressNode(nodeId: Node['id'], networkId: Network['netid'], payload: CreateIngressNodeDto) {
   return baseService.post<void>(`${ApiRoutes.NODES}/${networkId}/${nodeId}/createingress`, payload);
 }
 
-export function deleteEgressNode(nodeId: Node['id'], networkId: Network['netid']) {
+function deleteEgressNode(nodeId: Node['id'], networkId: Network['netid']) {
   return baseService.delete<Node>(`${ApiRoutes.NODES}/${networkId}/${nodeId}/deletegateway`);
 }
 
-export function deleteExternalClient(extClientId: ExternalClient['clientid'], networkId: Network['netid']) {
+function deleteExternalClient(extClientId: ExternalClient['clientid'], networkId: Network['netid']) {
   return baseService.delete<void>(`${ApiRoutes.EXTERNAL_CLIENTS}/${networkId}/${extClientId}`);
 }
 
-export function deleteIngressNode(nodeId: Node['id'], networkId: Network['netid']) {
+function deleteIngressNode(nodeId: Node['id'], networkId: Network['netid']) {
   return baseService.delete<Node>(`${ApiRoutes.NODES}/${networkId}/${nodeId}/deleteingress`);
 }
 
-export function deleteNode(nodeId: Node['id'], networkId: Network['netid']) {
+function deleteNode(nodeId: Node['id'], networkId: Network['netid']) {
   return baseService.delete<Node>(`${ApiRoutes.NODES}/${networkId}/${nodeId}`);
 }
 
-export function getExternalClientConfig(
+function getExternalClientConfig(
   extClientId: ExternalClient['clientid'],
   networkId: Network['netid'],
   type: 'qr' | 'file'
@@ -51,11 +51,11 @@ export function getExternalClientConfig(
   return baseService.get<string>(`${ApiRoutes.EXTERNAL_CLIENTS}/${networkId}/${extClientId}/${type}`);
 }
 
-export function getExternalClients() {
+function getExternalClients() {
   return baseService.get<ExternalClient[]>(`${ApiRoutes.EXTERNAL_CLIENTS}`);
 }
 
-export function updateExternalClient(
+function updateExternalClient(
   extClientId: ExternalClient['clientid'],
   networkId: Network['netid'],
   payload: UpdateExternalClientDto
@@ -63,6 +63,22 @@ export function updateExternalClient(
   return baseService.put<ExternalClient>(`${ApiRoutes.EXTERNAL_CLIENTS}/${networkId}/${extClientId}`, payload);
 }
 
-export function updateNode(nodeId: ExternalClient['clientid'], networkId: Network['netid'], payload: Node) {
+function updateNode(nodeId: ExternalClient['clientid'], networkId: Network['netid'], payload: Node) {
   return baseService.put<Node>(`${ApiRoutes.NODES}/${networkId}/${nodeId}`, payload);
 }
+
+export const NodesService = {
+  getNodes,
+  approveNode,
+  createEgressNode,
+  createExternalClient,
+  createIngressNode,
+  deleteEgressNode,
+  deleteExternalClient,
+  deleteIngressNode,
+  deleteNode,
+  getExternalClientConfig,
+  getExternalClients,
+  updateExternalClient,
+  updateNode,
+};

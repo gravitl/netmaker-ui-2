@@ -4,7 +4,7 @@ import { NetworksService } from '@/services/NetworksService';
 import { useStore } from '@/store/store';
 import { convertUiNetworkToNetworkModel, isNetworkIpv4, isNetworkIpv6 } from '@/utils/Networks';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
-import { ExclamationCircleFilled } from '@ant-design/icons';
+import { ExclamationCircleFilled, PlusOutlined } from '@ant-design/icons';
 import {
   Button,
   Card,
@@ -18,6 +18,7 @@ import {
   Select,
   Skeleton,
   Switch,
+  Table,
   Tabs,
   TabsProps,
   theme,
@@ -43,6 +44,20 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [network, setNetwork] = useState<Network | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [searchText, setSearchText] = useState('');
+
+  const networkHosts = useMemo(
+    () =>
+      store.nodes
+        .filter((node) => node.network === networkId)
+        // TODO: add name search
+        .filter((node) => node.address.toLowerCase().includes(searchText.toLowerCase())),
+    [store.nodes, networkId, searchText]
+  );
+
+  const goToNewHostPage = () => {
+    navigate(AppRoutes.NEW_HOST_ROUTE);
+  };
 
   const getOverviewContent = useCallback(
     (network: Network) => {
@@ -152,6 +167,70 @@ export default function NetworkDetailsPage(props: PageProps) {
     [form, isEditing, themeToken, isIpv4Watch, isIpv6Watch]
   );
 
+  const getHostsContent = useCallback(
+    (network: Network) => {
+      return (
+        <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+          <Card style={{ width: '100%' }}>
+            <Row justify="space-between" style={{ marginBottom: '1rem' }}>
+              <Col xs={12} md={8}>
+                <Input
+                  size="large"
+                  placeholder="Search networks"
+                  value={searchText}
+                  onChange={(ev) => setSearchText(ev.target.value)}
+                />
+              </Col>
+              <Col xs={12} md={6} style={{ textAlign: 'right' }}>
+                <Button type="primary" size="large" onClick={goToNewHostPage}>
+                  <PlusOutlined /> Add Host
+                </Button>
+              </Col>
+            </Row>
+
+            <Table
+              columns={[
+                {
+                  title: 'Host Name',
+                  render: (_, node) => <span>{store.hostsCommonDetails[node.hostid].name}</span>,
+                },
+                {
+                  title: 'Private Address',
+                  dataIndex: 'address',
+                  render: (address: string, node) => (
+                    <>
+                      <span>{address}</span>
+                      <span>{node.address6}</span>
+                    </>
+                  ),
+                },
+                {
+                  title: 'Public Address',
+                  dataIndex: 'name',
+                },
+                {
+                  title: 'Preferred DNS',
+                  dataIndex: 'name',
+                },
+                {
+                  title: 'Health Status',
+                  dataIndex: 'name',
+                },
+                {
+                  title: 'Connection status',
+                  // dataIndex: 'name',
+                },
+              ]}
+              dataSource={networkHosts}
+              rowKey="id"
+            />
+          </Card>
+        </div>
+      );
+    },
+    [goToNewHostPage, networkHosts, searchText, store.hostsCommonDetails]
+  );
+
   const items: TabsProps['items'] = useMemo(
     () => [
       {
@@ -162,7 +241,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       {
         key: 'hosts',
         label: `Hosts (#)`,
-        children: `Content of Hosts Tab`,
+        children: network ? getHostsContent(network) : <Skeleton active />,
       },
       {
         key: 'graph',
@@ -179,11 +258,20 @@ export default function NetworkDetailsPage(props: PageProps) {
         label: `Clients`,
         children: `Content of Clients Tab`,
       },
+      {
+        key: 'dns',
+        label: `DNS`,
+        children: `Content of DNS Tab`,
+      },
     ],
-    [network, getOverviewContent]
+    [network, getOverviewContent, getHostsContent]
   );
 
   const loadNetwork = useCallback(() => {
+    // TODO: remove
+    store.fetchNodes();
+    store.fetchHosts();
+
     setIsLoading(true);
     // route to networks if id is not present
     if (!networkId) {
