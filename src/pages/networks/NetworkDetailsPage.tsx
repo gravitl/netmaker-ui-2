@@ -1,9 +1,10 @@
+import AddDnsModal from '@/components/modals/add-dns-modal/AddDnsModal';
 import { DNS } from '@/models/Dns';
 import { Network } from '@/models/Network';
 import { AppRoutes } from '@/routes';
 import { NetworksService } from '@/services/NetworksService';
 import { useStore } from '@/store/store';
-import { convertUiNetworkToNetworkModel, isNetworkIpv4, isNetworkIpv6 } from '@/utils/Networks';
+import { convertUiNetworkToNetworkModel, isNetworkIpv4, isNetworkIpv6 } from '@/utils/NetworkUtils';
 import { getHostRoute } from '@/utils/RouteUtils';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import {
@@ -57,6 +58,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [searchHost, setSearchHost] = useState('');
   const [searchDns, setSearchDns] = useState('');
   const [dnses, setDnses] = useState<DNS[]>([]);
+  const [isAddDnsModalOpen, setIsAddDnsModalOpen] = useState(false);
 
   const networkHosts = useMemo(
     () =>
@@ -285,7 +287,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                 />
               </Col>
               <Col xs={12} md={6} style={{ textAlign: 'right' }}>
-                <Button type="primary" size="large">
+                <Button type="primary" size="large" onClick={() => setIsAddDnsModalOpen(true)}>
                   <PlusOutlined /> Add DNS
                 </Button>
               </Col>
@@ -464,6 +466,11 @@ export default function NetworkDetailsPage(props: PageProps) {
     }
   }, [networkId, notify, navigate, store]);
 
+  const onCreateDns = useCallback((dns: DNS) => {
+    setDnses((prevDnses) => [...prevDnses, dns]);
+    setIsAddDnsModalOpen(false);
+  }, []);
+
   const promptConfirmDelete = () => {
     Modal.confirm({
       title: `Do you want to delete network ${network?.netid}?`,
@@ -478,6 +485,11 @@ export default function NetworkDetailsPage(props: PageProps) {
     loadNetwork();
   }, [loadNetwork]);
 
+  if (!networkId) {
+    navigate(AppRoutes.NETWORKS_ROUTE);
+    return null;
+  }
+
   return (
     <Layout.Content
       className="NetworkDetailsPage"
@@ -487,9 +499,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         {/* top bar */}
         <Row className="tabbed-page-row-padding">
           <Col xs={24}>
-            <Typography.Link>
-              <Link to={AppRoutes.NETWORKS_ROUTE}>View All Networks</Link>
-            </Typography.Link>
+            <Link to={AppRoutes.NETWORKS_ROUTE}>View All Networks</Link>
             <Row>
               <Col xs={18}>
                 <Typography.Title level={2} copyable style={{ marginTop: '.5rem', marginBottom: '2rem' }}>
@@ -520,6 +530,7 @@ export default function NetworkDetailsPage(props: PageProps) {
 
       {/* misc */}
       {notifyCtx}
+      <AddDnsModal isOpen={isAddDnsModalOpen} networkId={networkId} onCreateDns={onCreateDns} />
     </Layout.Content>
   );
 }

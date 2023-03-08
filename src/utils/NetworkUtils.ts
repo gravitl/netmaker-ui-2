@@ -15,3 +15,7 @@ export function convertUiNetworkToNetworkModel(network: Network): Network {
     isipv6: isNetworkIpv6(network) ? 'yes' : 'no',
   };
 }
+
+export function truncateCidrFromIp(ip: string): string {
+  return ip.split('/')[0];
+}
