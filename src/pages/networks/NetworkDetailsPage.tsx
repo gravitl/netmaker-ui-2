@@ -33,6 +33,7 @@ import {
   Tabs,
   TabsProps,
   theme,
+  Tooltip,
   Typography,
 } from 'antd';
 import { AxiosError } from 'axios';
@@ -313,7 +314,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   },
                 },
                 {
-                  title: 'Action',
+                  title: '',
                   key: 'action',
                   width: '1rem',
                   render: (_, dns) => (
@@ -324,9 +325,11 @@ export default function NetworkDetailsPage(props: PageProps) {
                           {
                             key: 'delete',
                             label: (
-                              <Typography.Text onClick={() => confirmDeleteDns(dns)}>
-                                <DeleteOutlined /> Delete
-                              </Typography.Text>
+                              <Tooltip title="Cannot delete default DNS">
+                                <Typography.Text onClick={() => confirmDeleteDns(dns)}>
+                                  <DeleteOutlined /> Delete
+                                </Typography.Text>
+                              </Tooltip>
                             ),
                           },
                         ] as MenuProps['items'],
@@ -530,7 +533,12 @@ export default function NetworkDetailsPage(props: PageProps) {
 
       {/* misc */}
       {notifyCtx}
-      <AddDnsModal isOpen={isAddDnsModalOpen} networkId={networkId} onCreateDns={onCreateDns} />
+      <AddDnsModal
+        isOpen={isAddDnsModalOpen}
+        networkId={networkId}
+        onCreateDns={onCreateDns}
+        onCancel={() => setIsAddDnsModalOpen(false)}
+      />
     </Layout.Content>
   );
 }

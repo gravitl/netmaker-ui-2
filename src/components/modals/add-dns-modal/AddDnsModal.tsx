@@ -19,7 +19,7 @@ interface AddDnsModalProps {
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
 }
 
-export default function AddDnsModal({ isOpen, onOk, onCreateDns, onCancel, networkId }: AddDnsModalProps) {
+export default function AddDnsModal({ isOpen, onCreateDns, onCancel, networkId }: AddDnsModalProps) {
   const [form] = Form.useForm<DNS>();
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
@@ -27,11 +27,13 @@ export default function AddDnsModal({ isOpen, onOk, onCreateDns, onCancel, netwo
   const [isSubmitting, setIsSubmitting] = useState(false);
   const nodeOptions = useMemo<{ label: string; value: Node['id'] }[]>(
     () =>
-      store.nodes.map((node) => ({
-        label: `${node.address}, ${node.address6} (${store.hostsCommonDetails[node.hostid]?.name ?? ''})`,
-        value: node.id,
-      })),
-    [store.hostsCommonDetails, store.nodes]
+      store.nodes
+        .filter((node) => node.network === networkId)
+        .map((node) => ({
+          label: `${node.address}, ${node.address6} (${store.hostsCommonDetails[node.hostid]?.name ?? ''})`,
+          value: node.id,
+        })),
+    [networkId, store.hostsCommonDetails, store.nodes]
   );
 
   const createDns = async () => {
@@ -64,7 +66,6 @@ export default function AddDnsModal({ isOpen, onOk, onCreateDns, onCancel, netwo
     <Modal
       title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Create a DNS Entry</span>}
       open={isOpen}
-      onOk={onOk}
       onCancel={onCancel}
       footer={null}
       centered
