@@ -1,5 +1,6 @@
 export interface DNS {
-  address: string;
-  network: string;
   name: string;
+  network: string;
+  address: string;
+  address6: string;
 }

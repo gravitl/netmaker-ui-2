@@ -38,7 +38,7 @@ function createDns(networkId: Network['netid'], payload: DNS) {
   return baseService.post<DNS>(`${ApiRoutes.DNS}/${networkId}`, payload);
 }
 
-function getDns() {
+function getDnses() {
   return baseService.get<DNS[]>(`${ApiRoutes.DNS}`);
 }
 
@@ -55,6 +55,6 @@ export const NetworksService = {
   getAccessKeys,
   deleteAccessKey,
   createDns,
-  getDns,
+  getDnses,
   deleteDns,
 };

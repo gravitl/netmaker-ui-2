@@ -1,17 +1,27 @@
+import { DNS } from '@/models/Dns';
 import { Network } from '@/models/Network';
 import { AppRoutes } from '@/routes';
 import { NetworksService } from '@/services/NetworksService';
 import { useStore } from '@/store/store';
 import { convertUiNetworkToNetworkModel, isNetworkIpv4, isNetworkIpv6 } from '@/utils/Networks';
+import { getHostRoute } from '@/utils/RouteUtils';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
-import { ExclamationCircleFilled, PlusOutlined } from '@ant-design/icons';
+import {
+  DeleteOutlined,
+  DeleteRowOutlined,
+  ExclamationCircleFilled,
+  MoreOutlined,
+  PlusOutlined,
+} from '@ant-design/icons';
 import {
   Button,
   Card,
   Col,
+  Dropdown,
   Form,
   Input,
   Layout,
+  MenuProps,
   Modal,
   notification,
   Row,
@@ -44,20 +54,45 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [network, setNetwork] = useState<Network | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [searchText, setSearchText] = useState('');
+  const [searchHost, setSearchHost] = useState('');
+  const [searchDns, setSearchDns] = useState('');
+  const [dnses, setDnses] = useState<DNS[]>([]);
 
   const networkHosts = useMemo(
     () =>
       store.nodes
         .filter((node) => node.network === networkId)
         // TODO: add name search
-        .filter((node) => node.address.toLowerCase().includes(searchText.toLowerCase())),
-    [store.nodes, networkId, searchText]
+        .filter((node) => node.address.toLowerCase().includes(searchHost.toLowerCase())),
+    [store.nodes, networkId, searchHost]
   );
 
-  const goToNewHostPage = () => {
+  const goToNewHostPage = useCallback(() => {
     navigate(AppRoutes.NEW_HOST_ROUTE);
-  };
+  }, [navigate]);
+
+  const confirmDeleteDns = useCallback(
+    (dns: DNS) => {
+      Modal.confirm({
+        title: `Delete DNS ${dns.name}.${dns.network}`,
+        content: `Are you sure you want to delete this DNS?`,
+        onOk: async () => {
+          try {
+            await NetworksService.deleteDns(dns.network, dns.name);
+            setDnses((dnses) => dnses.filter((dns) => dns.name !== dns.name));
+          } catch (err) {
+            if (err instanceof AxiosError) {
+              notify.error({
+                message: 'Error deleting DNS',
+                description: extractErrorMsg(err),
+              });
+            }
+          }
+        },
+      });
+    },
+    [notify]
+  );
 
   const getOverviewContent = useCallback(
     (network: Network) => {
@@ -176,9 +211,9 @@ export default function NetworkDetailsPage(props: PageProps) {
               <Col xs={12} md={8}>
                 <Input
                   size="large"
-                  placeholder="Search networks"
-                  value={searchText}
-                  onChange={(ev) => setSearchText(ev.target.value)}
+                  placeholder="Search hosts"
+                  value={searchHost}
+                  onChange={(ev) => setSearchHost(ev.target.value)}
                 />
               </Col>
               <Col xs={12} md={6} style={{ textAlign: 'right' }}>
@@ -192,15 +227,19 @@ export default function NetworkDetailsPage(props: PageProps) {
               columns={[
                 {
                   title: 'Host Name',
-                  render: (_, node) => <span>{store.hostsCommonDetails[node.hostid].name}</span>,
+                  render: (_, node) => {
+                    const hostName = store.hostsCommonDetails[node.hostid].name;
+                    // TODO: fix broken link
+                    return <Link to={getHostRoute(hostName)}>{hostName}</Link>;
+                  },
                 },
                 {
                   title: 'Private Address',
                   dataIndex: 'address',
                   render: (address: string, node) => (
                     <>
-                      <span>{address}</span>
-                      <span>{node.address6}</span>
+                      <Typography.Text copyable>{address}</Typography.Text>
+                      <Typography.Text copyable={!!node.address6}>{node.address6}</Typography.Text>
                     </>
                   ),
                 },
@@ -228,7 +267,82 @@ export default function NetworkDetailsPage(props: PageProps) {
         </div>
       );
     },
-    [goToNewHostPage, networkHosts, searchText, store.hostsCommonDetails]
+    [goToNewHostPage, networkHosts, searchHost, store.hostsCommonDetails]
+  );
+
+  const getDnsContent = useCallback(
+    (network: Network) => {
+      return (
+        <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+          <Card style={{ width: '100%' }}>
+            <Row justify="space-between" style={{ marginBottom: '1rem' }}>
+              <Col xs={12} md={8}>
+                <Input
+                  size="large"
+                  placeholder="Search DNS"
+                  value={searchDns}
+                  onChange={(ev) => setSearchDns(ev.target.value)}
+                />
+              </Col>
+              <Col xs={12} md={6} style={{ textAlign: 'right' }}>
+                <Button type="primary" size="large">
+                  <PlusOutlined /> Add DNS
+                </Button>
+              </Col>
+            </Row>
+
+            <Table
+              columns={[
+                {
+                  title: 'DNS Entry',
+                  render(_, dns) {
+                    return <Typography.Text copyable>{`${dns.name}.${dns.network}`}</Typography.Text>;
+                  },
+                },
+                {
+                  title: 'IP Addresses',
+                  render(_, dns) {
+                    return (
+                      <Typography.Text copyable>
+                        {dns.address}
+                        {dns.address6 && `, ${dns.address6}`}
+                      </Typography.Text>
+                    );
+                  },
+                },
+                {
+                  title: 'Action',
+                  key: 'action',
+                  width: '1rem',
+                  render: (_, dns) => (
+                    <Dropdown
+                      placement="bottomRight"
+                      menu={{
+                        items: [
+                          {
+                            key: 'delete',
+                            label: (
+                              <Typography.Text onClick={() => confirmDeleteDns(dns)}>
+                                <DeleteOutlined /> Delete
+                              </Typography.Text>
+                            ),
+                          },
+                        ] as MenuProps['items'],
+                      }}
+                    >
+                      <MoreOutlined />
+                    </Dropdown>
+                  ),
+                },
+              ]}
+              dataSource={dnses}
+              rowKey="name"
+            />
+          </Card>
+        </div>
+      );
+    },
+    [confirmDeleteDns, dnses, searchDns]
   );
 
   const items: TabsProps['items'] = useMemo(
@@ -261,11 +375,27 @@ export default function NetworkDetailsPage(props: PageProps) {
       {
         key: 'dns',
         label: `DNS`,
-        children: `Content of DNS Tab`,
+        children: network ? getDnsContent(network) : <Skeleton active />,
       },
     ],
-    [network, getOverviewContent, getHostsContent]
+    [network, getOverviewContent, getHostsContent, getDnsContent]
   );
+
+  const loadDnses = useCallback(async () => {
+    try {
+      if (!networkId) return;
+      const dnses = (await NetworksService.getDnses()).data;
+      const networkDnses = dnses.filter((dns) => dns.network === networkId);
+      setDnses(networkDnses);
+    } catch (err) {
+      if (err instanceof AxiosError) {
+        notify.error({
+          message: 'Error loading DNSes',
+          description: extractErrorMsg(err),
+        });
+      }
+    }
+  }, [networkId, notify]);
 
   const loadNetwork = useCallback(() => {
     // TODO: remove
@@ -285,8 +415,10 @@ export default function NetworkDetailsPage(props: PageProps) {
       return;
     }
     setNetwork(network);
+    loadDnses();
     setIsLoading(false);
-  }, [navigate, networkId, notify, store.networks]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [navigate, networkId, notify, store.networks, loadDnses]);
 
   const onNetworkFormEdit = useCallback(async () => {
     try {
@@ -355,12 +487,9 @@ export default function NetworkDetailsPage(props: PageProps) {
         {/* top bar */}
         <Row className="tabbed-page-row-padding">
           <Col xs={24}>
-            <Button type="link" style={{ padding: '0px' }}>
-              <small></small>
-              <Typography.Link>
-                <Link to={AppRoutes.NETWORKS_ROUTE}>View All Networks</Link>
-              </Typography.Link>
-            </Button>
+            <Typography.Link>
+              <Link to={AppRoutes.NETWORKS_ROUTE}>View All Networks</Link>
+            </Typography.Link>
             <Row>
               <Col xs={18}>
                 <Typography.Title level={2} copyable style={{ marginTop: '.5rem', marginBottom: '2rem' }}>

@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { AppstoreOutlined, UserOutlined } from '@ant-design/icons';
-import { Col, Divider, Input, List, MenuProps, Row, Switch, Typography } from 'antd';
+import { Col, Divider, Input, List, MenuProps, Row, Switch } from 'antd';
 import { Layout, Menu, theme } from 'antd';
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import VirtualList from 'rc-virtual-list';
@@ -103,7 +103,7 @@ export default function MainLayout() {
           },
         ],
       })),
-    [currentTheme]
+    [currentTheme, setCurrentTheme]
   );
 
   // TODO: optimise how sidenav renders when collapsed
@@ -144,9 +144,7 @@ export default function MainLayout() {
         {/* networks */}
         <Row align="middle" style={{ marginLeft: '28px', marginRight: '8px' }}>
           <Col xs={12} style={{ height: '2rem' }}>
-            <Typography.Link>
-              <Link to={AppRoutes.NETWORKS_ROUTE}>Networks</Link>
-            </Typography.Link>
+            <Link to={AppRoutes.NETWORKS_ROUTE}>Networks</Link>
           </Col>
           <Col xs={12} style={{ height: '2rem' }}>
             <Divider style={{ marginTop: '.7rem', marginBottom: '0px' }} />
@@ -171,9 +169,7 @@ export default function MainLayout() {
         {/* hosts */}
         <Row align="middle" style={{ marginLeft: '28px', marginRight: '8px' }}>
           <Col xs={12} style={{ height: '2rem' }}>
-            <Typography.Link>
-              <Link to={AppRoutes.HOSTS_ROUTE}>Hosts</Link>
-            </Typography.Link>
+            <Link to={AppRoutes.HOSTS_ROUTE}>Hosts</Link>
           </Col>
           <Col xs={12} style={{ height: '2rem' }}>
             <Divider style={{ marginTop: '.7rem', marginBottom: '0px' }} />
