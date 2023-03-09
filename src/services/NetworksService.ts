@@ -1,3 +1,4 @@
+import { NodeACLContainer } from '@/models/Acl';
 import { ApiRoutes } from '../constants/ApiRoutes';
 import { AccessKey } from '../models/AccessKey';
 import { DNS } from '../models/Dns';
@@ -46,6 +47,14 @@ function deleteDns(networkId: Network['netid'], dnsName: DNS['name']) {
   return baseService.delete<void>(`${ApiRoutes.DNS}/${networkId}/${dnsName}`);
 }
 
+function getAcls(networkId: Network['netid']) {
+  return baseService.get<NodeACLContainer>(`${ApiRoutes.NETWORKS}/${networkId}/acls`);
+}
+
+function updateAcls(networkId: Network['netid'], payload: NodeACLContainer) {
+  return baseService.put<NodeACLContainer>(`${ApiRoutes.NETWORKS}/${networkId}/acls`, payload);
+}
+
 export const NetworksService = {
   getNetworks,
   createNetwork,
@@ -57,4 +66,6 @@ export const NetworksService = {
   createDns,
   getDnses,
   deleteDns,
+  getAcls,
+  updateAcls,
 };

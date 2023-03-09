@@ -1,4 +1,5 @@
 import AddDnsModal from '@/components/modals/add-dns-modal/AddDnsModal';
+import { NodeACLContainer } from '@/models/Acl';
 import { DNS } from '@/models/Dns';
 import { Network } from '@/models/Network';
 import { AppRoutes } from '@/routes';
@@ -60,6 +61,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [searchDns, setSearchDns] = useState('');
   const [dnses, setDnses] = useState<DNS[]>([]);
   const [isAddDnsModalOpen, setIsAddDnsModalOpen] = useState(false);
+  const [acls, setAcls] = useState<NodeACLContainer>({});
 
   const networkHosts = useMemo(
     () =>
@@ -350,6 +352,14 @@ export default function NetworkDetailsPage(props: PageProps) {
     [confirmDeleteDns, dnses, searchDns]
   );
 
+  const getAclsContent = useCallback((network: Network) => {
+    return (
+      <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+        <Card style={{ width: '100%' }}></Card>
+      </div>
+    );
+  }, []);
+
   const items: TabsProps['items'] = useMemo(
     () => [
       {
@@ -370,7 +380,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       {
         key: 'acls',
         label: `ACLs`,
-        children: `Content of ACLs Tab`,
+        children: network ? getAclsContent(network) : <Skeleton active />,
       },
       {
         key: 'clients',
@@ -383,7 +393,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         children: network ? getDnsContent(network) : <Skeleton active />,
       },
     ],
-    [network, getOverviewContent, getHostsContent, getDnsContent]
+    [network, getOverviewContent, getHostsContent, getAclsContent, getDnsContent]
   );
 
   const loadDnses = useCallback(async () => {
@@ -396,6 +406,21 @@ export default function NetworkDetailsPage(props: PageProps) {
       if (err instanceof AxiosError) {
         notify.error({
           message: 'Error loading DNSes',
+          description: extractErrorMsg(err),
+        });
+      }
+    }
+  }, [networkId, notify]);
+
+  const loadAcls = useCallback(async () => {
+    try {
+      if (!networkId) return;
+      const acls = (await NetworksService.getAcls(networkId)).data;
+      setAcls(acls);
+    } catch (err) {
+      if (err instanceof AxiosError) {
+        notify.error({
+          message: 'Error loading ACLs',
           description: extractErrorMsg(err),
         });
       }
@@ -420,7 +445,11 @@ export default function NetworkDetailsPage(props: PageProps) {
       return;
     }
     setNetwork(network);
+
+    // load extra data
     loadDnses();
+    loadAcls();
+
     setIsLoading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate, networkId, notify, store.networks, loadDnses]);
