@@ -1,6 +1,7 @@
 import AddDnsModal from '@/components/modals/add-dns-modal/AddDnsModal';
 import { NodeACLContainer } from '@/models/Acl';
 import { DNS } from '@/models/Dns';
+import { ExternalClient } from '@/models/ExternalClient';
 import { Network } from '@/models/Network';
 import { AppRoutes } from '@/routes';
 import { NetworksService } from '@/services/NetworksService';
@@ -16,6 +17,7 @@ import {
   PlusOutlined,
 } from '@ant-design/icons';
 import {
+  Alert,
   Button,
   Card,
   Col,
@@ -62,6 +64,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [dnses, setDnses] = useState<DNS[]>([]);
   const [isAddDnsModalOpen, setIsAddDnsModalOpen] = useState(false);
   const [acls, setAcls] = useState<NodeACLContainer>({});
+  const [isAddClientModalOpen, setIsAddClientModalOpen] = useState(false);
 
   const networkHosts = useMemo(
     () =>
@@ -71,6 +74,14 @@ export default function NetworkDetailsPage(props: PageProps) {
         .filter((node) => node.address.toLowerCase().includes(searchHost.toLowerCase())),
     [store.nodes, networkId, searchHost]
   );
+
+  const clientGateways = useMemo<Node[]>(() => {
+    return [];
+  }, []);
+
+  const clients = useMemo<ExternalClient[]>(() => {
+    return [];
+  }, []);
 
   const goToNewHostPage = useCallback(() => {
     navigate(AppRoutes.NEW_HOST_ROUTE);
@@ -99,6 +110,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     [notify]
   );
 
+  // ui components
   const getOverviewContent = useCallback(
     (network: Network) => {
       return (
@@ -352,6 +364,63 @@ export default function NetworkDetailsPage(props: PageProps) {
     [confirmDeleteDns, dnses, searchDns]
   );
 
+  const getClientsContent = (network: Network) => {
+    return (
+      <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+        {clients.length === 0 && (
+          <Row
+            className="page-padding"
+            style={{
+              background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
+              width: '100%',
+            }}
+          >
+            <Col xs={(24 * 2) / 3}>
+              <Typography.Title level={3} style={{ color: 'white ' }}>
+                Clients
+              </Typography.Title>
+              <Typography.Text style={{ color: 'white ' }}>
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque amet modi cum aut doloremque dicta
+                reiciendis odit molestias nam animi enim et molestiae consequatur quas quo facere magni, maiores rem.
+              </Typography.Text>
+            </Col>
+            <Col xs={(24 * 1) / 3} style={{ position: 'relative' }}>
+              <Card className="header-card" style={{ position: 'absolute', width: '100%' }}>
+                <Typography.Title level={3}>Create Client</Typography.Title>
+                <Typography.Text>
+                  Enable remote access to your network with clients. Clients enable you to connect mobile and other
+                  devices to your networks.
+                </Typography.Text>
+                {clientGateways.length === 0 && (
+                  <Alert
+                    type="warning"
+                    showIcon
+                    message="No Client Gateway"
+                    description="You will be prompted to create a gateway for your network when creating a client."
+                    style={{ marginTop: '1rem' }}
+                  />
+                )}
+                <Row style={{ marginTop: '1rem' }}>
+                  <Col>
+                    <Button type="primary" size="large" onClick={() => {}}>
+                      <PlusOutlined /> Create Client
+                    </Button>
+                  </Col>
+                </Row>
+              </Card>
+            </Col>
+          </Row>
+        )}
+
+        {clients.length > 0 && (
+          <Row style={{ width: '100%' }}>
+            <Col xs={24}>clients</Col>
+          </Row>
+        )}
+      </div>
+    );
+  };
+
   const getAclsContent = useCallback((network: Network) => {
     return (
       <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
@@ -385,7 +454,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       {
         key: 'clients',
         label: `Clients`,
-        children: `Content of Clients Tab`,
+        children: network ? getClientsContent(network) : <Skeleton active />,
       },
       {
         key: 'dns',

@@ -26,8 +26,6 @@ export default function LoginPage(props: LoginPageProps) {
       const formData = await form.validateFields();
       const data = await (await AuthService.login(formData)).data;
       store.setStore({ jwt: data.Response.AuthToken, username: data.Response.UserName });
-      console.log(store.jwt);
-      console.log(useStore.getState().jwt);
       navigate(AppRoutes.HOME_ROUTE);
     } catch (err) {
       if (err instanceof AxiosError) {
