@@ -4,6 +4,7 @@ import { Network } from '../models/Network';
 import { Node } from '../models/Node';
 import { baseService } from './BaseService';
 import { CreateEgressNodeDto } from './dtos/CreateEgressNodeDto';
+import { CreateExternalClientReqDto } from './dtos/CreateExternalClientReqDto';
 import { CreateIngressNodeDto } from './dtos/CreateIngressNodeDto';
 import { UpdateExternalClientDto } from './dtos/UpdateExternalClientDto';
 
@@ -19,8 +20,8 @@ function createEgressNode(nodeId: Node['id'], networkId: Network['netid'], paylo
   return baseService.post<Node>(`${ApiRoutes.NODES}/${networkId}/${nodeId}/creategateway`, payload);
 }
 
-function createExternalClient(nodeId: Node['id'], networkId: Network['netid']) {
-  return baseService.post<void>(`${ApiRoutes.EXTERNAL_CLIENTS}/${networkId}/${nodeId}`);
+function createExternalClient(nodeId: Node['id'], networkId: Network['netid'], payload?: CreateExternalClientReqDto) {
+  return baseService.post<void>(`${ApiRoutes.EXTERNAL_CLIENTS}/${networkId}/${nodeId}`, payload);
 }
 
 function createIngressNode(nodeId: Node['id'], networkId: Network['netid'], payload: CreateIngressNodeDto) {

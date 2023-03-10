@@ -1,3 +1,4 @@
+import AddClientModal from '@/components/modals/add-client-modal/AddClientModal';
 import AddDnsModal from '@/components/modals/add-dns-modal/AddDnsModal';
 import { NodeACLContainer } from '@/models/Acl';
 import { DNS } from '@/models/Dns';
@@ -402,7 +403,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                 )}
                 <Row style={{ marginTop: '1rem' }}>
                   <Col>
-                    <Button type="primary" size="large" onClick={() => {}}>
+                    <Button type="primary" size="large" onClick={() => setIsAddClientModalOpen(true)}>
                       <PlusOutlined /> Create Client
                     </Button>
                   </Col>
@@ -636,6 +637,12 @@ export default function NetworkDetailsPage(props: PageProps) {
         networkId={networkId}
         onCreateDns={onCreateDns}
         onCancel={() => setIsAddDnsModalOpen(false)}
+      />
+      <AddClientModal
+        isOpen={isAddClientModalOpen}
+        networkId={networkId}
+        onCreateClient={() => {}}
+        onCancel={() => setIsAddClientModalOpen(false)}
       />
     </Layout.Content>
   );
