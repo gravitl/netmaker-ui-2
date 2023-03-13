@@ -1,22 +1,20 @@
 import AddClientModal from '@/components/modals/add-client-modal/AddClientModal';
 import AddDnsModal from '@/components/modals/add-dns-modal/AddDnsModal';
+import ClientDetailsModal from '@/components/modals/client-detaiils-modal/ClientDetailsModal';
 import { NodeACLContainer } from '@/models/Acl';
 import { DNS } from '@/models/Dns';
 import { ExternalClient } from '@/models/ExternalClient';
 import { Network } from '@/models/Network';
+import { ExtendedNode, Node } from '@/models/Node';
 import { AppRoutes } from '@/routes';
 import { NetworksService } from '@/services/NetworksService';
+import { NodesService } from '@/services/NodesService';
 import { useStore } from '@/store/store';
 import { convertUiNetworkToNetworkModel, isNetworkIpv4, isNetworkIpv6 } from '@/utils/NetworkUtils';
+import { getExtendedNode } from '@/utils/NodeUtils';
 import { getHostRoute } from '@/utils/RouteUtils';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
-import {
-  DeleteOutlined,
-  DeleteRowOutlined,
-  ExclamationCircleFilled,
-  MoreOutlined,
-  PlusOutlined,
-} from '@ant-design/icons';
+import { DeleteOutlined, ExclamationCircleFilled, MoreOutlined, PlusOutlined } from '@ant-design/icons';
 import {
   Alert,
   Button,
@@ -34,6 +32,7 @@ import {
   Skeleton,
   Switch,
   Table,
+  TableColumnProps,
   Tabs,
   TabsProps,
   theme,
@@ -66,6 +65,9 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [isAddDnsModalOpen, setIsAddDnsModalOpen] = useState(false);
   const [acls, setAcls] = useState<NodeACLContainer>({});
   const [isAddClientModalOpen, setIsAddClientModalOpen] = useState(false);
+  const [clients, setClients] = useState<ExternalClient[]>([]);
+  const [isClientDetailsModalOpen, setIsClientDetailsModalOpen] = useState(false);
+  const [targetClient, setTargetClient] = useState<ExternalClient | null>(null);
 
   const networkHosts = useMemo(
     () =>
@@ -76,13 +78,184 @@ export default function NetworkDetailsPage(props: PageProps) {
     [store.nodes, networkId, searchHost]
   );
 
-  const clientGateways = useMemo<Node[]>(() => {
-    return [];
+  const clientGateways = useMemo<ExtendedNode[]>(() => {
+    return networkHosts
+      .filter((node) => node.isingressgateway)
+      .map((node) => getExtendedNode(node, store.hostsCommonDetails));
+  }, [networkHosts, store.hostsCommonDetails]);
+
+  const confirmDeleteClient = useCallback(
+    (client: ExternalClient) => {
+      Modal.confirm({
+        title: `Delete client ${client.clientid}`,
+        content: `Are you sure you want to delete this client?`,
+        onOk: async () => {
+          try {
+            await NodesService.deleteExternalClient(client.clientid, client.network);
+            setClients((prev) => prev.filter((c) => c.clientid !== client.clientid));
+          } catch (err) {
+            if (err instanceof AxiosError) {
+              notify.error({
+                message: 'Error deleting Client',
+                description: extractErrorMsg(err),
+              });
+            }
+          }
+        },
+      });
+    },
+    [notify]
+  );
+
+  const openClientDetails = useCallback((client: ExternalClient) => {
+    setTargetClient(client);
+    setIsClientDetailsModalOpen(true);
   }, []);
 
-  const clients = useMemo<ExternalClient[]>(() => {
-    return [];
-  }, []);
+  const confirmDeleteGateway = useCallback(
+    (gateway: Node) => {
+      Modal.confirm({
+        title: `Delete gateway ${getExtendedNode(gateway, store.hostsCommonDetails).name}`,
+        content: `Are you sure you want to delete this gateway?`,
+        onOk: async () => {
+          try {
+            await NodesService.deleteIngressNode(gateway.id, gateway.network);
+            store.fetchNodes();
+          } catch (err) {
+            if (err instanceof AxiosError) {
+              notify.error({
+                message: 'Error deleting gateway',
+                description: extractErrorMsg(err),
+              });
+            }
+          }
+        },
+      });
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [notify]
+  );
+
+  const gatewaysTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(
+    () => [
+      {
+        title: 'Host name',
+        dataIndex: 'name',
+        width: 500,
+      },
+      {
+        title: 'Addresses',
+        dataIndex: 'address',
+        render(_, node) {
+          const addrs = `${node.address}, ${node.address6}`;
+          return <Tooltip title={addrs}>{addrs}</Tooltip>;
+        },
+      },
+      {
+        title: 'Endpoint',
+        dataIndex: 'endpointip',
+      },
+      {
+        render(_, gateway) {
+          return (
+            <Dropdown
+              placement="bottomRight"
+              menu={{
+                items: [
+                  {
+                    key: 'delete',
+                    label: (
+                      <Typography.Text onClick={() => confirmDeleteGateway(gateway)}>
+                        <DeleteOutlined /> Delete
+                      </Typography.Text>
+                    ),
+                  },
+                ] as MenuProps['items'],
+              }}
+            >
+              <Button type="text" icon={<MoreOutlined />} />
+            </Dropdown>
+          );
+        },
+      },
+    ],
+    [confirmDeleteGateway]
+  );
+
+  const clientsTableCols = useMemo<TableColumnProps<ExternalClient>[]>(
+    () => [
+      {
+        title: 'Client ID',
+        dataIndex: 'clientid',
+        width: 500,
+        render(value, client) {
+          return <Typography.Link onClick={() => openClientDetails(client)}>{value}</Typography.Link>;
+        },
+      },
+      {
+        title: 'Allowed IPs',
+        // dataIndex: 'address',
+        render(_, client) {
+          const addrs = `${client.address}, ${client.address6}`;
+          return <Tooltip title={addrs}>{addrs}</Tooltip>;
+        },
+      },
+      {
+        title: 'Public Key',
+        dataIndex: 'publickey',
+        width: 200,
+        render(value) {
+          return (
+            <div style={{ width: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {value}
+            </div>
+          );
+        },
+      },
+      {
+        title: 'Status',
+        dataIndex: 'enabled',
+        render(value) {
+          return (
+            <Switch
+              checked={value}
+              // onChange={(checked) => {
+              //   const newClients = [...clients];
+              //   newClients[index].enabled = checked;
+              //   setClients(newClients);
+              // }}
+            />
+          );
+        },
+      },
+      {
+        render(_, client) {
+          return (
+            <Dropdown
+              placement="bottomRight"
+              menu={{
+                items: [
+                  {
+                    key: 'delete',
+                    label: (
+                      <Tooltip title="Cannot delete default DNS">
+                        <Typography.Text onClick={() => confirmDeleteClient(client)}>
+                          <DeleteOutlined /> Delete
+                        </Typography.Text>
+                      </Tooltip>
+                    ),
+                  },
+                ] as MenuProps['items'],
+              }}
+            >
+              <Button type="text" icon={<MoreOutlined />} />
+            </Dropdown>
+          );
+        },
+      },
+    ],
+    [confirmDeleteClient, openClientDetails]
+  );
 
   const goToNewHostPage = useCallback(() => {
     navigate(AppRoutes.NEW_HOST_ROUTE);
@@ -365,62 +538,104 @@ export default function NetworkDetailsPage(props: PageProps) {
     [confirmDeleteDns, dnses, searchDns]
   );
 
-  const getClientsContent = (network: Network) => {
-    return (
-      <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-        {clients.length === 0 && (
-          <Row
-            className="page-padding"
-            style={{
-              background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
-              width: '100%',
-            }}
-          >
-            <Col xs={(24 * 2) / 3}>
-              <Typography.Title level={3} style={{ color: 'white ' }}>
-                Clients
-              </Typography.Title>
-              <Typography.Text style={{ color: 'white ' }}>
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque amet modi cum aut doloremque dicta
-                reiciendis odit molestias nam animi enim et molestiae consequatur quas quo facere magni, maiores rem.
-              </Typography.Text>
-            </Col>
-            <Col xs={(24 * 1) / 3} style={{ position: 'relative' }}>
-              <Card className="header-card" style={{ position: 'absolute', width: '100%' }}>
-                <Typography.Title level={3}>Create Client</Typography.Title>
-                <Typography.Text>
-                  Enable remote access to your network with clients. Clients enable you to connect mobile and other
-                  devices to your networks.
+  const getClientsContent = useCallback(
+    (network: Network) => {
+      return (
+        <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+          {clients.length === 0 && (
+            <Row
+              className="page-padding"
+              style={{
+                background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
+                width: '100%',
+              }}
+            >
+              <Col xs={(24 * 2) / 3}>
+                <Typography.Title level={3} style={{ color: 'white ' }}>
+                  Clients
+                </Typography.Title>
+                <Typography.Text style={{ color: 'white ' }}>
+                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque amet modi cum aut doloremque dicta
+                  reiciendis odit molestias nam animi enim et molestiae consequatur quas quo facere magni, maiores rem.
                 </Typography.Text>
-                {clientGateways.length === 0 && (
-                  <Alert
-                    type="warning"
-                    showIcon
-                    message="No Client Gateway"
-                    description="You will be prompted to create a gateway for your network when creating a client."
-                    style={{ marginTop: '1rem' }}
-                  />
-                )}
-                <Row style={{ marginTop: '1rem' }}>
-                  <Col>
-                    <Button type="primary" size="large" onClick={() => setIsAddClientModalOpen(true)}>
-                      <PlusOutlined /> Create Client
-                    </Button>
+              </Col>
+              <Col xs={(24 * 1) / 3} style={{ position: 'relative' }}>
+                <Card className="header-card" style={{ position: 'absolute', width: '100%' }}>
+                  <Typography.Title level={3}>Create Client</Typography.Title>
+                  <Typography.Text>
+                    Enable remote access to your network with clients. Clients enable you to connect mobile and other
+                    devices to your networks.
+                  </Typography.Text>
+                  {clientGateways.length === 0 && (
+                    <Alert
+                      type="warning"
+                      showIcon
+                      message="No Client Gateway"
+                      description="You will be prompted to create a gateway for your network when creating a client."
+                      style={{ marginTop: '1rem' }}
+                    />
+                  )}
+                  <Row style={{ marginTop: '1rem' }}>
+                    <Col>
+                      <Button type="primary" size="large" onClick={() => setIsAddClientModalOpen(true)}>
+                        <PlusOutlined /> Create Client
+                      </Button>
+                    </Col>
+                  </Row>
+                </Card>
+              </Col>
+            </Row>
+          )}
+
+          {clients.length > 0 && (
+            <Row style={{ width: '100%' }}>
+              <Col xs={12}>
+                <Row style={{ width: '100%' }}>
+                  <Col xs={12}>
+                    <Typography.Title style={{ marginTop: '0px' }} level={5}>
+                      Gateways
+                    </Typography.Title>
                   </Col>
                 </Row>
-              </Card>
-            </Col>
-          </Row>
-        )}
-
-        {clients.length > 0 && (
-          <Row style={{ width: '100%' }}>
-            <Col xs={24}>clients</Col>
-          </Row>
-        )}
-      </div>
-    );
-  };
+                <Row>
+                  <Col xs={23}>
+                    <Table
+                      columns={gatewaysTableCols}
+                      dataSource={clientGateways}
+                      rowKey="id"
+                      onRow={(gateway, rowIndex) => {
+                        return {
+                          onClick: (event) => {},
+                        };
+                      }}
+                    />
+                  </Col>
+                </Row>
+              </Col>
+              <Col xs={12}>
+                <Row style={{ width: '100%' }}>
+                  <Col xs={12}>
+                    <Typography.Title style={{ marginTop: '0px' }} level={5}>
+                      Clients
+                    </Typography.Title>
+                  </Col>
+                  <Col xs={11} style={{ textAlign: 'right' }}>
+                    Display All <Switch title="Display All" checked={false} />
+                  </Col>
+                </Row>
+                <Row>
+                  <Col xs={24}>
+                    <Table columns={clientsTableCols} dataSource={clients} rowKey="clientid" />
+                  </Col>
+                </Row>
+              </Col>
+            </Row>
+          )}
+        </div>
+      );
+    },
+    [clientGateways, clients, clientsTableCols, gatewaysTableCols]
+  );
 
   const getAclsContent = useCallback((network: Network) => {
     return (
@@ -463,8 +678,24 @@ export default function NetworkDetailsPage(props: PageProps) {
         children: network ? getDnsContent(network) : <Skeleton active />,
       },
     ],
-    [network, getOverviewContent, getHostsContent, getAclsContent, getDnsContent]
+    [network, getOverviewContent, getHostsContent, getAclsContent, getClientsContent, getDnsContent]
   );
+
+  const loadClients = useCallback(async () => {
+    try {
+      if (!networkId) return;
+      const allClients = (await NodesService.getExternalClients()).data;
+      const networkClients = allClients.filter((client) => client.network === networkId);
+      setClients(networkClients);
+    } catch (err) {
+      if (err instanceof AxiosError) {
+        notify.error({
+          message: 'Error loading clients',
+          description: extractErrorMsg(err),
+        });
+      }
+    }
+  }, [networkId, notify]);
 
   const loadDnses = useCallback(async () => {
     try {
@@ -519,6 +750,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     // load extra data
     loadDnses();
     loadAcls();
+    loadClients();
 
     setIsLoading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -641,9 +873,21 @@ export default function NetworkDetailsPage(props: PageProps) {
       <AddClientModal
         isOpen={isAddClientModalOpen}
         networkId={networkId}
-        onCreateClient={() => {}}
+        onCreateClient={() => {
+          loadClients();
+        }}
         onCancel={() => setIsAddClientModalOpen(false)}
       />
+      {targetClient && (
+        <ClientDetailsModal
+          isOpen={isClientDetailsModalOpen}
+          client={targetClient}
+          // onDeleteClient={() => {
+          //   loadClients();
+          // }}
+          onCancel={() => setIsClientDetailsModalOpen(false)}
+        />
+      )}
     </Layout.Content>
   );
 }

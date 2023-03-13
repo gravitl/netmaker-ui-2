@@ -49,7 +49,9 @@ function getExternalClientConfig(
   networkId: Network['netid'],
   type: 'qr' | 'file'
 ) {
-  return baseService.get<string>(`${ApiRoutes.EXTERNAL_CLIENTS}/${networkId}/${extClientId}/${type}`);
+  return baseService.get<string>(`${ApiRoutes.EXTERNAL_CLIENTS}/${networkId}/${extClientId}/${type}`, {
+    responseType: type === 'qr' ? 'arraybuffer' : undefined,
+  });
 }
 
 function getExternalClients() {

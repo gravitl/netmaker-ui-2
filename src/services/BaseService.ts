@@ -28,7 +28,7 @@ export function getTenantConfig(): TenantConfig {
 const API_PREFIX = '/api';
 
 export const baseService = axios.create({
-  baseURL: apiBaseUrl + API_PREFIX,
+  baseURL: getTenantConfig().baseUrl + API_PREFIX,
 });
 
 // token interceptor for axios

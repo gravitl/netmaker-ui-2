@@ -1,3 +1,5 @@
+import { HostCommonDetails } from './Host';
+
 export interface Node {
   id: string;
   hostid: string;
@@ -28,3 +30,5 @@ export interface Node {
   connected: boolean;
   failover: boolean;
 }
+
+export type ExtendedNode = Node & Partial<HostCommonDetails>;

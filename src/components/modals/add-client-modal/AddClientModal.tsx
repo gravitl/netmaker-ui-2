@@ -20,7 +20,6 @@ import { useStore } from '@/store/store';
 import '../CustomModal.scss';
 import { Network } from '@/models/Network';
 import { Node } from '@/models/Node';
-import { ExternalClient } from '@/models/ExternalClient';
 import { CreateExternalClientReqDto } from '@/services/dtos/CreateExternalClientReqDto';
 import { HostCommonDetails } from '@/models/Host';
 import { getNodeConnectivityStatus } from '@/utils/NodeUtils';
