@@ -6,7 +6,7 @@ import { LockOutlined, MailOutlined } from '@ant-design/icons';
 import { Button, Checkbox, Col, Divider, Form, Input, Layout, notification, Row, Typography } from 'antd';
 import { AxiosError } from 'axios';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { isSaasBuild } from '../../services/BaseService';
 
 interface LoginPageProps {
@@ -18,6 +18,7 @@ export default function LoginPage(props: LoginPageProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
   const navigate = useNavigate();
+  const { baseUrl, token, logoUrl, tenantName } = useParams();
 
   const [shouldRemember, setShouldRemember] = useState(false);
 
@@ -45,6 +46,10 @@ export default function LoginPage(props: LoginPageProps) {
   if (store.isLoggedIn()) {
     navigate(AppRoutes.HOME_ROUTE);
   }
+
+  // TODO: check if server is EE then use custom logo and tenant name
+  logoUrl && store.setLogoUrl(logoUrl);
+  tenantName && store.setServerName(tenantName);
 
   return (
     <Layout style={{ height: '100vh', justifyContent: 'center', alignItems: 'center' }}>

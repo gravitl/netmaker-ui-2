@@ -3,10 +3,13 @@ import axios from 'axios';
 import { TenantConfig } from '../models/ServerConfig';
 
 export const isSaasBuild = import.meta.env.VITE_IS_SAAS_BUILD?.toLocaleLowerCase() === 'true';
+let apiBaseUrl = '';
 
 // function to resolve the particular SaaS tenant's backend URL, ...
 export function getTenantConfig(): TenantConfig {
   if (!isSaasBuild) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    apiBaseUrl = import.meta.env.VITE_BASE_URL!;
     return {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       baseUrl: import.meta.env.VITE_BASE_URL!,
@@ -14,6 +17,7 @@ export function getTenantConfig(): TenantConfig {
   }
 
   // TODO: API call
+  apiBaseUrl = '';
   return {
     baseUrl: '',
   };
@@ -24,7 +28,7 @@ export function getTenantConfig(): TenantConfig {
 const API_PREFIX = '/api';
 
 export const baseService = axios.create({
-  baseURL: getTenantConfig().baseUrl + API_PREFIX,
+  baseURL: apiBaseUrl + API_PREFIX,
 });
 
 // token interceptor for axios
