@@ -1,5 +1,4 @@
 import {
-  Alert,
   Badge,
   Button,
   Col,
@@ -10,9 +9,11 @@ import {
   notification,
   Row,
   Select,
+  Switch,
   Table,
   TableColumnProps,
   theme,
+  Tooltip,
   Typography,
 } from 'antd';
 import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
@@ -20,37 +21,38 @@ import { useStore } from '@/store/store';
 import '../CustomModal.scss';
 import { Network } from '@/models/Network';
 import { Node } from '@/models/Node';
-import { CreateExternalClientReqDto } from '@/services/dtos/CreateExternalClientReqDto';
 import { HostCommonDetails } from '@/models/Host';
 import { getNodeConnectivityStatus } from '@/utils/NodeUtils';
-import { CloseOutlined } from '@ant-design/icons';
+import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { AxiosError } from 'axios';
 import { NodesService } from '@/services/NodesService';
+import { isValidIp } from '@/utils/NetworkUtils';
+import { CreateEgressNodeDto } from '@/services/dtos/CreateEgressNodeDto';
 
-interface AddClientModalProps {
+interface AddEgressModalProps {
   isOpen: boolean;
   networkId: Network['netid'];
-  onCreateClient: () => any;
+  onCreateEgress: () => any;
   closeModal?: () => void;
   onOk?: (e: MouseEvent<HTMLButtonElement>) => void;
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
 }
 
-type AddClientFormFields = CreateExternalClientReqDto & {
-  gatewayId: Node['id'];
+type AddEgressFormFields = CreateEgressNodeDto & {
+  nodeId: Node['id'];
 };
 
-export default function AddClientModal({ isOpen, onCreateClient, onCancel, networkId }: AddClientModalProps) {
-  const [form] = Form.useForm<AddClientFormFields>();
+export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, networkId }: AddEgressModalProps) {
+  const [form] = Form.useForm<AddEgressFormFields>();
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
   const { token: themeToken } = theme.useToken();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [gatewaySearch, setGatewaySearch] = useState('');
-  const [selectedGateway, setSelectedGateway] = useState<(Node & HostCommonDetails) | null>(null);
-  const [isFailoverGateway, setIsFailoverGateway] = useState(false);
+  const [egressSearch, setEgressSearch] = useState('');
+  const [selectedEgress, setSelectedEgress] = useState<(Node & HostCommonDetails) | null>(null);
+  const idFormField = 'nodeId';
 
   const getNodeConnectivity = useCallback((node: Node) => {
     if (getNodeConnectivityStatus(node) === 'error') return <Badge status="error" text="Error" />;
@@ -68,12 +70,12 @@ export default function AddClientModal({ isOpen, onCreateClient, onCancel, netwo
     () =>
       networkHosts.filter(
         (node) =>
-          node.name?.toLowerCase().includes(gatewaySearch.toLowerCase()) ||
-          node.address?.toLowerCase().includes(gatewaySearch.toLowerCase())
+          node.name?.toLowerCase().includes(egressSearch.toLowerCase()) ||
+          node.address?.toLowerCase().includes(egressSearch.toLowerCase())
       ),
-    [gatewaySearch, networkHosts]
+    [egressSearch, networkHosts]
   );
-  const gatewayTableCols = useMemo<TableColumnProps<Node & HostCommonDetails>[]>(() => {
+  const egressTableCols = useMemo<TableColumnProps<Node & HostCommonDetails>[]>(() => {
     return [
       {
         title: 'Host name',
@@ -85,18 +87,16 @@ export default function AddClientModal({ isOpen, onCreateClient, onCancel, netwo
       {
         title: 'Address',
         dataIndex: 'address',
-      },
-      {
-        title: 'Client Gateway',
-        // dataIndex: 'name',
-        render(value, node) {
-          if (node.isingressgateway) return <Badge status="success" text="Gateway" />;
-          return <Badge status="error" text="Gateway" />;
+        render(value, egress) {
+          return <Typography.Text>{`${value}, ${egress.address6}`}</Typography.Text>;
         },
       },
       {
+        title: 'Endpoint',
+        dataIndex: 'endpointip',
+      },
+      {
         title: 'Health status',
-        // dataIndex: 'lastcheckin',
         render(value, node) {
           return getNodeConnectivity(node);
         },
@@ -104,24 +104,19 @@ export default function AddClientModal({ isOpen, onCreateClient, onCancel, netwo
     ];
   }, [getNodeConnectivity]);
 
-  const createClient = async () => {
+  const createEgress = async () => {
     try {
       const formData = await form.validateFields();
       setIsSubmitting(true);
 
-      if (!selectedGateway) return;
-
-      if (!selectedGateway.isingressgateway) {
-        await NodesService.createIngressNode(selectedGateway.id, networkId, { failover: isFailoverGateway });
-      }
-
-      await NodesService.createExternalClient(selectedGateway.id, networkId, formData);
-      onCreateClient();
-      notify.success({ message: `External client created` });
+      if (!selectedEgress) return;
+      await NodesService.createEgressNode(selectedEgress.id, networkId, formData);
+      onCreateEgress();
+      notify.success({ message: `Egress gateway created` });
     } catch (err) {
       if (err instanceof AxiosError) {
         notify.error({
-          message: 'Failed to create client',
+          message: 'Failed to egress gateway',
           description: extractErrorMsg(err),
         });
       }
@@ -152,34 +147,33 @@ export default function AddClientModal({ isOpen, onCreateClient, onCancel, netwo
   // TODO: add autofill for fields
   return (
     <Modal
-      title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Create a Client</span>}
+      title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Create an Egress</span>}
       open={isOpen}
       onCancel={onCancel}
       footer={null}
-      // centered
       className="CustomModal"
       style={{ minWidth: '50vw' }}
     >
       <Divider style={{ margin: '0px 0px 2rem 0px' }} />
-      <Form name="add-client-form" form={form} layout="vertical">
+      <Form name="add-egress-form" form={form} layout="vertical">
         <div className="CustomModalBody">
           <Form.Item
-            label="Client Gateway"
-            name="gatewayId"
+            label="Select host"
+            name={idFormField}
             rules={[{ required: true }]}
             style={{ marginBottom: '0px' }}
           >
-            {!selectedGateway && (
+            {!selectedEgress && (
               <Select
                 placeholder="Select a host as gateway"
-                dropdownRender={(menu) => (
+                dropdownRender={() => (
                   <div style={{ padding: '.5rem' }}>
                     <Row style={{ marginBottom: '1rem' }}>
                       <Col span={8}>
                         <Input
                           placeholder="Search host"
-                          value={gatewaySearch}
-                          onChange={(e) => setGatewaySearch(e.target.value)}
+                          value={egressSearch}
+                          onChange={(e) => setEgressSearch(e.target.value)}
                         />
                       </Col>
                     </Row>
@@ -187,13 +181,13 @@ export default function AddClientModal({ isOpen, onCreateClient, onCancel, netwo
                       <Col span={24}>
                         <Table
                           size="small"
-                          columns={gatewayTableCols}
+                          columns={egressTableCols}
                           dataSource={filteredNetworkHosts}
                           onRow={(node) => {
                             return {
                               onClick: () => {
-                                form.setFieldValue('gatewayId', node.id);
-                                setSelectedGateway(node);
+                                form.setFieldValue(idFormField, node.id);
+                                setSelectedEgress(node);
                               },
                             };
                           }}
@@ -204,16 +198,15 @@ export default function AddClientModal({ isOpen, onCreateClient, onCancel, netwo
                 )}
               />
             )}
-            {!!selectedGateway && (
+            {!!selectedEgress && (
               <>
                 <Row style={{ border: `1px solid ${themeToken.colorBorder}`, padding: '.5rem', borderRadius: '8px' }}>
-                  <Col span={6}>{selectedGateway?.name ?? ''}</Col>
-                  <Col span={6}>{selectedGateway?.address ?? ''}</Col>
+                  <Col span={6}>{selectedEgress?.name ?? ''}</Col>
                   <Col span={6}>
-                    {selectedGateway.isingressgateway && <Badge status="success" text="Gateway" />}
-                    {!selectedGateway.isingressgateway && <Badge status="error" text="Not a Gateway" />}
+                    {selectedEgress?.address ?? ''} {selectedEgress?.address6 ?? ''}
                   </Col>
-                  <Col span={5}>{getNodeConnectivity(selectedGateway)}</Col>
+                  <Col span={6}>{selectedEgress?.endpointip ?? ''}</Col>
+                  <Col span={5}>{getNodeConnectivity(selectedEgress)}</Col>
                   <Col span={1} style={{ textAlign: 'right' }}>
                     <Button
                       danger
@@ -221,19 +214,12 @@ export default function AddClientModal({ isOpen, onCreateClient, onCancel, netwo
                       type="text"
                       icon={<CloseOutlined />}
                       onClick={() => {
-                        form.setFieldValue('gatewayId', '');
-                        setSelectedGateway(null);
+                        form.setFieldValue(idFormField, '');
+                        setSelectedEgress(null);
                       }}
                     />
                   </Col>
                 </Row>
-                {!selectedGateway.isingressgateway && (
-                  <Row style={{ padding: '.5rem', borderRadius: '8px' }}>
-                    <Col span={24}>
-                      <Alert type="info" message="Proceeding will turn this host into a gateway." showIcon />
-                    </Col>
-                  </Row>
-                )}
               </>
             )}
           </Form.Item>
@@ -241,25 +227,80 @@ export default function AddClientModal({ isOpen, onCreateClient, onCancel, netwo
 
         <Divider style={{ margin: '0px 0px 2rem 0px' }} />
         <div className="CustomModalBody">
-          <Form.Item label="Client ID" name="clientid">
-            <Input placeholder="Unique name of client" />
+          <Form.Item name="natEnabled" label="Enable NAT for egress traffic">
+            <Switch />
           </Form.Item>
 
-          <Form.Item label="Public Key" name="publickey">
-            <Input placeholder="Public key" />
-          </Form.Item>
+          <Typography.Title level={4}>Select external ranges</Typography.Title>
 
-          <Form.Item label="Addresses" name="address">
-            <Select mode="tags" placeholder="IP Addresses" clearIcon disabled />
-          </Form.Item>
+          <Form.List
+            name="ranges"
+            initialValue={['']}
+            rules={[
+              {
+                validator: async (_, ranges) => {
+                  if (!ranges || ranges.length < 1) {
+                    return Promise.reject(new Error('Enter at least one address range'));
+                  }
+                },
+              },
+            ]}
+          >
+            {(fields, { add, remove }, { errors }) => (
+              <>
+                {fields.map((field, index) => (
+                  <Form.Item
+                    label={index === 0 ? 'Input range' : ''}
+                    key={field.key}
+                    required={false}
+                    style={{ marginBottom: '.5rem' }}
+                  >
+                    <Form.Item
+                      {...field}
+                      validateTrigger={['onBlur']}
+                      rules={[
+                        {
+                          required: true,
+                          validator(_, value) {
+                            if (!isValidIp(value)) {
+                              return Promise.reject('Invalid CIDR');
+                            } else {
+                              return Promise.resolve();
+                            }
+                          },
+                        },
+                      ]}
+                      noStyle
+                    >
+                      <Input
+                        placeholder="CIDR range (eg: 10.0.0.0/8 or a123:4567::/16)"
+                        style={{ width: '100%' }}
+                        suffix={
+                          <Tooltip title="Remove">
+                            <CloseOutlined onClick={() => remove(index)} />
+                          </Tooltip>
+                        }
+                      />
+                    </Form.Item>
+                  </Form.Item>
+                ))}
+                <Form.Item>
+                  <Button onClick={() => add()} icon={<PlusOutlined />}>
+                    Add range
+                  </Button>
+                  <Form.ErrorList errors={errors} />
+                </Form.Item>
+              </>
+            )}
+          </Form.List>
         </div>
 
         <Divider style={{ margin: '0px 0px 2rem 0px' }} />
         <div className="CustomModalBody">
           <Row>
             <Col xs={24} style={{ textAlign: 'right' }}>
-              <Button type="primary" onClick={createClient} loading={isSubmitting}>
-                Create Client
+              <Button type="primary" onClick={createEgress} loading={isSubmitting}>
+                Create Egress
               </Button>
             </Col>
           </Row>

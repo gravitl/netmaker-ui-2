@@ -1,9 +1,11 @@
 import AddClientModal from '@/components/modals/add-client-modal/AddClientModal';
 import AddDnsModal from '@/components/modals/add-dns-modal/AddDnsModal';
+import AddEgressModal from '@/components/modals/add-egress-modal/AddEgressModal';
 import ClientDetailsModal from '@/components/modals/client-detaiils-modal/ClientDetailsModal';
 import { NodeACLContainer } from '@/models/Acl';
 import { DNS } from '@/models/Dns';
 import { ExternalClient } from '@/models/ExternalClient';
+import { HostCommonDetails } from '@/models/Host';
 import { Network } from '@/models/Network';
 import { ExtendedNode, Node } from '@/models/Node';
 import { AppRoutes } from '@/routes';
@@ -46,6 +48,11 @@ import { PageProps } from '../../models/Page';
 
 import './NetworkDetailsPage.scss';
 
+interface ExternalRoutesTableData {
+  hostName: HostCommonDetails['name'];
+  range: Node['egressgatewayranges'][0];
+}
+
 export default function NetworkDetailsPage(props: PageProps) {
   const { networkId } = useParams<{ networkId: string }>();
   const store = useStore();
@@ -69,6 +76,8 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [isClientDetailsModalOpen, setIsClientDetailsModalOpen] = useState(false);
   const [targetClient, setTargetClient] = useState<ExternalClient | null>(null);
   const [filteredGateway, setFilteredGateway] = useState<Node | null>(null);
+  const [filteredEgress, setFilteredEgress] = useState<Node | null>(null);
+  const [isAddEgressModalOpen, setIsAddEgressModalOpen] = useState(false);
 
   const networkHosts = useMemo(
     () =>
@@ -95,6 +104,23 @@ export default function NetworkDetailsPage(props: PageProps) {
       }),
     [clients, filteredGateway]
   );
+
+  const egress = useMemo<ExtendedNode[]>(() => {
+    return networkHosts
+      .filter((node) => node.isegressgateway)
+      .map((node) => getExtendedNode(node, store.hostsCommonDetails));
+  }, [networkHosts, store.hostsCommonDetails]);
+
+  const filteredExternalRoutes = useMemo<ExternalRoutesTableData[]>(() => {
+    if (filteredEgress) {
+      return filteredEgress.egressgatewayranges.map((range) => ({
+        hostName: getExtendedNode(filteredEgress, store.hostsCommonDetails).name ?? '',
+        range,
+      }));
+    } else {
+      return egress.flatMap((e) => e.egressgatewayranges.map((range) => ({ hostName: e.name ?? '', range })));
+    }
+  }, [egress, filteredEgress, store.hostsCommonDetails]);
 
   const confirmDeleteClient = useCallback(
     (client: ExternalClient) => {
@@ -150,6 +176,32 @@ export default function NetworkDetailsPage(props: PageProps) {
     [notify]
   );
 
+  const confirmDeleteEgress = useCallback(
+    (egress: Node) => {
+      Modal.confirm({
+        title: `Delete egress ${getExtendedNode(egress, store.hostsCommonDetails).name}`,
+        content: `Are you sure you want to delete this egress?`,
+        onOk: async () => {
+          try {
+            await NodesService.deleteEgressNode(egress.id, egress.network);
+            store.fetchNodes();
+          } catch (err) {
+            if (err instanceof AxiosError) {
+              notify.error({
+                message: 'Error deleting egress',
+                description: extractErrorMsg(err),
+              });
+            }
+          }
+        },
+      });
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [notify]
+  );
+
+  const confirmDeleteRange = useCallback((range: ExternalRoutesTableData) => {}, []);
+
   const gatewaysTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(
     () => [
       {
@@ -198,6 +250,93 @@ export default function NetworkDetailsPage(props: PageProps) {
     ],
     [confirmDeleteGateway]
   );
+
+  const egressTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(
+    () => [
+      {
+        title: 'Host name',
+        dataIndex: 'name',
+        width: 500,
+        render(name) {
+          return <Typography.Link>{name}</Typography.Link>;
+        },
+      },
+      {
+        title: 'Addresses',
+        dataIndex: 'address',
+        render(_, node) {
+          const addrs = `${node.address}, ${node.address6}`;
+          return <Tooltip title={addrs}>{addrs}</Tooltip>;
+        },
+      },
+      {
+        title: 'Endpoint',
+        dataIndex: 'endpointip',
+      },
+      {
+        width: '1rem',
+        render(_, egress) {
+          return (
+            <Dropdown
+              placement="bottomRight"
+              menu={{
+                items: [
+                  {
+                    key: 'delete',
+                    label: (
+                      <Typography.Text onClick={() => confirmDeleteEgress(egress)}>
+                        <DeleteOutlined /> Delete
+                      </Typography.Text>
+                    ),
+                  },
+                ] as MenuProps['items'],
+              }}
+            >
+              <Button type="text" icon={<MoreOutlined />} />
+            </Dropdown>
+          );
+        },
+      },
+    ],
+    [confirmDeleteEgress]
+  );
+
+  const externalRoutesTableCols = useMemo<TableColumnProps<ExternalRoutesTableData>[]>(() => {
+    return [
+      {
+        title: 'CIDR',
+        dataIndex: 'range',
+      },
+      {
+        title: 'Host',
+        dataIndex: 'hostName',
+      },
+      {
+        width: '1rem',
+        render(_, range) {
+          return (
+            <Dropdown
+              placement="bottomRight"
+              menu={{
+                items: [
+                  {
+                    key: 'delete',
+                    label: (
+                      <Typography.Text onClick={() => confirmDeleteRange(range)}>
+                        <DeleteOutlined /> Delete
+                      </Typography.Text>
+                    ),
+                  },
+                ] as MenuProps['items'],
+              }}
+            >
+              <Button type="text" icon={<MoreOutlined />} />
+            </Dropdown>
+          );
+        },
+      },
+    ];
+  }, [confirmDeleteRange]);
 
   const clientsTableCols = useMemo<TableColumnProps<ExternalClient>[]>(
     () => [
@@ -673,6 +812,120 @@ export default function NetworkDetailsPage(props: PageProps) {
     [clientGateways, clients, clientsTableCols, filteredClients, filteredGateway, gatewaysTableCols]
   );
 
+  const getEgressContent = useCallback(
+    (network: Network) => {
+      return (
+        <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+          {egress.length === 0 && (
+            <Row
+              className="page-padding"
+              style={{
+                background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
+                width: '100%',
+              }}
+            >
+              <Col xs={16}>
+                <Typography.Title level={3} style={{ color: 'white ' }}>
+                  Egress
+                </Typography.Title>
+                <Typography.Text style={{ color: 'white ' }}>
+                  Enable devices in your network to communicate with other devices outside the network via egress
+                  gateways.
+                </Typography.Text>
+              </Col>
+              <Col xs={8} style={{ position: 'relative' }}>
+                <Card className="header-card" style={{ position: 'absolute', width: '100%' }}>
+                  <Typography.Title level={3}>Create Egress</Typography.Title>
+                  <Typography.Text>
+                    Enable devices in your network to communicate with other devices outside the network via egress
+                    gateways.
+                  </Typography.Text>
+                  <Row style={{ marginTop: '5rem' }}>
+                    <Col>
+                      <Button type="primary" size="large" onClick={() => setIsAddEgressModalOpen(true)}>
+                        <PlusOutlined /> Create Egress
+                      </Button>
+                    </Col>
+                  </Row>
+                </Card>
+              </Col>
+            </Row>
+          )}
+
+          {egress.length > 0 && (
+            <Row style={{ width: '100%' }}>
+              <Col xs={12}>
+                <Row style={{ width: '100%' }}>
+                  <Col xs={12}>
+                    <Typography.Title style={{ marginTop: '0px' }} level={5}>
+                      Egress Gateways
+                    </Typography.Title>
+                  </Col>
+                  <Col xs={11} style={{ textAlign: 'right' }}>
+                    <Button type="primary" onClick={() => setIsAddEgressModalOpen(true)}>
+                      <PlusOutlined /> Create Egress
+                    </Button>
+                  </Col>
+                </Row>
+                <Row style={{ marginTop: '1rem' }}>
+                  <Col xs={23}>
+                    <Table
+                      columns={egressTableCols}
+                      dataSource={egress}
+                      rowKey="id"
+                      size="small"
+                      rowClassName={(egress) => {
+                        return egress.id === filteredEgress?.id ? 'selected-row' : '';
+                      }}
+                      onRow={(egress) => {
+                        return {
+                          onClick: () => {
+                            if (filteredEgress?.id === egress.id) setFilteredEgress(null);
+                            else setFilteredEgress(egress);
+                          },
+                        };
+                      }}
+                    />
+                  </Col>
+                </Row>
+              </Col>
+              <Col xs={12}>
+                <Row style={{ width: '100%' }}>
+                  <Col xs={12}>
+                    <Typography.Title style={{ marginTop: '0px' }} level={5}>
+                      External routes
+                    </Typography.Title>
+                  </Col>
+                  <Col xs={12} style={{ textAlign: 'right' }}>
+                    Display All{' '}
+                    <Switch
+                      title="Display all routes. Click an egress to filter routes specific to that egress."
+                      checked={filteredEgress === null}
+                      onClick={() => {
+                        setFilteredEgress(null);
+                      }}
+                    />
+                  </Col>
+                </Row>
+                <Row style={{ marginTop: '1rem' }}>
+                  <Col xs={24}>
+                    <Table
+                      columns={externalRoutesTableCols}
+                      dataSource={filteredExternalRoutes}
+                      rowKey="clientid"
+                      size="small"
+                    />
+                  </Col>
+                </Row>
+              </Col>
+            </Row>
+          )}
+        </div>
+      );
+    },
+    [egress, egressTableCols, externalRoutesTableCols, filteredEgress, filteredExternalRoutes]
+  );
+
   const getAclsContent = useCallback((network: Network) => {
     return (
       <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
@@ -711,7 +964,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       {
         key: 'egress',
         label: `Egress`,
-        children: 'Content of Egress Tab',
+        children: network ? getEgressContent(network) : <Skeleton active />,
       },
       {
         key: 'relays',
@@ -734,7 +987,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         children: 'Content of Metrics Tab',
       },
     ],
-    [network, getOverviewContent, getHostsContent, getAclsContent, getClientsContent, getDnsContent]
+    [network, getOverviewContent, getHostsContent, getAclsContent, getClientsContent, getEgressContent, getDnsContent]
   );
 
   const loadClients = useCallback(async () => {
@@ -934,6 +1187,15 @@ export default function NetworkDetailsPage(props: PageProps) {
           store.fetchNodes();
         }}
         onCancel={() => setIsAddClientModalOpen(false)}
+      />
+      <AddEgressModal
+        isOpen={isAddEgressModalOpen}
+        networkId={networkId}
+        onCreateEgress={() => {
+          store.fetchNodes();
+          setIsAddEgressModalOpen(false);
+        }}
+        onCancel={() => setIsAddEgressModalOpen(false)}
       />
       {targetClient && (
         <ClientDetailsModal

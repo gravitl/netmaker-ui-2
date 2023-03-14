@@ -1,4 +1,4 @@
 export interface CreateEgressNodeDto {
-  ranges: Array<string>;
+  ranges: string[];
   natEnabled: string;
 }
