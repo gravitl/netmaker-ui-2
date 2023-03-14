@@ -68,6 +68,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [clients, setClients] = useState<ExternalClient[]>([]);
   const [isClientDetailsModalOpen, setIsClientDetailsModalOpen] = useState(false);
   const [targetClient, setTargetClient] = useState<ExternalClient | null>(null);
+  const [filteredGateway, setFilteredGateway] = useState<Node | null>(null);
 
   const networkHosts = useMemo(
     () =>
@@ -84,6 +85,17 @@ export default function NetworkDetailsPage(props: PageProps) {
       .map((node) => getExtendedNode(node, store.hostsCommonDetails));
   }, [networkHosts, store.hostsCommonDetails]);
 
+  const filteredClients = useMemo<ExternalClient[]>(
+    () =>
+      clients.filter((client) => {
+        if (filteredGateway) {
+          return client.ingressgatewayid === filteredGateway.id;
+        }
+        return true;
+      }),
+    [clients, filteredGateway]
+  );
+
   const confirmDeleteClient = useCallback(
     (client: ExternalClient) => {
       Modal.confirm({
@@ -93,6 +105,7 @@ export default function NetworkDetailsPage(props: PageProps) {
           try {
             await NodesService.deleteExternalClient(client.clientid, client.network);
             setClients((prev) => prev.filter((c) => c.clientid !== client.clientid));
+            store.fetchNodes();
           } catch (err) {
             if (err instanceof AxiosError) {
               notify.error({
@@ -104,6 +117,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       });
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [notify]
   );
 
@@ -142,6 +156,9 @@ export default function NetworkDetailsPage(props: PageProps) {
         title: 'Host name',
         dataIndex: 'name',
         width: 500,
+        render(name) {
+          return <Typography.Link>{name}</Typography.Link>;
+        },
       },
       {
         title: 'Addresses',
@@ -596,16 +613,28 @@ export default function NetworkDetailsPage(props: PageProps) {
                       Gateways
                     </Typography.Title>
                   </Col>
+                  <Col xs={11} style={{ textAlign: 'right' }}>
+                    <Button type="primary" onClick={() => setIsAddClientModalOpen(true)}>
+                      <PlusOutlined /> Create Client
+                    </Button>
+                  </Col>
                 </Row>
-                <Row>
+                <Row style={{ marginTop: '1rem' }}>
                   <Col xs={23}>
                     <Table
                       columns={gatewaysTableCols}
                       dataSource={clientGateways}
                       rowKey="id"
-                      onRow={(gateway, rowIndex) => {
+                      size="small"
+                      rowClassName={(gateway) => {
+                        return gateway.id === filteredGateway?.id ? 'selected-row' : '';
+                      }}
+                      onRow={(gateway) => {
                         return {
-                          onClick: (event) => {},
+                          onClick: () => {
+                            if (filteredGateway?.id === gateway.id) setFilteredGateway(null);
+                            else setFilteredGateway(gateway);
+                          },
                         };
                       }}
                     />
@@ -619,13 +648,20 @@ export default function NetworkDetailsPage(props: PageProps) {
                       Clients
                     </Typography.Title>
                   </Col>
-                  <Col xs={11} style={{ textAlign: 'right' }}>
-                    Display All <Switch title="Display All" checked={false} />
+                  <Col xs={12} style={{ textAlign: 'right' }}>
+                    Display All{' '}
+                    <Switch
+                      title="Display all clients. Click a gateway to filter clients specific to that gateway."
+                      checked={filteredGateway === null}
+                      onClick={() => {
+                        setFilteredGateway(null);
+                      }}
+                    />
                   </Col>
                 </Row>
-                <Row>
+                <Row style={{ marginTop: '1rem' }}>
                   <Col xs={24}>
-                    <Table columns={clientsTableCols} dataSource={clients} rowKey="clientid" />
+                    <Table columns={clientsTableCols} dataSource={filteredClients} rowKey="clientid" size="small" />
                   </Col>
                 </Row>
               </Col>
@@ -634,7 +670,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         </div>
       );
     },
-    [clientGateways, clients, clientsTableCols, gatewaysTableCols]
+    [clientGateways, clients, clientsTableCols, filteredClients, filteredGateway, gatewaysTableCols]
   );
 
   const getAclsContent = useCallback((network: Network) => {
@@ -895,6 +931,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         networkId={networkId}
         onCreateClient={() => {
           loadClients();
+          store.fetchNodes();
         }}
         onCancel={() => setIsAddClientModalOpen(false)}
       />

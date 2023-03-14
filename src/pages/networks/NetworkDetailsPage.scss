@@ -21,4 +21,14 @@
       }
     }
   }
+
+  .selected-row {
+    // TODO: get a better color
+    // background-color: rgba(0, 0, 0, 0.3);
+
+    td:first-of-type {
+      transition: all 200ms;
+      border-left: 4px solid teal;
+    }
+  }
 }
