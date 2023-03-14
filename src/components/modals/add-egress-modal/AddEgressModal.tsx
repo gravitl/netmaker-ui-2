@@ -156,145 +156,146 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
     >
       <Divider style={{ margin: '0px 0px 2rem 0px' }} />
       <Form name="add-egress-form" form={form} layout="vertical">
-        <div className="CustomModalBody">
-          <Form.Item
-            label="Select host"
-            name={idFormField}
-            rules={[{ required: true }]}
-            style={{ marginBottom: '0px' }}
-          >
-            {!selectedEgress && (
-              <Select
-                placeholder="Select a host as gateway"
-                dropdownRender={() => (
-                  <div style={{ padding: '.5rem' }}>
-                    <Row style={{ marginBottom: '1rem' }}>
-                      <Col span={8}>
-                        <Input
-                          placeholder="Search host"
-                          value={egressSearch}
-                          onChange={(e) => setEgressSearch(e.target.value)}
-                        />
-                      </Col>
-                    </Row>
-                    <Row>
-                      <Col span={24}>
-                        <Table
-                          size="small"
-                          columns={egressTableCols}
-                          dataSource={filteredNetworkHosts}
-                          onRow={(node) => {
-                            return {
-                              onClick: () => {
-                                form.setFieldValue(idFormField, node.id);
-                                setSelectedEgress(node);
-                              },
-                            };
-                          }}
-                        />
-                      </Col>
-                    </Row>
-                  </div>
-                )}
-              />
-            )}
-            {!!selectedEgress && (
-              <>
-                <Row style={{ border: `1px solid ${themeToken.colorBorder}`, padding: '.5rem', borderRadius: '8px' }}>
-                  <Col span={6}>{selectedEgress?.name ?? ''}</Col>
-                  <Col span={6}>
-                    {selectedEgress?.address ?? ''} {selectedEgress?.address6 ?? ''}
-                  </Col>
-                  <Col span={6}>{selectedEgress?.endpointip ?? ''}</Col>
-                  <Col span={5}>{getNodeConnectivity(selectedEgress)}</Col>
-                  <Col span={1} style={{ textAlign: 'right' }}>
-                    <Button
-                      danger
-                      size="small"
-                      type="text"
-                      icon={<CloseOutlined />}
-                      onClick={() => {
-                        form.setFieldValue(idFormField, '');
-                        setSelectedEgress(null);
-                      }}
-                    />
-                  </Col>
-                </Row>
-              </>
-            )}
-          </Form.Item>
-        </div>
-
-        <Divider style={{ margin: '0px 0px 2rem 0px' }} />
-        <div className="CustomModalBody">
-          <Form.Item name="natEnabled" label="Enable NAT for egress traffic">
-            <Switch />
-          </Form.Item>
-
-          <Typography.Title level={4}>Select external ranges</Typography.Title>
-
-          <Form.List
-            name="ranges"
-            initialValue={['']}
-            rules={[
-              {
-                validator: async (_, ranges) => {
-                  if (!ranges || ranges.length < 1) {
-                    return Promise.reject(new Error('Enter at least one address range'));
-                  }
-                },
-              },
-            ]}
-          >
-            {(fields, { add, remove }, { errors }) => (
-              <>
-                {fields.map((field, index) => (
-                  <Form.Item
-                    label={index === 0 ? 'Input range' : ''}
-                    key={field.key}
-                    required={false}
-                    style={{ marginBottom: '.5rem' }}
-                  >
-                    <Form.Item
-                      {...field}
-                      validateTrigger={['onBlur']}
-                      rules={[
-                        {
-                          required: true,
-                          validator(_, value) {
-                            if (!isValidIp(value)) {
-                              return Promise.reject('Invalid CIDR');
-                            } else {
-                              return Promise.resolve();
-                            }
-                          },
-                        },
-                      ]}
-                      noStyle
-                    >
-                      <Input
-                        placeholder="CIDR range (eg: 10.0.0.0/8 or a123:4567::/16)"
-                        style={{ width: '100%' }}
-                        suffix={
-                          <Tooltip title="Remove">
-                            <CloseOutlined onClick={() => remove(index)} />
-                          </Tooltip>
-                        }
+        <div className="" style={{ maxHeight: '60vh', overflow: 'auto' }}>
+          <div className="CustomModalBody">
+            <Form.Item
+              label="Select host"
+              name={idFormField}
+              rules={[{ required: true }]}
+              style={{ marginBottom: '0px' }}
+            >
+              {!selectedEgress && (
+                <Select
+                  placeholder="Select a host as gateway"
+                  dropdownRender={() => (
+                    <div style={{ padding: '.5rem' }}>
+                      <Row style={{ marginBottom: '1rem' }}>
+                        <Col span={8}>
+                          <Input
+                            placeholder="Search host"
+                            value={egressSearch}
+                            onChange={(e) => setEgressSearch(e.target.value)}
+                          />
+                        </Col>
+                      </Row>
+                      <Row>
+                        <Col span={24}>
+                          <Table
+                            size="small"
+                            columns={egressTableCols}
+                            dataSource={filteredNetworkHosts}
+                            onRow={(node) => {
+                              return {
+                                onClick: () => {
+                                  form.setFieldValue(idFormField, node.id);
+                                  setSelectedEgress(node);
+                                },
+                              };
+                            }}
+                          />
+                        </Col>
+                      </Row>
+                    </div>
+                  )}
+                />
+              )}
+              {!!selectedEgress && (
+                <>
+                  <Row style={{ border: `1px solid ${themeToken.colorBorder}`, padding: '.5rem', borderRadius: '8px' }}>
+                    <Col span={6}>{selectedEgress?.name ?? ''}</Col>
+                    <Col span={6}>
+                      {selectedEgress?.address ?? ''} {selectedEgress?.address6 ?? ''}
+                    </Col>
+                    <Col span={6}>{selectedEgress?.endpointip ?? ''}</Col>
+                    <Col span={5}>{getNodeConnectivity(selectedEgress)}</Col>
+                    <Col span={1} style={{ textAlign: 'right' }}>
+                      <Button
+                        danger
+                        size="small"
+                        type="text"
+                        icon={<CloseOutlined />}
+                        onClick={() => {
+                          form.setFieldValue(idFormField, '');
+                          setSelectedEgress(null);
+                        }}
                       />
-                    </Form.Item>
-                  </Form.Item>
-                ))}
-                <Form.Item>
-                  <Button onClick={() => add()} icon={<PlusOutlined />}>
-                    Add range
-                  </Button>
-                  <Form.ErrorList errors={errors} />
-                </Form.Item>
-              </>
-            )}
-          </Form.List>
-        </div>
+                    </Col>
+                  </Row>
+                </>
+              )}
+            </Form.Item>
+          </div>
 
+          <Divider style={{ margin: '0px 0px 2rem 0px' }} />
+          <div className="CustomModalBody">
+            <Form.Item name="natEnabled" label="Enable NAT for egress traffic">
+              <Switch />
+            </Form.Item>
+
+            <Typography.Title level={4}>Select external ranges</Typography.Title>
+
+            <Form.List
+              name="ranges"
+              initialValue={['']}
+              rules={[
+                {
+                  validator: async (_, ranges) => {
+                    if (!ranges || ranges.length < 1) {
+                      return Promise.reject(new Error('Enter at least one address range'));
+                    }
+                  },
+                },
+              ]}
+            >
+              {(fields, { add, remove }, { errors }) => (
+                <>
+                  {fields.map((field, index) => (
+                    <Form.Item
+                      label={index === 0 ? 'Input range' : ''}
+                      key={field.key}
+                      required={false}
+                      style={{ marginBottom: '.5rem' }}
+                    >
+                      <Form.Item
+                        {...field}
+                        validateTrigger={['onBlur']}
+                        rules={[
+                          {
+                            required: true,
+                            validator(_, value) {
+                              if (!isValidIp(value)) {
+                                return Promise.reject('Invalid CIDR');
+                              } else {
+                                return Promise.resolve();
+                              }
+                            },
+                          },
+                        ]}
+                        noStyle
+                      >
+                        <Input
+                          placeholder="CIDR range (eg: 10.0.0.0/8 or a123:4567::/16)"
+                          style={{ width: '100%' }}
+                          suffix={
+                            <Tooltip title="Remove">
+                              <CloseOutlined onClick={() => remove(index)} />
+                            </Tooltip>
+                          }
+                        />
+                      </Form.Item>
+                    </Form.Item>
+                  ))}
+                  <Form.Item>
+                    <Button onClick={() => add()} icon={<PlusOutlined />}>
+                      Add range
+                    </Button>
+                    <Form.ErrorList errors={errors} />
+                  </Form.Item>
+                </>
+              )}
+            </Form.List>
+          </div>
+        </div>
         <Divider style={{ margin: '0px 0px 2rem 0px' }} />
         <div className="CustomModalBody">
           <Row>
