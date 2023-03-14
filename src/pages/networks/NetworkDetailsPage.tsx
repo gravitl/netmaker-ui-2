@@ -897,6 +897,15 @@ export default function NetworkDetailsPage(props: PageProps) {
                     </Typography.Title>
                   </Col>
                   <Col xs={12} style={{ textAlign: 'right' }}>
+                    {filteredEgress && (
+                      <Button
+                        type="primary"
+                        style={{ marginRight: '1rem' }}
+                        // onClick={() => setIsAddEgressModalOpen(true)}
+                      >
+                        <PlusOutlined /> Add external route
+                      </Button>
+                    )}
                     Display All{' '}
                     <Switch
                       title="Display all routes. Click an egress to filter routes specific to that egress."
