@@ -673,9 +673,29 @@ export default function NetworkDetailsPage(props: PageProps) {
         children: network ? getClientsContent(network) : <Skeleton active />,
       },
       {
+        key: 'egress',
+        label: `Egress`,
+        children: 'Content of Egress Tab',
+      },
+      {
+        key: 'relays',
+        label: `Relays `,
+        children: 'Content of Relays Tab',
+      },
+      {
         key: 'dns',
         label: `DNS`,
         children: network ? getDnsContent(network) : <Skeleton active />,
+      },
+      {
+        key: 'access-control',
+        label: `Access Control`,
+        children: 'Content of Access Control Tab',
+      },
+      {
+        key: 'metrics',
+        label: `Metrics`,
+        children: 'Content of Metrics Tab',
       },
     ],
     [network, getOverviewContent, getHostsContent, getAclsContent, getClientsContent, getDnsContent]
