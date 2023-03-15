@@ -16,7 +16,7 @@ import { convertUiNetworkToNetworkModel, isNetworkIpv4, isNetworkIpv6 } from '@/
 import { getExtendedNode } from '@/utils/NodeUtils';
 import { getHostRoute } from '@/utils/RouteUtils';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
-import { DeleteOutlined, ExclamationCircleFilled, MoreOutlined, PlusOutlined } from '@ant-design/icons';
+import { DeleteOutlined, ExclamationCircleFilled, MoreOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons';
 import {
   Alert,
   Button,
@@ -49,7 +49,7 @@ import { PageProps } from '../../models/Page';
 import './NetworkDetailsPage.scss';
 
 interface ExternalRoutesTableData {
-  hostName: HostCommonDetails['name'];
+  node: ExtendedNode;
   range: Node['egressgatewayranges'][0];
 }
 
@@ -78,6 +78,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [filteredGateway, setFilteredGateway] = useState<Node | null>(null);
   const [filteredEgress, setFilteredEgress] = useState<Node | null>(null);
   const [isAddEgressModalOpen, setIsAddEgressModalOpen] = useState(false);
+  const [searchEgress, setSearchEgress] = useState('');
 
   const networkHosts = useMemo(
     () =>
@@ -105,22 +106,27 @@ export default function NetworkDetailsPage(props: PageProps) {
     [clients, filteredGateway]
   );
 
-  const egress = useMemo<ExtendedNode[]>(() => {
+  const egresses = useMemo<ExtendedNode[]>(() => {
     return networkHosts
       .filter((node) => node.isegressgateway)
       .map((node) => getExtendedNode(node, store.hostsCommonDetails));
   }, [networkHosts, store.hostsCommonDetails]);
 
+  const filteredEgresses = useMemo<ExtendedNode[]>(
+    () => egresses.filter((egress) => egress.name?.toLowerCase().includes(searchEgress.toLowerCase()) ?? false),
+    [egresses, searchEgress]
+  );
+
   const filteredExternalRoutes = useMemo<ExternalRoutesTableData[]>(() => {
     if (filteredEgress) {
       return filteredEgress.egressgatewayranges.map((range) => ({
-        hostName: getExtendedNode(filteredEgress, store.hostsCommonDetails).name ?? '',
+        node: getExtendedNode(filteredEgress, store.hostsCommonDetails),
         range,
       }));
     } else {
-      return egress.flatMap((e) => e.egressgatewayranges.map((range) => ({ hostName: e.name ?? '', range })));
+      return filteredEgresses.flatMap((e) => e.egressgatewayranges.map((range) => ({ node: e, range })));
     }
-  }, [egress, filteredEgress, store.hostsCommonDetails]);
+  }, [filteredEgress, filteredEgresses, store.hostsCommonDetails]);
 
   const confirmDeleteClient = useCallback(
     (client: ExternalClient) => {
@@ -200,7 +206,38 @@ export default function NetworkDetailsPage(props: PageProps) {
     [notify]
   );
 
-  const confirmDeleteRange = useCallback((range: ExternalRoutesTableData) => {}, []);
+  const confirmDeleteRange = useCallback(
+    (range: ExternalRoutesTableData) => {
+      Modal.confirm({
+        title: `Delete range ${range.range} from ${range.node?.name ?? ''}`,
+        content: `Are you sure you want to delete this external range?`,
+        onOk: async () => {
+          try {
+            if (!networkId) return;
+            const newRanges = new Set(range.node.egressgatewayranges);
+            const natEnabled = range.node.egressgatewaynatenabled;
+            newRanges.delete(range.range);
+            await NodesService.deleteEgressNode(range.node.id, networkId);
+            if (newRanges.size > 0) {
+              await NodesService.createEgressNode(range.node.id, networkId, {
+                ranges: [...newRanges],
+                natEnabled: natEnabled ? 'yes' : 'no',
+              });
+            }
+            store.fetchNodes();
+          } catch (err) {
+            if (err instanceof AxiosError) {
+              notify.error({
+                message: 'Error deleting range',
+                description: extractErrorMsg(err),
+              });
+            }
+          }
+        },
+      });
+    },
+    [networkId, notify, store]
+  );
 
   const gatewaysTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(
     () => [
@@ -309,7 +346,9 @@ export default function NetworkDetailsPage(props: PageProps) {
       },
       {
         title: 'Host',
-        dataIndex: 'hostName',
+        render(_, range) {
+          return range.node?.name ?? '';
+        },
       },
       {
         width: '1rem',
@@ -816,7 +855,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     (network: Network) => {
       return (
         <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-          {egress.length === 0 && (
+          {egresses.length === 0 && (
             <Row
               className="page-padding"
               style={{
@@ -852,8 +891,17 @@ export default function NetworkDetailsPage(props: PageProps) {
             </Row>
           )}
 
-          {egress.length > 0 && (
+          {egresses.length > 0 && (
             <Row style={{ width: '100%' }}>
+              <Col xs={24} style={{ marginBottom: '2rem' }}>
+                <Input
+                  placeholder="Search egress"
+                  value={searchEgress}
+                  onChange={(ev) => setSearchEgress(ev.target.value)}
+                  prefix={<SearchOutlined />}
+                  style={{ width: '30%' }}
+                />
+              </Col>
               <Col xs={12}>
                 <Row style={{ width: '100%' }}>
                   <Col xs={12}>
@@ -871,7 +919,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   <Col xs={23}>
                     <Table
                       columns={egressTableCols}
-                      dataSource={egress}
+                      dataSource={filteredEgresses}
                       rowKey="id"
                       size="small"
                       rowClassName={(egress) => {
@@ -932,7 +980,15 @@ export default function NetworkDetailsPage(props: PageProps) {
         </div>
       );
     },
-    [egress, egressTableCols, externalRoutesTableCols, filteredEgress, filteredExternalRoutes]
+    [
+      egresses,
+      searchEgress,
+      egressTableCols,
+      filteredEgresses,
+      filteredEgress,
+      externalRoutesTableCols,
+      filteredExternalRoutes,
+    ]
   );
 
   const getAclsContent = useCallback((network: Network) => {
