@@ -2,6 +2,7 @@ import AddClientModal from '@/components/modals/add-client-modal/AddClientModal'
 import AddDnsModal from '@/components/modals/add-dns-modal/AddDnsModal';
 import AddEgressModal from '@/components/modals/add-egress-modal/AddEgressModal';
 import ClientDetailsModal from '@/components/modals/client-detaiils-modal/ClientDetailsModal';
+import UpdateEgressModal from '@/components/modals/update-egress-modal/UpdateEgressModal';
 import { NodeACLContainer } from '@/models/Acl';
 import { DNS } from '@/models/Dns';
 import { ExternalClient } from '@/models/ExternalClient';
@@ -79,6 +80,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [filteredEgress, setFilteredEgress] = useState<Node | null>(null);
   const [isAddEgressModalOpen, setIsAddEgressModalOpen] = useState(false);
   const [searchEgress, setSearchEgress] = useState('');
+  const [isUpdateEgressModalOpen, setIsUpdateEgressModalOpen] = useState(false);
 
   const networkHosts = useMemo(
     () =>
@@ -949,7 +951,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                       <Button
                         type="primary"
                         style={{ marginRight: '1rem' }}
-                        // onClick={() => setIsAddEgressModalOpen(true)}
+                        onClick={() => setIsUpdateEgressModalOpen(true)}
                       >
                         <PlusOutlined /> Add external route
                       </Button>
@@ -969,7 +971,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                     <Table
                       columns={externalRoutesTableCols}
                       dataSource={filteredExternalRoutes}
-                      rowKey="clientid"
+                      rowKey={(range) => `${range.node?.name ?? ''}-${range.range}`}
                       size="small"
                     />
                   </Col>
@@ -1270,6 +1272,19 @@ export default function NetworkDetailsPage(props: PageProps) {
           //   loadClients();
           // }}
           onCancel={() => setIsClientDetailsModalOpen(false)}
+        />
+      )}
+      {filteredEgress && (
+        <UpdateEgressModal
+          key={filteredEgress.id}
+          isOpen={isUpdateEgressModalOpen}
+          networkId={networkId}
+          egress={filteredEgress}
+          onUpdateEgress={() => {
+            store.fetchNodes();
+            setIsUpdateEgressModalOpen(false);
+          }}
+          onCancel={() => setIsUpdateEgressModalOpen(false)}
         />
       )}
     </Layout.Content>

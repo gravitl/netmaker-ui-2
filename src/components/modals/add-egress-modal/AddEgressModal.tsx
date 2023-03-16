@@ -110,7 +110,10 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
       setIsSubmitting(true);
 
       if (!selectedEgress) return;
-      await NodesService.createEgressNode(selectedEgress.id, networkId, formData);
+      await NodesService.createEgressNode(selectedEgress.id, networkId, {
+        ...formData,
+        natEnabled: formData.natEnabled ? 'yes' : 'no',
+      });
       onCreateEgress();
       notify.success({ message: `Egress gateway created` });
     } catch (err) {

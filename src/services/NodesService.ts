@@ -17,10 +17,7 @@ function approveNode(nodeId: Node['id'], networkId: Network['netid']) {
 }
 
 function createEgressNode(nodeId: Node['id'], networkId: Network['netid'], payload: CreateEgressNodeDto) {
-  return baseService.post<Node>(`${ApiRoutes.NODES}/${networkId}/${nodeId}/creategateway`, {
-    ...payload,
-    natEnabled: payload.natEnabled ? 'yes' : 'no',
-  });
+  return baseService.post<Node>(`${ApiRoutes.NODES}/${networkId}/${nodeId}/creategateway`, payload);
 }
 
 function createExternalClient(nodeId: Node['id'], networkId: Network['netid'], payload?: CreateExternalClientReqDto) {

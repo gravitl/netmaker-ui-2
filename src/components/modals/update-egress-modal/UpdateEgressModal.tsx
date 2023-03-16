@@ -8,10 +8,7 @@ import {
   Modal,
   notification,
   Row,
-  Select,
   Switch,
-  Table,
-  TableColumnProps,
   theme,
   Tooltip,
   Typography,
@@ -21,8 +18,7 @@ import { useStore } from '@/store/store';
 import '../CustomModal.scss';
 import { Network } from '@/models/Network';
 import { Node } from '@/models/Node';
-import { HostCommonDetails } from '@/models/Host';
-import { getNodeConnectivityStatus } from '@/utils/NodeUtils';
+import { getExtendedNode, getNodeConnectivityStatus } from '@/utils/NodeUtils';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { AxiosError } from 'axios';
@@ -33,7 +29,7 @@ import { CreateEgressNodeDto } from '@/services/dtos/CreateEgressNodeDto';
 interface UpdateEgressModalProps {
   isOpen: boolean;
   networkId: Network['netid'];
-  egress: Node[];
+  egress: Node;
   onUpdateEgress: () => any;
   closeModal?: () => void;
   onOk?: (e: MouseEvent<HTMLButtonElement>) => void;
@@ -57,9 +53,12 @@ export default function UpdateEgressModal({
   const { token: themeToken } = theme.useToken();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [egressSearch, setEgressSearch] = useState('');
-  const [selectedEgress, setSelectedEgress] = useState<(Node & HostCommonDetails) | null>(null);
-  const idFormField = 'nodeId';
+  const ranges = Form.useWatch('ranges', form);
+
+  const extendedEgress = useMemo(
+    () => getExtendedNode(egress, store.hostsCommonDetails),
+    [egress, store.hostsCommonDetails]
+  );
 
   const getNodeConnectivity = useCallback((node: Node) => {
     if (getNodeConnectivityStatus(node) === 'error') return <Badge status="error" text="Error" />;
@@ -68,62 +67,24 @@ export default function UpdateEgressModal({
     else return <Badge status="processing" text="Unknown" />;
   }, []);
 
-  const networkHosts = useMemo<(Node & HostCommonDetails)[]>(() => {
-    return store.nodes
-      .filter((node) => node.network === networkId)
-      .map((node) => ({ ...node, ...store.hostsCommonDetails[node.hostid] }));
-  }, [networkId, store.hostsCommonDetails, store.nodes]);
-  const filteredNetworkHosts = useMemo<(Node & HostCommonDetails)[]>(
-    () =>
-      networkHosts.filter(
-        (node) =>
-          node.name?.toLowerCase().includes(egressSearch.toLowerCase()) ||
-          node.address?.toLowerCase().includes(egressSearch.toLowerCase())
-      ),
-    [egressSearch, networkHosts]
-  );
-  const egressTableCols = useMemo<TableColumnProps<Node & HostCommonDetails>[]>(() => {
-    return [
-      {
-        title: 'Host name',
-        dataIndex: 'name',
-        render(value) {
-          return <Typography.Link>{value}</Typography.Link>;
-        },
-      },
-      {
-        title: 'Address',
-        dataIndex: 'address',
-        render(value, egress) {
-          return <Typography.Text>{`${value}, ${egress.address6}`}</Typography.Text>;
-        },
-      },
-      {
-        title: 'Endpoint',
-        dataIndex: 'endpointip',
-      },
-      {
-        title: 'Health status',
-        render(value, node) {
-          return getNodeConnectivity(node);
-        },
-      },
-    ];
-  }, [getNodeConnectivity]);
-
-  const createEgress = async () => {
+  const updateEgress = async () => {
     try {
       const formData = await form.validateFields();
       setIsSubmitting(true);
-
-      if (!selectedEgress) return;
-      await NodesService.createEgressNode(selectedEgress.id, networkId, formData);
+      const newRanges = new Set(formData.ranges);
+      await NodesService.deleteEgressNode(egress.id, networkId);
+      if (newRanges.size > 0) {
+        await NodesService.createEgressNode(egress.id, networkId, {
+          ranges: [...newRanges],
+          natEnabled: formData.natEnabled ? 'yes' : 'no',
+        });
+      }
       onUpdateEgress();
-      notify.success({ message: `Egress gateway created` });
+      notify.success({ message: `Egress gateway updated` });
     } catch (err) {
       if (err instanceof AxiosError) {
         notify.error({
-          message: 'Failed to egress gateway',
+          message: 'Failed to update egress gateway',
           description: extractErrorMsg(err),
         });
       }
@@ -154,7 +115,7 @@ export default function UpdateEgressModal({
   // TODO: add autofill for fields
   return (
     <Modal
-      title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Create an Egress</span>}
+      title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Update Egress</span>}
       open={isOpen}
       onCancel={onCancel}
       footer={null}
@@ -162,71 +123,24 @@ export default function UpdateEgressModal({
       style={{ minWidth: '50vw' }}
     >
       <Divider style={{ margin: '0px 0px 2rem 0px' }} />
-      <Form name="add-egress-form" form={form} layout="vertical">
+      <Form
+        name="add-egress-form"
+        form={form}
+        layout="vertical"
+        initialValues={{ ...egress, natEnabled: egress.egressgatewaynatenabled }}
+      >
         <div className="" style={{ maxHeight: '60vh', overflow: 'auto' }}>
           <div className="CustomModalBody">
-            <Form.Item
-              label="Select host"
-              name={idFormField}
-              rules={[{ required: true }]}
-              style={{ marginBottom: '0px' }}
-            >
-              {!selectedEgress && (
-                <Select
-                  placeholder="Select a host as gateway"
-                  dropdownRender={() => (
-                    <div style={{ padding: '.5rem' }}>
-                      <Row style={{ marginBottom: '1rem' }}>
-                        <Col span={8}>
-                          <Input
-                            placeholder="Search host"
-                            value={egressSearch}
-                            onChange={(e) => setEgressSearch(e.target.value)}
-                          />
-                        </Col>
-                      </Row>
-                      <Row>
-                        <Col span={24}>
-                          <Table
-                            size="small"
-                            columns={egressTableCols}
-                            dataSource={filteredNetworkHosts}
-                            onRow={(node) => {
-                              return {
-                                onClick: () => {
-                                  form.setFieldValue(idFormField, node.id);
-                                  setSelectedEgress(node);
-                                },
-                              };
-                            }}
-                          />
-                        </Col>
-                      </Row>
-                    </div>
-                  )}
-                />
-              )}
-              {!!selectedEgress && (
+            <Form.Item label="Host" rules={[{ required: true }]} style={{ marginBottom: '0px' }}>
+              {!!extendedEgress && (
                 <>
                   <Row style={{ border: `1px solid ${themeToken.colorBorder}`, padding: '.5rem', borderRadius: '8px' }}>
-                    <Col span={6}>{selectedEgress?.name ?? ''}</Col>
+                    <Col span={6}>{extendedEgress?.name ?? ''}</Col>
                     <Col span={6}>
-                      {selectedEgress?.address ?? ''} {selectedEgress?.address6 ?? ''}
+                      {extendedEgress?.address ?? ''} {extendedEgress?.address6 ?? ''}
                     </Col>
-                    <Col span={6}>{selectedEgress?.endpointip ?? ''}</Col>
-                    <Col span={5}>{getNodeConnectivity(selectedEgress)}</Col>
-                    <Col span={1} style={{ textAlign: 'right' }}>
-                      <Button
-                        danger
-                        size="small"
-                        type="text"
-                        icon={<CloseOutlined />}
-                        onClick={() => {
-                          form.setFieldValue(idFormField, '');
-                          setSelectedEgress(null);
-                        }}
-                      />
-                    </Col>
+                    <Col span={6}>{extendedEgress?.endpointip ?? ''}</Col>
+                    <Col span={5}>{getNodeConnectivity(extendedEgress)}</Col>
                   </Row>
                 </>
               )}
@@ -236,24 +150,12 @@ export default function UpdateEgressModal({
           <Divider style={{ margin: '0px 0px 2rem 0px' }} />
           <div className="CustomModalBody">
             <Form.Item name="natEnabled" label="Enable NAT for egress traffic">
-              <Switch />
+              <Switch defaultChecked={egress.egressgatewaynatenabled} />
             </Form.Item>
 
             <Typography.Title level={4}>Select external ranges</Typography.Title>
 
-            <Form.List
-              name="ranges"
-              initialValue={['']}
-              rules={[
-                {
-                  validator: async (_, ranges) => {
-                    if (!ranges || ranges.length < 1) {
-                      return Promise.reject(new Error('Enter at least one address range'));
-                    }
-                  },
-                },
-              ]}
-            >
+            <Form.List name="ranges" initialValue={egress.egressgatewayranges}>
               {(fields, { add, remove }, { errors }) => (
                 <>
                   {fields.map((field, index) => (
@@ -307,8 +209,8 @@ export default function UpdateEgressModal({
         <div className="CustomModalBody">
           <Row>
             <Col xs={24} style={{ textAlign: 'right' }}>
-              <Button type="primary" onClick={createEgress} loading={isSubmitting}>
-                Create Egress
+              <Button type="primary" danger={ranges?.length === 0} onClick={updateEgress} loading={isSubmitting}>
+                {ranges?.length === 0 ? 'Delete Egress' : 'Update Egress'}
               </Button>
             </Col>
           </Row>
