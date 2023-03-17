@@ -68,7 +68,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const isIpv6Watch = Form.useWatch('isipv6', form);
   const [network, setNetwork] = useState<Network | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditingNetwork] = useState(false);
   const [searchHost, setSearchHost] = useState('');
   const [searchDns, setSearchDns] = useState('');
   const [dnses, setDnses] = useState<DNS[]>([]);
@@ -665,7 +665,7 @@ export default function NetworkDetailsPage(props: PageProps) {
           <Card style={{ width: '50%' }}>
             <Form name="add-network-form" form={form} layout="vertical" initialValues={network} disabled={!isEditing}>
               <Form.Item label="Network name" name="netid" rules={[{ required: true }]}>
-                <Input placeholder="Network name" />
+                <Input placeholder="Network name" disabled />
               </Form.Item>
 
               {/* ipv4 */}
@@ -1430,11 +1430,16 @@ export default function NetworkDetailsPage(props: PageProps) {
   const onNetworkFormEdit = useCallback(async () => {
     try {
       const formData = await form.validateFields();
-      if (!networkId) {
+      const network = store.networks.find((network) => network.netid === networkId);
+      if (!networkId || !network) {
         throw new Error('Network not found');
       }
-      const network = (await NetworksService.updateNetwork(networkId, convertUiNetworkToNetworkModel(formData))).data;
-      store.updateNetwork(networkId, network);
+      const newNetwork = (
+        await NetworksService.updateNetwork(networkId, { ...network, ...convertUiNetworkToNetworkModel(formData) })
+      ).data;
+      store.updateNetwork(networkId, newNetwork);
+      notify.success({ message: `Network ${networkId} updated` });
+      setIsEditingNetwork(false);
     } catch (err) {
       if (err instanceof AxiosError) {
         notify.error({
@@ -1455,6 +1460,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         throw new Error('Network not found');
       }
       await NetworksService.deleteNetwork(networkId);
+      notify.success({ message: `Network ${networkId} deleted` });
       store.deleteNetwork(networkId);
       navigate(AppRoutes.NETWORKS_ROUTE);
     } catch (err) {
@@ -1513,7 +1519,7 @@ export default function NetworkDetailsPage(props: PageProps) {
               </Col>
               <Col xs={6} style={{ textAlign: 'right' }}>
                 {!isEditing && (
-                  <Button type="default" style={{ marginRight: '.5rem' }} onClick={() => setIsEditing(true)}>
+                  <Button type="default" style={{ marginRight: '.5rem' }} onClick={() => setIsEditingNetwork(true)}>
                     Edit
                   </Button>
                 )}

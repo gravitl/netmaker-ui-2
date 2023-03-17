@@ -9,10 +9,11 @@ import { AxiosError } from 'axios';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { useNavigate } from 'react-router-dom';
 import { AppRoutes } from '@/routes';
+import { Network } from '@/models/Network';
 
 interface AddNetworkModalProps {
   isOpen: boolean;
-  onCreateNetwork?: (e: MouseEvent<HTMLButtonElement>) => void;
+  onCreateNetwork: (network: Network) => any;
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
 }
 
@@ -33,7 +34,7 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
       store.addNetwork(network);
       notify.success({ message: `Network ${network.netid} created` });
       navigate(AppRoutes.NETWORKS_ROUTE);
-      // TODO: close modal
+      onCreateNetwork(network);
     } catch (err) {
       if (err instanceof AxiosError) {
         notify.error({
@@ -48,7 +49,6 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
     <Modal
       title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Create a Network</span>}
       open={isOpen}
-      onOk={onCreateNetwork}
       onCancel={onCancel}
       footer={null}
       centered

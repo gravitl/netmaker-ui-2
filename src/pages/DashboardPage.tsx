@@ -12,6 +12,7 @@ import { AppRoutes } from '../routes';
 import { useNavigate } from 'react-router-dom';
 import AddNetworkModal from '@/components/modals/add-network-modal/AddNetworkModal';
 import { useState } from 'react';
+import { Network } from '@/models/Network';
 
 export default function DashboardPage(props: PageProps) {
   const navigate = useNavigate();
@@ -124,7 +125,13 @@ export default function DashboardPage(props: PageProps) {
 
       {/* misc */}
       <UpgradeModal isOpen={false} />
-      <AddNetworkModal isOpen={isAddNetworkModalOpen} onCancel={() => setIsAddNetworkModalOpen(false)} />
+      <AddNetworkModal
+        isOpen={isAddNetworkModalOpen}
+        onCreateNetwork={(network: Network) => {
+          setIsAddNetworkModalOpen(false);
+        }}
+        onCancel={() => setIsAddNetworkModalOpen(false)}
+      />
     </Layout.Content>
   );
 }

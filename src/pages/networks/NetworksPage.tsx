@@ -24,6 +24,7 @@ export default function NetworksPage(props: PageProps) {
       sorter: {
         compare: (a, b) => a.netid.localeCompare(b.netid),
       },
+      defaultSortOrder: 'ascend',
       render: (netId) => <Link to={`${AppRoutes.NETWORKS_ROUTE}/${netId}`}>{netId}</Link>,
     },
     {
@@ -60,7 +61,8 @@ export default function NetworksPage(props: PageProps) {
 
   const loadNetworks = useCallback(async () => {
     await store.fetchNetworks();
-  }, [store.fetchNetworks]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     loadNetworks();
@@ -182,7 +184,13 @@ export default function NetworksPage(props: PageProps) {
       </Skeleton>
 
       {/* modals */}
-      <AddNetworkModal isOpen={isAddNetworkModalOpen} onCancel={() => setIsAddNetworkModalOpen(false)} />
+      <AddNetworkModal
+        isOpen={isAddNetworkModalOpen}
+        onCreateNetwork={(network: Network) => {
+          setIsAddNetworkModalOpen(false);
+        }}
+        onCancel={() => setIsAddNetworkModalOpen(false)}
+      />
     </Layout.Content>
   );
 }
