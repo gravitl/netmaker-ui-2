@@ -1,5 +1,11 @@
-import { Button, Card, Col, Layout, Row, Space } from 'antd';
-import { ArrowRightOutlined, PlusOutlined } from '@ant-design/icons';
+import { Alert, Button, Card, Col, Input, Layout, Row, Space, theme, Tooltip } from 'antd';
+import {
+  ArrowRightOutlined,
+  BellOutlined,
+  PlusOutlined,
+  QuestionCircleOutlined,
+  SearchOutlined,
+} from '@ant-design/icons';
 import UpgradeModal from '../components/modals/upgrade-modal/UpgradeModal';
 import { PageProps } from '../models/Page';
 import { AppRoutes } from '../routes';
@@ -9,6 +15,7 @@ import { useState } from 'react';
 
 export default function DashboardPage(props: PageProps) {
   const navigate = useNavigate();
+  const { token: themeToken } = theme.useToken();
 
   const [isAddNetworkModalOpen, setIsAddNetworkModalOpen] = useState(false);
 
@@ -19,7 +26,50 @@ export default function DashboardPage(props: PageProps) {
   return (
     <Layout.Content style={{ padding: props.isFullScreen ? 0 : 24 }}>
       <Row>
-        <Layout.Header></Layout.Header>
+        <Layout.Header style={{ width: '100%', padding: '0px', backgroundColor: 'transparent' }}>
+          <Row>
+            <Col xs={6}>
+              <Alert
+                message="You are on the free plan"
+                type="warning"
+                action={
+                  <Button type="link">
+                    <span style={{ textDecoration: 'underline' }}>Upgrade now</span>
+                  </Button>
+                }
+              />
+            </Col>
+            <Col xs={6}></Col>
+            <Col xs={12} style={{ textAlign: 'right' }}>
+              <Space direction="horizontal" size="large" align="end">
+                <Input
+                  placeholder="Search..."
+                  suffix={<SearchOutlined />}
+                  style={{ borderRadius: '24px', width: '20rem' }}
+                />
+                <Button type="primary" style={{}}>
+                  <PlusOutlined /> Create
+                </Button>
+                <Tooltip title="Help">
+                  <QuestionCircleOutlined
+                    style={{ cursor: 'pointer', fontSize: '1.2rem' }}
+                    onClick={() => {
+                      window.open('https://docs.netmaker.io', '_blank');
+                    }}
+                  />
+                </Tooltip>
+                <Tooltip title="Notifications">
+                  <BellOutlined
+                    style={{ cursor: 'pointer', fontSize: '1.2rem' }}
+                    onClick={() => {
+                      // TODO: notifications
+                    }}
+                  />
+                </Tooltip>
+              </Space>
+            </Col>
+          </Row>
+        </Layout.Header>
       </Row>
       <Row>
         <Col>
