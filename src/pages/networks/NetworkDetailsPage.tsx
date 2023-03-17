@@ -1,15 +1,17 @@
 import AddClientModal from '@/components/modals/add-client-modal/AddClientModal';
 import AddDnsModal from '@/components/modals/add-dns-modal/AddDnsModal';
 import AddEgressModal from '@/components/modals/add-egress-modal/AddEgressModal';
+import AddRelayModal from '@/components/modals/add-relay-modal/AddRelayModal';
 import ClientDetailsModal from '@/components/modals/client-detaiils-modal/ClientDetailsModal';
 import UpdateEgressModal from '@/components/modals/update-egress-modal/UpdateEgressModal';
 import { NodeACLContainer } from '@/models/Acl';
 import { DNS } from '@/models/Dns';
 import { ExternalClient } from '@/models/ExternalClient';
-import { HostCommonDetails } from '@/models/Host';
+import { Host, HostCommonDetails } from '@/models/Host';
 import { Network } from '@/models/Network';
 import { ExtendedNode, Node } from '@/models/Node';
 import { AppRoutes } from '@/routes';
+import { HostsService } from '@/services/HostsService';
 import { NetworksService } from '@/services/NetworksService';
 import { NodesService } from '@/services/NodesService';
 import { useStore } from '@/store/store';
@@ -81,8 +83,11 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [isAddEgressModalOpen, setIsAddEgressModalOpen] = useState(false);
   const [searchEgress, setSearchEgress] = useState('');
   const [isUpdateEgressModalOpen, setIsUpdateEgressModalOpen] = useState(false);
+  const [selectedRelay, setSelectedRelay] = useState<Host | null>(null);
+  const [isAddRelayModalOpen, setIsAddRelayModalOpen] = useState(false);
+  const [searchRelay, setSearchRelay] = useState('');
 
-  const networkHosts = useMemo(
+  const networkNodes = useMemo(
     () =>
       store.nodes
         .filter((node) => node.network === networkId)
@@ -92,10 +97,10 @@ export default function NetworkDetailsPage(props: PageProps) {
   );
 
   const clientGateways = useMemo<ExtendedNode[]>(() => {
-    return networkHosts
+    return networkNodes
       .filter((node) => node.isingressgateway)
       .map((node) => getExtendedNode(node, store.hostsCommonDetails));
-  }, [networkHosts, store.hostsCommonDetails]);
+  }, [networkNodes, store.hostsCommonDetails]);
 
   const filteredClients = useMemo<ExternalClient[]>(
     () =>
@@ -109,10 +114,10 @@ export default function NetworkDetailsPage(props: PageProps) {
   );
 
   const egresses = useMemo<ExtendedNode[]>(() => {
-    return networkHosts
+    return networkNodes
       .filter((node) => node.isegressgateway)
       .map((node) => getExtendedNode(node, store.hostsCommonDetails));
-  }, [networkHosts, store.hostsCommonDetails]);
+  }, [networkNodes, store.hostsCommonDetails]);
 
   const filteredEgresses = useMemo<ExtendedNode[]>(
     () => egresses.filter((egress) => egress.name?.toLowerCase().includes(searchEgress.toLowerCase()) ?? false),
@@ -129,6 +134,35 @@ export default function NetworkDetailsPage(props: PageProps) {
       return filteredEgresses.flatMap((e) => e.egressgatewayranges.map((range) => ({ node: e, range })));
     }
   }, [filteredEgress, filteredEgresses, store.hostsCommonDetails]);
+
+  const networkHosts = useMemo(() => {
+    const hostsMap = new Map<Host['id'], Host>();
+    store.hosts.forEach((host) => {
+      hostsMap.set(host.id, host);
+    });
+    return store.nodes.filter((node) => node.network === networkId).map((node) => hostsMap.get(node.hostid)!);
+  }, [networkId, store.hosts, store.nodes]);
+
+  const relays = useMemo<Host[]>(() => {
+    return networkHosts.filter((host) => host.isrelay);
+  }, [networkHosts]);
+
+  const filteredRelays = useMemo<Host[]>(
+    () => relays.filter((relay) => relay.name?.toLowerCase().includes(searchRelay.toLowerCase()) ?? false),
+    [relays, searchRelay]
+  );
+
+  const filteredRelayedHosts = useMemo<Host[]>(() => {
+    if (selectedRelay) {
+      return networkHosts.filter((host) => host.isrelayed && host.relayed_by === selectedRelay.id);
+    } else {
+      return networkHosts.filter((host) => host.isrelayed);
+    }
+  }, [networkHosts, selectedRelay]);
+
+  const goToNewHostPage = useCallback(() => {
+    navigate(AppRoutes.NEW_HOST_ROUTE);
+  }, [navigate]);
 
   const confirmDeleteClient = useCallback(
     (client: ExternalClient) => {
@@ -239,6 +273,75 @@ export default function NetworkDetailsPage(props: PageProps) {
       });
     },
     [networkId, notify, store]
+  );
+
+  const confirmDeleteDns = useCallback(
+    (dns: DNS) => {
+      Modal.confirm({
+        title: `Delete DNS ${dns.name}.${dns.network}`,
+        content: `Are you sure you want to delete this DNS?`,
+        onOk: async () => {
+          try {
+            await NetworksService.deleteDns(dns.network, dns.name);
+            setDnses((dnses) => dnses.filter((dns) => dns.name !== dns.name));
+          } catch (err) {
+            if (err instanceof AxiosError) {
+              notify.error({
+                message: 'Error deleting DNS',
+                description: extractErrorMsg(err),
+              });
+            }
+          }
+        },
+      });
+    },
+    [notify]
+  );
+
+  const confirmDeleteRelay = useCallback(
+    (relay: Host) => {
+      Modal.confirm({
+        title: `Delete relay ${relay.name}`,
+        content: `Are you sure you want to delete this relay?`,
+        onOk: async () => {
+          try {
+            await HostsService.deleteHostRelay(relay.id);
+            store.fetchHosts();
+          } catch (err) {
+            if (err instanceof AxiosError) {
+              notify.error({
+                message: 'Error deleting relay',
+                description: extractErrorMsg(err),
+              });
+            }
+          }
+        },
+      });
+    },
+    [notify, store]
+  );
+
+  const confirmRemoveRelayed = useCallback(
+    (relayed: Host) => {
+      Modal.confirm({
+        title: `Stop ${relayed.name} from being relayed`,
+        content: `Are you sure you want to stop this host from being relayed?`,
+        onOk: async () => {
+          try {
+            // await HostsService.updateHost(relay.id);
+            // store.fetchHosts();
+          } catch (err) {
+            if (err instanceof AxiosError) {
+              notify.error({
+                message: 'Error updating relay',
+                description: extractErrorMsg(err),
+              });
+            }
+          }
+        },
+      });
+    },
+    [notify]
   );
 
   const gatewaysTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(
@@ -454,31 +557,104 @@ export default function NetworkDetailsPage(props: PageProps) {
     [confirmDeleteClient, openClientDetails]
   );
 
-  const goToNewHostPage = useCallback(() => {
-    navigate(AppRoutes.NEW_HOST_ROUTE);
-  }, [navigate]);
-
-  const confirmDeleteDns = useCallback(
-    (dns: DNS) => {
-      Modal.confirm({
-        title: `Delete DNS ${dns.name}.${dns.network}`,
-        content: `Are you sure you want to delete this DNS?`,
-        onOk: async () => {
-          try {
-            await NetworksService.deleteDns(dns.network, dns.name);
-            setDnses((dnses) => dnses.filter((dns) => dns.name !== dns.name));
-          } catch (err) {
-            if (err instanceof AxiosError) {
-              notify.error({
-                message: 'Error deleting DNS',
-                description: extractErrorMsg(err),
-              });
-            }
-          }
+  const relayTableCols = useMemo<TableColumnProps<Host>[]>(
+    () => [
+      {
+        title: 'Host name',
+        dataIndex: 'name',
+      },
+      {
+        title: 'Addresses',
+        dataIndex: 'address',
+        render(_, host) {
+          const assocNode = networkNodes.find((node) => node.hostid === host.id);
+          const addrs = `${assocNode?.address ?? ''}, ${assocNode?.address6 ?? ''}`;
+          return <Tooltip title={addrs}>{addrs}</Tooltip>;
         },
-      });
-    },
-    [notify]
+      },
+      {
+        title: 'Endpoint',
+        dataIndex: 'endpointip',
+      },
+      {
+        width: '1rem',
+        render(_, relay) {
+          return (
+            <Dropdown
+              placement="bottomRight"
+              menu={{
+                items: [
+                  {
+                    key: 'delete',
+                    label: (
+                      <Typography.Text onClick={() => confirmDeleteRelay(relay)}>
+                        <DeleteOutlined /> Delete
+                      </Typography.Text>
+                    ),
+                  },
+                ] as MenuProps['items'],
+              }}
+            >
+              <Button type="text" icon={<MoreOutlined />} />
+            </Dropdown>
+          );
+        },
+      },
+    ],
+    [confirmDeleteRelay, networkNodes]
+  );
+
+  const relayedTableCols = useMemo<TableColumnProps<Host>[]>(
+    () => [
+      {
+        title: 'Host name',
+        dataIndex: 'name',
+      },
+      {
+        title: 'Relayed by',
+        render(_, host) {
+          return `${networkHosts.find((h) => h.id === host.relayed_by)?.name ?? ''}`;
+        },
+      },
+      {
+        title: 'Addresses',
+        dataIndex: 'address',
+        render(_, host) {
+          const assocNode = networkNodes.find((node) => node.hostid === host.id);
+          const addrs = `${assocNode?.address ?? ''}, ${assocNode?.address6 ?? ''}`;
+          return <Tooltip title={addrs}>{addrs}</Tooltip>;
+        },
+      },
+      {
+        title: 'Endpoint',
+        dataIndex: 'endpointip',
+      },
+      {
+        width: '1rem',
+        render(_, relayed) {
+          return (
+            <Dropdown
+              placement="bottomRight"
+              menu={{
+                items: [
+                  {
+                    key: 'delete',
+                    label: (
+                      <Typography.Text onClick={() => confirmRemoveRelayed(relayed)}>
+                        <DeleteOutlined /> Stop being relayed
+                      </Typography.Text>
+                    ),
+                  },
+                ] as MenuProps['items'],
+              }}
+            >
+              <Button type="text" icon={<MoreOutlined />} />
+            </Dropdown>
+          );
+        },
+      },
+    ],
+    [confirmRemoveRelayed, networkHosts, networkNodes]
   );
 
   // ui components
@@ -590,410 +766,520 @@ export default function NetworkDetailsPage(props: PageProps) {
     [form, isEditing, themeToken, isIpv4Watch, isIpv6Watch]
   );
 
-  const getHostsContent = useCallback(
-    (network: Network) => {
-      return (
-        <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-          <Card style={{ width: '100%' }}>
-            <Row justify="space-between" style={{ marginBottom: '1rem' }}>
-              <Col xs={12} md={8}>
-                <Input
-                  size="large"
-                  placeholder="Search hosts"
-                  value={searchHost}
-                  onChange={(ev) => setSearchHost(ev.target.value)}
-                />
-              </Col>
-              <Col xs={12} md={6} style={{ textAlign: 'right' }}>
-                <Button type="primary" size="large" onClick={goToNewHostPage}>
-                  <PlusOutlined /> Add Host
-                </Button>
-              </Col>
-            </Row>
+  const getHostsContent = useCallback(() => {
+    return (
+      <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+        <Card style={{ width: '100%' }}>
+          <Row justify="space-between" style={{ marginBottom: '1rem' }}>
+            <Col xs={12} md={8}>
+              <Input
+                size="large"
+                placeholder="Search hosts"
+                value={searchHost}
+                onChange={(ev) => setSearchHost(ev.target.value)}
+              />
+            </Col>
+            <Col xs={12} md={6} style={{ textAlign: 'right' }}>
+              <Button type="primary" size="large" onClick={goToNewHostPage}>
+                <PlusOutlined /> Add Host
+              </Button>
+            </Col>
+          </Row>
 
-            <Table
-              columns={[
-                {
-                  title: 'Host Name',
-                  render: (_, node) => {
-                    const hostName = store.hostsCommonDetails[node.hostid].name;
-                    // TODO: fix broken link
-                    return <Link to={getHostRoute(hostName)}>{hostName}</Link>;
-                  },
+          <Table
+            columns={[
+              {
+                title: 'Host Name',
+                render: (_, node) => {
+                  const hostName = store.hostsCommonDetails[node.hostid].name;
+                  // TODO: fix broken link
+                  return <Link to={getHostRoute(hostName)}>{hostName}</Link>;
                 },
-                {
-                  title: 'Private Address',
-                  dataIndex: 'address',
-                  render: (address: string, node) => (
-                    <>
-                      <Typography.Text copyable>{address}</Typography.Text>
-                      <Typography.Text copyable={!!node.address6}>{node.address6}</Typography.Text>
-                    </>
-                  ),
-                },
-                {
-                  title: 'Public Address',
-                  dataIndex: 'name',
-                },
-                {
-                  title: 'Preferred DNS',
-                  dataIndex: 'name',
-                },
-                {
-                  title: 'Health Status',
-                  dataIndex: 'name',
-                },
-                {
-                  title: 'Connection status',
-                  // dataIndex: 'name',
-                },
-              ]}
-              dataSource={networkHosts}
-              rowKey="id"
-            />
-          </Card>
-        </div>
-      );
-    },
-    [goToNewHostPage, networkHosts, searchHost, store.hostsCommonDetails]
-  );
+              },
+              {
+                title: 'Private Address',
+                dataIndex: 'address',
+                render: (address: string, node) => (
+                  <>
+                    <Typography.Text copyable>{address}</Typography.Text>
+                    <Typography.Text copyable={!!node.address6}>{node.address6}</Typography.Text>
+                  </>
+                ),
+              },
+              {
+                title: 'Public Address',
+                dataIndex: 'name',
+              },
+              {
+                title: 'Preferred DNS',
+                dataIndex: 'name',
+              },
+              {
+                title: 'Health Status',
+                dataIndex: 'name',
+              },
+              {
+                title: 'Connection status',
+                // dataIndex: 'name',
+              },
+            ]}
+            dataSource={networkNodes}
+            rowKey="id"
+          />
+        </Card>
+      </div>
+    );
+  }, [goToNewHostPage, networkNodes, searchHost, store.hostsCommonDetails]);
 
-  const getDnsContent = useCallback(
-    (network: Network) => {
-      return (
-        <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-          <Card style={{ width: '100%' }}>
-            <Row justify="space-between" style={{ marginBottom: '1rem' }}>
-              <Col xs={12} md={8}>
-                <Input
-                  size="large"
-                  placeholder="Search DNS"
-                  value={searchDns}
-                  onChange={(ev) => setSearchDns(ev.target.value)}
-                />
-              </Col>
-              <Col xs={12} md={6} style={{ textAlign: 'right' }}>
-                <Button type="primary" size="large" onClick={() => setIsAddDnsModalOpen(true)}>
-                  <PlusOutlined /> Add DNS
-                </Button>
-              </Col>
-            </Row>
+  const getDnsContent = useCallback(() => {
+    return (
+      <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+        <Card style={{ width: '100%' }}>
+          <Row justify="space-between" style={{ marginBottom: '1rem' }}>
+            <Col xs={12} md={8}>
+              <Input
+                size="large"
+                placeholder="Search DNS"
+                value={searchDns}
+                onChange={(ev) => setSearchDns(ev.target.value)}
+              />
+            </Col>
+            <Col xs={12} md={6} style={{ textAlign: 'right' }}>
+              <Button type="primary" size="large" onClick={() => setIsAddDnsModalOpen(true)}>
+                <PlusOutlined /> Add DNS
+              </Button>
+            </Col>
+          </Row>
 
-            <Table
-              columns={[
-                {
-                  title: 'DNS Entry',
-                  render(_, dns) {
-                    return <Typography.Text copyable>{`${dns.name}.${dns.network}`}</Typography.Text>;
-                  },
+          <Table
+            columns={[
+              {
+                title: 'DNS Entry',
+                render(_, dns) {
+                  return <Typography.Text copyable>{`${dns.name}.${dns.network}`}</Typography.Text>;
                 },
-                {
-                  title: 'IP Addresses',
-                  render(_, dns) {
-                    return (
-                      <Typography.Text copyable>
-                        {dns.address}
-                        {dns.address6 && `, ${dns.address6}`}
-                      </Typography.Text>
-                    );
-                  },
+              },
+              {
+                title: 'IP Addresses',
+                render(_, dns) {
+                  return (
+                    <Typography.Text copyable>
+                      {dns.address}
+                      {dns.address6 && `, ${dns.address6}`}
+                    </Typography.Text>
+                  );
                 },
-                {
-                  title: '',
-                  key: 'action',
-                  width: '1rem',
-                  render: (_, dns) => (
-                    <Dropdown
-                      placement="bottomRight"
-                      menu={{
-                        items: [
-                          {
-                            key: 'delete',
-                            label: (
-                              <Tooltip title="Cannot delete default DNS">
-                                <Typography.Text onClick={() => confirmDeleteDns(dns)}>
-                                  <DeleteOutlined /> Delete
-                                </Typography.Text>
-                              </Tooltip>
-                            ),
-                          },
-                        ] as MenuProps['items'],
-                      }}
-                    >
-                      <MoreOutlined />
-                    </Dropdown>
-                  ),
-                },
-              ]}
-              dataSource={dnses}
-              rowKey="name"
-            />
-          </Card>
-        </div>
-      );
-    },
-    [confirmDeleteDns, dnses, searchDns]
-  );
+              },
+              {
+                title: '',
+                key: 'action',
+                width: '1rem',
+                render: (_, dns) => (
+                  <Dropdown
+                    placement="bottomRight"
+                    menu={{
+                      items: [
+                        {
+                          key: 'delete',
+                          label: (
+                            <Tooltip title="Cannot delete default DNS">
+                              <Typography.Text onClick={() => confirmDeleteDns(dns)}>
+                                <DeleteOutlined /> Delete
+                              </Typography.Text>
+                            </Tooltip>
+                          ),
+                        },
+                      ] as MenuProps['items'],
+                    }}
+                  >
+                    <MoreOutlined />
+                  </Dropdown>
+                ),
+              },
+            ]}
+            dataSource={dnses}
+            rowKey="name"
+          />
+        </Card>
+      </div>
+    );
+  }, [confirmDeleteDns, dnses, searchDns]);
 
-  const getClientsContent = useCallback(
-    (network: Network) => {
-      return (
-        <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-          {clients.length === 0 && (
-            <Row
-              className="page-padding"
-              style={{
-                background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
-                width: '100%',
-              }}
-            >
-              <Col xs={(24 * 2) / 3}>
-                <Typography.Title level={3} style={{ color: 'white ' }}>
-                  Clients
-                </Typography.Title>
-                <Typography.Text style={{ color: 'white ' }}>
-                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque amet modi cum aut doloremque dicta
-                  reiciendis odit molestias nam animi enim et molestiae consequatur quas quo facere magni, maiores rem.
+  const getClientsContent = useCallback(() => {
+    return (
+      <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+        {clients.length === 0 && (
+          <Row
+            className="page-padding"
+            style={{
+              background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
+              width: '100%',
+            }}
+          >
+            <Col xs={(24 * 2) / 3}>
+              <Typography.Title level={3} style={{ color: 'white ' }}>
+                Clients
+              </Typography.Title>
+              <Typography.Text style={{ color: 'white ' }}>
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque amet modi cum aut doloremque dicta
+                reiciendis odit molestias nam animi enim et molestiae consequatur quas quo facere magni, maiores rem.
+              </Typography.Text>
+            </Col>
+            <Col xs={(24 * 1) / 3} style={{ position: 'relative' }}>
+              <Card className="header-card" style={{ position: 'absolute', width: '100%' }}>
+                <Typography.Title level={3}>Create Client</Typography.Title>
+                <Typography.Text>
+                  Enable remote access to your network with clients. Clients enable you to connect mobile and other
+                  devices to your networks.
                 </Typography.Text>
-              </Col>
-              <Col xs={(24 * 1) / 3} style={{ position: 'relative' }}>
-                <Card className="header-card" style={{ position: 'absolute', width: '100%' }}>
-                  <Typography.Title level={3}>Create Client</Typography.Title>
-                  <Typography.Text>
-                    Enable remote access to your network with clients. Clients enable you to connect mobile and other
-                    devices to your networks.
-                  </Typography.Text>
-                  {clientGateways.length === 0 && (
-                    <Alert
-                      type="warning"
-                      showIcon
-                      message="No Client Gateway"
-                      description="You will be prompted to create a gateway for your network when creating a client."
-                      style={{ marginTop: '1rem' }}
-                    />
-                  )}
-                  <Row style={{ marginTop: '1rem' }}>
-                    <Col>
-                      <Button type="primary" size="large" onClick={() => setIsAddClientModalOpen(true)}>
-                        <PlusOutlined /> Create Client
-                      </Button>
-                    </Col>
-                  </Row>
-                </Card>
-              </Col>
-            </Row>
-          )}
-
-          {clients.length > 0 && (
-            <Row style={{ width: '100%' }}>
-              <Col xs={12}>
-                <Row style={{ width: '100%' }}>
-                  <Col xs={12}>
-                    <Typography.Title style={{ marginTop: '0px' }} level={5}>
-                      Gateways
-                    </Typography.Title>
-                  </Col>
-                  <Col xs={11} style={{ textAlign: 'right' }}>
-                    <Button type="primary" onClick={() => setIsAddClientModalOpen(true)}>
+                {clientGateways.length === 0 && (
+                  <Alert
+                    type="warning"
+                    showIcon
+                    message="No Client Gateway"
+                    description="You will be prompted to create a gateway for your network when creating a client."
+                    style={{ marginTop: '1rem' }}
+                  />
+                )}
+                <Row style={{ marginTop: '1rem' }}>
+                  <Col>
+                    <Button type="primary" size="large" onClick={() => setIsAddClientModalOpen(true)}>
                       <PlusOutlined /> Create Client
                     </Button>
                   </Col>
                 </Row>
-                <Row style={{ marginTop: '1rem' }}>
-                  <Col xs={23}>
-                    <Table
-                      columns={gatewaysTableCols}
-                      dataSource={clientGateways}
-                      rowKey="id"
-                      size="small"
-                      rowClassName={(gateway) => {
-                        return gateway.id === filteredGateway?.id ? 'selected-row' : '';
-                      }}
-                      onRow={(gateway) => {
-                        return {
-                          onClick: () => {
-                            if (filteredGateway?.id === gateway.id) setFilteredGateway(null);
-                            else setFilteredGateway(gateway);
-                          },
-                        };
-                      }}
-                    />
-                  </Col>
-                </Row>
-              </Col>
-              <Col xs={12}>
-                <Row style={{ width: '100%' }}>
-                  <Col xs={12}>
-                    <Typography.Title style={{ marginTop: '0px' }} level={5}>
-                      Clients
-                    </Typography.Title>
-                  </Col>
-                  <Col xs={12} style={{ textAlign: 'right' }}>
-                    Display All{' '}
-                    <Switch
-                      title="Display all clients. Click a gateway to filter clients specific to that gateway."
-                      checked={filteredGateway === null}
-                      onClick={() => {
-                        setFilteredGateway(null);
-                      }}
-                    />
-                  </Col>
-                </Row>
-                <Row style={{ marginTop: '1rem' }}>
-                  <Col xs={24}>
-                    <Table columns={clientsTableCols} dataSource={filteredClients} rowKey="clientid" size="small" />
-                  </Col>
-                </Row>
-              </Col>
-            </Row>
-          )}
-        </div>
-      );
-    },
-    [clientGateways, clients, clientsTableCols, filteredClients, filteredGateway, gatewaysTableCols]
-  );
+              </Card>
+            </Col>
+          </Row>
+        )}
 
-  const getEgressContent = useCallback(
-    (network: Network) => {
-      return (
-        <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-          {egresses.length === 0 && (
-            <Row
-              className="page-padding"
-              style={{
-                background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
-                width: '100%',
-              }}
-            >
-              <Col xs={16}>
-                <Typography.Title level={3} style={{ color: 'white ' }}>
-                  Egress
-                </Typography.Title>
-                <Typography.Text style={{ color: 'white ' }}>
+        {clients.length > 0 && (
+          <Row style={{ width: '100%' }}>
+            <Col xs={12}>
+              <Row style={{ width: '100%' }}>
+                <Col xs={12}>
+                  <Typography.Title style={{ marginTop: '0px' }} level={5}>
+                    Gateways
+                  </Typography.Title>
+                </Col>
+                <Col xs={11} style={{ textAlign: 'right' }}>
+                  <Button type="primary" onClick={() => setIsAddClientModalOpen(true)}>
+                    <PlusOutlined /> Create Client
+                  </Button>
+                </Col>
+              </Row>
+              <Row style={{ marginTop: '1rem' }}>
+                <Col xs={23}>
+                  <Table
+                    columns={gatewaysTableCols}
+                    dataSource={clientGateways}
+                    rowKey="id"
+                    size="small"
+                    rowClassName={(gateway) => {
+                      return gateway.id === filteredGateway?.id ? 'selected-row' : '';
+                    }}
+                    onRow={(gateway) => {
+                      return {
+                        onClick: () => {
+                          if (filteredGateway?.id === gateway.id) setFilteredGateway(null);
+                          else setFilteredGateway(gateway);
+                        },
+                      };
+                    }}
+                  />
+                </Col>
+              </Row>
+            </Col>
+            <Col xs={12}>
+              <Row style={{ width: '100%' }}>
+                <Col xs={12}>
+                  <Typography.Title style={{ marginTop: '0px' }} level={5}>
+                    Clients
+                  </Typography.Title>
+                </Col>
+                <Col xs={12} style={{ textAlign: 'right' }}>
+                  Display All{' '}
+                  <Switch
+                    title="Display all clients. Click a gateway to filter clients specific to that gateway."
+                    checked={filteredGateway === null}
+                    onClick={() => {
+                      setFilteredGateway(null);
+                    }}
+                  />
+                </Col>
+              </Row>
+              <Row style={{ marginTop: '1rem' }}>
+                <Col xs={24}>
+                  <Table columns={clientsTableCols} dataSource={filteredClients} rowKey="clientid" size="small" />
+                </Col>
+              </Row>
+            </Col>
+          </Row>
+        )}
+      </div>
+    );
+  }, [clientGateways, clients, clientsTableCols, filteredClients, filteredGateway, gatewaysTableCols]);
+
+  const getEgressContent = useCallback(() => {
+    return (
+      <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+        {egresses.length === 0 && (
+          <Row
+            className="page-padding"
+            style={{
+              background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
+              width: '100%',
+            }}
+          >
+            <Col xs={16}>
+              <Typography.Title level={3} style={{ color: 'white ' }}>
+                Egress
+              </Typography.Title>
+              <Typography.Text style={{ color: 'white ' }}>
+                Enable devices in your network to communicate with other devices outside the network via egress
+                gateways.
+              </Typography.Text>
+            </Col>
+            <Col xs={8} style={{ position: 'relative' }}>
+              <Card className="header-card" style={{ position: 'absolute', width: '100%' }}>
+                <Typography.Title level={3}>Create Egress</Typography.Title>
+                <Typography.Text>
                   Enable devices in your network to communicate with other devices outside the network via egress
                   gateways.
                 </Typography.Text>
-              </Col>
-              <Col xs={8} style={{ position: 'relative' }}>
-                <Card className="header-card" style={{ position: 'absolute', width: '100%' }}>
-                  <Typography.Title level={3}>Create Egress</Typography.Title>
-                  <Typography.Text>
-                    Enable devices in your network to communicate with other devices outside the network via egress
-                    gateways.
-                  </Typography.Text>
-                  <Row style={{ marginTop: '5rem' }}>
-                    <Col>
-                      <Button type="primary" size="large" onClick={() => setIsAddEgressModalOpen(true)}>
-                        <PlusOutlined /> Create Egress
-                      </Button>
-                    </Col>
-                  </Row>
-                </Card>
-              </Col>
-            </Row>
-          )}
-
-          {egresses.length > 0 && (
-            <Row style={{ width: '100%' }}>
-              <Col xs={24} style={{ marginBottom: '2rem' }}>
-                <Input
-                  placeholder="Search egress"
-                  value={searchEgress}
-                  onChange={(ev) => setSearchEgress(ev.target.value)}
-                  prefix={<SearchOutlined />}
-                  style={{ width: '30%' }}
-                />
-              </Col>
-              <Col xs={12}>
-                <Row style={{ width: '100%' }}>
-                  <Col xs={12}>
-                    <Typography.Title style={{ marginTop: '0px' }} level={5}>
-                      Egress Gateways
-                    </Typography.Title>
-                  </Col>
-                  <Col xs={11} style={{ textAlign: 'right' }}>
-                    <Button type="primary" onClick={() => setIsAddEgressModalOpen(true)}>
+                <Row style={{ marginTop: '5rem' }}>
+                  <Col>
+                    <Button type="primary" size="large" onClick={() => setIsAddEgressModalOpen(true)}>
                       <PlusOutlined /> Create Egress
                     </Button>
                   </Col>
                 </Row>
-                <Row style={{ marginTop: '1rem' }}>
-                  <Col xs={23}>
-                    <Table
-                      columns={egressTableCols}
-                      dataSource={filteredEgresses}
-                      rowKey="id"
-                      size="small"
-                      rowClassName={(egress) => {
-                        return egress.id === filteredEgress?.id ? 'selected-row' : '';
-                      }}
-                      onRow={(egress) => {
-                        return {
-                          onClick: () => {
-                            if (filteredEgress?.id === egress.id) setFilteredEgress(null);
-                            else setFilteredEgress(egress);
-                          },
-                        };
-                      }}
-                    />
-                  </Col>
-                </Row>
-              </Col>
-              <Col xs={12}>
-                <Row style={{ width: '100%' }}>
-                  <Col xs={12}>
-                    <Typography.Title style={{ marginTop: '0px' }} level={5}>
-                      External routes
-                    </Typography.Title>
-                  </Col>
-                  <Col xs={12} style={{ textAlign: 'right' }}>
-                    {filteredEgress && (
-                      <Button
-                        type="primary"
-                        style={{ marginRight: '1rem' }}
-                        onClick={() => setIsUpdateEgressModalOpen(true)}
-                      >
-                        <PlusOutlined /> Add external route
-                      </Button>
-                    )}
-                    Display All{' '}
-                    <Switch
-                      title="Display all routes. Click an egress to filter routes specific to that egress."
-                      checked={filteredEgress === null}
-                      onClick={() => {
-                        setFilteredEgress(null);
-                      }}
-                    />
-                  </Col>
-                </Row>
-                <Row style={{ marginTop: '1rem' }}>
-                  <Col xs={24}>
-                    <Table
-                      columns={externalRoutesTableCols}
-                      dataSource={filteredExternalRoutes}
-                      rowKey={(range) => `${range.node?.name ?? ''}-${range.range}`}
-                      size="small"
-                    />
-                  </Col>
-                </Row>
-              </Col>
-            </Row>
-          )}
-        </div>
-      );
-    },
-    [
-      egresses,
-      searchEgress,
-      egressTableCols,
-      filteredEgresses,
-      filteredEgress,
-      externalRoutesTableCols,
-      filteredExternalRoutes,
-    ]
-  );
+              </Card>
+            </Col>
+          </Row>
+        )}
 
-  const getAclsContent = useCallback((network: Network) => {
+        {egresses.length > 0 && (
+          <Row style={{ width: '100%' }}>
+            <Col xs={24} style={{ marginBottom: '2rem' }}>
+              <Input
+                placeholder="Search egress"
+                value={searchEgress}
+                onChange={(ev) => setSearchEgress(ev.target.value)}
+                prefix={<SearchOutlined />}
+                style={{ width: '30%' }}
+              />
+            </Col>
+            <Col xs={12}>
+              <Row style={{ width: '100%' }}>
+                <Col xs={12}>
+                  <Typography.Title style={{ marginTop: '0px' }} level={5}>
+                    Egress Gateways
+                  </Typography.Title>
+                </Col>
+                <Col xs={11} style={{ textAlign: 'right' }}>
+                  <Button type="primary" onClick={() => setIsAddEgressModalOpen(true)}>
+                    <PlusOutlined /> Create Egress
+                  </Button>
+                </Col>
+              </Row>
+              <Row style={{ marginTop: '1rem' }}>
+                <Col xs={23}>
+                  <Table
+                    columns={egressTableCols}
+                    dataSource={filteredEgresses}
+                    rowKey="id"
+                    size="small"
+                    rowClassName={(egress) => {
+                      return egress.id === filteredEgress?.id ? 'selected-row' : '';
+                    }}
+                    onRow={(egress) => {
+                      return {
+                        onClick: () => {
+                          if (filteredEgress?.id === egress.id) setFilteredEgress(null);
+                          else setFilteredEgress(egress);
+                        },
+                      };
+                    }}
+                  />
+                </Col>
+              </Row>
+            </Col>
+            <Col xs={12}>
+              <Row style={{ width: '100%' }}>
+                <Col xs={12}>
+                  <Typography.Title style={{ marginTop: '0px' }} level={5}>
+                    External routes
+                  </Typography.Title>
+                </Col>
+                <Col xs={12} style={{ textAlign: 'right' }}>
+                  {filteredEgress && (
+                    <Button
+                      type="primary"
+                      style={{ marginRight: '1rem' }}
+                      onClick={() => setIsUpdateEgressModalOpen(true)}
+                    >
+                      <PlusOutlined /> Add external route
+                    </Button>
+                  )}
+                  Display All{' '}
+                  <Switch
+                    title="Display all routes. Click an egress to filter routes specific to that egress."
+                    checked={filteredEgress === null}
+                    onClick={() => {
+                      setFilteredEgress(null);
+                    }}
+                  />
+                </Col>
+              </Row>
+              <Row style={{ marginTop: '1rem' }}>
+                <Col xs={24}>
+                  <Table
+                    columns={externalRoutesTableCols}
+                    dataSource={filteredExternalRoutes}
+                    rowKey={(range) => `${range.node?.name ?? ''}-${range.range}`}
+                    size="small"
+                  />
+                </Col>
+              </Row>
+            </Col>
+          </Row>
+        )}
+      </div>
+    );
+  }, [
+    egresses,
+    searchEgress,
+    egressTableCols,
+    filteredEgresses,
+    filteredEgress,
+    externalRoutesTableCols,
+    filteredExternalRoutes,
+  ]);
+
+  const getRelayContent = useCallback(() => {
+    return (
+      <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+        {relays.length === 0 && (
+          <Row
+            className="page-padding"
+            style={{
+              background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
+              width: '100%',
+            }}
+          >
+            <Col xs={16}>
+              <Typography.Title level={3} style={{ color: 'white ' }}>
+                Relays
+              </Typography.Title>
+              <Typography.Text style={{ color: 'white ' }}>
+                Enable devices in your network to communicate with othererwise unreachable devices with relays.
+              </Typography.Text>
+            </Col>
+            <Col xs={8} style={{ position: 'relative' }}>
+              <Card className="header-card" style={{ position: 'absolute', width: '100%' }}>
+                <Typography.Title level={3}>Create Relay</Typography.Title>
+                <Typography.Text>
+                  Enable devices in your network to communicate with otherwise unreachable devices with relays.
+                </Typography.Text>
+                <Row style={{ marginTop: '5rem' }}>
+                  <Col>
+                    <Button type="primary" size="large" onClick={() => setIsAddRelayModalOpen(true)}>
+                      <PlusOutlined /> Create Relay
+                    </Button>
+                  </Col>
+                </Row>
+              </Card>
+            </Col>
+          </Row>
+        )}
+
+        {relays.length > 0 && (
+          <Row style={{ width: '100%' }}>
+            <Col xs={24} style={{ marginBottom: '2rem' }}>
+              <Input
+                placeholder="Search relay"
+                value={searchRelay}
+                onChange={(ev) => setSearchRelay(ev.target.value)}
+                prefix={<SearchOutlined />}
+                style={{ width: '30%' }}
+              />
+            </Col>
+            <Col xs={12}>
+              <Row style={{ width: '100%' }}>
+                <Col xs={12}>
+                  <Typography.Title style={{ marginTop: '0px' }} level={5}>
+                    Relays
+                  </Typography.Title>
+                </Col>
+                <Col xs={11} style={{ textAlign: 'right' }}>
+                  <Button type="primary" onClick={() => setIsAddRelayModalOpen(true)}>
+                    <PlusOutlined /> Create Relay
+                  </Button>
+                </Col>
+              </Row>
+              <Row style={{ marginTop: '1rem' }}>
+                <Col xs={23}>
+                  <Table
+                    columns={relayTableCols}
+                    dataSource={filteredRelays}
+                    rowKey="id"
+                    size="small"
+                    rowClassName={(relay) => {
+                      return relay.id === selectedRelay?.id ? 'selected-row' : '';
+                    }}
+                    onRow={(relay) => {
+                      return {
+                        onClick: () => {
+                          if (selectedRelay?.id === relay.id) setSelectedRelay(null);
+                          else setSelectedRelay(relay);
+                        },
+                      };
+                    }}
+                  />
+                </Col>
+              </Row>
+            </Col>
+            <Col xs={12}>
+              <Row style={{ width: '100%' }}>
+                <Col xs={12}>
+                  <Typography.Title style={{ marginTop: '0px' }} level={5}>
+                    Relayed Hosts
+                  </Typography.Title>
+                </Col>
+                <Col xs={12} style={{ textAlign: 'right' }}>
+                  {selectedRelay && (
+                    <Button
+                      type="primary"
+                      style={{ marginRight: '1rem' }}
+                      // onClick={() => setIsUpdateEgressModalOpen(true)}
+                    >
+                      <PlusOutlined /> Add relayed host
+                    </Button>
+                  )}
+                  Display All{' '}
+                  <Switch
+                    title="Display all relayed hosts. Click a relay to filter hosts relayed only by that relay."
+                    checked={selectedRelay === null}
+                    onClick={() => {
+                      setSelectedRelay(null);
+                    }}
+                  />
+                </Col>
+              </Row>
+              <Row style={{ marginTop: '1rem' }}>
+                <Col xs={24}>
+                  <Table columns={relayedTableCols} dataSource={filteredRelayedHosts} rowKey="id" size="small" />
+                </Col>
+              </Row>
+            </Col>
+          </Row>
+        )}
+      </div>
+    );
+  }, [filteredRelayedHosts, filteredRelays, relayTableCols, relayedTableCols, relays, searchRelay, selectedRelay]);
+
+  const getAclsContent = useCallback(() => {
     return (
       <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
         <Card style={{ width: '100%' }}></Card>
@@ -1011,7 +1297,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       {
         key: 'hosts',
         label: `Hosts (#)`,
-        children: network ? getHostsContent(network) : <Skeleton active />,
+        children: network ? getHostsContent() : <Skeleton active />,
       },
       {
         key: 'graph',
@@ -1021,27 +1307,27 @@ export default function NetworkDetailsPage(props: PageProps) {
       {
         key: 'acls',
         label: `ACLs`,
-        children: network ? getAclsContent(network) : <Skeleton active />,
+        children: network ? getAclsContent() : <Skeleton active />,
       },
       {
         key: 'clients',
         label: `Clients`,
-        children: network ? getClientsContent(network) : <Skeleton active />,
+        children: network ? getClientsContent() : <Skeleton active />,
       },
       {
         key: 'egress',
         label: `Egress`,
-        children: network ? getEgressContent(network) : <Skeleton active />,
+        children: network ? getEgressContent() : <Skeleton active />,
       },
       {
         key: 'relays',
         label: `Relays `,
-        children: 'Content of Relays Tab',
+        children: network ? getRelayContent() : <Skeleton active />,
       },
       {
         key: 'dns',
         label: `DNS`,
-        children: network ? getDnsContent(network) : <Skeleton active />,
+        children: network ? getDnsContent() : <Skeleton active />,
       },
       {
         key: 'access-control',
@@ -1054,7 +1340,16 @@ export default function NetworkDetailsPage(props: PageProps) {
         children: 'Content of Metrics Tab',
       },
     ],
-    [network, getOverviewContent, getHostsContent, getAclsContent, getClientsContent, getEgressContent, getDnsContent]
+    [
+      network,
+      getOverviewContent,
+      getHostsContent,
+      getAclsContent,
+      getClientsContent,
+      getEgressContent,
+      getRelayContent,
+      getDnsContent,
+    ]
   );
 
   const loadClients = useCallback(async () => {
@@ -1287,6 +1582,15 @@ export default function NetworkDetailsPage(props: PageProps) {
           onCancel={() => setIsUpdateEgressModalOpen(false)}
         />
       )}
+      <AddRelayModal
+        isOpen={isAddRelayModalOpen}
+        networkId={networkId}
+        onCreateRelay={() => {
+          store.fetchNodes();
+          setIsAddRelayModalOpen(false);
+        }}
+        onCancel={() => setIsAddRelayModalOpen(false)}
+      />
     </Layout.Content>
   );
 }
