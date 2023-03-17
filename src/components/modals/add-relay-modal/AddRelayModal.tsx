@@ -174,12 +174,7 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
       <Divider style={{ margin: '0px 0px 2rem 0px' }} />
       <Form name="add-relay-form" form={form} layout="vertical">
         <div className="CustomModalBody">
-          <Form.Item
-            label="Select host"
-            name={hostIdFormName}
-            rules={[{ required: true }]}
-            // style={{ marginBottom: '0px' }}
-          >
+          <Form.Item label="Select host" name={hostIdFormName} rules={[{ required: true }]}>
             {!selectedRelay && (
               <Select
                 placeholder="Select host"
@@ -281,6 +276,8 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
                             onRow={(host) => {
                               return {
                                 onClick: () => {
+                                  const canSelect = !host.isrelay && !host.isrelayed;
+                                  if (!canSelect) return;
                                   setSelectedRelayedIds((prev) => {
                                     const relayedHostIds = new Set(prev);
                                     if (relayedHostIds.has(host.id)) {
@@ -293,7 +290,11 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
                                 },
                               };
                             }}
-                            rowClassName={(host) => (selectedRelayedIds.includes(host.id) ? 'selected-row' : '')}
+                            rowClassName={(host) => {
+                              const canSelect = !host.isrelay && !host.isrelayed;
+                              if (!canSelect) return 'unavailable-row';
+                              return selectedRelayedIds.includes(host.id) ? 'selected-row' : '';
+                            }}
                           />
                         </Col>
                       </Row>
