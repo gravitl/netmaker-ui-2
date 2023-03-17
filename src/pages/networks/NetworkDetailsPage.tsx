@@ -144,7 +144,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   }, [networkId, store.hosts, store.nodes]);
 
   const relays = useMemo<Host[]>(() => {
-    return networkHosts.filter((host) => host.isrelay);
+    return networkHosts.filter((host) => host?.isrelay);
   }, [networkHosts]);
 
   const filteredRelays = useMemo<Host[]>(
@@ -154,9 +154,9 @@ export default function NetworkDetailsPage(props: PageProps) {
 
   const filteredRelayedHosts = useMemo<Host[]>(() => {
     if (selectedRelay) {
-      return networkHosts.filter((host) => host.isrelayed && host.relayed_by === selectedRelay.id);
+      return networkHosts.filter((host) => host?.isrelayed && host?.relayed_by === selectedRelay.id);
     } else {
-      return networkHosts.filter((host) => host.isrelayed);
+      return networkHosts.filter((host) => host?.isrelayed);
     }
   }, [networkHosts, selectedRelay]);
 
@@ -795,6 +795,12 @@ export default function NetworkDetailsPage(props: PageProps) {
                   // TODO: fix broken link
                   return <Link to={getHostRoute(hostName)}>{hostName}</Link>;
                 },
+                sorter: (a, b) => {
+                  const hostNameA = store.hostsCommonDetails[a.hostid].name;
+                  const hostNameB = store.hostsCommonDetails[b.hostid].name;
+                  return hostNameA.localeCompare(hostNameB);
+                },
+                defaultSortOrder: 'ascend',
               },
               {
                 title: 'Private Address',

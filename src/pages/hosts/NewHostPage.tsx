@@ -1,6 +1,8 @@
+import { Network } from '@/models/Network';
+import { useStore } from '@/store/store';
 import { CopyOutlined, PlusOutlined } from '@ant-design/icons';
 import { Button, Card, Col, Divider, Input, Layout, List, Row, Steps } from 'antd';
-import { MouseEvent, useState } from 'react';
+import { MouseEvent, useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageProps } from '../../models/Page';
 import { AppRoutes } from '../../routes';
@@ -20,10 +22,10 @@ const steps = [
 
 export default function NewHostPage(props: PageProps) {
   const navigate = useNavigate();
+  const store = useStore();
 
   const [currentStep, setCurrentStep] = useState(0);
-  const [networks, setNetworks] = useState([]);
-  const [selectedNetwork, setSelectedNetwork] = useState(null);
+  const [selectedNetwork, setSelectedNetwork] = useState<Network | null>(null);
   const [selectedOs, setSelectedOs] = useState<AvailableOses>('windows');
 
   const onStepChange = (newStep: number) => {
@@ -31,7 +33,9 @@ export default function NewHostPage(props: PageProps) {
   };
 
   const onFinish = () => {
-    navigate(AppRoutes.HOST_ROUTE);
+    // TODO: know which is best. maybe take this as a prop? so it'll be more flexible to different flows
+    // navigate(AppRoutes.HOST_ROUTE);
+    navigate(AppRoutes.NETWORKS_ROUTE + '/' + selectedNetwork?.netid);
   };
 
   const onShowInstallGuide = (ev: MouseEvent, os: AvailableOses) => {
@@ -44,8 +48,17 @@ export default function NewHostPage(props: PageProps) {
     setSelectedOs(os);
   };
 
-  if (networks.length === 1) {
-    setSelectedNetwork(networks[0]);
+  const loadNetworks = useCallback(() => {
+    store.fetchNetworks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    loadNetworks();
+  }, [loadNetworks]);
+
+  if (store?.networks?.length === 1) {
+    setSelectedNetwork(store?.networks[0]);
   }
 
   return (
@@ -71,41 +84,21 @@ export default function NewHostPage(props: PageProps) {
                 className="networks-list"
                 style={{ maxHeight: '50vh', overflow: 'auto', marginTop: '.5rem' }}
               >
-                <List.Item
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => {
-                    onStepChange(1);
-                  }}
-                >
-                  <List.Item.Meta title="Network 1" description="123.123.123.0/24, abc9::/8" />
-                </List.Item>
-                <List.Item>
-                  <List.Item.Meta title="Network 2" description="123.123.123.0/24, abc9::/8" />
-                </List.Item>
-                <List.Item>
-                  <List.Item.Meta title="Network 2" description="123.123.123.0/24, abc9::/8" />
-                </List.Item>
-                <List.Item>
-                  <List.Item.Meta title="Network 2" description="123.123.123.0/24, abc9::/8" />
-                </List.Item>
-                <List.Item>
-                  <List.Item.Meta title="Network 2" description="123.123.123.0/24, abc9::/8" />
-                </List.Item>
-                <List.Item>
-                  <List.Item.Meta title="Network 2" description="123.123.123.0/24, abc9::/8" />
-                </List.Item>
-                <List.Item>
-                  <List.Item.Meta title="Network 2" description="123.123.123.0/24, abc9::/8" />
-                </List.Item>
-                <List.Item>
-                  <List.Item.Meta title="Network 2" description="123.123.123.0/24, abc9::/8" />
-                </List.Item>
-                <List.Item>
-                  <List.Item.Meta title="Network 2" description="123.123.123.0/24, abc9::/8" />
-                </List.Item>
-                <List.Item>
-                  <List.Item.Meta title="Network 2" description="123.123.123.0/24, abc9::/8" />
-                </List.Item>
+                {store.networks.map((network) => (
+                  <List.Item
+                    key={network.netid}
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => {
+                      setSelectedNetwork(network);
+                      onStepChange(1);
+                    }}
+                  >
+                    <List.Item.Meta
+                      title={network.netid}
+                      description={`IPv4 Range: ${network.addressrange}, IPv6 Range: ${network.addressrange6}`}
+                    />
+                  </List.Item>
+                ))}
               </List>
               <Button type="link">
                 <PlusOutlined /> Add network
@@ -121,7 +114,10 @@ export default function NewHostPage(props: PageProps) {
           <Col xs={24} lg={12}>
             <Card>
               <p>
-                Connect host to <span style={{ fontWeight: 'bold' }}>Network 1 (123.123.123.0/24, abc9::/8)</span>{' '}
+                Connect host to{' '}
+                <span style={{ fontWeight: 'bold' }}>
+                  {selectedNetwork?.netid} ({`${selectedNetwork?.addressrange}, ${selectedNetwork?.addressrange6}`})
+                </span>{' '}
                 <Button type="link" size="small" onClick={() => setCurrentStep(0)}>
                   Change
                 </Button>
