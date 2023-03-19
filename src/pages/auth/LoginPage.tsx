@@ -6,6 +6,7 @@ import { LockOutlined, MailOutlined } from '@ant-design/icons';
 import { Button, Checkbox, Col, Divider, Form, Input, Layout, notification, Row, Typography } from 'antd';
 import { AxiosError } from 'axios';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { isSaasBuild } from '../../services/BaseService';
 
@@ -19,6 +20,7 @@ export default function LoginPage(props: LoginPageProps) {
   const store = useStore();
   const navigate = useNavigate();
   const { baseUrl, token, logoUrl, tenantName } = useParams();
+  const { t } = useTranslation();
 
   const [shouldRemember, setShouldRemember] = useState(false);
 
@@ -43,9 +45,9 @@ export default function LoginPage(props: LoginPageProps) {
   }
 
   // TODO: check if user is logged in in before route hook
-  if (store.isLoggedIn()) {
-    navigate(AppRoutes.HOME_ROUTE);
-  }
+  // if (store.isLoggedIn()) {
+  //   navigate(AppRoutes.HOME_ROUTE);
+  // }
 
   // TODO: check if server is EE then use custom logo and tenant name
   logoUrl && store.setLogoUrl(logoUrl);
@@ -64,50 +66,50 @@ export default function LoginPage(props: LoginPageProps) {
       >
         <Row>
           <Col xs={24}>
-            <Typography.Title level={2}>Sign In</Typography.Title>
+            <Typography.Title level={2}>{t('signin.signin')}</Typography.Title>
           </Col>
         </Row>
 
         <Form form={form} layout="vertical">
-          <Form.Item name="username" label="Username" rules={[{ required: true }]}>
-            <Input placeholder="Username" size="large" prefix={<MailOutlined />} />
+          <Form.Item name="username" label={t('signin.username')} rules={[{ required: true }]}>
+            <Input placeholder={String(t('signin.username'))} size="large" prefix={<MailOutlined />} />
           </Form.Item>
-          <Form.Item name="password" label="Password" rules={[{ required: true }]}>
-            <Input placeholder="Password" type="password" size="large" prefix={<LockOutlined />} />
+          <Form.Item name="password" label={t('signin.password')} rules={[{ required: true }]}>
+            <Input placeholder={String(t('signin.password'))} type="password" size="large" prefix={<LockOutlined />} />
           </Form.Item>
 
           <Row style={{ marginBottom: '1.5rem' }}>
             <Col>
               <Checkbox checked={shouldRemember} onChange={(e) => setShouldRemember(e.target.checked)}>
                 {' '}
-                <Typography.Text>Remember me</Typography.Text>
+                <Typography.Text>{t('signin.rememberme')}</Typography.Text>
               </Checkbox>
             </Col>
           </Row>
 
           <Typography.Text>
-            By signing in you agree to our {/* eslint-disable-next-line react/jsx-no-target-blank */}
+            {t('signin.terms1')} {/* eslint-disable-next-line react/jsx-no-target-blank */}
             <a href="https://netmaker.io" target="_blank">
-              terms of service
+              {t('signin.terms2')}
             </a>{' '}
-            and {/* eslint-disable-next-line react/jsx-no-target-blank */}
+            {t('signin.terms3')} {/* eslint-disable-next-line react/jsx-no-target-blank */}
             <a href="https://netmaker.io" target="_blank">
-              privacy policy
+              {t('signin.terms4')}
             </a>
             .
           </Typography.Text>
 
           <Form.Item style={{ marginTop: '1.5rem' }}>
             <Button type="primary" block onClick={onLogin}>
-              Login
+              {t('signin.signin')}
             </Button>
           </Form.Item>
           <Divider>
-            <Typography.Text>OR</Typography.Text>
+            <Typography.Text>{t('signin.or')}</Typography.Text>
           </Divider>
           <Form.Item style={{ marginTop: '1.5rem' }}>
             <Button type="default" block onClick={onSSOLogin}>
-              Login with SSO
+              {t('signin.sso')}
             </Button>
           </Form.Item>
         </Form>

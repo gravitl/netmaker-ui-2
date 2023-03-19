@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { AppstoreOutlined, UserOutlined } from '@ant-design/icons';
-import { Col, Divider, Input, List, MenuProps, Row, Switch } from 'antd';
+import { AppstoreOutlined, GlobalOutlined, UserOutlined } from '@ant-design/icons';
+import { Col, Divider, Input, List, MenuProps, Row, Select, Switch } from 'antd';
 import { Layout, Menu, theme } from 'antd';
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import VirtualList from 'rc-virtual-list';
@@ -9,6 +9,8 @@ import { Host } from '../models/Host';
 import { getHostRoute } from '../utils/RouteUtils';
 import { useStore } from '../store/store';
 import { AppRoutes } from '@/routes';
+import { useTranslation } from 'react-i18next';
+import { Typography } from 'antd';
 
 const { Content, Sider } = Layout;
 
@@ -61,6 +63,7 @@ export default function MainLayout() {
   const currentTheme = useStore((state) => state.currentTheme);
   const setCurrentTheme = useStore((state) => state.setCurrentTheme);
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
 
   const [collapsed, setCollapsed] = useState(false);
   const [networks, setNetworks] = useState(dummyNets);
@@ -71,6 +74,7 @@ export default function MainLayout() {
       [
         {
           icon: UserOutlined,
+          // TODO: get username
           label: 'Aceix',
         },
       ].map((item, index) => ({
@@ -80,7 +84,7 @@ export default function MainLayout() {
         children: [
           {
             style: {
-              padding: '1rem',
+              padding: collapsed ? '.2rem' : '1rem',
             },
             label: (
               <div
@@ -101,9 +105,50 @@ export default function MainLayout() {
               </div>
             ),
           },
+          {
+            style: {
+              padding: collapsed ? '.2rem' : '1rem',
+            },
+            label: (
+              <div
+                style={{
+                  display: 'flex',
+                  flexFlow: 'row nowrap',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  gap: '1rem',
+                }}
+              >
+                <GlobalOutlined />
+                <Select
+                  style={{ width: '100%' }}
+                  defaultValue="en"
+                  options={[
+                    {
+                      label: (
+                        <>
+                          <img
+                            style={{ width: '20px', height: '12px' }}
+                            src="https://img.freepik.com/free-vector/illustration-uk-flag_53876-18166.jpg?w=1800&t=st=1679225900~exp=1679226500~hmac=0cc9ee0d4d5196bb3c610ca92d669f3c0ebf95431423a2c4ff7196f81c10891e"
+                            alt="english"
+                          />{' '}
+                          English
+                        </>
+                      ),
+                      value: 'en',
+                    },
+                    { label: 'French', value: 'fr' },
+                  ]}
+                  onChange={(value) => {
+                    i18n.changeLanguage(value);
+                  }}
+                />
+              </div>
+            ),
+          },
         ],
       })),
-    [currentTheme, setCurrentTheme]
+    [collapsed, currentTheme, i18n, setCurrentTheme]
   );
 
   // TODO: optimise how sidenav renders when collapsed
@@ -126,6 +171,10 @@ export default function MainLayout() {
       >
         {/* logo */}
         <img src="/src/assets/logo.png" alt="logo" style={{ width: '100%', padding: '1rem' }} />
+        {/* TODO: remove this test line */}
+        <div className="">
+          <Typography.Text>{t('common.hello')}</Typography.Text>
+        </div>
         <Menu
           theme="light"
           mode="inline"
