@@ -20,4 +20,8 @@ export const en: LanguageResource = {
     sso: 'Login with SSO',
     or: 'or',
   },
+  error: {
+    servermalfunction: 'Error server malfunction',
+    contactyourserveradmin: 'Contact your server admin',
+  },
 };

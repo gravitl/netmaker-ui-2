@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { AppstoreOutlined, GlobalOutlined, UserOutlined } from '@ant-design/icons';
-import { Col, Divider, Input, List, MenuProps, Row, Select, Switch } from 'antd';
+import { Alert, Col, Divider, Input, List, MenuProps, Row, Select, Switch } from 'antd';
 import { Layout, Menu, theme } from 'antd';
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import VirtualList from 'rc-virtual-list';
@@ -64,6 +64,7 @@ export default function MainLayout() {
   const setCurrentTheme = useStore((state) => state.setCurrentTheme);
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
+  const store = useStore();
 
   const [collapsed, setCollapsed] = useState(false);
   const [networks, setNetworks] = useState(dummyNets);
@@ -171,10 +172,6 @@ export default function MainLayout() {
       >
         {/* logo */}
         <img src="/src/assets/logo.png" alt="logo" style={{ width: '100%', padding: '1rem' }} />
-        {/* TODO: remove this test line */}
-        <div className="">
-          <Typography.Text>{t('common.hello')}</Typography.Text>
-        </div>
         <Menu
           theme="light"
           mode="inline"
@@ -258,6 +255,20 @@ export default function MainLayout() {
         }}
       >
         <Content style={{ background: colorBgContainer, overflow: 'initial', minHeight: '100vh' }}>
+          {/* server status indicator */}
+          {!store.serverStatus.isHealthy && (
+            <Row>
+              <Col xs={24}>
+                <Alert
+                  type="warning"
+                  showIcon
+                  style={{ border: 'none', height: '4rem', fontSize: '1rem', color: '#D4B106' }}
+                  message="Server error: Your Netmaker server is not running properly. This may impact network performance . Contact your
+                  administrator."
+                />
+              </Col>
+            </Row>
+          )}
           <Outlet />
         </Content>
       </Layout>

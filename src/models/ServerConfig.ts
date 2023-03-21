@@ -33,3 +33,8 @@ export interface TenantConfig {
   username?: string;
   tenantId?: string;
 }
+
+export interface ServerStatus {
+  db_connected: boolean;
+  broker_connected: boolean;
+}

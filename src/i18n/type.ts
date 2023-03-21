@@ -18,4 +18,8 @@ export interface LanguageResource {
     sso: string;
     or: string;
   };
+  error: {
+    servermalfunction: string;
+    contactyourserveradmin: string;
+  };
 }
