@@ -20,4 +20,4 @@ export const fr: LanguageResource = {
     terms4: 'Politique de confidentialité',
     username: "Nom d'utilisateur",
   },
-};
+} as any;
