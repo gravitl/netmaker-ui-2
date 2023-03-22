@@ -1511,6 +1511,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     <Layout.Content
       className="NetworkDetailsPage"
       style={{ position: 'relative', height: '100%', padding: props.isFullScreen ? 0 : 24 }}
+      key={networkId}
     >
       <Skeleton loading={isLoading} active className="page-padding">
         {/* top bar */}

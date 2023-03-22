@@ -32,7 +32,7 @@ export default function GettingStartedPage() {
     const maxNumOfStepsIndex = gettingStartedSteps.length - 1;
     // if on last step
     if (currentStep === maxNumOfStepsIndex) {
-      navigate(AppRoutes.HOME_ROUTE);
+      navigate(AppRoutes.DASHBOARD_ROUTE);
       return;
     }
 

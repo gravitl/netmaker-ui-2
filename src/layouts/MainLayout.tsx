@@ -1,16 +1,15 @@
-import React, { useMemo, useState } from 'react';
-import { AppstoreOutlined, GlobalOutlined, UserOutlined } from '@ant-design/icons';
-import { Alert, Col, Divider, Input, List, MenuProps, Row, Select, Switch } from 'antd';
+import React, { useCallback, useMemo, useState } from 'react';
+import { AppstoreOutlined, GlobalOutlined, LaptopOutlined, LogoutOutlined, UserOutlined } from '@ant-design/icons';
+import { Alert, Col, Divider, Input, List, MenuProps, Row, Select, Switch, Typography } from 'antd';
 import { Layout, Menu, theme } from 'antd';
-import { Link, Outlet, useNavigate } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import VirtualList from 'rc-virtual-list';
 import { Network } from '../models/Network';
 import { Host } from '../models/Host';
-import { getHostRoute } from '../utils/RouteUtils';
+import { getHostRoute, getNetworkRoute } from '../utils/RouteUtils';
 import { useStore } from '../store/store';
 import { AppRoutes } from '@/routes';
 import { useTranslation } from 'react-i18next';
-import { Typography } from 'antd';
 
 const { Content, Sider } = Layout;
 
@@ -21,9 +20,19 @@ const sideNavItems: MenuProps['items'] = [
     label: 'Dashboard',
   },
   {
-    key: 'remote-access',
+    key: 'networks',
+    icon: GlobalOutlined,
+    label: 'Networks',
+  },
+  {
+    key: 'hosts',
+    icon: LaptopOutlined,
+    label: 'Hosts',
+  },
+  {
+    key: 'clients',
     icon: AppstoreOutlined,
-    label: 'Remote Access',
+    label: 'Clients',
   },
   {
     key: 'enrollment-keys',
@@ -39,22 +48,9 @@ const sideNavItems: MenuProps['items'] = [
 const SIDE_NAV_EXPANDED_WIDTH = '200px';
 const SIDE_NAV_COLLAPSED_WIDTH = '80px';
 
-const dummyNets: Network[] = [
-  { netid: 'home' },
-  { netid: 'fast-net' },
-  { netid: 'test-net' },
-  { netid: 'arpanet' },
-  { netid: 'internet' },
-] as Network[];
-
-const dummyHosts: Host[] = [
-  { id: '123', name: 'Home Ubuntu' },
-  { id: '1234', name: 'Office Mac' },
-  { id: '12', name: "Kid's Windows" },
-] as Host[];
-
 const NETWORKS_LIST_HEIGHT = 200;
 const HOSTS_LIST_HEIGHT = 200;
+const selectedColor = '#1668dc';
 
 export default function MainLayout() {
   const {
@@ -65,18 +61,29 @@ export default function MainLayout() {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const store = useStore();
+  const storeLogout = useStore((state) => state.logout);
+  const location = useLocation();
 
-  const [collapsed, setCollapsed] = useState(false);
-  const [networks, setNetworks] = useState(dummyNets);
-  const [hosts, setHosts] = useState(dummyHosts);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [networksSearch, setNetworksSearch] = useState('');
+  const [hostsSearch, setHostsSearch] = useState('');
+
+  const filteredNetworks = useMemo(
+    () => store.networks.filter((network) => network.netid.toLowerCase().includes(networksSearch.toLowerCase())),
+    [networksSearch, store.networks]
+  );
+
+  const filteredHosts = useMemo(
+    () => store.hosts.filter((host) => host.name.toLowerCase().includes(hostsSearch.toLowerCase())),
+    [hostsSearch, store.hosts]
+  );
 
   const sideNavBottomItems: MenuProps['items'] = useMemo(
     () =>
       [
         {
           icon: UserOutlined,
-          // TODO: get username
-          label: 'Aceix',
+          label: store.username,
         },
       ].map((item, index) => ({
         key: String(index + 1),
@@ -85,7 +92,10 @@ export default function MainLayout() {
         children: [
           {
             style: {
-              padding: collapsed ? '.2rem' : '1rem',
+              paddingLeft: isSidebarCollapsed ? '.2rem' : '1rem',
+              paddingRight: isSidebarCollapsed ? '.2rem' : '1rem',
+              paddingTop: isSidebarCollapsed ? '.2rem' : '1rem',
+              paddingBottom: isSidebarCollapsed ? '.2rem' : '1rem',
             },
             label: (
               <div
@@ -95,6 +105,7 @@ export default function MainLayout() {
                   justifyContent: 'space-between',
                   alignItems: 'center',
                 }}
+                onClick={(e) => e.stopPropagation()}
               >
                 Dark theme
                 <Switch
@@ -108,7 +119,10 @@ export default function MainLayout() {
           },
           {
             style: {
-              padding: collapsed ? '.2rem' : '1rem',
+              paddingLeft: isSidebarCollapsed ? '.2rem' : '1rem',
+              paddingRight: isSidebarCollapsed ? '.2rem' : '1rem',
+              paddingTop: isSidebarCollapsed ? '.2rem' : '1rem',
+              paddingBottom: isSidebarCollapsed ? '.2rem' : '1rem',
             },
             label: (
               <div
@@ -119,11 +133,12 @@ export default function MainLayout() {
                   alignItems: 'center',
                   gap: '1rem',
                 }}
+                onClick={(e) => e.stopPropagation()}
               >
                 <GlobalOutlined />
                 <Select
                   style={{ width: '100%' }}
-                  defaultValue="en"
+                  value={i18n.language}
                   options={[
                     {
                       label: (
@@ -132,6 +147,7 @@ export default function MainLayout() {
                             style={{ width: '20px', height: '12px' }}
                             src="https://img.freepik.com/free-vector/illustration-uk-flag_53876-18166.jpg?w=1800&t=st=1679225900~exp=1679226500~hmac=0cc9ee0d4d5196bb3c610ca92d669f3c0ebf95431423a2c4ff7196f81c10891e"
                             alt="english"
+                            loading="eager"
                           />{' '}
                           English
                         </>
@@ -147,18 +163,56 @@ export default function MainLayout() {
               </div>
             ),
           },
+          {
+            style: {
+              paddingLeft: isSidebarCollapsed ? '.2rem' : '1rem',
+              paddingRight: isSidebarCollapsed ? '.2rem' : '1rem',
+              paddingTop: isSidebarCollapsed ? '.2rem' : '1rem',
+              paddingBottom: isSidebarCollapsed ? '.2rem' : '1rem',
+            },
+            label: (
+              <div
+                style={{
+                  display: 'flex',
+                  flexFlow: 'row nowrap',
+                  gap: '1rem',
+                  alignItems: 'center',
+                }}
+                onClick={() => {
+                  storeLogout();
+                  navigate(AppRoutes.LOGIN_ROUTE);
+                }}
+              >
+                <LogoutOutlined /> Logout
+              </div>
+            ),
+          },
         ],
       })),
-    [collapsed, currentTheme, i18n, setCurrentTheme]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [isSidebarCollapsed, currentTheme, i18n.language, navigate, setCurrentTheme, store.username, storeLogout]
   );
 
-  // TODO: optimise how sidenav renders when collapsed
+  const getActiveSideNavKeys = useCallback(() => {
+    if (location.pathname === AppRoutes.NETWORKS_ROUTE) {
+      return ['networks'];
+    } else if (location.pathname === AppRoutes.HOSTS_ROUTE) {
+      return ['hosts'];
+    } else if (location.pathname === AppRoutes.CLIENTS_ROUTE) {
+      return ['clients'];
+    } else if (location.pathname === AppRoutes.ENROLLMENT_KEYS_ROUTE) {
+      return ['enrollment-keys'];
+    } else if (location.pathname === AppRoutes.DASHBOARD_ROUTE) {
+      return ['dashboard'];
+    }
+  }, [location.pathname]);
+
   return (
     <Layout hasSider>
       <Sider
         collapsible
-        collapsed={collapsed}
-        onCollapse={(value) => setCollapsed(value)}
+        collapsed={isSidebarCollapsed}
+        onCollapse={(value) => setIsSidebarCollapsed(value)}
         width={SIDE_NAV_EXPANDED_WIDTH}
         theme="light"
         style={{
@@ -175,67 +229,116 @@ export default function MainLayout() {
         <Menu
           theme="light"
           mode="inline"
-          defaultSelectedKeys={['1']}
+          selectedKeys={getActiveSideNavKeys()}
           items={sideNavItems}
           style={{ borderRight: 'none' }}
           onClick={(menu) => {
             switch (menu.key) {
               case 'dashboard':
-                navigate(AppRoutes.HOME_ROUTE);
+                navigate(AppRoutes.DASHBOARD_ROUTE);
+                break;
+              case 'networks':
+                navigate(AppRoutes.NETWORKS_ROUTE);
+                break;
+              case 'hosts':
+                navigate(AppRoutes.HOSTS_ROUTE);
+                break;
+              case 'clients':
+                navigate(AppRoutes.CLIENTS_ROUTE);
+                break;
+              case 'enrollment-keys':
+                navigate(AppRoutes.ENROLLMENT_KEYS_ROUTE);
+                break;
+              default:
                 break;
             }
           }}
         />
 
         {/* networks */}
-        <Row align="middle" style={{ marginLeft: '28px', marginRight: '8px' }}>
-          <Col xs={12} style={{ height: '2rem' }}>
-            <Link to={AppRoutes.NETWORKS_ROUTE}>Networks</Link>
-          </Col>
-          <Col xs={12} style={{ height: '2rem' }}>
-            <Divider style={{ marginTop: '.7rem', marginBottom: '0px' }} />
-          </Col>
-          <Col xs={24}>
-            <Input placeholder="Search network..." size="small" />
-          </Col>
-        </Row>
-        <List>
-          <VirtualList data={networks} height={NETWORKS_LIST_HEIGHT} itemHeight={30} itemKey="netid">
-            {(network: Network) => (
-              <List.Item key={network.netid} style={{ borderBottom: 'none', height: '30px' }}>
-                <List.Item.Meta
-                  style={{ fontWeight: 'normal', height: '30px' }}
-                  title={<Link to={'#'}>{network.netid}</Link>}
+        {!isSidebarCollapsed && (
+          <>
+            <Row align="middle" style={{ marginTop: '2rem', marginLeft: '28px', marginRight: '8px' }}>
+              <Col xs={18} style={{ height: '2rem' }}>
+                <Typography.Text>Recent networks</Typography.Text>
+              </Col>
+              <Col xs={6} style={{ height: '2rem' }}>
+                <Divider style={{ marginTop: '.7rem', marginBottom: '0px' }} />
+              </Col>
+              <Col xs={24}>
+                <Input
+                  placeholder="Search network..."
+                  size="small"
+                  value={networksSearch}
+                  onChange={(ev) => setNetworksSearch(ev.target.value)}
                 />
-              </List.Item>
-            )}
-          </VirtualList>
-        </List>
+              </Col>
+            </Row>
+            <List>
+              <VirtualList data={filteredNetworks} height={NETWORKS_LIST_HEIGHT} itemHeight={30} itemKey="netid">
+                {(network: Network) => (
+                  <List.Item key={network.netid} style={{ borderBottom: 'none', height: '30px' }}>
+                    <List.Item.Meta
+                      style={{
+                        fontWeight: 'normal',
+                        height: '30px',
+                      }}
+                      title={
+                        <Link
+                          to={getNetworkRoute(network)}
+                          style={{ color: location.pathname === getNetworkRoute(network) ? selectedColor : undefined }}
+                        >
+                          {network.netid}
+                        </Link>
+                      }
+                    />
+                  </List.Item>
+                )}
+              </VirtualList>
+            </List>
+          </>
+        )}
 
         {/* hosts */}
-        <Row align="middle" style={{ marginLeft: '28px', marginRight: '8px' }}>
-          <Col xs={12} style={{ height: '2rem' }}>
-            <Link to={AppRoutes.HOSTS_ROUTE}>Hosts</Link>
-          </Col>
-          <Col xs={12} style={{ height: '2rem' }}>
-            <Divider style={{ marginTop: '.7rem', marginBottom: '0px' }} />
-          </Col>
-          <Col xs={24}>
-            <Input placeholder="Search hosts..." size="small" />
-          </Col>
-        </Row>
-        <List>
-          <VirtualList data={hosts} height={HOSTS_LIST_HEIGHT} itemHeight={30} itemKey="id">
-            {(host: Host) => (
-              <List.Item key={host.id} style={{ borderBottom: 'none', height: '30px' }}>
-                <List.Item.Meta
-                  style={{ fontWeight: 'normal', height: '30px' }}
-                  title={<Link to={getHostRoute(host)}>{host.name}</Link>}
+        {!isSidebarCollapsed && (
+          <>
+            <Row align="middle" style={{ marginLeft: '28px', marginRight: '8px' }}>
+              <Col xs={18} style={{ height: '2rem' }}>
+                <Typography.Text>Recent hosts</Typography.Text>
+              </Col>
+              <Col xs={6} style={{ height: '2rem' }}>
+                <Divider style={{ marginTop: '.7rem', marginBottom: '0px' }} />
+              </Col>
+              <Col xs={24}>
+                <Input
+                  placeholder="Search hosts..."
+                  size="small"
+                  value={hostsSearch}
+                  onChange={(ev) => setHostsSearch(ev.target.value)}
                 />
-              </List.Item>
-            )}
-          </VirtualList>
-        </List>
+              </Col>
+            </Row>
+            <List>
+              <VirtualList data={filteredHosts} height={HOSTS_LIST_HEIGHT} itemHeight={30} itemKey="id">
+                {(host: Host) => (
+                  <List.Item key={host.id} style={{ borderBottom: 'none', height: '30px' }}>
+                    <List.Item.Meta
+                      style={{ fontWeight: 'normal', height: '30px' }}
+                      title={
+                        <Link
+                          to={getHostRoute(host)}
+                          style={{ color: location.pathname === getHostRoute(host) ? selectedColor : undefined }}
+                        >
+                          {host.name}
+                        </Link>
+                      }
+                    />
+                  </List.Item>
+                )}
+              </VirtualList>
+            </List>
+          </>
+        )}
 
         {/* bottom items */}
         <Menu
@@ -251,7 +354,7 @@ export default function MainLayout() {
       <Layout
         style={{
           transition: 'all 200ms',
-          marginLeft: collapsed ? SIDE_NAV_COLLAPSED_WIDTH : SIDE_NAV_EXPANDED_WIDTH,
+          marginLeft: isSidebarCollapsed ? SIDE_NAV_COLLAPSED_WIDTH : SIDE_NAV_EXPANDED_WIDTH,
         }}
       >
         <Content style={{ background: colorBgContainer, overflow: 'initial', minHeight: '100vh' }}>

@@ -12,7 +12,7 @@ import LoginPage from './pages/auth/LoginPage';
 import NetworkDetailsPage from './pages/networks/NetworkDetailsPage';
 
 export class AppRoutes {
-  static HOME_ROUTE = '/';
+  static DASHBOARD_ROUTE = '/';
   static LOGIN_ROUTE = '/login';
   static STARTUP_ROUTE = '/startup';
   static GETTING_STARTED_ROUTE = '/hello';
@@ -21,11 +21,14 @@ export class AppRoutes {
   static HOST_ROUTE = '/hosts/:hostId';
   static NETWORKS_ROUTE = '/networks';
   static NETWORK_DETAILS_ROUTE = '/networks/:networkId';
+  static CLIENTS_ROUTE = '/clients';
+  static ENROLLMENT_KEYS_ROUTE = '/enrollment-keys';
 }
 
 const routes: RouteObject[] = [
   {
-    path: AppRoutes.HOME_ROUTE,
+    id: 'dashboard',
+    path: AppRoutes.DASHBOARD_ROUTE,
     // element: <DashboardLayout />,
     element: <MainLayout />,
     children: [

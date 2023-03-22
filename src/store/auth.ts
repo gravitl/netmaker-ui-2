@@ -6,21 +6,33 @@ export interface IAuthSlice {
   email: TenantConfig['email'];
   username: TenantConfig['username'];
   tenantId: TenantConfig['tenantId'];
+
+  // methods
   isLoggedIn: () => boolean;
   setStore: (config: Partial<TenantConfig>) => void;
+  logout: () => void;
 }
 
 const createAuthSlice: StateCreator<IAuthSlice, [], [], IAuthSlice> = (set, get) => ({
   jwt: '',
+  email: '',
+  tenantId: '',
+  username: '',
+
   isLoggedIn() {
     return !!get().jwt;
   },
   setStore(config) {
     set(config);
   },
-  email: '',
-  tenantId: '',
-  username: '',
+  logout() {
+    set({
+      jwt: '',
+      email: '',
+      username: '',
+      tenantId: '',
+    });
+  },
 });
 
 export const AuthSlice = {
