@@ -10,6 +10,7 @@ import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { useNavigate } from 'react-router-dom';
 import { AppRoutes } from '@/routes';
 import { Network } from '@/models/Network';
+import { convertNetworkPayloadToUiNetwork } from '@/utils/NetworkUtils';
 
 interface AddNetworkModalProps {
   isOpen: boolean;
@@ -30,7 +31,7 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
   const createNetwork = async () => {
     try {
       const formData = await form.validateFields();
-      const network = (await NetworksService.createNetwork(formData)).data;
+      const network = convertNetworkPayloadToUiNetwork((await NetworksService.createNetwork(formData)).data);
       store.addNetwork(network);
       notify.success({ message: `Network ${network.netid} created` });
       navigate(AppRoutes.NETWORKS_ROUTE);
