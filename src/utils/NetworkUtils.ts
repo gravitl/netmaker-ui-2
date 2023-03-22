@@ -1,18 +1,62 @@
-import { Network } from '@/models/Network';
+import { Network, NetworkPayload } from '@/models/Network';
 
-export function isNetworkIpv4(network: Network): boolean {
-  return network.isipv4 === 'yes';
-}
+const convertStringToArray = (commaSeparatedData: string) => {
+  const data = commaSeparatedData.split(',');
+  for (let i = 0; i < data.length; i++) {
+    data[i] = data[i].trim();
+  }
+  return data;
+};
 
-export function isNetworkIpv6(network: Network): boolean {
-  return network.isipv6 === 'yes';
-}
-
-export function convertUiNetworkToNetworkModel(network: Network): Network {
+export function convertUiNetworkToNetworkPayload(network: Network): NetworkPayload {
+  if (network.prosettings) {
+    if (typeof network.prosettings.allowedgroups === 'string') {
+      network.prosettings.allowedgroups = convertStringToArray(network.prosettings.allowedgroups);
+    }
+    if (typeof network.prosettings.allowedusers === 'string') {
+      network.prosettings.allowedusers = convertStringToArray(network.prosettings.allowedusers);
+    }
+  }
   return {
     ...network,
-    isipv4: isNetworkIpv4(network) ? 'yes' : 'no',
-    isipv6: isNetworkIpv6(network) ? 'yes' : 'no',
+    defaultmtu: Number(network.defaultmtu),
+    defaultlistenport: Number(network.defaultlistenport),
+    defaultkeepalive: Number(network.defaultkeepalive),
+    isipv4: network.isipv4 ? 'yes' : 'no',
+    isipv6: network.isipv6 ? 'yes' : 'no',
+    defaultudpholepunch: network.defaultudpholepunch ? 'yes' : 'no',
+    defaultacl: network.defaultacl ? 'yes' : 'no',
+    prosettings: network.prosettings
+      ? {
+          defaultaccesslevel: Number(network.prosettings.defaultaccesslevel),
+          defaultuserclientlimit: Number(network.prosettings.defaultuserclientlimit),
+          defaultusernodelimit: Number(network.prosettings.defaultusernodelimit),
+          allowedgroups: network.prosettings.allowedgroups,
+          allowedusers: network.prosettings.allowedusers,
+        }
+      : undefined,
+  };
+}
+
+export function convertNetworkPayloadToUiNetwork(network: NetworkPayload): Network {
+  return {
+    ...network,
+    defaultmtu: Number(network.defaultmtu),
+    defaultlistenport: Number(network.defaultlistenport),
+    defaultkeepalive: Number(network.defaultkeepalive),
+    isipv4: network.isipv4 === 'yes',
+    isipv6: network.isipv6 === 'yes',
+    defaultudpholepunch: network.defaultudpholepunch === 'yes',
+    defaultacl: network.defaultacl === 'yes',
+    prosettings: network.prosettings
+      ? {
+          defaultaccesslevel: Number(network.prosettings.defaultaccesslevel),
+          defaultuserclientlimit: Number(network.prosettings.defaultuserclientlimit),
+          defaultusernodelimit: Number(network.prosettings.defaultusernodelimit),
+          allowedgroups: network.prosettings.allowedgroups,
+          allowedusers: network.prosettings.allowedusers,
+        }
+      : undefined,
   };
 }
 
@@ -53,3 +97,60 @@ export function isValidIp(addr: string): boolean {
 export function isValidIpCidr(cidr: string): boolean {
   return isValidIpv4Cidr(cidr) || isValidIpv6Cidr(cidr);
 }
+
+const validNetworkNames = [
+  'network',
+  'netty',
+  'dev',
+  'dev-net',
+  'office',
+  'office-vpn',
+  'netmaker-vpn',
+  'securoserv',
+  'quick',
+  'long',
+  'lite',
+  'inet',
+  'vnet',
+  'mesh',
+  'netmaker',
+  'site',
+  'lan-party',
+  'skynet',
+  'short',
+  'private',
+  'my-net',
+  'it-dept',
+  'test-net',
+  'kube-net',
+  'mynet',
+  'wg-net',
+  'wireguard-1',
+  'mesh-vpn',
+  'mesh-virt',
+  'virt-net',
+  'wg-vnet',
+];
+
+export const genRandomNumber = (size: number, inclusive: boolean) => {
+  if (inclusive) {
+    return Math.floor(Math.random() * size + 1);
+  }
+  return Math.floor(Math.random() * size);
+};
+
+const genRandomHex = (size: number) => {
+  const result = [];
+  const hexRef = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'];
+
+  for (let n = 0; n < size; n++) {
+    result.push(hexRef[Math.floor(Math.random() * 16)]);
+  }
+  return result.join('');
+};
+
+export const randomCIDR = () => `10.${genRandomNumber(254, true)}.${genRandomNumber(254, true)}.0/24`;
+
+export const randomCIDR6 = () => `${genRandomHex(4)}:4206:9753:2021::/64`;
+
+export const randomNetworkName = () => validNetworkNames[genRandomNumber(validNetworkNames.length, false)];

@@ -15,7 +15,7 @@ import { HostsService } from '@/services/HostsService';
 import { NetworksService } from '@/services/NetworksService';
 import { NodesService } from '@/services/NodesService';
 import { useStore } from '@/store/store';
-import { convertUiNetworkToNetworkModel, isNetworkIpv4, isNetworkIpv6 } from '@/utils/NetworkUtils';
+import { convertNetworkPayloadToUiNetwork, convertUiNetworkToNetworkPayload } from '@/utils/NetworkUtils';
 import { getExtendedNode } from '@/utils/NodeUtils';
 import { getHostRoute } from '@/utils/RouteUtils';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
@@ -658,113 +658,111 @@ export default function NetworkDetailsPage(props: PageProps) {
   );
 
   // ui components
-  const getOverviewContent = useCallback(
-    (network: Network) => {
-      return (
-        <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-          <Card style={{ width: '50%' }}>
-            <Form name="add-network-form" form={form} layout="vertical" initialValues={network} disabled={!isEditing}>
-              <Form.Item label="Network name" name="netid" rules={[{ required: true }]}>
-                <Input placeholder="Network name" disabled />
-              </Form.Item>
+  const getOverviewContent = useCallback(() => {
+    if (!network) return <Skeleton active />;
+    return (
+      <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+        <Card style={{ width: '50%' }}>
+          <Form name="network-form" form={form} layout="vertical" initialValues={network} disabled={!isEditing}>
+            <Form.Item label="Network name" name="netid" rules={[{ required: true }]}>
+              <Input placeholder="Network name" disabled />
+            </Form.Item>
 
-              {/* ipv4 */}
-              <Row
-                style={{
-                  border: `1px solid ${themeToken.colorBorder}`,
-                  borderRadius: '8px',
-                  padding: '.5rem',
-                  marginBottom: '1.5rem',
-                }}
-              >
-                <Col xs={24}>
-                  <Row justify="space-between" style={{ marginBottom: isIpv4Watch ? '.5rem' : '0px' }}>
-                    <Col>IPv4</Col>
-                    <Col>
-                      <Form.Item name="isipv4" style={{ marginBottom: '0px' }}>
-                        <Switch defaultChecked={isNetworkIpv4(form.getFieldsValue())} />
+            {/* ipv4 */}
+            <Row
+              style={{
+                border: `1px solid ${themeToken.colorBorder}`,
+                borderRadius: '8px',
+                padding: '.5rem',
+                marginBottom: '1.5rem',
+              }}
+            >
+              <Col xs={24}>
+                <Row justify="space-between" style={{ marginBottom: isIpv4Watch ? '.5rem' : '0px' }}>
+                  <Col>IPv4</Col>
+                  <Col>
+                    <Form.Item name="isipv4" valuePropName="checked" style={{ marginBottom: '0px' }}>
+                      <Switch />
+                    </Form.Item>
+                  </Col>
+                </Row>
+                {isIpv4Watch && (
+                  <Row>
+                    <Col xs={24}>
+                      <Form.Item name="addressrange" style={{ marginBottom: '0px' }}>
+                        <Input placeholder="Enter address CIDR (eg: 192.168.1.0/24)" />
                       </Form.Item>
                     </Col>
                   </Row>
-                  {isIpv4Watch && (
-                    <Row>
-                      <Col xs={24}>
-                        <Form.Item name="addressrange" style={{ marginBottom: '0px' }}>
-                          <Input placeholder="Enter address CIDR (eg: 192.168.1.0/24)" />
-                        </Form.Item>
-                      </Col>
-                    </Row>
-                  )}
-                </Col>
-              </Row>
+                )}
+              </Col>
+            </Row>
 
-              {/* ipv6 */}
-              <Row
-                style={{
-                  border: `1px solid ${themeToken.colorBorder}`,
-                  borderRadius: '8px',
-                  padding: '.5rem',
-                  marginBottom: '1.5rem',
-                }}
-              >
-                <Col xs={24}>
-                  <Row justify="space-between" style={{ marginBottom: isIpv6Watch ? '.5rem' : '0px' }}>
-                    <Col>IPv6</Col>
-                    <Col>
-                      <Form.Item name="isipv6" style={{ marginBottom: '0px' }}>
-                        <Switch defaultChecked={isNetworkIpv6(form.getFieldsValue())} />
+            {/* ipv6 */}
+            <Row
+              style={{
+                border: `1px solid ${themeToken.colorBorder}`,
+                borderRadius: '8px',
+                padding: '.5rem',
+                marginBottom: '1.5rem',
+              }}
+            >
+              <Col xs={24}>
+                <Row justify="space-between" style={{ marginBottom: isIpv6Watch ? '.5rem' : '0px' }}>
+                  <Col>IPv6</Col>
+                  <Col>
+                    <Form.Item name="isipv6" valuePropName="checked" style={{ marginBottom: '0px' }}>
+                      <Switch />
+                    </Form.Item>
+                  </Col>
+                </Row>
+                {isIpv6Watch && (
+                  <Row>
+                    <Col xs={24}>
+                      <Form.Item name="addressrange6" style={{ marginBottom: '0px' }}>
+                        <Input placeholder="Enter address CIDR (eg: 2002::1234:abcd:ffff:c0a8:101/64)" />
                       </Form.Item>
                     </Col>
                   </Row>
-                  {isIpv6Watch && (
-                    <Row>
-                      <Col xs={24}>
-                        <Form.Item name="addressrange6" style={{ marginBottom: '0px' }}>
-                          <Input placeholder="Enter address CIDR (eg: 2002::1234:abcd:ffff:c0a8:101/64)" />
-                        </Form.Item>
-                      </Col>
-                    </Row>
-                  )}
-                </Col>
-              </Row>
+                )}
+              </Col>
+            </Row>
 
-              <Row
-                style={{
-                  border: `1px solid ${themeToken.colorBorder}`,
-                  borderRadius: '8px',
-                  padding: '.5rem',
-                  marginBottom: '1.5rem',
-                }}
-              >
-                <Col xs={24}>
-                  <Row justify="space-between">
-                    <Col>Default Access Control</Col>
-                    <Col xs={8}>
-                      <Form.Item name="defaultacl" style={{ marginBottom: '0px' }} rules={[{ required: true }]}>
-                        <Select
-                          size="small"
-                          style={{ width: '100%' }}
-                          options={[
-                            { label: 'ALLOW', value: 'yes' },
-                            { label: 'DENY', value: 'no' },
-                          ]}
-                        ></Select>
-                      </Form.Item>
-                    </Col>
-                  </Row>
-                </Col>
-              </Row>
+            <Row
+              style={{
+                border: `1px solid ${themeToken.colorBorder}`,
+                borderRadius: '8px',
+                padding: '.5rem',
+                marginBottom: '1.5rem',
+              }}
+            >
+              <Col xs={24}>
+                <Row justify="space-between">
+                  <Col>Default Access Control</Col>
+                  <Col xs={8}>
+                    <Form.Item name="defaultacl" style={{ marginBottom: '0px' }} rules={[{ required: true }]}>
+                      <Select
+                        size="small"
+                        style={{ width: '100%' }}
+                        options={[
+                          { label: 'ALLOW', value: 'yes' },
+                          { label: 'DENY', value: 'no' },
+                        ]}
+                      ></Select>
+                    </Form.Item>
+                  </Col>
+                </Row>
+              </Col>
+            </Row>
 
-              <Form.Item label="Default Client DNS" name="defaultDns">
-                <Input placeholder="Default Client DNS" />
-              </Form.Item>
-            </Form>
-          </Card>
-        </div>
-      );
-    },
-    [form, isEditing, themeToken, isIpv4Watch, isIpv6Watch]
-  );
+            <Form.Item label="Default Client DNS" name="defaultDns">
+              <Input placeholder="Default Client DNS" />
+            </Form.Item>
+          </Form>
+        </Card>
+      </div>
+    );
+  }, [network, form, isEditing, themeToken.colorBorder, isIpv4Watch, isIpv6Watch]);
 
   const getHostsContent = useCallback(() => {
     return (
@@ -1292,41 +1290,31 @@ export default function NetworkDetailsPage(props: PageProps) {
     );
   }, []);
 
-  const items: TabsProps['items'] = useMemo(
-    () => [
+  const networkTabs: TabsProps['items'] = useMemo(() => {
+    return [
       {
         key: 'overview',
         label: `Overview`,
-        children: network ? getOverviewContent(network) : <Skeleton active />,
+        children: network ? getOverviewContent() : <Skeleton active />,
       },
       {
         key: 'hosts',
-        label: `Hosts (#)`,
+        label: `Hosts (${networkHosts.length})`,
         children: network ? getHostsContent() : <Skeleton active />,
       },
       {
-        key: 'graph',
-        label: `Graph`,
-        children: `Content of Graph Tab`,
-      },
-      {
-        key: 'acls',
-        label: `ACLs`,
-        children: network ? getAclsContent() : <Skeleton active />,
-      },
-      {
         key: 'clients',
-        label: `Clients`,
+        label: `Clients (${clients.length})`,
         children: network ? getClientsContent() : <Skeleton active />,
       },
       {
         key: 'egress',
-        label: `Egress`,
+        label: `Egress (${egresses.length})`,
         children: network ? getEgressContent() : <Skeleton active />,
       },
       {
         key: 'relays',
-        label: `Relays `,
+        label: `Relays (${relays.length})`,
         children: network ? getRelayContent() : <Skeleton active />,
       },
       {
@@ -1337,25 +1325,28 @@ export default function NetworkDetailsPage(props: PageProps) {
       {
         key: 'access-control',
         label: `Access Control`,
-        children: 'Content of Access Control Tab',
+        children: network ? getAclsContent() : <Skeleton active />,
       },
       {
         key: 'metrics',
         label: `Metrics`,
         children: 'Content of Metrics Tab',
       },
-    ],
-    [
-      network,
-      getOverviewContent,
-      getHostsContent,
-      getAclsContent,
-      getClientsContent,
-      getEgressContent,
-      getRelayContent,
-      getDnsContent,
-    ]
-  );
+    ];
+  }, [
+    network,
+    networkHosts.length,
+    clients.length,
+    egresses.length,
+    relays.length,
+    getOverviewContent,
+    getHostsContent,
+    getClientsContent,
+    getEgressContent,
+    getRelayContent,
+    getDnsContent,
+    getAclsContent,
+  ]);
 
   const loadClients = useCallback(async () => {
     try {
@@ -1436,9 +1427,9 @@ export default function NetworkDetailsPage(props: PageProps) {
         throw new Error('Network not found');
       }
       const newNetwork = (
-        await NetworksService.updateNetwork(networkId, { ...network, ...convertUiNetworkToNetworkModel(formData) })
+        await NetworksService.updateNetwork(networkId, convertUiNetworkToNetworkPayload({ ...network, ...formData }))
       ).data;
-      store.updateNetwork(networkId, newNetwork);
+      store.updateNetwork(networkId, convertNetworkPayloadToUiNetwork(newNetwork));
       notify.success({ message: `Network ${networkId} updated` });
       setIsEditingNetwork(false);
     } catch (err) {
@@ -1497,6 +1488,12 @@ export default function NetworkDetailsPage(props: PageProps) {
     loadNetwork();
   }, [loadNetwork]);
 
+  // refresh form to prevent stick network data across different network details pages
+  useEffect(() => {
+    if (!network) return;
+    form.setFieldsValue(network);
+  }, [form, network]);
+
   if (!networkId) {
     navigate(AppRoutes.NETWORKS_ROUTE);
     return null;
@@ -1526,9 +1523,19 @@ export default function NetworkDetailsPage(props: PageProps) {
                   </Button>
                 )}
                 {isEditing && (
-                  <Button type="primary" style={{ marginRight: '.5rem' }} onClick={onNetworkFormEdit}>
-                    Save Changes
-                  </Button>
+                  <>
+                    <Button type="primary" style={{ marginRight: '.5rem' }} onClick={onNetworkFormEdit}>
+                      Save Changes
+                    </Button>
+                    <Button
+                      style={{ marginRight: '.5rem' }}
+                      onClick={() => {
+                        setIsEditingNetwork(false);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </>
                 )}
                 <Button type="default" onClick={promptConfirmDelete}>
                   Delete
@@ -1536,7 +1543,7 @@ export default function NetworkDetailsPage(props: PageProps) {
               </Col>
             </Row>
 
-            <Tabs items={items} />
+            <Tabs items={networkTabs} />
           </Col>
         </Row>
       </Skeleton>

@@ -1,5 +1,4 @@
-import { AccessKey } from './AccessKey';
-import { ExternalClient } from './ExternalClient';
+import { Modify } from '@/types/react-app-env';
 import { ProSettings } from './ProSettings';
 
 export interface Network {
@@ -14,16 +13,23 @@ export interface Network {
   defaultpostup: string;
   defaultpostdown: string;
   defaultkeepalive: number;
-  accesskeys: AccessKey[];
-  externalclients: Array<ExternalClient>;
-  islocal: 'yes' | 'no';
-  isipv4: 'yes' | 'no';
-  isipv6: 'yes' | 'no';
+  isipv4: boolean;
+  isipv6: boolean;
   localrange: string;
-  defaultudpholepunch: 'yes' | 'no';
+  defaultudpholepunch: boolean;
   defaultnatenabled: boolean;
   defaultextclientdns: string;
   defaultmtu: number;
-  defaultacl: 'yes' | 'no';
+  defaultacl: boolean;
   prosettings: ProSettings | undefined;
 }
+
+export type NetworkPayload = Modify<
+  Network,
+  {
+    isipv4: 'no' | 'yes';
+    isipv6: 'no' | 'yes';
+    defaultudpholepunch: 'no' | 'yes';
+    defaultacl: 'no' | 'yes';
+  }
+>;

@@ -1,4 +1,5 @@
 import { NetworksService } from '@/services/NetworksService';
+import { convertNetworkPayloadToUiNetwork } from '@/utils/NetworkUtils';
 import { StateCreator } from 'zustand';
 import { Network } from '../models/Network';
 
@@ -22,15 +23,18 @@ const createNetworkSlice: StateCreator<INetworkSlice, [], [], INetworkSlice> = (
 
   async fetchNetworks() {
     try {
-      set((state) => ({ loadingNetworks: true }));
+      set(() => ({ loadingNetworks: true }));
       const networks = (await NetworksService.getNetworks()).data;
-      set((state) => ({ networks: networks, loadingNetworks: false }));
+      set(() => ({
+        networks: networks.map((network) => convertNetworkPayloadToUiNetwork(network)),
+        loadingNetworks: false,
+      }));
     } catch (err) {
       console.error(err);
-      set((state) => ({ loadingNetworks: false }));
+      set(() => ({ loadingNetworks: false }));
     }
   },
-  setNetworks: (networks: Network[]) => set((state) => ({ networks: networks })),
+  setNetworks: (networks: Network[]) => set(() => ({ networks: networks })),
   addNetwork(network) {
     set((state) => ({ networks: [...state.networks, network] }));
   },

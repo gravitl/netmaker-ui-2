@@ -2,21 +2,21 @@ import { NodeACLContainer } from '@/models/Acl';
 import { ApiRoutes } from '../constants/ApiRoutes';
 import { AccessKey } from '../models/AccessKey';
 import { DNS } from '../models/Dns';
-import { Network } from '../models/Network';
+import { Network, NetworkPayload } from '../models/Network';
 import { baseService } from './BaseService';
 import { CreateAccessKeyDto } from './dtos/CreateAccessKeyDto';
 import { CreateNetworkDto } from './dtos/CreateNetworkDto';
 
 function getNetworks() {
-  return baseService.get<Network[]>(`${ApiRoutes.NETWORKS}`);
+  return baseService.get<NetworkPayload[]>(`${ApiRoutes.NETWORKS}`);
 }
 
 function createNetwork(payload: CreateNetworkDto) {
-  return baseService.post<Network>(`${ApiRoutes.NETWORKS}`, payload);
+  return baseService.post<NetworkPayload>(`${ApiRoutes.NETWORKS}`, payload);
 }
 
-function updateNetwork(networkId: Network['netid'], payload: Network) {
-  return baseService.put<Network>(`${ApiRoutes.NETWORKS}/${networkId}`, payload);
+function updateNetwork(networkId: Network['netid'], payload: NetworkPayload) {
+  return baseService.put<NetworkPayload>(`${ApiRoutes.NETWORKS}/${networkId}`, payload);
 }
 
 function deleteNetwork(networkId: Network['netid']) {
