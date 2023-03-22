@@ -15,6 +15,7 @@ function App() {
   const storeSetServerStatus = store.setServerStatus;
   const storeFetchNodes = store.fetchNodes;
   const storeFetchHosts = store.fetchHosts;
+  const storeIsLoggedIn = store.isLoggedIn;
   const [notify, notifyCtx] = notification.useNotification();
   const [serverMalfunctionCount, setServerMalfunctionCount] = useState(0);
 
@@ -39,9 +40,13 @@ function App() {
   }, [notify, storeFetchHosts, storeFetchNodes, storeSetServerStatus]);
 
   useEffect(() => {
-    const id = setInterval(getUpdates, POLL_INTERVAL);
+    const id = setInterval(() => {
+      if (storeIsLoggedIn()) {
+        getUpdates();
+      }
+    }, POLL_INTERVAL);
     return () => clearInterval(id);
-  }, [getUpdates]);
+  }, [getUpdates, storeIsLoggedIn]);
 
   return (
     <div className="App">

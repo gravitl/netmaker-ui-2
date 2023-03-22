@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AppstoreOutlined, GlobalOutlined, LaptopOutlined, LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import { Alert, Col, Divider, Input, List, MenuProps, Row, Select, Switch, Typography } from 'antd';
 import { Layout, Menu, theme } from 'antd';
@@ -61,6 +61,7 @@ export default function MainLayout() {
   const navigate = useNavigate();
   const { i18n } = useTranslation();
   const store = useStore();
+  const storeFetchNetworks = useStore((state) => state.fetchNetworks);
   const storeLogout = useStore((state) => state.logout);
   const location = useLocation();
 
@@ -206,6 +207,10 @@ export default function MainLayout() {
       return ['dashboard'];
     }
   }, [location.pathname]);
+
+  useEffect(() => {
+    storeFetchNetworks();
+  }, [storeFetchNetworks]);
 
   return (
     <Layout hasSider>
