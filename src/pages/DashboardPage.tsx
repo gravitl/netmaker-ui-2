@@ -1,4 +1,4 @@
-import { Alert, Button, Card, Col, Input, Layout, Row, Space, theme, Tooltip } from 'antd';
+import { Alert, Button, Card, Col, Input, Layout, Row, Space, Tooltip } from 'antd';
 import {
   ArrowRightOutlined,
   BellOutlined,
@@ -12,11 +12,9 @@ import { AppRoutes } from '../routes';
 import { useNavigate } from 'react-router-dom';
 import AddNetworkModal from '@/components/modals/add-network-modal/AddNetworkModal';
 import { useState } from 'react';
-import { Network } from '@/models/Network';
 
 export default function DashboardPage(props: PageProps) {
   const navigate = useNavigate();
-  const { token: themeToken } = theme.useToken();
 
   const [isAddNetworkModalOpen, setIsAddNetworkModalOpen] = useState(false);
 
@@ -128,7 +126,7 @@ export default function DashboardPage(props: PageProps) {
       <UpgradeModal isOpen={false} />
       <AddNetworkModal
         isOpen={isAddNetworkModalOpen}
-        onCreateNetwork={(network: Network) => {
+        onCreateNetwork={() => {
           setIsAddNetworkModalOpen(false);
         }}
         onCancel={() => setIsAddNetworkModalOpen(false)}

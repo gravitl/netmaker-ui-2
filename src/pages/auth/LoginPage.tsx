@@ -45,9 +45,9 @@ export default function LoginPage(props: LoginPageProps) {
   }
 
   // TODO: check if user is logged in in before route hook
-  // if (store.isLoggedIn()) {
-  //   navigate(AppRoutes.HOME_ROUTE);
-  // }
+  if (store.isLoggedIn()) {
+    navigate(AppRoutes.DASHBOARD_ROUTE);
+  }
 
   // TODO: check if server is EE then use custom logo and tenant name
   logoUrl && store.setLogoUrl(logoUrl);

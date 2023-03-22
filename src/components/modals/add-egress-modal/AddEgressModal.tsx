@@ -16,7 +16,7 @@ import {
   Tooltip,
   Typography,
 } from 'antd';
-import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { MouseEvent, useCallback, useMemo, useState } from 'react';
 import { useStore } from '@/store/store';
 import '../CustomModal.scss';
 import { Network } from '@/models/Network';
@@ -127,25 +127,6 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
       setIsSubmitting(false);
     }
   };
-
-  const loadHosts = useCallback(async () => {
-    try {
-      await store.fetchHosts();
-    } catch (err) {
-      if (err instanceof AxiosError) {
-        notify.error({
-          message: 'Failed to load hosts',
-          description: extractErrorMsg(err),
-        });
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [notify]);
-
-  useEffect(() => {
-    // TODO: move to upper component
-    loadHosts();
-  }, [loadHosts]);
 
   // TODO: add autofill for fields
   return (

@@ -13,22 +13,30 @@ const POLL_INTERVAL = 10_000;
 function App() {
   const store = useStore();
   const storeSetServerStatus = store.setServerStatus;
+  const storeFetchNodes = store.fetchNodes;
+  const storeFetchHosts = store.fetchHosts;
   const [notify, notifyCtx] = notification.useNotification();
   const [serverMalfunctionCount, setServerMalfunctionCount] = useState(0);
 
   const getUpdates = useCallback(async () => {
     try {
       const { data: serverStatus } = await ServerConfigService.getServerStatus();
-      if (serverStatus.db_connected === false || serverStatus.broker_connected === false) {
+      const isUnhealthy = serverStatus.db_connected === false || serverStatus.broker_connected === false;
+      if (isUnhealthy) {
+        // -1 means the modal is closed, 0 means the modal is open, 1 means the modal is open and the user has not acknowledged the error
         setServerMalfunctionCount((prev) => (prev === -1 ? -1 : 1));
       }
       storeSetServerStatus(serverStatus);
+      if (!isUnhealthy) {
+        storeFetchHosts();
+        storeFetchNodes();
+      }
     } catch (err) {
       if (err instanceof AxiosError) {
         notify.error({ message: 'Failed to connect to your server', description: (err as AxiosError).message });
       }
     }
-  }, [notify, storeSetServerStatus]);
+  }, [notify, storeFetchHosts, storeFetchNodes, storeSetServerStatus]);
 
   useEffect(() => {
     const id = setInterval(getUpdates, POLL_INTERVAL);

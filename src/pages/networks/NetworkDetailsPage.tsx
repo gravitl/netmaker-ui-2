@@ -4,10 +4,10 @@ import AddEgressModal from '@/components/modals/add-egress-modal/AddEgressModal'
 import AddRelayModal from '@/components/modals/add-relay-modal/AddRelayModal';
 import ClientDetailsModal from '@/components/modals/client-detaiils-modal/ClientDetailsModal';
 import UpdateEgressModal from '@/components/modals/update-egress-modal/UpdateEgressModal';
-import { NodeACLContainer } from '@/models/Acl';
+// import { NodeACLContainer } from '@/models/Acl';
 import { DNS } from '@/models/Dns';
 import { ExternalClient } from '@/models/ExternalClient';
-import { Host, HostCommonDetails } from '@/models/Host';
+import { Host } from '@/models/Host';
 import { Network } from '@/models/Network';
 import { ExtendedNode, Node } from '@/models/Node';
 import { AppRoutes } from '@/routes';
@@ -73,7 +73,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [searchDns, setSearchDns] = useState('');
   const [dnses, setDnses] = useState<DNS[]>([]);
   const [isAddDnsModalOpen, setIsAddDnsModalOpen] = useState(false);
-  const [acls, setAcls] = useState<NodeACLContainer>({});
+  // const [acls, setAcls] = useState<NodeACLContainer>({});
   const [isAddClientModalOpen, setIsAddClientModalOpen] = useState(false);
   const [clients, setClients] = useState<ExternalClient[]>([]);
   const [isClientDetailsModalOpen, setIsClientDetailsModalOpen] = useState(false);
@@ -792,7 +792,6 @@ export default function NetworkDetailsPage(props: PageProps) {
                 title: 'Host Name',
                 render: (_, node) => {
                   const hostName = store.hostsCommonDetails[node.hostid].name;
-                  // TODO: fix broken link
                   return <Link to={getHostRoute(hostName)}>{hostName}</Link>;
                 },
                 sorter: (a, b) => {
@@ -1390,26 +1389,22 @@ export default function NetworkDetailsPage(props: PageProps) {
     }
   }, [networkId, notify]);
 
-  const loadAcls = useCallback(async () => {
-    try {
-      if (!networkId) return;
-      const acls = (await NetworksService.getAcls(networkId)).data;
-      setAcls(acls);
-    } catch (err) {
-      if (err instanceof AxiosError) {
-        notify.error({
-          message: 'Error loading ACLs',
-          description: extractErrorMsg(err),
-        });
-      }
-    }
-  }, [networkId, notify]);
+  // const loadAcls = useCallback(async () => {
+  //   try {
+  //     if (!networkId) return;
+  //     const acls = (await NetworksService.getAcls(networkId)).data;
+  //     setAcls(acls);
+  //   } catch (err) {
+  //     if (err instanceof AxiosError) {
+  //       notify.error({
+  //         message: 'Error loading ACLs',
+  //         description: extractErrorMsg(err),
+  //       });
+  //     }
+  //   }
+  // }, [networkId, notify]);
 
   const loadNetwork = useCallback(() => {
-    // TODO: remove
-    store.fetchNodes();
-    store.fetchHosts();
-
     setIsLoading(true);
     // route to networks if id is not present
     if (!networkId) {
@@ -1426,7 +1421,7 @@ export default function NetworkDetailsPage(props: PageProps) {
 
     // load extra data
     loadDnses();
-    loadAcls();
+    // loadAcls();
     loadClients();
 
     setIsLoading(false);

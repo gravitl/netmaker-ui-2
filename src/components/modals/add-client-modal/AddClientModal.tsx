@@ -15,7 +15,7 @@ import {
   theme,
   Typography,
 } from 'antd';
-import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { MouseEvent, useCallback, useMemo, useState } from 'react';
 import { useStore } from '@/store/store';
 import '../CustomModal.scss';
 import { Network } from '@/models/Network';
@@ -130,25 +130,6 @@ export default function AddClientModal({ isOpen, onCreateClient, onCancel, netwo
     }
   };
 
-  const loadHosts = useCallback(async () => {
-    try {
-      await store.fetchHosts();
-    } catch (err) {
-      if (err instanceof AxiosError) {
-        notify.error({
-          message: 'Failed to load hosts',
-          description: extractErrorMsg(err),
-        });
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [notify]);
-
-  useEffect(() => {
-    // TODO: move to upper component
-    loadHosts();
-  }, [loadHosts]);
-
   // TODO: add autofill for fields
   return (
     <Modal
@@ -172,7 +153,7 @@ export default function AddClientModal({ isOpen, onCreateClient, onCancel, netwo
             {!selectedGateway && (
               <Select
                 placeholder="Select a host as gateway"
-                dropdownRender={(menu) => (
+                dropdownRender={() => (
                   <div style={{ padding: '.5rem' }}>
                     <Row style={{ marginBottom: '1rem' }}>
                       <Col span={8}>

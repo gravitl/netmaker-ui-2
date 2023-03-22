@@ -59,7 +59,7 @@ export default function MainLayout() {
   const currentTheme = useStore((state) => state.currentTheme);
   const setCurrentTheme = useStore((state) => state.setCurrentTheme);
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const store = useStore();
   const storeLogout = useStore((state) => state.logout);
   const location = useLocation();

@@ -1,5 +1,6 @@
 import { Network } from '@/models/Network';
 import { useStore } from '@/store/store';
+import { getNetworkRoute } from '@/utils/RouteUtils';
 import { CopyOutlined, PlusOutlined } from '@ant-design/icons';
 import { Button, Card, Col, Divider, Input, Layout, List, Row, Steps } from 'antd';
 import { MouseEvent, useCallback, useEffect, useState } from 'react';
@@ -35,7 +36,7 @@ export default function NewHostPage(props: PageProps) {
   const onFinish = () => {
     // TODO: know which is best. maybe take this as a prop? so it'll be more flexible to different flows
     // navigate(AppRoutes.HOST_ROUTE);
-    navigate(AppRoutes.NETWORKS_ROUTE + '/' + selectedNetwork?.netid);
+    navigate(getNetworkRoute(selectedNetwork!));
   };
 
   const onShowInstallGuide = (ev: MouseEvent, os: AvailableOses) => {
