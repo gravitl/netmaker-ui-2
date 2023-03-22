@@ -176,6 +176,7 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
                           size="small"
                           columns={relayTableCols}
                           dataSource={filteredNetworkHosts}
+                          rowKey="id"
                           onRow={(host) => {
                             return {
                               onClick: () => {
@@ -249,6 +250,7 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
                           <Table
                             size="small"
                             columns={relayedTableCols}
+                            rowKey="id"
                             dataSource={[...filteredNetworkHosts.filter((h) => h.id !== selectedRelay.id)].sort(
                               (a, b) =>
                                 // sort non-relayed hosts to the top

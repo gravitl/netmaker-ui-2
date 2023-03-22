@@ -283,7 +283,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         onOk: async () => {
           try {
             await NetworksService.deleteDns(dns.network, dns.name);
-            setDnses((dnses) => dnses.filter((dns) => dns.name !== dns.name));
+            setDnses((dnses) => dnses.filter((d) => d.name !== dns.name));
           } catch (err) {
             if (err instanceof AxiosError) {
               notify.error({
@@ -380,6 +380,9 @@ export default function NetworkDetailsPage(props: PageProps) {
                         <DeleteOutlined /> Delete
                       </Typography.Text>
                     ),
+                    onClick: (info) => {
+                      info.domEvent.stopPropagation();
+                    },
                   },
                 ] as MenuProps['items'],
               }}
@@ -430,6 +433,9 @@ export default function NetworkDetailsPage(props: PageProps) {
                         <DeleteOutlined /> Delete
                       </Typography.Text>
                     ),
+                    onClick: (info) => {
+                      info.domEvent.stopPropagation();
+                    },
                   },
                 ] as MenuProps['items'],
               }}
@@ -591,6 +597,9 @@ export default function NetworkDetailsPage(props: PageProps) {
                         <DeleteOutlined /> Delete
                       </Typography.Text>
                     ),
+                    onClick: (info) => {
+                      info.domEvent.stopPropagation();
+                    },
                   },
                 ] as MenuProps['items'],
               }}
@@ -644,6 +653,9 @@ export default function NetworkDetailsPage(props: PageProps) {
                         <DeleteOutlined /> Stop being relayed
                       </Typography.Text>
                     ),
+                    onClick: (info) => {
+                      info.domEvent.stopPropagation();
+                    },
                   },
                 ] as MenuProps['items'],
               }}

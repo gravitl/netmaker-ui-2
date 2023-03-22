@@ -168,6 +168,7 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
                             size="small"
                             columns={egressTableCols}
                             dataSource={filteredNetworkHosts}
+                            rowKey="id"
                             onRow={(node) => {
                               return {
                                 onClick: () => {
@@ -212,7 +213,7 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
 
           <Divider style={{ margin: '0px 0px 2rem 0px' }} />
           <div className="CustomModalBody">
-            <Form.Item name="natEnabled" label="Enable NAT for egress traffic">
+            <Form.Item name="natEnabled" label="Enable NAT for egress traffic" valuePropName="checked">
               <Switch />
             </Form.Item>
 

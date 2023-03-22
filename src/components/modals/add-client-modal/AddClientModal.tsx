@@ -170,6 +170,7 @@ export default function AddClientModal({ isOpen, onCreateClient, onCancel, netwo
                           size="small"
                           columns={gatewayTableCols}
                           dataSource={filteredNetworkHosts}
+                          rowKey="id"
                           onRow={(node) => {
                             return {
                               onClick: () => {
