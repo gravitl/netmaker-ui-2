@@ -41,6 +41,7 @@ function App() {
 
   useEffect(() => {
     const id = setInterval(() => {
+      // TODO: retest. seems buggy
       if (storeIsLoggedIn()) {
         getUpdates();
       }
