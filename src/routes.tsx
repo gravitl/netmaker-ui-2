@@ -10,6 +10,7 @@ import HostPage from './pages/hosts/HostPage';
 import NetworksPage from './pages/networks/NetworksPage';
 import LoginPage from './pages/auth/LoginPage';
 import NetworkDetailsPage from './pages/networks/NetworkDetailsPage';
+import EnrollmentKeysPage from './pages/enrollment-keys/EnrollmentKeysPage';
 
 export class AppRoutes {
   static DASHBOARD_ROUTE = '/';
@@ -39,6 +40,10 @@ const routes: RouteObject[] = [
       {
         path: AppRoutes.NETWORK_DETAILS_ROUTE.split('/').slice(1).join('/'),
         element: <NetworkDetailsPage isFullScreen />,
+      },
+      {
+        path: AppRoutes.ENROLLMENT_KEYS_ROUTE.split('/').slice(1).join('/'),
+        element: <EnrollmentKeysPage isFullScreen />,
       },
     ],
   },

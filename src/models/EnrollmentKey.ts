@@ -1,7 +1,9 @@
 export interface EnrollmentKey {
+  value: string; // ID
+  tags: string[]; // names
+  token: string;
+  networks: string[];
   expiration: number;
   uses_remaining: number;
-  networks: string[];
   unlimited: boolean;
-  tags: string[];
 }

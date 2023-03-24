@@ -1395,13 +1395,13 @@ export default function NetworkDetailsPage(props: PageProps) {
             />
           </Col>
           <Col xs={12} style={{ textAlign: 'right' }}>
-            <Button style={{ marginRight: '1rem' }} icon={<ReloadOutlined />} onClick={() => {}} />
             <Button
               style={{ marginRight: '1rem', color: '#3C8618', borderColor: '#274916' }}
               icon={<CheckOutlined />}
               onClick={() => {}}
             />
             <Button danger style={{ marginRight: '1rem' }} icon={<StopOutlined />} onClick={() => {}} />
+            <Button title="Reset" style={{ marginRight: '1rem' }} icon={<ReloadOutlined />} onClick={() => {}} />
             <Button type="primary" onClick={() => {}}>
               Submit Changes
             </Button>

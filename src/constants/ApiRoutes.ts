@@ -7,4 +7,5 @@ export class ApiRoutes {
   static LOGIN = '/users/adm/authenticate';
   static SERVER_STATUS = '/server/status';
   static SERVER_CONFIG = '/server/getconfig';
+  static ENROLLMENT_KEYS = '/v1/enrollment-keys';
 }
