@@ -94,7 +94,9 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [clients, setClients] = useState<ExternalClient[]>([]);
   const [isClientDetailsModalOpen, setIsClientDetailsModalOpen] = useState(false);
   const [targetClient, setTargetClient] = useState<ExternalClient | null>(null);
-  const [filteredGateway, setFilteredGateway] = useState<Node | null>(null);
+  const [selectedGateway, setSelectedGateway] = useState<Node | null>(null);
+  const [searchClientGateways, setSearchClientGateways] = useState('');
+  const [searchClients, setSearchClients] = useState('');
   const [filteredEgress, setFilteredEgress] = useState<Node | null>(null);
   const [isAddEgressModalOpen, setIsAddEgressModalOpen] = useState(false);
   const [searchEgress, setSearchEgress] = useState('');
@@ -119,15 +121,25 @@ export default function NetworkDetailsPage(props: PageProps) {
       .map((node) => getExtendedNode(node, store.hostsCommonDetails));
   }, [networkNodes, store.hostsCommonDetails]);
 
+  const filteredClientGateways = useMemo<ExtendedNode[]>(
+    () =>
+      clientGateways.filter((node) => node.name?.toLowerCase().includes(searchClientGateways.toLowerCase()) ?? false),
+    [clientGateways, searchClientGateways]
+  );
+
   const filteredClients = useMemo<ExternalClient[]>(
     () =>
-      clients.filter((client) => {
-        if (filteredGateway) {
-          return client.ingressgatewayid === filteredGateway.id;
-        }
-        return true;
-      }),
-    [clients, filteredGateway]
+      clients
+        .filter((client) => {
+          if (selectedGateway) {
+            return client.ingressgatewayid === selectedGateway.id;
+          }
+          const filteredGatewayIds = filteredClientGateways.map((node) => node.id);
+          return filteredGatewayIds.includes(client.ingressgatewayid);
+        })
+        .filter((client) => client.clientid?.toLowerCase().includes(searchClients.toLowerCase()) ?? false)
+        .sort((a, b) => a.ingressgatewayid.localeCompare(b.ingressgatewayid)),
+    [clients, filteredClientGateways, searchClients, selectedGateway]
   );
 
   const egresses = useMemo<ExtendedNode[]>(() => {
@@ -148,7 +160,9 @@ export default function NetworkDetailsPage(props: PageProps) {
         range,
       }));
     } else {
-      return filteredEgresses.flatMap((e) => e.egressgatewayranges.map((range) => ({ node: e, range })));
+      return filteredEgresses
+        .flatMap((e) => e.egressgatewayranges.map((range) => ({ node: e, range })))
+        .sort((a, b) => a.node.id.localeCompare(b.node.id));
     }
   }, [filteredEgress, filteredEgresses, store.hostsCommonDetails]);
 
@@ -203,7 +217,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     if (selectedRelay) {
       return networkHosts.filter((host) => host?.isrelayed && host?.relayed_by === selectedRelay.id);
     } else {
-      return networkHosts.filter((host) => host?.isrelayed);
+      return networkHosts.filter((host) => host?.isrelayed).sort((a, b) => a.relayed_by.localeCompare(b.relayed_by));
     }
   }, [networkHosts, selectedRelay]);
 
@@ -400,6 +414,8 @@ export default function NetworkDetailsPage(props: PageProps) {
         render(name) {
           return <Typography.Link>{name}</Typography.Link>;
         },
+        sorter: (a, b) => a.name?.localeCompare(b.name ?? '') ?? 0,
+        defaultSortOrder: 'ascend',
       },
       {
         title: 'Addresses',
@@ -452,6 +468,8 @@ export default function NetworkDetailsPage(props: PageProps) {
         render(name) {
           return <Typography.Link>{name}</Typography.Link>;
         },
+        sorter: (a, b) => a.name?.localeCompare(b.name ?? '') ?? 0,
+        defaultSortOrder: 'ascend',
       },
       {
         title: 'Addresses',
@@ -547,7 +565,6 @@ export default function NetworkDetailsPage(props: PageProps) {
       },
       {
         title: 'Allowed IPs',
-        // dataIndex: 'address',
         render(_, client) {
           const addrs = `${client.address}, ${client.address6}`;
           return <Tooltip title={addrs}>{addrs}</Tooltip>;
@@ -615,6 +632,8 @@ export default function NetworkDetailsPage(props: PageProps) {
       {
         title: 'Host name',
         dataIndex: 'name',
+        sorter: (a, b) => a.name?.localeCompare(b.name ?? '') ?? 0,
+        defaultSortOrder: 'ascend',
       },
       {
         title: 'Addresses',
@@ -927,6 +946,7 @@ export default function NetworkDetailsPage(props: PageProps) {
             ]}
             dataSource={networkNodes}
             rowKey="id"
+            size="small"
           />
         </Card>
       </div>
@@ -960,6 +980,8 @@ export default function NetworkDetailsPage(props: PageProps) {
                 render(_, dns) {
                   return <Typography.Text copyable>{`${dns.name}.${dns.network}`}</Typography.Text>;
                 },
+                sorter: (a, b) => a.name.localeCompare(b.name),
+                defaultSortOrder: 'ascend',
               },
               {
                 title: 'IP Addresses',
@@ -1001,6 +1023,7 @@ export default function NetworkDetailsPage(props: PageProps) {
             ]}
             dataSource={dnses}
             rowKey="name"
+            size="small"
           />
         </Card>
       </div>
@@ -1057,6 +1080,24 @@ export default function NetworkDetailsPage(props: PageProps) {
 
         {clients.length > 0 && (
           <Row style={{ width: '100%' }}>
+            <Col xs={12} style={{ marginBottom: '2rem' }}>
+              <Input
+                placeholder="Search gateways"
+                value={searchClientGateways}
+                onChange={(ev) => setSearchClientGateways(ev.target.value)}
+                prefix={<SearchOutlined />}
+                style={{ width: '60%' }}
+              />
+            </Col>
+            <Col xs={12} style={{ marginBottom: '2rem' }}>
+              <Input
+                placeholder="Search clients"
+                value={searchClients}
+                onChange={(ev) => setSearchClients(ev.target.value)}
+                prefix={<SearchOutlined />}
+                style={{ width: '60%' }}
+              />
+            </Col>
             <Col xs={12}>
               <Row style={{ width: '100%' }}>
                 <Col xs={12}>
@@ -1074,17 +1115,17 @@ export default function NetworkDetailsPage(props: PageProps) {
                 <Col xs={23}>
                   <Table
                     columns={gatewaysTableCols}
-                    dataSource={clientGateways}
+                    dataSource={filteredClientGateways}
                     rowKey="id"
                     size="small"
                     rowClassName={(gateway) => {
-                      return gateway.id === filteredGateway?.id ? 'selected-row' : '';
+                      return gateway.id === selectedGateway?.id ? 'selected-row' : '';
                     }}
                     onRow={(gateway) => {
                       return {
                         onClick: () => {
-                          if (filteredGateway?.id === gateway.id) setFilteredGateway(null);
-                          else setFilteredGateway(gateway);
+                          if (selectedGateway?.id === gateway.id) setSelectedGateway(null);
+                          else setSelectedGateway(gateway);
                         },
                       };
                     }}
@@ -1103,9 +1144,9 @@ export default function NetworkDetailsPage(props: PageProps) {
                   Display All{' '}
                   <Switch
                     title="Display all clients. Click a gateway to filter clients specific to that gateway."
-                    checked={filteredGateway === null}
+                    checked={selectedGateway === null}
                     onClick={() => {
-                      setFilteredGateway(null);
+                      setSelectedGateway(null);
                     }}
                   />
                 </Col>
@@ -1120,7 +1161,17 @@ export default function NetworkDetailsPage(props: PageProps) {
         )}
       </div>
     );
-  }, [clientGateways, clients, clientsTableCols, filteredClients, filteredGateway, gatewaysTableCols]);
+  }, [
+    clients.length,
+    clientGateways.length,
+    searchClientGateways,
+    searchClients,
+    gatewaysTableCols,
+    filteredClientGateways,
+    selectedGateway,
+    clientsTableCols,
+    filteredClients,
+  ]);
 
   const getEgressContent = useCallback(() => {
     return (
