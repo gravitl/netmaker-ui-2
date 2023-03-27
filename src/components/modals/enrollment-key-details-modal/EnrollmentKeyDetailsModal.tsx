@@ -72,7 +72,7 @@ export default function EnrollmentKeyDetailsModal({ isOpen, enrollmentKey, onCan
             <Col xs={24}>
               <Typography.Text type="secondary">Netclient CLI command:</Typography.Text>
               <br />
-              <Typography.Text copyable>netclient register -t {enrollmentKey.token}</Typography.Text>
+              <Typography.Text copyable>{`netclient register -t ${enrollmentKey.token}`}</Typography.Text>
             </Col>
           </Row>
         </Form>
