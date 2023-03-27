@@ -186,7 +186,7 @@ export default function NetworksPage(props: PageProps) {
       {/* modals */}
       <AddNetworkModal
         isOpen={isAddNetworkModalOpen}
-        onCreateNetwork={(network: Network) => {
+        onCreateNetwork={() => {
           setIsAddNetworkModalOpen(false);
         }}
         onCancel={() => setIsAddNetworkModalOpen(false)}
