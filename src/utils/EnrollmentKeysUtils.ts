@@ -1,8 +1,15 @@
 import { EnrollmentKey } from '../models/EnrollmentKey';
 
 export function isEnrollmentKeyValid(key: EnrollmentKey): boolean {
-  if (key.uses_remaining <= 0 && key.expiration < Date.now() && !key.unlimited) {
+  if (key === undefined || key === null) {
     return false;
   }
-  return true;
+  if (key.uses_remaining > 0) {
+    return true;
+  }
+  if (new Date(key.expiration).getTime() > Date.now()) {
+    return true;
+  }
+
+  return key.unlimited;
 }

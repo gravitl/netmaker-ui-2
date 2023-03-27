@@ -1,25 +1,29 @@
+import AddEnrollmentKeyModal from '@/components/modals/add-enrollment-key-modal/AddEnrollmentKeyModal';
+import EnrollmentKeyDetailsModal from '@/components/modals/enrollment-key-details-modal/EnrollmentKeyDetailsModal';
 import { EnrollmentKey } from '@/models/EnrollmentKey';
-import { Network } from '@/models/Network';
-import { AppRoutes } from '@/routes';
+import { EnrollmentKeysService } from '@/services/EnrollmentKeysService';
+import { isEnrollmentKeyValid } from '@/utils/EnrollmentKeysUtils';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
-import { PlusOutlined } from '@ant-design/icons';
+import { DeleteOutlined, MoreOutlined, PlusOutlined } from '@ant-design/icons';
 import {
   Button,
   Card,
   Col,
+  Dropdown,
   Input,
   Layout,
+  MenuProps,
+  Modal,
   notification,
   Row,
   Skeleton,
   Table,
   TableColumnsType,
+  Tag,
   Typography,
 } from 'antd';
 import { AxiosError } from 'axios';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import AddNetworkModal from '../../components/modals/add-network-modal/AddNetworkModal';
 import { PageProps } from '../../models/Page';
 
 import './EnrollmentKeysPage.scss';
@@ -28,24 +32,98 @@ export default function EnrollmentKeysPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
 
   const [keys, setKeys] = useState<EnrollmentKey[]>([]);
-  const [isLoadingKeys, setIsLoadingKeys] = useState(false);
+  const [isLoadingKeys, setIsLoadingKeys] = useState(true);
   const [isAddKeyModalOpen, setIsAddKeyModalOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
+  const [selectedKey, setSelectedKey] = useState<EnrollmentKey | null>(null);
+  const [isKeyDetailsModalOpen, setIsKeyDetailsModalOpen] = useState(false);
+
+  const confirmRemoveKey = useCallback(
+    (key: EnrollmentKey) => {
+      Modal.confirm({
+        title: `Delete key with tags ${key.tags.join(', ')}`,
+        content: `Are you sure you want to remove this key?`,
+        onOk: async () => {
+          try {
+            await EnrollmentKeysService.deleteEnrollmentKey(key.value);
+            setKeys((keys) => keys.filter((k) => k.value !== key.value));
+          } catch (err) {
+            if (err instanceof AxiosError) {
+              notify.error({
+                message: 'Error removing key',
+                description: extractErrorMsg(err),
+              });
+            }
+          }
+        },
+      });
+    },
+    [notify]
+  );
+
+  const openKeyDetails = useCallback((key: EnrollmentKey) => {
+    setSelectedKey(key);
+    setIsKeyDetailsModalOpen(true);
+  }, []);
+
+  const closeKeyDetails = useCallback(() => {
+    setSelectedKey(null);
+    setIsKeyDetailsModalOpen(false);
+  }, []);
+
   const tableColumns: TableColumnsType<EnrollmentKey> = [
     {
       title: 'Tags',
       dataIndex: 'tags',
-      render: (value) => value.join(', '),
+      render: (value, key) => <Typography.Link onClick={() => openKeyDetails(key)}>{value.join(', ')}</Typography.Link>,
+      sorter(a, b) {
+        return a.tags.join('').localeCompare(b.tags.join(''));
+      },
+      defaultSortOrder: 'ascend',
     },
     {
       title: 'Networks',
       dataIndex: 'networks',
       render: (value) => value.join(', '),
+      sorter(a, b) {
+        return a.networks.join('').localeCompare(b.networks.join(''));
+      },
     },
     {
       title: 'Validity',
-      // dataIndex: 'networks',
-      // render: (value) => value.join(', '),
+      render: (_, key) => {
+        const isValid = isEnrollmentKeyValid(key);
+
+        if (isValid) return <Tag color="success">Valid</Tag>;
+        return <Tag color="error">Invalid</Tag>;
+      },
+    },
+    {
+      width: '1rem',
+      render(_, key) {
+        return (
+          <Dropdown
+            placement="bottomRight"
+            menu={{
+              items: [
+                {
+                  key: 'delete',
+                  label: (
+                    <Typography.Text onClick={() => confirmRemoveKey(key)}>
+                      <DeleteOutlined /> Delete Key
+                    </Typography.Text>
+                  ),
+                  onClick: (info) => {
+                    info.domEvent.stopPropagation();
+                  },
+                },
+              ] as MenuProps['items'],
+            }}
+          >
+            <Button type="text" icon={<MoreOutlined />} />
+          </Dropdown>
+        );
+      },
     },
   ];
 
@@ -60,6 +138,9 @@ export default function EnrollmentKeysPage(props: PageProps) {
   const loadEnrollmentKeys = useCallback(async () => {
     try {
       setIsLoadingKeys(true);
+      const keys = (await EnrollmentKeysService.getEnrollmentKeys()).data;
+      keys.sort((a, b) => a.value.localeCompare(b.value));
+      setKeys(keys);
     } catch (err) {
       if (err instanceof AxiosError) {
         notify.error({
@@ -187,7 +268,7 @@ export default function EnrollmentKeysPage(props: PageProps) {
 
             <Row className="page-row-padding" justify="space-between">
               <Col xs={24}>
-                <Table columns={tableColumns} dataSource={filteredKeys} rowKey="netid" />
+                <Table columns={tableColumns} dataSource={filteredKeys} size="small" rowKey="value" />
               </Col>
             </Row>
           </>
@@ -195,13 +276,22 @@ export default function EnrollmentKeysPage(props: PageProps) {
       </Skeleton>
 
       {/* misc */}
-      <AddNetworkModal
+      <AddEnrollmentKeyModal
         isOpen={isAddKeyModalOpen}
-        onCreateNetwork={(network: Network) => {
+        onCreateKey={(key: EnrollmentKey) => {
           setIsAddKeyModalOpen(false);
+          setKeys((prevKeys) => [...prevKeys, key].sort((k) => k.value.localeCompare(k.value)));
         }}
         onCancel={() => setIsAddKeyModalOpen(false)}
       />
+      {isKeyDetailsModalOpen && selectedKey && (
+        <EnrollmentKeyDetailsModal
+          isOpen={isKeyDetailsModalOpen}
+          key={selectedKey.value}
+          enrollmentKey={selectedKey}
+          onCancel={closeKeyDetails}
+        />
+      )}
       {notifyCtx}
     </Layout.Content>
   );
