@@ -6,7 +6,7 @@ import { Network } from '../models/Network';
 export interface INetworkSlice {
   // state
   networks: Network[];
-  loadingNetworks: boolean;
+  isFetchingNetworks: boolean;
 
   // actions
   fetchNetworks: () => Promise<void>;
@@ -19,19 +19,19 @@ export interface INetworkSlice {
 
 const createNetworkSlice: StateCreator<INetworkSlice, [], [], INetworkSlice> = (set, get) => ({
   networks: [],
-  loadingNetworks: false,
+  isFetchingNetworks: false,
 
   async fetchNetworks() {
     try {
-      set(() => ({ loadingNetworks: true }));
+      set(() => ({ isFetchingNetworks: true }));
       const networks = (await NetworksService.getNetworks()).data;
       set(() => ({
         networks: networks.map((network) => convertNetworkPayloadToUiNetwork(network)),
-        loadingNetworks: false,
+        isFetchingNetworks: false,
       }));
     } catch (err) {
       console.error(err);
-      set(() => ({ loadingNetworks: false }));
+      set(() => ({ isFetchingNetworks: false }));
     }
   },
   setNetworks: (networks: Network[]) => set(() => ({ networks: networks })),

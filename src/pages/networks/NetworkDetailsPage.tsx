@@ -885,70 +885,70 @@ export default function NetworkDetailsPage(props: PageProps) {
   const getHostsContent = useCallback(() => {
     return (
       <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-        <Card style={{ width: '100%' }}>
-          <Row justify="space-between" style={{ marginBottom: '1rem' }}>
-            <Col xs={12} md={8}>
-              <Input
-                size="large"
-                placeholder="Search hosts"
-                value={searchHost}
-                onChange={(ev) => setSearchHost(ev.target.value)}
-              />
-            </Col>
-            <Col xs={12} md={6} style={{ textAlign: 'right' }}>
-              <Button type="primary" size="large" onClick={goToNewHostPage}>
-                <PlusOutlined /> Add Host
-              </Button>
-            </Col>
-          </Row>
+        <Row justify="space-between" style={{ marginBottom: '1rem', width: '100%' }}>
+          <Col xs={12} md={8}>
+            <Input
+              size="large"
+              placeholder="Search hosts"
+              value={searchHost}
+              onChange={(ev) => setSearchHost(ev.target.value)}
+            />
+          </Col>
+          <Col xs={12} md={6} style={{ textAlign: 'right' }}>
+            <Button type="primary" size="large" onClick={goToNewHostPage}>
+              <PlusOutlined /> Add Host
+            </Button>
+          </Col>
 
-          <Table
-            columns={[
-              {
-                title: 'Host Name',
-                render: (_, node) => {
-                  const hostName = store.hostsCommonDetails[node.hostid].name;
-                  return <Link to={getHostRoute(hostName)}>{hostName}</Link>;
+          <Col xs={24} style={{ paddingTop: '1rem' }}>
+            <Table
+              columns={[
+                {
+                  title: 'Host Name',
+                  render: (_, node) => {
+                    const hostName = store.hostsCommonDetails[node.hostid].name;
+                    return <Link to={getHostRoute(hostName)}>{hostName}</Link>;
+                  },
+                  sorter: (a, b) => {
+                    const hostNameA = store.hostsCommonDetails[a.hostid].name;
+                    const hostNameB = store.hostsCommonDetails[b.hostid].name;
+                    return hostNameA.localeCompare(hostNameB);
+                  },
+                  defaultSortOrder: 'ascend',
                 },
-                sorter: (a, b) => {
-                  const hostNameA = store.hostsCommonDetails[a.hostid].name;
-                  const hostNameB = store.hostsCommonDetails[b.hostid].name;
-                  return hostNameA.localeCompare(hostNameB);
+                {
+                  title: 'Private Address',
+                  dataIndex: 'address',
+                  render: (address: string, node) => (
+                    <>
+                      <Typography.Text copyable>{address}</Typography.Text>
+                      <Typography.Text copyable={!!node.address6}>{node.address6}</Typography.Text>
+                    </>
+                  ),
                 },
-                defaultSortOrder: 'ascend',
-              },
-              {
-                title: 'Private Address',
-                dataIndex: 'address',
-                render: (address: string, node) => (
-                  <>
-                    <Typography.Text copyable>{address}</Typography.Text>
-                    <Typography.Text copyable={!!node.address6}>{node.address6}</Typography.Text>
-                  </>
-                ),
-              },
-              {
-                title: 'Public Address',
-                dataIndex: 'name',
-              },
-              {
-                title: 'Preferred DNS',
-                dataIndex: 'name',
-              },
-              {
-                title: 'Health Status',
-                dataIndex: 'name',
-              },
-              {
-                title: 'Connection status',
-                // dataIndex: 'name',
-              },
-            ]}
-            dataSource={networkNodes}
-            rowKey="id"
-            size="small"
-          />
-        </Card>
+                {
+                  title: 'Public Address',
+                  dataIndex: 'name',
+                },
+                {
+                  title: 'Preferred DNS',
+                  dataIndex: 'name',
+                },
+                {
+                  title: 'Health Status',
+                  dataIndex: 'name',
+                },
+                {
+                  title: 'Connection status',
+                  // dataIndex: 'name',
+                },
+              ]}
+              dataSource={networkNodes}
+              rowKey="id"
+              size="small"
+            />
+          </Col>
+        </Row>
       </div>
     );
   }, [goToNewHostPage, networkNodes, searchHost, store.hostsCommonDetails]);
@@ -956,76 +956,76 @@ export default function NetworkDetailsPage(props: PageProps) {
   const getDnsContent = useCallback(() => {
     return (
       <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-        <Card style={{ width: '100%' }}>
-          <Row justify="space-between" style={{ marginBottom: '1rem' }}>
-            <Col xs={12} md={8}>
-              <Input
-                size="large"
-                placeholder="Search DNS"
-                value={searchDns}
-                onChange={(ev) => setSearchDns(ev.target.value)}
-              />
-            </Col>
-            <Col xs={12} md={6} style={{ textAlign: 'right' }}>
-              <Button type="primary" size="large" onClick={() => setIsAddDnsModalOpen(true)}>
-                <PlusOutlined /> Add DNS
-              </Button>
-            </Col>
-          </Row>
+        <Row justify="space-between" style={{ marginBottom: '1rem', width: '100%' }}>
+          <Col xs={12} md={8}>
+            <Input
+              size="large"
+              placeholder="Search DNS"
+              value={searchDns}
+              onChange={(ev) => setSearchDns(ev.target.value)}
+            />
+          </Col>
+          <Col xs={12} md={6} style={{ textAlign: 'right' }}>
+            <Button type="primary" size="large" onClick={() => setIsAddDnsModalOpen(true)}>
+              <PlusOutlined /> Add DNS
+            </Button>
+          </Col>
 
-          <Table
-            columns={[
-              {
-                title: 'DNS Entry',
-                render(_, dns) {
-                  return <Typography.Text copyable>{`${dns.name}.${dns.network}`}</Typography.Text>;
+          <Col xs={24} style={{ paddingTop: '1rem' }}>
+            <Table
+              columns={[
+                {
+                  title: 'DNS Entry',
+                  render(_, dns) {
+                    return <Typography.Text copyable>{`${dns.name}.${dns.network}`}</Typography.Text>;
+                  },
+                  sorter: (a, b) => a.name.localeCompare(b.name),
+                  defaultSortOrder: 'ascend',
                 },
-                sorter: (a, b) => a.name.localeCompare(b.name),
-                defaultSortOrder: 'ascend',
-              },
-              {
-                title: 'IP Addresses',
-                render(_, dns) {
-                  return (
-                    <Typography.Text copyable>
-                      {dns.address}
-                      {dns.address6 && `, ${dns.address6}`}
-                    </Typography.Text>
-                  );
+                {
+                  title: 'IP Addresses',
+                  render(_, dns) {
+                    return (
+                      <Typography.Text copyable>
+                        {dns.address}
+                        {dns.address6 && `, ${dns.address6}`}
+                      </Typography.Text>
+                    );
+                  },
                 },
-              },
-              {
-                title: '',
-                key: 'action',
-                width: '1rem',
-                render: (_, dns) => (
-                  <Dropdown
-                    placement="bottomRight"
-                    menu={{
-                      items: [
-                        {
-                          key: 'delete',
-                          label: (
-                            <Tooltip title="Cannot delete default DNS">
-                              <Typography.Text onClick={() => confirmDeleteDns(dns)}>
-                                <DeleteOutlined /> Delete
-                              </Typography.Text>
-                            </Tooltip>
-                          ),
-                        },
-                      ] as MenuProps['items'],
-                    }}
-                  >
-                    <MoreOutlined />
-                  </Dropdown>
-                ),
-              },
-            ]}
-            dataSource={dnses}
-            rowKey="name"
-            size="small"
-          />
-        </Card>
+                {
+                  title: '',
+                  key: 'action',
+                  width: '1rem',
+                  render: (_, dns) => (
+                    <Dropdown
+                      placement="bottomRight"
+                      menu={{
+                        items: [
+                          {
+                            key: 'delete',
+                            label: (
+                              <Tooltip title="Cannot delete default DNS">
+                                <Typography.Text onClick={() => confirmDeleteDns(dns)}>
+                                  <DeleteOutlined /> Delete
+                                </Typography.Text>
+                              </Tooltip>
+                            ),
+                          },
+                        ] as MenuProps['items'],
+                      }}
+                    >
+                      <MoreOutlined />
+                    </Dropdown>
+                  ),
+                },
+              ]}
+              dataSource={dnses}
+              rowKey="name"
+              size="small"
+            />
+          </Col>
+        </Row>
       </div>
     );
   }, [confirmDeleteDns, dnses, searchDns]);

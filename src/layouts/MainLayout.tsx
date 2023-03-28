@@ -1,5 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { AppstoreOutlined, GlobalOutlined, LaptopOutlined, LogoutOutlined, UserOutlined } from '@ant-design/icons';
+import {
+  GlobalOutlined,
+  KeyOutlined,
+  LaptopOutlined,
+  LogoutOutlined,
+  MobileOutlined,
+  UserOutlined,
+} from '@ant-design/icons';
 import { Alert, Col, Divider, Input, List, MenuProps, Row, Select, Switch, Typography } from 'antd';
 import { Layout, Menu, theme } from 'antd';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
@@ -31,12 +38,12 @@ const sideNavItems: MenuProps['items'] = [
   },
   {
     key: 'clients',
-    icon: AppstoreOutlined,
+    icon: MobileOutlined,
     label: 'Clients',
   },
   {
     key: 'enrollment-keys',
-    icon: AppstoreOutlined,
+    icon: KeyOutlined,
     label: 'Enrollment Keys',
   },
 ].map((item) => ({

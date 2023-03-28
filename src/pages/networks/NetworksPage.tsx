@@ -73,7 +73,7 @@ export default function NetworksPage(props: PageProps) {
       className="NetworksPage"
       style={{ position: 'relative', height: '100%', padding: props.isFullScreen ? 0 : 24 }}
     >
-      <Skeleton loading={store.loadingNetworks} active title={true} className="page-padding">
+      <Skeleton loading={store.isFetchingNetworks} active title={true} className="page-padding">
         {networks.length === 0 && (
           <>
             <Row

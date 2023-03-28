@@ -4,6 +4,8 @@ import App from './App';
 import './index.css';
 import './i18n/i18n';
 
+// TODO: get SaaS tenant config before app loads
+
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <App />
