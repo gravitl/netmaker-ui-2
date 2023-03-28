@@ -323,6 +323,9 @@ export default function NewHostPage(props: PageProps) {
         onCreateNetwork={() => {
           setIsAddNetworkModalOpen(false);
         }}
+        onCancel={() => {
+          setIsAddNetworkModalOpen(false);
+        }}
       />
     </Layout.Content>
   );
