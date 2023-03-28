@@ -254,7 +254,7 @@ export default function EnrollmentKeysPage(props: PageProps) {
               <Col xs={12} md={8}>
                 <Input
                   size="large"
-                  placeholder="Search keys..."
+                  placeholder="Search keys"
                   value={searchText}
                   onChange={(ev) => setSearchText(ev.target.value)}
                 />
