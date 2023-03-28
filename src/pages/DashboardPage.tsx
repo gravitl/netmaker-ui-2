@@ -128,6 +128,7 @@ export default function DashboardPage(props: PageProps) {
         isOpen={isAddNetworkModalOpen}
         onCreateNetwork={() => {
           setIsAddNetworkModalOpen(false);
+          navigate(AppRoutes.NETWORKS_ROUTE);
         }}
         onCancel={() => setIsAddNetworkModalOpen(false)}
       />

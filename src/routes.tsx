@@ -11,6 +11,7 @@ import NetworksPage from './pages/networks/NetworksPage';
 import LoginPage from './pages/auth/LoginPage';
 import NetworkDetailsPage from './pages/networks/NetworkDetailsPage';
 import EnrollmentKeysPage from './pages/enrollment-keys/EnrollmentKeysPage';
+import HostsPage from './pages/hosts/HostsPage';
 
 export class AppRoutes {
   static DASHBOARD_ROUTE = '/';
@@ -34,8 +35,9 @@ const routes: RouteObject[] = [
     element: <MainLayout />,
     children: [
       { path: '', element: <DashboardPage isFullScreen={false} /> },
-      { path: AppRoutes.NEW_HOST_ROUTE.split('/').slice(1).join('/'), element: <NewHostPage isFullScreen /> },
+      { path: AppRoutes.HOSTS_ROUTE.split('/').slice(1).join('/'), element: <HostsPage isFullScreen /> },
       { path: AppRoutes.HOST_ROUTE.split('/').slice(1).join('/'), element: <HostPage isFullScreen /> },
+      { path: AppRoutes.NEW_HOST_ROUTE.split('/').slice(1).join('/'), element: <NewHostPage isFullScreen /> },
       { path: AppRoutes.NETWORKS_ROUTE.split('/').slice(1).join('/'), element: <NetworksPage isFullScreen /> },
       {
         path: AppRoutes.NETWORK_DETAILS_ROUTE.split('/').slice(1).join('/'),

@@ -1,4 +1,6 @@
+import AddNetworkModal from '@/components/modals/add-network-modal/AddNetworkModal';
 import { Network } from '@/models/Network';
+import { AppRoutes } from '@/routes';
 import { useStore } from '@/store/store';
 import { getNetworkRoute } from '@/utils/RouteUtils';
 import { CopyOutlined, PlusOutlined } from '@ant-design/icons';
@@ -6,7 +8,6 @@ import { Button, Card, Col, Divider, Input, Layout, List, Row, Steps } from 'ant
 import { MouseEvent, useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageProps } from '../../models/Page';
-import { AppRoutes } from '../../routes';
 
 import './NewHostPage.scss';
 
@@ -25,9 +26,11 @@ export default function NewHostPage(props: PageProps) {
   const navigate = useNavigate();
   const store = useStore();
 
+  const storeFetchNetworks = useStore((state) => state.fetchNetworks);
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedNetwork, setSelectedNetwork] = useState<Network | null>(null);
   const [selectedOs, setSelectedOs] = useState<AvailableOses>('windows');
+  const [isAddNetworkModalOpen, setIsAddNetworkModalOpen] = useState(false);
 
   const onStepChange = (newStep: number) => {
     setCurrentStep(newStep);
@@ -37,6 +40,11 @@ export default function NewHostPage(props: PageProps) {
     // TODO: know which is best. maybe take this as a prop? so it'll be more flexible to different flows
     // navigate(AppRoutes.HOST_ROUTE);
     navigate(getNetworkRoute(selectedNetwork!));
+  };
+
+  const onCancel = () => {
+    // TODO: know which is best. maybe take this as a prop? so it'll be more flexible to different flows
+    navigate(AppRoutes.HOSTS_ROUTE);
   };
 
   const onShowInstallGuide = (ev: MouseEvent, os: AvailableOses) => {
@@ -50,9 +58,8 @@ export default function NewHostPage(props: PageProps) {
   };
 
   const loadNetworks = useCallback(() => {
-    store.fetchNetworks();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    storeFetchNetworks();
+  }, [storeFetchNetworks]);
 
   useEffect(() => {
     loadNetworks();
@@ -85,23 +92,26 @@ export default function NewHostPage(props: PageProps) {
                 className="networks-list"
                 style={{ maxHeight: '50vh', overflow: 'auto', marginTop: '.5rem' }}
               >
-                {store.networks.map((network) => (
-                  <List.Item
-                    key={network.netid}
-                    style={{ cursor: 'pointer' }}
-                    onClick={() => {
-                      setSelectedNetwork(network);
-                      onStepChange(1);
-                    }}
-                  >
-                    <List.Item.Meta
-                      title={network.netid}
-                      description={`IPv4 Range: ${network.addressrange}, IPv6 Range: ${network.addressrange6}`}
-                    />
-                  </List.Item>
-                ))}
+                {store.networks
+                  .sort((a, b) => a.netid.localeCompare(b.netid))
+                  .map((network) => (
+                    <List.Item
+                      key={network.netid}
+                      style={{ cursor: 'pointer' }}
+                      onClick={() => {
+                        setSelectedNetwork(network);
+                        onStepChange(1);
+                      }}
+                    >
+                      <List.Item.Meta
+                        style={{ cursor: 'pointer' }}
+                        title={network.netid}
+                        description={`IPv4 Range: ${network.addressrange}, IPv6 Range: ${network.addressrange6}`}
+                      />
+                    </List.Item>
+                  ))}
               </List>
-              <Button type="link">
+              <Button type="link" style={{ marginTop: '1rem' }} onClick={() => setIsAddNetworkModalOpen(true)}>
                 <PlusOutlined /> Add network
               </Button>
             </Card>
@@ -286,9 +296,14 @@ export default function NewHostPage(props: PageProps) {
       <Layout.Footer style={{ position: 'absolute', bottom: '0', width: '100%' }}>
         <Row justify="center">
           <Col xs={24} lg={12} style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <Button type="link" onClick={() => setCurrentStep(currentStep - 1)} disabled={currentStep <= 0}>
-              Previous
-            </Button>
+            <div className="">
+              <Button type="link" danger onClick={onCancel}>
+                Cancel
+              </Button>
+              <Button type="link" onClick={() => setCurrentStep(currentStep - 1)} disabled={currentStep <= 0}>
+                Previous
+              </Button>
+            </div>
             {currentStep === steps.length - 1 ? (
               <Button type="primary" onClick={onFinish}>
                 Finish
@@ -301,6 +316,14 @@ export default function NewHostPage(props: PageProps) {
           </Col>
         </Row>
       </Layout.Footer>
+
+      {/* misc */}
+      <AddNetworkModal
+        isOpen={isAddNetworkModalOpen}
+        onCreateNetwork={() => {
+          setIsAddNetworkModalOpen(false);
+        }}
+      />
     </Layout.Content>
   );
 }
