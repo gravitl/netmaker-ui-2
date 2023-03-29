@@ -6,6 +6,7 @@ export interface IAuthSlice {
   email: TenantConfig['email'];
   username: TenantConfig['username'];
   tenantId: TenantConfig['tenantId'];
+  baseUrl: TenantConfig['baseUrl'];
 
   // methods
   isLoggedIn: () => boolean;
@@ -18,6 +19,7 @@ const createAuthSlice: StateCreator<IAuthSlice, [], [], IAuthSlice> = (set, get)
   email: '',
   tenantId: '',
   username: '',
+  baseUrl: '',
 
   isLoggedIn() {
     return !!get().jwt;
@@ -31,6 +33,7 @@ const createAuthSlice: StateCreator<IAuthSlice, [], [], IAuthSlice> = (set, get)
       email: '',
       username: '',
       tenantId: '',
+      baseUrl: '',
     });
   },
 });

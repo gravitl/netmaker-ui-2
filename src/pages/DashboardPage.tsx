@@ -1,20 +1,16 @@
 import { Alert, Button, Card, Col, Input, Layout, Row, Space, Tooltip } from 'antd';
-import {
-  ArrowRightOutlined,
-  BellOutlined,
-  PlusOutlined,
-  QuestionCircleOutlined,
-  SearchOutlined,
-} from '@ant-design/icons';
+import { ArrowRightOutlined, PlusOutlined, QuestionCircleOutlined, SearchOutlined } from '@ant-design/icons';
 import UpgradeModal from '../components/modals/upgrade-modal/UpgradeModal';
 import { PageProps } from '../models/Page';
 import { AppRoutes } from '../routes';
 import { useNavigate } from 'react-router-dom';
 import AddNetworkModal from '@/components/modals/add-network-modal/AddNetworkModal';
 import { useState } from 'react';
+import { useStore } from '@/store/store';
 
 export default function DashboardPage(props: PageProps) {
   const navigate = useNavigate();
+  const store = useStore();
 
   const [isAddNetworkModalOpen, setIsAddNetworkModalOpen] = useState(false);
 
@@ -58,14 +54,14 @@ export default function DashboardPage(props: PageProps) {
                     }}
                   />
                 </Tooltip>
-                <Tooltip title="Notifications">
+                {/* <Tooltip title="Notifications">
                   <BellOutlined
                     style={{ cursor: 'pointer', fontSize: '1.2rem' }}
                     onClick={() => {
                       // TODO: notifications
                     }}
                   />
-                </Tooltip>
+                </Tooltip> */}
               </Space>
             </Col>
           </Row>
@@ -90,34 +86,36 @@ export default function DashboardPage(props: PageProps) {
                 </Button>
               </div>
             </Card>
-            {/* TODO: check if no networks before rendering */}
-            <Card style={{ maxWidth: '30%' }}>
-              <h3>Add a network</h3>
-              <p>
-                Lorem ipsum dolor sit amet consectetur, adipisicing elit. Consequatur possimus ex quae veritatis
-                architecto esse.
-              </p>
-              <div>
-                <Button type="primary" onClick={() => setIsAddNetworkModalOpen(true)}>
-                  <PlusOutlined />
-                  Get Started
-                </Button>
-              </div>
-            </Card>
-            {/* TODO: check if no networks and no hosts before rendering */}
-            <Card style={{ maxWidth: '30%' }}>
-              <h3>Add a host</h3>
-              <p>
-                Lorem ipsum dolor sit amet consectetur, adipisicing elit. Consequatur possimus ex quae veritatis
-                architecto esse.
-              </p>
-              <div>
-                <Button type="primary" onClick={goToNewHostPage}>
-                  <PlusOutlined />
-                  Get Started
-                </Button>
-              </div>
-            </Card>
+            {!store.isFetchingNetworks && store.networks.length === 0 && (
+              <Card style={{ maxWidth: '30%' }}>
+                <h3>Add a network</h3>
+                <p>
+                  Lorem ipsum dolor sit amet consectetur, adipisicing elit. Consequatur possimus ex quae veritatis
+                  architecto esse.
+                </p>
+                <div>
+                  <Button type="primary" onClick={() => setIsAddNetworkModalOpen(true)}>
+                    <PlusOutlined />
+                    Get Started
+                  </Button>
+                </div>
+              </Card>
+            )}
+            {!store.isFetchingHosts && store.hosts.length === 0 && (
+              <Card style={{ maxWidth: '30%' }}>
+                <h3>Add a host</h3>
+                <p>
+                  Lorem ipsum dolor sit amet consectetur, adipisicing elit. Consequatur possimus ex quae veritatis
+                  architecto esse.
+                </p>
+                <div>
+                  <Button type="primary" onClick={goToNewHostPage}>
+                    <PlusOutlined />
+                    Get Started
+                  </Button>
+                </div>
+              </Card>
+            )}
           </Space>
         </Col>
       </Row>

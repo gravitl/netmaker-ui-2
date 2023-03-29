@@ -1,35 +1,26 @@
 import { useStore } from '@/store/store';
 import axios from 'axios';
-import { TenantConfig } from '../models/ServerConfig';
 
 export const isSaasBuild = import.meta.env.VITE_IS_SAAS_BUILD?.toLocaleLowerCase() === 'true';
-let apiBaseUrl = '';
+
+export const baseService = axios.create();
 
 // function to resolve the particular SaaS tenant's backend URL, ...
-export function getTenantConfig(): TenantConfig {
+export function setupTenantConfig(): void {
   if (!isSaasBuild) {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    apiBaseUrl = import.meta.env.VITE_BASE_URL!;
-    return {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      baseUrl: import.meta.env.VITE_BASE_URL!,
-    };
+    baseService.defaults.baseURL = `${import.meta.env.VITE_BASE_URL}/api`;
+    return;
   }
 
-  // TODO: API call
-  apiBaseUrl = '';
-  return {
-    baseUrl: '',
-  };
+  const url = new URL(window.location.href);
+  const baseUrl = url.searchParams.get('backend');
+  const accessToken = url.searchParams.get('token');
 
-  // TODO: commit config in store
+  useStore.getState().setStore({
+    baseUrl: `${baseUrl}/api` ?? `${useStore.getState().baseUrl}/api`,
+    jwt: accessToken ?? useStore.getState().jwt,
+  });
 }
-
-const API_PREFIX = '/api';
-
-export const baseService = axios.create({
-  baseURL: getTenantConfig().baseUrl + API_PREFIX,
-});
 
 // token interceptor for axios
 baseService.interceptors.request.use((config) => {

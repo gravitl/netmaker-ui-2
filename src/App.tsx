@@ -27,17 +27,20 @@ function App() {
         // -1 means the modal is closed, 0 means the modal is open, 1 means the modal is open and the user has not acknowledged the error
         setServerMalfunctionCount((prev) => (prev === -1 ? -1 : 1));
       }
-      storeSetServerStatus(serverStatus);
+      storeSetServerStatus({ ...serverStatus, healthyNetwork: true });
       if (!isUnhealthy) {
         storeFetchHosts();
         storeFetchNodes();
       }
     } catch (err) {
       if (err instanceof AxiosError) {
-        notify.error({ message: 'Failed to connect to your server', description: (err as AxiosError).message });
+        // notify.error({ message: 'Failed to connect to your server', description: (err as AxiosError).message });
+        storeSetServerStatus({ db_connected: false, broker_connected: false, healthyNetwork: true });
+      } else {
+        storeSetServerStatus({ db_connected: false, broker_connected: false, healthyNetwork: false });
       }
     }
-  }, [notify, storeFetchHosts, storeFetchNodes, storeSetServerStatus]);
+  }, [storeFetchHosts, storeFetchNodes, storeSetServerStatus]);
 
   useEffect(() => {
     const id = setInterval(() => {

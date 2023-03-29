@@ -19,7 +19,7 @@ export default function LoginPage(props: LoginPageProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
   const navigate = useNavigate();
-  const { baseUrl, token, logoUrl, tenantName } = useParams();
+  const { backend, token } = useParams();
   const { t } = useTranslation();
 
   const [shouldRemember, setShouldRemember] = useState(false);
@@ -40,18 +40,18 @@ export default function LoginPage(props: LoginPageProps) {
   const onSSOLogin = () => {};
 
   if (isSaasBuild) {
-    window.location.href = process.env.REACT_APP_ACCOUNT_DASHBOARD_LOGIN_URL as string;
-    return null;
-  }
-
-  // TODO: check if user is logged in in before route hook
-  if (store.isLoggedIn()) {
+    if (!backend && !token) {
+      window.location.href = process.env.REACT_APP_ACCOUNT_DASHBOARD_LOGIN_URL as string;
+      return null;
+    }
+    store.setStore({ jwt: token, baseUrl: backend });
+    // TODO: load username
     navigate(AppRoutes.DASHBOARD_ROUTE);
   }
 
-  // TODO: check if server is EE then use custom logo and tenant name
-  logoUrl && store.setLogoUrl(logoUrl);
-  tenantName && store.setServerName(tenantName);
+  if (store.isLoggedIn()) {
+    navigate(AppRoutes.DASHBOARD_ROUTE);
+  }
 
   return (
     <Layout style={{ height: '100vh', justifyContent: 'center', alignItems: 'center' }}>

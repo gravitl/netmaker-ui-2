@@ -378,8 +378,11 @@ export default function MainLayout() {
                   type="warning"
                   showIcon
                   style={{ border: 'none', height: '4rem', fontSize: '1rem', color: '#D4B106' }}
-                  message="Server error: Your Netmaker server is not running properly. This may impact network performance . Contact your
-                  administrator."
+                  message={
+                    !store.serverStatus.status?.healthyNetwork
+                      ? 'Unable to react Netmaker server. Check you internet connection.'
+                      : 'Your Netmaker server is not running properly. This may impact network performance. Contact your administrator.'
+                  }
                 />
               </Col>
             </Row>

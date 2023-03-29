@@ -37,4 +37,5 @@ export interface TenantConfig {
 export interface ServerStatus {
   db_connected: boolean;
   broker_connected: boolean;
+  healthyNetwork: boolean;
 }

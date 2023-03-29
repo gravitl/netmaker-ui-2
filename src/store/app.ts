@@ -28,7 +28,7 @@ const createAppSlice: StateCreator<IAppSlice, [], [], IAppSlice> = (set, get) =>
     set(() => ({
       serverStatus: {
         status,
-        isHealthy: status.broker_connected && status.db_connected,
+        isHealthy: status.broker_connected && status.db_connected && status.healthyNetwork,
       },
     })),
 });
