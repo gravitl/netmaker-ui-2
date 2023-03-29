@@ -32,6 +32,7 @@ import {
 } from '@ant-design/icons';
 import {
   Alert,
+  Badge,
   Button,
   Card,
   Col,
@@ -90,6 +91,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [dnses, setDnses] = useState<DNS[]>([]);
   const [isAddDnsModalOpen, setIsAddDnsModalOpen] = useState(false);
   const [acls, setAcls] = useState<NodeAclContainer>({});
+  const [originalAcls, setOriginalAcls] = useState<NodeAclContainer>({});
   const [isAddClientModalOpen, setIsAddClientModalOpen] = useState(false);
   const [clients, setClients] = useState<ExternalClient[]>([]);
   const [isClientDetailsModalOpen, setIsClientDetailsModalOpen] = useState(false);
@@ -220,6 +222,22 @@ export default function NetworkDetailsPage(props: PageProps) {
       return networkHosts.filter((host) => host?.isrelayed).sort((a, b) => a.relayed_by.localeCompare(b.relayed_by));
     }
   }, [networkHosts, selectedRelay]);
+
+  const loadAcls = useCallback(async () => {
+    try {
+      if (!networkId) return;
+      const acls = (await NetworksService.getAcls(networkId)).data;
+      setAcls(acls);
+      setOriginalAcls(acls);
+    } catch (err) {
+      if (err instanceof AxiosError) {
+        notify.error({
+          message: 'Error loading ACLs',
+          description: extractErrorMsg(err),
+        });
+      }
+    }
+  }, [networkId, notify]);
 
   const goToNewHostPage = useCallback(() => {
     navigate(AppRoutes.NEW_HOST_ROUTE);
@@ -739,20 +757,48 @@ export default function NetworkDetailsPage(props: PageProps) {
     const aclTableDataMap = new Map<Node['id'], AclTableData>();
     aclTableData.forEach((aclData) => aclTableDataMap.set(aclData.nodeId, aclData));
 
-    const renderAclValue = (aclLevel: number) => {
-      switch (aclLevel) {
+    const renderAclValue = (
+      originalAclLevel: number,
+      newAclLevel: number,
+      nodeId1: Node['id'],
+      nodeId2: Node['id']
+    ) => {
+      switch (newAclLevel) {
         case 1:
           return (
-            <Button danger size="small" style={{ marginRight: '1rem' }} icon={<StopOutlined />} onClick={() => {}} />
+            <Badge size="small" dot={originalAclLevel !== newAclLevel}>
+              <Button
+                danger
+                size="small"
+                icon={<StopOutlined />}
+                onClick={() => {
+                  setAcls((prevAcls) => {
+                    const newAcls = structuredClone(prevAcls);
+                    newAcls[nodeId1][nodeId2] = 2;
+                    newAcls[nodeId2][nodeId1] = 2;
+                    return newAcls;
+                  });
+                }}
+              />
+            </Badge>
           );
         case 2:
           return (
-            <Button
-              size="small"
-              style={{ marginRight: '1rem', color: '#3C8618', borderColor: '#274916' }}
-              icon={<CheckOutlined />}
-              onClick={() => {}}
-            />
+            <Badge size="small" dot={originalAclLevel !== newAclLevel}>
+              <Button
+                size="small"
+                style={{ color: '#3C8618', borderColor: '#274916' }}
+                icon={<CheckOutlined />}
+                onClick={() => {
+                  setAcls((prevAcls) => {
+                    const newAcls = structuredClone(prevAcls);
+                    newAcls[nodeId1][nodeId2] = 1;
+                    newAcls[nodeId2][nodeId1] = 1;
+                    return newAcls;
+                  });
+                }}
+              />
+            </Badge>
           );
         default:
           return <DashOutlined />;
@@ -769,11 +815,18 @@ export default function NetworkDetailsPage(props: PageProps) {
       ...aclTableData.map((aclData) => ({
         title: aclData.name,
         render(_: unknown, aclEntry: (typeof aclTableData)[0]) {
-          return renderAclValue(aclTableDataMap.get(aclEntry.nodeId)?.acls?.[aclData?.nodeId] ?? 0);
+          return renderAclValue(
+            originalAcls?.[aclEntry.nodeId]?.[aclData.nodeId] ?? 0,
+            aclTableDataMap.get(aclEntry.nodeId)?.acls?.[aclData?.nodeId] ?? 0,
+            aclEntry.nodeId,
+            aclData.nodeId
+          );
         },
       })),
     ];
-  }, [aclTableData]);
+  }, [aclTableData, originalAcls]);
+
+  const hasAclsBeenEdited = useMemo(() => JSON.stringify(acls) === JSON.stringify(originalAcls), [acls, originalAcls]);
 
   // ui components
   const getOverviewContent = useCallback(() => {
@@ -1438,7 +1491,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         <Row style={{ width: '100%' }}>
           <Col xs={12}>
             <Input
-              placeholder="Search host..."
+              placeholder="Search host"
               value={searchAclHost}
               onChange={(ev) => setSearchAclHost(ev.target.value)}
               prefix={<SearchOutlined />}
@@ -1447,13 +1500,67 @@ export default function NetworkDetailsPage(props: PageProps) {
           </Col>
           <Col xs={12} style={{ textAlign: 'right' }}>
             <Button
+              title="Allow All"
               style={{ marginRight: '1rem', color: '#3C8618', borderColor: '#274916' }}
               icon={<CheckOutlined />}
-              onClick={() => {}}
+              onClick={() => {
+                setAcls((prevAcls) => {
+                  const newAcls = structuredClone(prevAcls);
+                  for (const nodeId1 in newAcls) {
+                    if (Object.prototype.hasOwnProperty.call(newAcls, nodeId1)) {
+                      const nodeAcl = newAcls[nodeId1];
+                      for (const nodeId in nodeAcl) {
+                        if (Object.prototype.hasOwnProperty.call(nodeAcl, nodeId)) {
+                          nodeAcl[nodeId] = 2;
+                        }
+                      }
+                    }
+                  }
+                  return newAcls;
+                });
+              }}
             />
-            <Button danger style={{ marginRight: '1rem' }} icon={<StopOutlined />} onClick={() => {}} />
-            <Button title="Reset" style={{ marginRight: '1rem' }} icon={<ReloadOutlined />} onClick={() => {}} />
-            <Button type="primary" onClick={() => {}}>
+            <Button
+              danger
+              title="Block All"
+              style={{ marginRight: '1rem' }}
+              icon={<StopOutlined />}
+              onClick={() => {
+                setAcls((prevAcls) => {
+                  const newAcls = structuredClone(prevAcls);
+                  for (const nodeId1 in newAcls) {
+                    if (Object.prototype.hasOwnProperty.call(newAcls, nodeId1)) {
+                      const nodeAcl = newAcls[nodeId1];
+                      for (const nodeId in nodeAcl) {
+                        if (Object.prototype.hasOwnProperty.call(nodeAcl, nodeId)) {
+                          nodeAcl[nodeId] = 1;
+                        }
+                      }
+                    }
+                  }
+                  return newAcls;
+                });
+              }}
+            />
+            <Button
+              title="Reset"
+              style={{ marginRight: '1rem' }}
+              icon={<ReloadOutlined />}
+              onClick={() => {
+                setAcls(originalAcls);
+              }}
+              disabled={hasAclsBeenEdited}
+            />
+            <Button
+              type="primary"
+              onClick={async () => {
+                if (!networkId) return;
+                const newAcls = (await NetworksService.updateAcls(networkId, acls)).data;
+                setOriginalAcls(newAcls);
+                setAcls(newAcls);
+              }}
+              disabled={hasAclsBeenEdited}
+            >
               Submit Changes
             </Button>
           </Col>
@@ -1472,7 +1579,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         </Row>
       </div>
     );
-  }, [aclTableCols, filteredAclData, searchAclHost]);
+  }, [aclTableCols, acls, filteredAclData, hasAclsBeenEdited, networkId, originalAcls, searchAclHost]);
 
   const networkTabs: TabsProps['items'] = useMemo(() => {
     return [
@@ -1558,21 +1665,6 @@ export default function NetworkDetailsPage(props: PageProps) {
       if (err instanceof AxiosError) {
         notify.error({
           message: 'Error loading DNSes',
-          description: extractErrorMsg(err),
-        });
-      }
-    }
-  }, [networkId, notify]);
-
-  const loadAcls = useCallback(async () => {
-    try {
-      if (!networkId) return;
-      const acls = (await NetworksService.getAcls(networkId)).data;
-      setAcls(acls);
-    } catch (err) {
-      if (err instanceof AxiosError) {
-        notify.error({
-          message: 'Error loading ACLs',
           description: extractErrorMsg(err),
         });
       }
@@ -1696,7 +1788,7 @@ export default function NetworkDetailsPage(props: PageProps) {
             <Link to={AppRoutes.NETWORKS_ROUTE}>View All Networks</Link>
             <Row>
               <Col xs={18}>
-                <Typography.Title level={2} copyable style={{ marginTop: '.5rem', marginBottom: '2rem' }}>
+                <Typography.Title level={2} style={{ marginTop: '.5rem', marginBottom: '2rem' }}>
                   {network?.netid}
                 </Typography.Title>
               </Col>
