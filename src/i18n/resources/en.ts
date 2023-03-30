@@ -24,4 +24,12 @@ export const en: LanguageResource = {
     servermalfunction: 'Error server malfunction',
     contactyourserveradmin: 'Contact your server admin',
   },
+  info: {
+    connectonemorehost: 'Connect one more host',
+    connectatleasttwohostsonanetworktobegincommunication:
+      'Connect at least two hosts on a network to begin communication',
+  },
+  hosts: {
+    connectahost: 'Connect a host',
+  },
 };

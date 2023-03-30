@@ -22,4 +22,11 @@ export interface LanguageResource {
     servermalfunction: string;
     contactyourserveradmin: string;
   };
+  info: {
+    connectonemorehost: string;
+    connectatleasttwohostsonanetworktobegincommunication: string;
+  };
+  hosts: {
+    connectahost: string;
+  };
 }

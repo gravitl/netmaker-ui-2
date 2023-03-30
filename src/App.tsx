@@ -7,6 +7,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { AxiosError } from 'axios';
 import { ServerConfigService } from './services/ServerConfigService';
 import ServerMalfunctionModal from './components/modals/server-malfunction-modal/ServerMalfunctionModal';
+import { THEME_PRIMARY_COLOR } from './utils/ThemeUtils';
 
 const POLL_INTERVAL = 10_000;
 
@@ -57,6 +58,10 @@ function App() {
       <ConfigProvider
         theme={{
           algorithm: store.currentTheme === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm,
+          token: {
+            colorPrimary: THEME_PRIMARY_COLOR,
+            colorLink: THEME_PRIMARY_COLOR,
+          },
         }}
       >
         <RouterProvider router={router} />
