@@ -60,9 +60,7 @@ const HOSTS_LIST_HEIGHT = 200;
 const selectedColor = '#1668dc';
 
 export default function MainLayout() {
-  const {
-    token: { colorBgContainer },
-  } = theme.useToken();
+  const { token: themeToken } = theme.useToken();
   const currentTheme = useStore((state) => state.currentTheme);
   const setCurrentTheme = useStore((state) => state.setCurrentTheme);
   const navigate = useNavigate();
@@ -234,6 +232,7 @@ export default function MainLayout() {
           left: 0,
           top: 0,
           bottom: 0,
+          borderRight: `1px solid ${themeToken.colorBorder}`,
         }}
       >
         {/* logo */}
@@ -369,7 +368,7 @@ export default function MainLayout() {
           marginLeft: isSidebarCollapsed ? SIDE_NAV_COLLAPSED_WIDTH : SIDE_NAV_EXPANDED_WIDTH,
         }}
       >
-        <Content style={{ background: colorBgContainer, overflow: 'initial', minHeight: '100vh' }}>
+        <Content style={{ background: themeToken.colorBgContainer, overflow: 'initial', minHeight: '100vh' }}>
           {/* server status indicator */}
           {!store.serverStatus.isHealthy && (
             <Row>
