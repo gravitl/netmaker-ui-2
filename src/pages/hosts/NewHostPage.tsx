@@ -2,7 +2,7 @@ import AddNetworkModal from '@/components/modals/add-network-modal/AddNetworkMod
 import { Network } from '@/models/Network';
 import { AppRoutes } from '@/routes';
 import { useStore } from '@/store/store';
-import { getNetworkRoute } from '@/utils/RouteUtils';
+import { useQuery } from '@/utils/RouteUtils';
 import { CopyOutlined, PlusOutlined } from '@ant-design/icons';
 import { Button, Card, Col, Divider, Input, Layout, List, Row, Steps } from 'antd';
 import { MouseEvent, useCallback, useEffect, useState } from 'react';
@@ -22,9 +22,12 @@ const steps = [
   },
 ];
 
+const DEFAULT_REDIRECT = AppRoutes.HOSTS_ROUTE;
+
 export default function NewHostPage(props: PageProps) {
   const navigate = useNavigate();
   const store = useStore();
+  const query = useQuery();
 
   const storeFetchNetworks = useStore((state) => state.fetchNetworks);
   const [currentStep, setCurrentStep] = useState(0);
@@ -37,14 +40,11 @@ export default function NewHostPage(props: PageProps) {
   };
 
   const onFinish = () => {
-    // TODO: know which is best. maybe take this as a prop? so it'll be more flexible to different flows
-    // navigate(AppRoutes.HOST_ROUTE);
-    navigate(getNetworkRoute(selectedNetwork!));
+    navigate(query.get('redirectTo') ?? DEFAULT_REDIRECT);
   };
 
   const onCancel = () => {
-    // TODO: know which is best. maybe take this as a prop? so it'll be more flexible to different flows
-    navigate(AppRoutes.HOSTS_ROUTE);
+    navigate(query.get('redirectTo') ?? DEFAULT_REDIRECT);
   };
 
   const onShowInstallGuide = (ev: MouseEvent, os: AvailableOses) => {

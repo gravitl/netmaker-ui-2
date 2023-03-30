@@ -17,7 +17,7 @@ import { NodesService } from '@/services/NodesService';
 import { useStore } from '@/store/store';
 import { convertNetworkPayloadToUiNetwork, convertUiNetworkToNetworkPayload } from '@/utils/NetworkUtils';
 import { getExtendedNode } from '@/utils/NodeUtils';
-import { getHostRoute } from '@/utils/RouteUtils';
+import { getHostRoute, getNetworkRoute, getNewHostRoute } from '@/utils/RouteUtils';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import {
   CheckOutlined,
@@ -240,8 +240,8 @@ export default function NetworkDetailsPage(props: PageProps) {
   }, [networkId, notify]);
 
   const goToNewHostPage = useCallback(() => {
-    navigate(AppRoutes.NEW_HOST_ROUTE);
-  }, [navigate]);
+    navigate(getNewHostRoute(networkId && getNetworkRoute(networkId)));
+  }, [navigate, networkId]);
 
   const confirmDeleteClient = useCallback(
     (client: ExternalClient) => {

@@ -1,7 +1,7 @@
 import { Host } from '@/models/Host';
 import { AppRoutes } from '@/routes';
 import { useStore } from '@/store/store';
-import { getHostRoute } from '@/utils/RouteUtils';
+import { getHostRoute, getNewHostRoute } from '@/utils/RouteUtils';
 import { PlusOutlined } from '@ant-design/icons';
 import {
   Button,
@@ -20,6 +20,7 @@ import {
   Typography,
 } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { PageProps } from '../../models/Page';
 
@@ -29,6 +30,7 @@ export default function HostsPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const hosts = store.hosts;
   const storeFetchHosts = useStore((state) => state.fetchHosts);
@@ -98,6 +100,23 @@ export default function HostsPage(props: PageProps) {
     setHasLoaded(true);
   }, [storeFetchHosts]);
 
+  useEffect(() => {
+    if (hosts.length === 1) {
+      notify.info({
+        message: t('info.connectonemorehost'),
+        description: t('info.connectatleasttwohostsonanetworktobegincommunication'),
+        duration: 0,
+        btn: (
+          <>
+            <Button type="primary" size="small" onClick={() => navigate(AppRoutes.NEW_HOST_ROUTE)}>
+              {t('hosts.connectahost')}
+            </Button>
+          </>
+        ),
+      });
+    }
+  }, [hosts.length, navigate, notify, t]);
+
   return (
     <Layout.Content
       className="HostsPage"
@@ -130,7 +149,11 @@ export default function HostsPage(props: PageProps) {
                   <Row style={{ marginTop: 'auto' }}>
                     <Col>
                       {/* TODO: add redirect to */}
-                      <Button type="primary" size="large" onClick={() => navigate(AppRoutes.NEW_HOST_ROUTE)}>
+                      <Button
+                        type="primary"
+                        size="large"
+                        onClick={() => navigate(getNewHostRoute(AppRoutes.HOSTS_ROUTE))}
+                      >
                         <PlusOutlined /> Connect a Host
                       </Button>
                     </Col>
@@ -202,7 +225,7 @@ export default function HostsPage(props: PageProps) {
               </Col>
               <Col xs={12} md={6} style={{ textAlign: 'right' }}>
                 {/* TODO: add redirect to */}
-                <Button type="primary" size="large" onClick={() => navigate(AppRoutes.NEW_HOST_ROUTE)}>
+                <Button type="primary" size="large" onClick={() => navigate(getNewHostRoute(AppRoutes.HOSTS_ROUTE))}>
                   <PlusOutlined /> Connect a host
                 </Button>
               </Col>

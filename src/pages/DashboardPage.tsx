@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import AddNetworkModal from '@/components/modals/add-network-modal/AddNetworkModal';
 import { useState } from 'react';
 import { useStore } from '@/store/store';
+import { getNewHostRoute } from '@/utils/RouteUtils';
 
 export default function DashboardPage(props: PageProps) {
   const navigate = useNavigate();
@@ -15,7 +16,7 @@ export default function DashboardPage(props: PageProps) {
   const [isAddNetworkModalOpen, setIsAddNetworkModalOpen] = useState(false);
 
   const goToNewHostPage = () => {
-    navigate(AppRoutes.NEW_HOST_ROUTE);
+    navigate(getNewHostRoute(AppRoutes.HOSTS_ROUTE));
   };
 
   return (
