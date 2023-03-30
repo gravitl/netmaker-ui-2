@@ -41,7 +41,7 @@ export default function LoginPage(props: LoginPageProps) {
 
   if (isSaasBuild) {
     if (!backend && !token) {
-      window.location.href = process.env.REACT_APP_ACCOUNT_DASHBOARD_LOGIN_URL as string;
+      window.location.href = process.env.VITE_APP_ACCOUNT_DASHBOARD_LOGIN_URL as string;
       return null;
     }
     store.setStore({ jwt: token, baseUrl: backend });
