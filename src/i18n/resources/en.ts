@@ -25,7 +25,7 @@ export const en: LanguageResource = {
     contactyourserveradmin: 'Contact your server admin',
   },
   info: {
-    connectonemorehost: 'Connect one more host',
+    connectmultiplehosts: 'Connect multiple hosts',
     connectatleasttwohostsonanetworktobegincommunication:
       'Connect at least two hosts on a network to begin communication',
   },

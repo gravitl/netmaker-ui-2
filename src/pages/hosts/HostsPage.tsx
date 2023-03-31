@@ -2,29 +2,33 @@ import { Host } from '@/models/Host';
 import { AppRoutes } from '@/routes';
 import { useStore } from '@/store/store';
 import { getHostRoute, getNewHostRoute } from '@/utils/RouteUtils';
-import { PlusOutlined } from '@ant-design/icons';
+import { DeleteOutlined, MoreOutlined, PlusOutlined } from '@ant-design/icons';
 import {
   Button,
   Card,
   Col,
+  Dropdown,
   Input,
   Layout,
+  MenuProps,
   notification,
   Row,
   Skeleton,
-  Space,
   Switch,
   Table,
   TableColumnsType,
+  Tabs,
+  TabsProps,
   Tag,
   Typography,
 } from 'antd';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { PageProps } from '../../models/Page';
-
 import './HostsPage.scss';
+import { getNodeConnectivityStatus } from '@/utils/NodeUtils';
+import { Network } from '@/models/Network';
 
 export default function HostsPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
@@ -34,58 +38,184 @@ export default function HostsPage(props: PageProps) {
 
   const hosts = store.hosts;
   const storeFetchHosts = useStore((state) => state.fetchHosts);
+  const storeFetchNetworks = useStore((state) => state.fetchNetworks);
   const [searchText, setSearchText] = useState('');
   const [hasLoaded, setHasLoaded] = useState(false);
+  const [selectedHost, setSelectedHost] = useState<Host | null>(null);
+  const [isJoinNetworkModalOpen, setIsJoinNetworkModalOpen] = useState(false);
 
-  const tableColumns: TableColumnsType<Host> = [
-    {
-      title: 'Name',
-      dataIndex: 'name',
-      render: (value, host) => <Link to={getHostRoute(host)}>{host.name}</Link>,
-      sorter(a, b) {
-        return a.name.localeCompare(b.name);
+  const confirmToggleHostDefaultness = useCallback((host: Host) => {}, []);
+  const onEditHost = useCallback((host: Host) => {}, []);
+
+  const filteredNetworks = useMemo(() => {
+    return store.networks;
+  }, [store.networks]);
+
+  const hostsTableColumns: TableColumnsType<Host> = useMemo(
+    () => [
+      {
+        title: 'Name',
+        dataIndex: 'name',
+        render: (value, host) => <Link to={getHostRoute(host)}>{host.name}</Link>,
+        sorter(a, b) {
+          return a.name.localeCompare(b.name);
+        },
+        defaultSortOrder: 'ascend',
       },
-      defaultSortOrder: 'ascend',
-    },
-    {
-      title: 'Endpoint',
-      dataIndex: 'endpointip',
-    },
-    {
-      title: 'Version',
-      dataIndex: 'version',
-    },
-    {
-      title: 'Relay status',
-      render(_, host) {
-        let relayer: Host | undefined;
+      {
+        title: 'Endpoint',
+        dataIndex: 'endpointip',
+      },
+      {
+        title: 'Public Port',
+        dataIndex: 'listenport',
+      },
+      {
+        title: 'Version',
+        dataIndex: 'version',
+      },
+      {
+        title: 'Proxy Status',
+        dataIndex: 'proxy_enabled',
+        render(value, host) {
+          return <Switch checked={value} />;
+        },
+      },
+      // {
+      //   title: 'Relay status',
+      //   render(_, host) {
+      //     let relayer: Host | undefined;
 
-        if (host.isrelayed) {
-          relayer = hosts.find((h) => h.id === host.relayed_by);
-        }
+      //     if (host.isrelayed) {
+      //       relayer = hosts.find((h) => h.id === host.relayed_by);
+      //     }
 
-        return (
-          <Space direction="horizontal">
-            <Tag color={host.isrelay ? 'success' : 'default'}>Relay</Tag>
-            <Tag
-              color={host.isrelayed ? 'blue' : 'default'}
-              title={host.isrelayed ? `Relayed by "${relayer?.name}"` : ''}
+      //     return (
+      //       <Space direction="horizontal">
+      //         <Tag color={host.isrelay ? 'success' : 'default'}>Relay</Tag>
+      //         <Tag
+      //           color={host.isrelayed ? 'blue' : 'default'}
+      //           title={host.isrelayed ? `Relayed by "${relayer?.name}"` : ''}
+      //         >
+      //           Relayed
+      //         </Tag>
+      //       </Space>
+      //     );
+      //   },
+      // },
+      {
+        title: 'Health Status',
+        render(_, host) {
+          const nodeHealths = store.nodes
+            .filter((n) => n.hostid === host.id)
+            .map((n) => getNodeConnectivityStatus(n))
+            .map((h) => {
+              switch (h) {
+                case 'healthy':
+                  return 3;
+                case 'warning':
+                  return 2;
+                case 'error':
+                  return 1;
+                default:
+                  return 0;
+              }
+            })
+            .filter((h) => h !== 0);
+
+          let worstHealth = Number.MAX_SAFE_INTEGER;
+          nodeHealths.forEach((h) => {
+            worstHealth = Math.min(worstHealth, h);
+          });
+
+          switch (worstHealth) {
+            default:
+              return <Tag>Unknown</Tag>;
+            case 1:
+              return <Tag color="error">Error</Tag>;
+            case 2:
+              return <Tag color="warning">Warning</Tag>;
+            case 3:
+              return <Tag color="success">Healthy</Tag>;
+          }
+        },
+      },
+    ],
+    [store.nodes]
+  );
+
+  const hostsTableCols2: TableColumnsType<Host> = useMemo(
+    () => [
+      {
+        title: 'Name',
+        dataIndex: 'name',
+        render: (value, host) => <Link to={getHostRoute(host)}>{host.name}</Link>,
+        sorter(a, b) {
+          return a.name.localeCompare(b.name);
+        },
+        defaultSortOrder: 'ascend',
+      },
+      {
+        title: 'Endpoint',
+        dataIndex: 'endpointip',
+      },
+      {
+        title: 'Public Port',
+        dataIndex: 'listenport',
+      },
+      {
+        width: '1rem',
+        render(_, host) {
+          return (
+            <Dropdown
+              placement="bottomRight"
+              menu={{
+                items: [
+                  {
+                    key: 'default',
+                    label: (
+                      <Typography.Text onClick={() => confirmToggleHostDefaultness(host)}>
+                        {host.isdefault ? 'Unmake default' : 'Make default'}
+                      </Typography.Text>
+                    ),
+                  },
+                  {
+                    key: 'edit',
+                    label: <Typography.Text onClick={() => onEditHost(host)}>Edit Host</Typography.Text>,
+                  },
+                ] as MenuProps['items'],
+              }}
             >
-              Relayed
-            </Tag>
-          </Space>
-        );
+              <Button type="text" icon={<MoreOutlined />} />
+            </Dropdown>
+          );
+        },
       },
-    },
-    {
-      width: '8rem',
-      title: 'Default Host',
-      render(_, host) {
-        // TODO: onchange
-        return <Switch checked={host.isdefault} />;
+    ],
+    [confirmToggleHostDefaultness, onEditHost]
+  );
+
+  const networksTableCols: TableColumnsType<Network> = useMemo(
+    () => [
+      {
+        title: 'Name',
+        dataIndex: 'netid',
+        sorter(a, b) {
+          return a.netid.localeCompare(b.netid);
+        },
+        defaultSortOrder: 'ascend',
       },
-    },
-  ];
+      {
+        title: 'Address Range (IPv4)',
+        dataIndex: 'addressrange',
+      },
+      {
+        title: 'Address Range (IPv6)',
+        dataIndex: 'addressrange6',
+      },
+    ],
+    []
+  );
 
   const filteredHosts = useMemo(
     () =>
@@ -95,17 +225,131 @@ export default function HostsPage(props: PageProps) {
     [hosts, searchText]
   );
 
-  useEffect(() => {
-    storeFetchHosts();
-    setHasLoaded(true);
-  }, [storeFetchHosts]);
+  // ui components
+  const getOverviewContent = useCallback(() => {
+    return (
+      <Skeleton loading={!hasLoaded && store.isFetchingHosts} active title={true} className="page-padding">
+        <>
+          <Row className="" justify="space-between">
+            <Col xs={24}>
+              <Table columns={hostsTableColumns} dataSource={filteredHosts} rowKey="id" />
+            </Col>
+          </Row>
+        </>
+      </Skeleton>
+    );
+  }, [filteredHosts, hasLoaded, store.isFetchingHosts, hostsTableColumns]);
+
+  const getNetworkAccessContent = useCallback(() => {
+    return (
+      <Skeleton loading={!hasLoaded && store.isFetchingHosts} active title={true} className="page-padding">
+        <>
+          <Row className="" justify="space-between">
+            <Col xs={12}>
+              <Row style={{ width: '100%' }}>
+                <Col xs={24}>
+                  <Typography.Title style={{ marginTop: '0px' }} level={5}>
+                    Hosts
+                  </Typography.Title>
+                </Col>
+              </Row>
+              <Row style={{ marginTop: '1rem' }}>
+                <Col xs={23}>
+                  <Table
+                    columns={hostsTableCols2}
+                    dataSource={filteredHosts}
+                    rowKey="id"
+                    size="small"
+                    rowClassName={(host) => {
+                      return host.id === selectedHost?.id ? 'selected-row' : '';
+                    }}
+                    onRow={(host) => {
+                      return {
+                        onClick: () => {
+                          if (selectedHost?.id === host.id) setSelectedHost(null);
+                          else setSelectedHost(host);
+                        },
+                      };
+                    }}
+                  />
+                </Col>
+              </Row>
+            </Col>
+            <Col xs={12}>
+              <Row style={{ width: '100%' }}>
+                <Col xs={12}>
+                  <Typography.Title style={{ marginTop: '0px' }} level={5}>
+                    Networks
+                  </Typography.Title>
+                </Col>
+                <Col xs={12} style={{ textAlign: 'right' }}>
+                  {selectedHost && (
+                    <Button
+                      type="primary"
+                      style={{ marginRight: '1rem' }}
+                      onClick={() => setIsJoinNetworkModalOpen(true)}
+                    >
+                      <PlusOutlined /> Join network
+                    </Button>
+                  )}
+                  Display All{' '}
+                  <Switch
+                    title="Display all networks. Click a host to filter networks the host is connected to."
+                    checked={selectedHost === null}
+                    onClick={() => {
+                      setSelectedHost(null);
+                    }}
+                  />
+                </Col>
+              </Row>
+              <Row style={{ marginTop: '1rem' }}>
+                <Col xs={24}>
+                  <Table columns={networksTableCols} dataSource={filteredNetworks} rowKey="netid" size="small" />
+                </Col>
+              </Row>
+            </Col>
+          </Row>
+        </>
+      </Skeleton>
+    );
+  }, [
+    hasLoaded,
+    store.isFetchingHosts,
+    hostsTableCols2,
+    filteredHosts,
+    selectedHost,
+    networksTableCols,
+    filteredNetworks,
+  ]);
+
+  const tabs: TabsProps['items'] = useMemo(
+    () => [
+      {
+        key: 'overview',
+        label: 'Overview',
+        children: getOverviewContent(),
+      },
+      {
+        key: 'network-access',
+        label: 'Network Access Management',
+        children: getNetworkAccessContent(),
+      },
+    ],
+    [getOverviewContent, getNetworkAccessContent]
+  );
 
   useEffect(() => {
-    if (hosts.length === 1) {
+    storeFetchHosts();
+    storeFetchNetworks();
+    setHasLoaded(true);
+  }, [storeFetchHosts, storeFetchNetworks]);
+
+  useEffect(() => {
+    if (hosts.length <= 1) {
       notify.info({
-        message: t('info.connectonemorehost'),
+        message: t('info.connectmultiplehosts'),
         description: t('info.connectatleasttwohostsonanetworktobegincommunication'),
-        duration: 0,
+        duration: 10,
         btn: (
           <>
             <Button type="primary" size="small" onClick={() => navigate(AppRoutes.NEW_HOST_ROUTE)}>
@@ -208,7 +452,7 @@ export default function HostsPage(props: PageProps) {
         )}
         {hosts.length > 0 && (
           <>
-            <Row className="page-row-padding-y page-row-padding-x">
+            <Row className="page-row-padding">
               <Col xs={24}>
                 <Typography.Title level={3}>Hosts</Typography.Title>
               </Col>
@@ -224,7 +468,6 @@ export default function HostsPage(props: PageProps) {
                 />
               </Col>
               <Col xs={12} md={6} style={{ textAlign: 'right' }}>
-                {/* TODO: add redirect to */}
                 <Button type="primary" size="large" onClick={() => navigate(getNewHostRoute(AppRoutes.HOSTS_ROUTE))}>
                   <PlusOutlined /> Connect a host
                 </Button>
@@ -233,7 +476,7 @@ export default function HostsPage(props: PageProps) {
 
             <Row className="page-row-padding" justify="space-between">
               <Col xs={24}>
-                <Table columns={tableColumns} dataSource={filteredHosts} rowKey="id" />
+                <Tabs defaultActiveKey="1" items={tabs} />
               </Col>
             </Row>
           </>

@@ -22,12 +22,11 @@ const steps = [
   },
 ];
 
-const DEFAULT_REDIRECT = AppRoutes.HOSTS_ROUTE;
-
 export default function NewHostPage(props: PageProps) {
   const navigate = useNavigate();
   const store = useStore();
   const query = useQuery();
+  const DEFAULT_REDIRECT = AppRoutes.HOSTS_ROUTE;
 
   const storeFetchNetworks = useStore((state) => state.fetchNetworks);
   const [currentStep, setCurrentStep] = useState(0);

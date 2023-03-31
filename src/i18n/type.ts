@@ -23,7 +23,7 @@ export interface LanguageResource {
     contactyourserveradmin: string;
   };
   info: {
-    connectonemorehost: string;
+    connectmultiplehosts: string;
     connectatleasttwohostsonanetworktobegincommunication: string;
   };
   hosts: {

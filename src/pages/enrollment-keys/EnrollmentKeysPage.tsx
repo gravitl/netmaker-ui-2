@@ -244,7 +244,7 @@ export default function EnrollmentKeysPage(props: PageProps) {
         )}
         {keys.length > 0 && (
           <>
-            <Row className="page-row-padding-y page-row-padding-x">
+            <Row className="page-row-padding">
               <Col xs={24}>
                 <Typography.Title level={3}>Enrollment Keys</Typography.Title>
               </Col>
