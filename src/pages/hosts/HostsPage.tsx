@@ -2,7 +2,7 @@ import { Host } from '@/models/Host';
 import { AppRoutes } from '@/routes';
 import { useStore } from '@/store/store';
 import { getHostRoute, getNewHostRoute } from '@/utils/RouteUtils';
-import { DeleteOutlined, MoreOutlined, PlusOutlined } from '@ant-design/icons';
+import { MoreOutlined, PlusOutlined } from '@ant-design/icons';
 import {
   Button,
   Card,
