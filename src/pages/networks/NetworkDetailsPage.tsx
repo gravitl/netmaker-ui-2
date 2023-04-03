@@ -85,7 +85,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const isIpv6Watch = Form.useWatch('isipv6', form);
   const [network, setNetwork] = useState<Network | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isEditing, setIsEditingNetwork] = useState(false);
+  const [isEditingNetwork, setIsEditingNetwork] = useState(false);
   const [searchHost, setSearchHost] = useState('');
   const [searchDns, setSearchDns] = useState('');
   const [dnses, setDnses] = useState<DNS[]>([]);
@@ -834,7 +834,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     return (
       <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
         <Card style={{ width: '50%' }}>
-          <Form name="network-form" form={form} layout="vertical" initialValues={network} disabled={!isEditing}>
+          <Form name="network-form" form={form} layout="vertical" initialValues={network} disabled={!isEditingNetwork}>
             <Form.Item label="Network name" name="netid" rules={[{ required: true }]}>
               <Input placeholder="Network name" disabled />
             </Form.Item>
@@ -933,7 +933,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         </Card>
       </div>
     );
-  }, [network, form, isEditing, themeToken.colorBorder, isIpv4Watch, isIpv6Watch]);
+  }, [network, form, isEditingNetwork, themeToken.colorBorder, isIpv4Watch, isIpv6Watch]);
 
   const getHostsContent = useCallback(() => {
     return (
@@ -1793,12 +1793,12 @@ export default function NetworkDetailsPage(props: PageProps) {
                 </Typography.Title>
               </Col>
               <Col xs={6} style={{ textAlign: 'right' }}>
-                {!isEditing && (
+                {!isEditingNetwork && (
                   <Button type="default" style={{ marginRight: '.5rem' }} onClick={() => setIsEditingNetwork(true)}>
                     Edit
                   </Button>
                 )}
-                {isEditing && (
+                {isEditingNetwork && (
                   <>
                     <Button type="primary" style={{ marginRight: '.5rem' }} onClick={onNetworkFormEdit}>
                       Save Changes
