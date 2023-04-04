@@ -1,4 +1,5 @@
 import { Host } from '@/models/Host';
+import { Interface } from '@/models/Interface';
 import { AppRoutes } from '@/routes';
 import { HostsService } from '@/services/HostsService';
 import { useStore } from '@/store/store';
@@ -10,12 +11,15 @@ import {
   Card,
   Col,
   Dropdown,
+  Input,
   Layout,
   Modal,
   notification,
   Row,
   Skeleton,
   Switch,
+  Table,
+  TableColumnsType,
   Tabs,
   TabsProps,
   Tag,
@@ -39,6 +43,21 @@ export default function HostDetailsPage(props: PageProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isEditingHost, setIsEditingHost] = useState(false);
   const [host, setHost] = useState<Host | null>(null);
+  const [searchText, setSearchText] = useState('');
+
+  const interfacesTableCols: TableColumnsType<Interface> = useMemo(
+    () => [
+      {
+        title: 'Name',
+        dataIndex: 'name',
+      },
+      {
+        title: 'IP Address',
+        dataIndex: 'addressString',
+      },
+    ],
+    []
+  );
 
   const onHostFormEdit = useCallback(() => {}, []);
 
@@ -271,8 +290,36 @@ export default function HostDetailsPage(props: PageProps) {
   }, [host, themeToken.colorBorder]);
 
   const getNetworkInterfacesContent = useCallback(() => {
-    return <></>;
-  }, []);
+    return (
+      <>
+        <Row>
+          <Col xs={12} md={8}>
+            <Input
+              size="large"
+              placeholder="Search interfaces"
+              value={searchText}
+              onChange={(ev) => setSearchText(ev.target.value)}
+            />
+          </Col>
+        </Row>
+        <Row style={{ marginTop: '1rem' }}>
+          <Col xs={24}>
+            <Table
+              columns={interfacesTableCols}
+              dataSource={
+                host?.interfaces.filter((iface) =>
+                  `${iface.name}${iface.addressString}`
+                    .toLocaleLowerCase()
+                    .includes(searchText.toLocaleLowerCase().trim())
+                ) ?? []
+              }
+              rowKey={(iface) => `${iface.name}${iface.addressString}`}
+            />
+          </Col>
+        </Row>
+      </>
+    );
+  }, [host?.interfaces, interfacesTableCols, searchText]);
 
   const hostTabs: TabsProps['items'] = useMemo(() => {
     return [

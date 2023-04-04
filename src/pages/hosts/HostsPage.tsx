@@ -229,13 +229,11 @@ export default function HostsPage(props: PageProps) {
   const getOverviewContent = useCallback(() => {
     return (
       <Skeleton loading={!hasLoaded && store.isFetchingHosts} active title={true} className="page-padding">
-        <>
-          <Row className="" justify="space-between">
-            <Col xs={24}>
-              <Table columns={hostsTableColumns} dataSource={filteredHosts} rowKey="id" />
-            </Col>
-          </Row>
-        </>
+        <Row className="">
+          <Col xs={24}>
+            <Table columns={hostsTableColumns} dataSource={filteredHosts} rowKey="id" />
+          </Col>
+        </Row>
       </Skeleton>
     );
   }, [filteredHosts, hasLoaded, store.isFetchingHosts, hostsTableColumns]);
