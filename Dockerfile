@@ -5,7 +5,7 @@ COPY . /usr/app
 # env vars
 ENV VITE_IS_SAAS_BUILD=false
 ENV VITE_BASE_URL=https://api.clustercat.com
-ENV VITE_APP_ACCOUNT_DASHBOARD_LOGIN_URL=https://netmaker.io
+ENV VITE_ACCOUNT_DASHBOARD_LOGIN_URL=https://netmaker.io
 
 RUN npm ci
 RUN npm run build

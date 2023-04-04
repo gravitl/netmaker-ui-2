@@ -12,6 +12,7 @@ import LoginPage from './pages/auth/LoginPage';
 import NetworkDetailsPage from './pages/networks/NetworkDetailsPage';
 import EnrollmentKeysPage from './pages/enrollment-keys/EnrollmentKeysPage';
 import HostsPage from './pages/hosts/HostsPage';
+import ProtectedRoute from './components/ProtectedRoute';
 
 export class AppRoutes {
   static DASHBOARD_ROUTE = '/';
@@ -34,18 +35,61 @@ const routes: RouteObject[] = [
     // element: <DashboardLayout />,
     element: <MainLayout />,
     children: [
-      { path: '', element: <DashboardPage isFullScreen={false} /> },
-      { path: AppRoutes.HOSTS_ROUTE.split('/').slice(1).join('/'), element: <HostsPage isFullScreen /> },
-      { path: AppRoutes.HOST_ROUTE.split('/').slice(1).join('/'), element: <HostDetailsPage isFullScreen /> },
-      { path: AppRoutes.NEW_HOST_ROUTE.split('/').slice(1).join('/'), element: <NewHostPage isFullScreen /> },
-      { path: AppRoutes.NETWORKS_ROUTE.split('/').slice(1).join('/'), element: <NetworksPage isFullScreen /> },
+      {
+        path: '',
+        element: (
+          <ProtectedRoute>
+            <DashboardPage isFullScreen={false} />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: AppRoutes.HOSTS_ROUTE.split('/').slice(1).join('/'),
+        element: (
+          <ProtectedRoute>
+            <HostsPage isFullScreen />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: AppRoutes.HOST_ROUTE.split('/').slice(1).join('/'),
+        element: (
+          <ProtectedRoute>
+            <HostDetailsPage isFullScreen />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: AppRoutes.NEW_HOST_ROUTE.split('/').slice(1).join('/'),
+        element: (
+          <ProtectedRoute>
+            <NewHostPage isFullScreen />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: AppRoutes.NETWORKS_ROUTE.split('/').slice(1).join('/'),
+        element: (
+          <ProtectedRoute>
+            <NetworksPage isFullScreen />
+          </ProtectedRoute>
+        ),
+      },
       {
         path: AppRoutes.NETWORK_DETAILS_ROUTE.split('/').slice(1).join('/'),
-        element: <NetworkDetailsPage isFullScreen />,
+        element: (
+          <ProtectedRoute>
+            <NetworkDetailsPage isFullScreen />
+          </ProtectedRoute>
+        ),
       },
       {
         path: AppRoutes.ENROLLMENT_KEYS_ROUTE.split('/').slice(1).join('/'),
-        element: <EnrollmentKeysPage isFullScreen />,
+        element: (
+          <ProtectedRoute>
+            <EnrollmentKeysPage isFullScreen />
+          </ProtectedRoute>
+        ),
       },
     ],
   },

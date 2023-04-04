@@ -13,11 +13,17 @@ export function setupTenantConfig(): void {
   }
 
   const url = new URL(window.location.href);
+  console.log('URL', url);
   const baseUrl = url.searchParams.get('backend');
   const accessToken = url.searchParams.get('token');
 
+  const resolvedBaseUrl = baseUrl ? `${baseUrl}/api` : useStore.getState().baseUrl;
+  baseService.defaults.baseURL = resolvedBaseUrl;
+  console.log(resolvedBaseUrl);
+  console.log(accessToken);
+
   useStore.getState().setStore({
-    baseUrl: `${baseUrl}/api` ?? `${useStore.getState().baseUrl}/api`,
+    baseUrl: resolvedBaseUrl,
     jwt: accessToken ?? useStore.getState().jwt,
   });
 }
