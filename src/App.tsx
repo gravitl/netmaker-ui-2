@@ -61,6 +61,7 @@ function App() {
           token: {
             colorPrimary: THEME_PRIMARY_COLOR,
             colorLink: THEME_PRIMARY_COLOR,
+            // colorBgContainer: 'black',
           },
         }}
       >

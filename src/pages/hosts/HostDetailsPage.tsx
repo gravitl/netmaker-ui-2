@@ -2,19 +2,23 @@ import { Host } from '@/models/Host';
 import { AppRoutes } from '@/routes';
 import { HostsService } from '@/services/HostsService';
 import { useStore } from '@/store/store';
+import { getNodeConnectivityStatus } from '@/utils/NodeUtils';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
-import { ExclamationCircleFilled } from '@ant-design/icons';
+import { ExclamationCircleFilled, SettingOutlined } from '@ant-design/icons';
 import {
   Button,
   Card,
   Col,
+  Dropdown,
   Layout,
   Modal,
   notification,
   Row,
   Skeleton,
+  Switch,
   Tabs,
   TabsProps,
+  Tag,
   theme,
   Typography,
 } from 'antd';
@@ -37,6 +41,41 @@ export default function HostDetailsPage(props: PageProps) {
   const [host, setHost] = useState<Host | null>(null);
 
   const onHostFormEdit = useCallback(() => {}, []);
+
+  const getHostHealth = useCallback(() => {
+    const nodeHealths = store.nodes
+      .filter((n) => n.hostid === host?.id)
+      .map((n) => getNodeConnectivityStatus(n))
+      .map((h) => {
+        switch (h) {
+          case 'healthy':
+            return 3;
+          case 'warning':
+            return 2;
+          case 'error':
+            return 1;
+          default:
+            return 0;
+        }
+      })
+      .filter((h) => h !== 0);
+
+    let worstHealth = Number.MAX_SAFE_INTEGER;
+    nodeHealths.forEach((h) => {
+      worstHealth = Math.min(worstHealth, h);
+    });
+
+    switch (worstHealth) {
+      default:
+        return <Tag>&#9679; Unknown</Tag>;
+      case 1:
+        return <Tag color="error">&#9679; Error</Tag>;
+      case 2:
+        return <Tag color="warning">&#9679; Warning</Tag>;
+      case 3:
+        return <Tag color="success">&#9679; Healthy</Tag>;
+    }
+  }, [host?.id, store.nodes]);
 
   const loadHost = useCallback(() => {
     setIsLoading(true);
@@ -181,14 +220,6 @@ export default function HostDetailsPage(props: PageProps) {
           </Row>
           <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
             <Col xs={12}>
-              <Typography.Text disabled>Default Interface</Typography.Text>
-            </Col>
-            <Col xs={12}>
-              <Typography.Text>{host.defaultinterface}</Typography.Text>
-            </Col>
-          </Row>
-          <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
-            <Col xs={12}>
               <Typography.Text disabled>Default Host</Typography.Text>
             </Col>
             <Col xs={12}>
@@ -276,32 +307,35 @@ export default function HostDetailsPage(props: PageProps) {
               <Col xs={18}>
                 <Typography.Title level={2} style={{ marginTop: '.5rem', marginBottom: '2rem' }}>
                   {host?.name ?? '...'}
+                  <span style={{ marginLeft: '1rem' }}>{getHostHealth()}</span>
                 </Typography.Title>
               </Col>
               <Col xs={6} style={{ textAlign: 'right' }}>
-                {!isEditingHost && (
+                <span style={{ marginRight: '2rem' }}>
+                  <Typography.Text style={{ marginRight: '1rem' }}>Proxy Status</Typography.Text>
+                  <Switch checked={host?.proxy_enabled} />
+                </span>
+                <Dropdown
+                  placement="bottomRight"
+                  menu={{
+                    items: [
+                      {
+                        key: 'edit',
+                        label: <Typography.Text>Edit</Typography.Text>,
+                        onClick: () => setIsEditingHost(true),
+                      },
+                      {
+                        key: 'delete',
+                        label: <Typography.Text type="danger">Delete</Typography.Text>,
+                        onClick: () => promptConfirmDelete(),
+                      },
+                    ],
+                  }}
+                >
                   <Button type="default" style={{ marginRight: '.5rem' }} onClick={() => setIsEditingHost(true)}>
-                    Edit
+                    <SettingOutlined /> Host Settings
                   </Button>
-                )}
-                {isEditingHost && (
-                  <>
-                    <Button type="primary" style={{ marginRight: '.5rem' }} onClick={onHostFormEdit}>
-                      Save Changes
-                    </Button>
-                    <Button
-                      style={{ marginRight: '.5rem' }}
-                      onClick={() => {
-                        setIsEditingHost(false);
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                  </>
-                )}
-                <Button type="default" onClick={promptConfirmDelete}>
-                  Delete
-                </Button>
+                </Dropdown>
               </Col>
             </Row>
 
