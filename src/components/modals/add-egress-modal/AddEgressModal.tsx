@@ -140,7 +140,7 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
     >
       <Divider style={{ margin: '0px 0px 2rem 0px' }} />
       <Form name="add-egress-form" form={form} layout="vertical">
-        <div className="" style={{ maxHeight: '60vh', overflow: 'auto' }}>
+        <div className="scrollable-modal-body">
           <div className="CustomModalBody">
             <Form.Item
               label="Select host"

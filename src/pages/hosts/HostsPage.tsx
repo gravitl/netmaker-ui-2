@@ -11,6 +11,7 @@ import {
   Input,
   Layout,
   MenuProps,
+  Modal,
   notification,
   Row,
   Skeleton,
@@ -61,16 +62,22 @@ export default function HostsPage(props: PageProps) {
 
   const confirmToggleHostDefaultness = useCallback(
     async (host: Host) => {
-      try {
-        const newHost = (await HostsService.updateHost(host.id, { ...host, isdefault: !host.isdefault })).data;
-        notify.success({ message: `Host ${host.id} updated` });
-        storeUpdateHost(host.id, newHost);
-      } catch (err) {
-        notify.error({
-          message: 'Failed to update host',
-          description: extractErrorMsg(err as any),
-        });
-      }
+      Modal.confirm({
+        title: 'Toggle defaultness',
+        content: `Are you sure you want to turn ${!host.isdefault ? 'on' : 'off'} defaultness for this host?`,
+        onOk: async () => {
+          try {
+            const newHost = (await HostsService.updateHost(host.id, { ...host, isdefault: !host.isdefault })).data;
+            notify.success({ message: `Host ${host.id} updated` });
+            storeUpdateHost(host.id, newHost);
+          } catch (err) {
+            notify.error({
+              message: 'Failed to update host',
+              description: extractErrorMsg(err as any),
+            });
+          }
+        },
+      });
     },
     [notify, storeUpdateHost]
   );

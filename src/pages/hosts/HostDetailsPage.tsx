@@ -1,3 +1,4 @@
+import UpdateHostModal from '@/components/modals/update-host-modal/UpdateHostModal';
 import { Host } from '@/models/Host';
 import { Interface } from '@/models/Interface';
 import { AppRoutes } from '@/routes';
@@ -40,6 +41,7 @@ export default function HostDetailsPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const { token: themeToken } = theme.useToken();
 
+  const storeUpdateHost = store.updateHost;
   const [isLoading, setIsLoading] = useState(false);
   const [isEditingHost, setIsEditingHost] = useState(false);
   const [host, setHost] = useState<Host | null>(null);
@@ -57,6 +59,33 @@ export default function HostDetailsPage(props: PageProps) {
       },
     ],
     []
+  );
+
+  const onUpdateHost = useCallback((newHost: Host) => {
+    // storeUpdateHost(newHost.id, newHost);
+    setIsEditingHost(false);
+  }, []);
+
+  const toggleProxyStatus = useCallback(
+    (newStatus: boolean) => {
+      Modal.confirm({
+        title: 'Toggle proxy status',
+        content: `Are you sure you want to turn ${newStatus ? 'on' : 'off'} proxy for this host?`,
+        onOk: async () => {
+          try {
+            if (!hostId || !host) return;
+            const newHost = (await HostsService.updateHost(hostId, { ...host, proxy_enabled: newStatus })).data;
+            storeUpdateHost(hostId, newHost);
+          } catch (err) {
+            notify.error({
+              message: 'Failed to update host',
+              description: extractErrorMsg(err as any),
+            });
+          }
+        },
+      });
+    },
+    [hostId, host, storeUpdateHost, notify]
   );
 
   const onHostFormEdit = useCallback(() => {}, []);
@@ -360,7 +389,7 @@ export default function HostDetailsPage(props: PageProps) {
               <Col xs={6} style={{ textAlign: 'right' }}>
                 <span style={{ marginRight: '2rem' }}>
                   <Typography.Text style={{ marginRight: '1rem' }}>Proxy Status</Typography.Text>
-                  <Switch checked={host?.proxy_enabled} />
+                  <Switch checked={host?.proxy_enabled} onChange={toggleProxyStatus} />
                 </span>
                 <Dropdown
                   placement="bottomRight"
@@ -369,17 +398,23 @@ export default function HostDetailsPage(props: PageProps) {
                       {
                         key: 'edit',
                         label: <Typography.Text>Edit</Typography.Text>,
-                        onClick: () => setIsEditingHost(true),
+                        onClick: (ev) => {
+                          ev.domEvent.stopPropagation();
+                          setIsEditingHost(true);
+                        },
                       },
                       {
                         key: 'delete',
                         label: <Typography.Text type="danger">Delete</Typography.Text>,
-                        onClick: () => promptConfirmDelete(),
+                        onClick: (ev) => {
+                          ev.domEvent.stopPropagation();
+                          promptConfirmDelete();
+                        },
                       },
                     ],
                   }}
                 >
-                  <Button type="default" style={{ marginRight: '.5rem' }} onClick={() => setIsEditingHost(true)}>
+                  <Button type="default" style={{ marginRight: '.5rem' }}>
                     <SettingOutlined /> Host Settings
                   </Button>
                 </Dropdown>
@@ -393,6 +428,14 @@ export default function HostDetailsPage(props: PageProps) {
 
       {/* misc */}
       {notifyCtx}
+      {!!host && (
+        <UpdateHostModal
+          isOpen={isEditingHost}
+          host={host}
+          onCancel={() => setIsEditingHost(false)}
+          onUpdateHost={onUpdateHost}
+        />
+      )}
     </Layout.Content>
   );
 }
