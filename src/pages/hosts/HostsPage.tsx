@@ -29,6 +29,8 @@ import { PageProps } from '../../models/Page';
 import './HostsPage.scss';
 import { getNodeConnectivityStatus } from '@/utils/NodeUtils';
 import { Network } from '@/models/Network';
+import { HostsService } from '@/services/HostsService';
+import { extractErrorMsg } from '@/utils/ServiceUtils';
 
 export default function HostsPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
@@ -37,6 +39,7 @@ export default function HostsPage(props: PageProps) {
   const { t } = useTranslation();
 
   const hosts = store.hosts;
+  const storeUpdateHost = store.updateHost;
   const storeFetchHosts = useStore((state) => state.fetchHosts);
   const storeFetchNetworks = useStore((state) => state.fetchNetworks);
   const [searchText, setSearchText] = useState('');
@@ -44,12 +47,40 @@ export default function HostsPage(props: PageProps) {
   const [selectedHost, setSelectedHost] = useState<Host | null>(null);
   const [isJoinNetworkModalOpen, setIsJoinNetworkModalOpen] = useState(false);
 
-  const confirmToggleHostDefaultness = useCallback((host: Host) => {}, []);
-  const onEditHost = useCallback((host: Host) => {}, []);
-
   const filteredNetworks = useMemo(() => {
     return store.networks;
   }, [store.networks]);
+
+  const filteredHosts = useMemo(
+    () =>
+      hosts.filter((host) => {
+        return host.name.toLowerCase().includes(searchText.toLowerCase());
+      }),
+    [hosts, searchText]
+  );
+
+  const confirmToggleHostDefaultness = useCallback(
+    async (host: Host) => {
+      try {
+        const newHost = (await HostsService.updateHost(host.id, { ...host, isdefault: !host.isdefault })).data;
+        notify.success({ message: `Host ${host.id} updated` });
+        storeUpdateHost(host.id, newHost);
+      } catch (err) {
+        notify.error({
+          message: 'Failed to update host',
+          description: extractErrorMsg(err as any),
+        });
+      }
+    },
+    [notify, storeUpdateHost]
+  );
+
+  const onEditHost = useCallback(
+    (host: Host) => {
+      navigate(getHostRoute(host, { edit: 'true' }));
+    },
+    [navigate]
+  );
 
   const hostsTableColumns: TableColumnsType<Host> = useMemo(
     () => [
@@ -174,14 +205,28 @@ export default function HostsPage(props: PageProps) {
                   {
                     key: 'default',
                     label: (
-                      <Typography.Text onClick={() => confirmToggleHostDefaultness(host)}>
+                      <Typography.Text
+                        onClick={(ev) => {
+                          ev.stopPropagation();
+                          confirmToggleHostDefaultness(host);
+                        }}
+                      >
                         {host.isdefault ? 'Unmake default' : 'Make default'}
                       </Typography.Text>
                     ),
                   },
                   {
                     key: 'edit',
-                    label: <Typography.Text onClick={() => onEditHost(host)}>Edit Host</Typography.Text>,
+                    label: (
+                      <Typography.Text
+                        onClick={(ev) => {
+                          ev.stopPropagation();
+                          onEditHost(host);
+                        }}
+                      >
+                        Edit Host
+                      </Typography.Text>
+                    ),
                   },
                 ] as MenuProps['items'],
               }}
@@ -215,14 +260,6 @@ export default function HostsPage(props: PageProps) {
       },
     ],
     []
-  );
-
-  const filteredHosts = useMemo(
-    () =>
-      hosts.filter((host) => {
-        return host.name.toLowerCase().includes(searchText.toLowerCase());
-      }),
-    [hosts, searchText]
   );
 
   // ui components

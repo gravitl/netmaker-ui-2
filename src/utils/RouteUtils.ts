@@ -4,10 +4,16 @@ import { Host } from '../models/Host';
 import { AppRoutes } from '../routes';
 
 // Get host route from host obj or ID
-export function getHostRoute(hostOrId: Host | Host['id']): string {
+export function getHostRoute(hostOrId: Host | Host['id'], ...queryParams: { [key: string]: string }[]): string {
   const placeholder = ':hostId';
-  if (typeof hostOrId === 'string') return `${AppRoutes.HOST_ROUTE.replace(placeholder, hostOrId)}`;
-  return `${AppRoutes.HOST_ROUTE.replace(placeholder, hostOrId.id)}`;
+  let route = '';
+  if (typeof hostOrId === 'string') route = `${AppRoutes.HOST_ROUTE.replace(placeholder, hostOrId)}`;
+  else route = `${AppRoutes.HOST_ROUTE.replace(placeholder, hostOrId.id)}`;
+  route += queryParams.reduce((acc, curr) => {
+    const key = Object.keys(curr)[0];
+    return `${acc}${acc.includes('?') ? '&' : '?'}${key}=${curr[key]}`;
+  }, '');
+  return route;
 }
 
 // Get network route from network obj or ID

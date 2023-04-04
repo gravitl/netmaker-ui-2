@@ -7,16 +7,16 @@ export interface IHostSlice {
   hostsCommonDetails: Record<Host['id'], HostCommonDetails>;
   isFetchingHosts: boolean;
   setHosts: (hosts: Host[]) => void;
-  updateHost: (nodeId: Host['id'], newHost: Host) => void;
+  updateHost: (hostId: Host['id'], newHost: Host) => void;
   deleteHost: (hostId: Host['id']) => void;
   fetchHosts: () => Promise<void>;
 }
 
-const createHostSlice: StateCreator<IHostSlice, [], [], IHostSlice> = (set, get) => ({
+const createHostSlice: StateCreator<IHostSlice, [], [], IHostSlice> = (set) => ({
   hosts: [],
   hostsCommonDetails: {},
   isFetchingHosts: false,
-  setHosts: (hosts: Host[]) => set((state) => ({ hosts: hosts })),
+  setHosts: (hosts: Host[]) => set(() => ({ hosts: hosts })),
   updateHost(hostId, newHost) {
     set((state) => ({
       hosts: state.hosts.map((host) => {
@@ -32,7 +32,7 @@ const createHostSlice: StateCreator<IHostSlice, [], [], IHostSlice> = (set, get)
   },
   async fetchHosts() {
     try {
-      set((state) => ({ isFetchingHosts: true }));
+      set(() => ({ isFetchingHosts: true }));
       const hosts = (await HostsService.getHosts()).data;
       const commonDetails: Record<Host['id'], HostCommonDetails> = {};
       hosts.forEach((host) => {
@@ -52,10 +52,10 @@ const createHostSlice: StateCreator<IHostSlice, [], [], IHostSlice> = (set, get)
           macaddress: host.macaddress,
         };
       });
-      set((state) => ({ hosts: hosts, hostsCommonDetails: commonDetails, isFetchingHosts: false }));
+      set(() => ({ hosts: hosts, hostsCommonDetails: commonDetails, isFetchingHosts: false }));
     } catch (err) {
       console.error(err);
-      set((state) => ({ isFetchingHosts: false }));
+      set(() => ({ isFetchingHosts: false }));
     }
   },
 });

@@ -1,7 +1,10 @@
 import { AxiosError } from 'axios';
 
-export function extractErrorMsg(err: AxiosError): string {
-  return (err.response?.data as any)?.Message || err.message;
+export function extractErrorMsg(err: AxiosError | Error): string {
+  if (err instanceof AxiosError) {
+    return (err.response?.data as any)?.Message || err.message;
+  }
+  return err.message;
 }
 
 export function download(filename: string, data: string) {
