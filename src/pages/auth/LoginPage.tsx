@@ -40,9 +40,8 @@ export default function LoginPage(props: LoginPageProps) {
   const onSSOLogin = () => {};
 
   if (isSaasBuild) {
-    console.log(process.env.VITE_ACCOUNT_DASHBOARD_LOGIN_URL);
     if (!backend && !token) {
-      window.location.href = process.env.VITE_ACCOUNT_DASHBOARD_LOGIN_URL as string;
+      window.location.href = import.meta.env.VITE_ACCOUNT_DASHBOARD_LOGIN_URL as string;
       return null;
     }
     store.setStore({ jwt: token, baseUrl: backend });
