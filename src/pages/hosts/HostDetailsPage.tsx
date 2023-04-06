@@ -33,6 +33,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { PageProps } from '../../models/Page';
 
 import './HostDetailsPage.scss';
+import { useQuery } from '@/utils/RouteUtils';
 
 export default function HostDetailsPage(props: PageProps) {
   const { hostId } = useParams<{ hostId: string }>();
@@ -40,6 +41,7 @@ export default function HostDetailsPage(props: PageProps) {
   const store = useStore();
   const [notify, notifyCtx] = notification.useNotification();
   const { token: themeToken } = theme.useToken();
+  const queryParams = useQuery();
 
   const storeUpdateHost = store.updateHost;
   const [isLoading, setIsLoading] = useState(false);
@@ -61,8 +63,7 @@ export default function HostDetailsPage(props: PageProps) {
     []
   );
 
-  const onUpdateHost = useCallback((newHost: Host) => {
-    // storeUpdateHost(newHost.id, newHost);
+  const onUpdateHost = useCallback(() => {
     setIsEditingHost(false);
   }, []);
 
@@ -87,8 +88,6 @@ export default function HostDetailsPage(props: PageProps) {
     },
     [hostId, host, storeUpdateHost, notify]
   );
-
-  const onHostFormEdit = useCallback(() => {}, []);
 
   const getHostHealth = useCallback(() => {
     const nodeHealths = store.nodes
@@ -369,6 +368,15 @@ export default function HostDetailsPage(props: PageProps) {
     loadHost();
   }, [loadHost]);
 
+  // run only once
+  useEffect(() => {
+    const shouldEdit = queryParams.get('edit');
+    if (shouldEdit === 'true') {
+      setIsEditingHost(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <Layout.Content
       className="HostDetailsPage"
@@ -432,7 +440,9 @@ export default function HostDetailsPage(props: PageProps) {
         <UpdateHostModal
           isOpen={isEditingHost}
           host={host}
-          onCancel={() => setIsEditingHost(false)}
+          onCancel={() => {
+            setIsEditingHost(false);
+          }}
           onUpdateHost={onUpdateHost}
         />
       )}
