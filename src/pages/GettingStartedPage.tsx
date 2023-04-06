@@ -76,6 +76,7 @@ export default function GettingStartedPage() {
             style={{
               backgroundColor: '#141413',
               height: '100%',
+              width: '100%',
               display: 'flex',
               flexFlow: 'column nowrap',
               gap: '1rem',
