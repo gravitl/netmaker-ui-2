@@ -24,7 +24,7 @@ export default function UpdateHostModal({ isOpen, host, onUpdateHost, onCancel }
   const updateHost = async () => {
     try {
       const formData = await form.validateFields();
-      const newHost = (await HostsService.updateHost(host.id, formData)).data;
+      const newHost = (await HostsService.updateHost(host.id, { ...host, ...formData })).data;
       notify.success({ message: `Host ${host.id} updated` });
       storeUpdateHost(newHost.id, newHost);
       onUpdateHost(newHost);
@@ -66,14 +66,14 @@ export default function UpdateHostModal({ isOpen, host, onUpdateHost, onCancel }
             </Form.Item>
 
             <Form.Item label="Verbosity" name="verbosity" rules={[{ required: true }]}>
-              <Input placeholder="Verbosity" />
+              <InputNumber placeholder="Verbosity" min={0} max={4} style={{ width: '100%' }} />
             </Form.Item>
 
             <Form.Item label="Static Endpoint" name="isstatic" valuePropName="checked" rules={[{ required: true }]}>
               <Switch />
             </Form.Item>
 
-            <Form.Item label="Endpoint IP" name="endpoint" rules={[{ required: true }]}>
+            <Form.Item label="Endpoint IP" name="endpoint" rules={[{ required: isStaticVal }]}>
               <Input placeholder="Endpoint IP" disabled={!isStaticVal} />
             </Form.Item>
 
