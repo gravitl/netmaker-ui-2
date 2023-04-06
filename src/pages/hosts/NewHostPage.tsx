@@ -138,31 +138,31 @@ export default function NewHostPage(props: PageProps) {
               <Row style={{ height: '4rem' }} justify="center">
                 <Col xs={4} style={{ textAlign: 'center' }}>
                   <div className="os-button active" onClick={(ev) => onShowInstallGuide(ev, 'windows')}>
-                    <img src="/src/assets/icons/windows.svg" alt="windows icon" className="logo" />
+                    <img src="/icons/windows.svg" alt="windows icon" className="logo" />
                     <p>Windows</p>
                   </div>
                 </Col>
                 <Col xs={4} style={{ textAlign: 'center' }}>
                   <div className="os-button" onClick={(ev) => onShowInstallGuide(ev, 'macos')}>
-                    <img src="/src/assets/icons/macos.svg" alt="macos icon" className="logo" />
+                    <img src="/icons/macos.svg" alt="macos icon" className="logo" />
                     <p>Mac</p>
                   </div>
                 </Col>
                 <Col xs={4} style={{ textAlign: 'center' }}>
                   <div className="os-button" onClick={(ev) => onShowInstallGuide(ev, 'linux')}>
-                    <img src="/src/assets/icons/linux.svg" alt="linux icon" className="logo" />
+                    <img src="/icons/linux.svg" alt="linux icon" className="logo" />
                     <p>Linux</p>
                   </div>
                 </Col>
                 <Col xs={4} style={{ textAlign: 'center' }}>
                   <div className="os-button" onClick={(ev) => onShowInstallGuide(ev, 'freebsd')}>
-                    <img src="/src/assets/icons/freebsd.svg" alt="freebsd icon" className="logo" />
+                    <img src="/icons/freebsd.svg" alt="freebsd icon" className="logo" />
                     <p>FreeBSD</p>
                   </div>
                 </Col>
                 <Col xs={4} style={{ textAlign: 'center' }}>
                   <div className="os-button" onClick={(ev) => onShowInstallGuide(ev, 'docker')}>
-                    <img src="/src/assets/icons/docker.svg" alt="docker icon" className="logo" />
+                    <img src="/icons/docker.svg" alt="docker icon" className="logo" />
                     <p>Docker</p>
                   </div>
                 </Col>
@@ -177,7 +177,7 @@ export default function NewHostPage(props: PageProps) {
                     <Col xs={24} style={{ textAlign: 'center' }}>
                       <Button
                         type="primary"
-                        href="https://fileserver.netmaker.org/latest/windows/netclient_x86.msi"
+                        href={import.meta.env.VITE_NETCLIENT_WINDOWS_DOWNLOAD_URL}
                         style={{ width: '100%' }}
                       >
                         Download
@@ -210,7 +210,7 @@ export default function NewHostPage(props: PageProps) {
                     <Col xs={24} style={{ textAlign: 'center' }}>
                       <Button
                         type="primary"
-                        href="https://fileserver.netmaker.org/latest/darwin/Netclient.pkg"
+                        href={import.meta.env.VITE_NETCLIENT_MAC_DOWNLOAD_URL}
                         style={{ width: '100%' }}
                       >
                         Download

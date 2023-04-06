@@ -236,7 +236,7 @@ export default function MainLayout() {
         }}
       >
         {/* logo */}
-        <img src="/src/assets/logo.png" alt="logo" style={{ width: '100%', padding: '1rem' }} />
+        <img src="/logo.png" alt="logo" style={{ width: '100%', padding: '1rem' }} />
         <Menu
           theme="light"
           mode="inline"
