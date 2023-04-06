@@ -238,9 +238,9 @@ export default function MainLayout() {
 
   const getActiveSideNavKeys = useCallback(() => {
     if (location.pathname === AppRoutes.NETWORKS_ROUTE) {
-      return ['networks'];
+      return ['networks', 'all-networks'];
     } else if (location.pathname === AppRoutes.HOSTS_ROUTE) {
-      return ['hosts'];
+      return ['hosts', 'all-hosts'];
     } else if (location.pathname === AppRoutes.CLIENTS_ROUTE) {
       return ['clients'];
     } else if (location.pathname === AppRoutes.ENROLLMENT_KEYS_ROUTE) {
@@ -286,10 +286,10 @@ export default function MainLayout() {
               case 'dashboard':
                 navigate(AppRoutes.DASHBOARD_ROUTE);
                 break;
-              case 'networks':
+              case 'all-networks':
                 navigate(AppRoutes.NETWORKS_ROUTE);
                 break;
-              case 'hosts':
+              case 'all-hosts':
                 navigate(AppRoutes.HOSTS_ROUTE);
                 break;
               case 'clients':
@@ -299,6 +299,11 @@ export default function MainLayout() {
                 navigate(AppRoutes.ENROLLMENT_KEYS_ROUTE);
                 break;
               default:
+                if (menu.key.startsWith('networks/')) {
+                  navigate(getNetworkRoute(menu.key.replace('networks/', '')));
+                } else if (menu.key.startsWith('hosts/')) {
+                  navigate(getHostRoute(menu.key.replace('hosts/', '')));
+                }
                 break;
             }
           }}

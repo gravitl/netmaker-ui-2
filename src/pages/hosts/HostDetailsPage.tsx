@@ -378,7 +378,7 @@ export default function HostDetailsPage(props: PageProps) {
         {/* top bar */}
         <Row className="tabbed-page-row-padding">
           <Col xs={24}>
-            <Link to={AppRoutes.NETWORKS_ROUTE}>View All Hosts</Link>
+            <Link to={AppRoutes.HOSTS_ROUTE}>View All Hosts</Link>
             <Row>
               <Col xs={18}>
                 <Typography.Title level={2} style={{ marginTop: '.5rem', marginBottom: '2rem' }}>
