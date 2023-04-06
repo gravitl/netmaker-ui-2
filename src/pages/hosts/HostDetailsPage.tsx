@@ -149,7 +149,7 @@ export default function HostDetailsPage(props: PageProps) {
       await HostsService.deleteHost(hostId);
       notify.success({ message: `Host ${hostId} deleted` });
       store.deleteNetwork(hostId);
-      navigate(AppRoutes.NETWORKS_ROUTE);
+      navigate(AppRoutes.HOSTS_ROUTE);
     } catch (err) {
       if (err instanceof AxiosError) {
         notify.error({
