@@ -25,7 +25,7 @@ function App() {
       const { data: serverStatus } = await ServerConfigService.getServerStatus();
       const isUnhealthy = serverStatus.db_connected === false || serverStatus.broker_connected === false;
       if (isUnhealthy) {
-        // -1 means the modal is closed, 0 means the modal is open, 1 means the modal is open and the user has not acknowledged the error
+        // -1 means the modal is closed by user, 0 means the modal is open, 1 means the modal is open and the user has not acknowledged the error
         setServerMalfunctionCount((prev) => (prev === -1 ? -1 : 1));
       }
       storeSetServerStatus({ ...serverStatus, healthyNetwork: true });
@@ -61,6 +61,8 @@ function App() {
           token: {
             colorPrimary: THEME_PRIMARY_COLOR,
             colorLink: THEME_PRIMARY_COLOR,
+            fontFamily: 'SFPro, Inter, system-ui, Avenir, Helvetica, Arial, sans-serif',
+            fontSize: 16,
             // colorBgContainer: 'black',
           },
         }}
@@ -70,10 +72,7 @@ function App() {
 
       {/* misc */}
       {notifyCtx}
-      <ServerMalfunctionModal
-        isOpen={![-1, 0].includes(serverMalfunctionCount)}
-        onCancel={() => setServerMalfunctionCount(-1)}
-      />
+      <ServerMalfunctionModal isOpen={serverMalfunctionCount === 1} onCancel={() => setServerMalfunctionCount(-1)} />
     </div>
   );
 }

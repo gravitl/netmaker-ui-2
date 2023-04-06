@@ -3,7 +3,7 @@ WORKDIR /usr/app
 COPY . /usr/app
 
 # env vars
-ENV VITE_IS_SAAS_BUILD=true
+ENV VITE_IS_SAAS_BUILD=false
 ENV VITE_BASE_URL=https://api.clustercat.com
 ENV VITE_ACCOUNT_DASHBOARD_LOGIN_URL=https://dashboard.philip.clustercat.com
 ENV VITE_TENANT_LOGO=

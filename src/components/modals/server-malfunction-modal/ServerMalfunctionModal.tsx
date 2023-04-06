@@ -35,7 +35,7 @@ export default function ServerMalfunctionModal({ isOpen, onCancel }: ServerMalfu
 
         <Row>
           <Col span={24}>
-            <Typography.Title level={5}>{t('error.servermalfunction')}</Typography.Title>
+            <Typography.Title level={4}>{t('error.servermalfunction')}</Typography.Title>
           </Col>
           <Col span={24}>
             <Typography.Text>{t('error.contactyourserveradmin')}</Typography.Text>
