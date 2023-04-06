@@ -7,12 +7,9 @@ import {
   MobileOutlined,
   UserOutlined,
 } from '@ant-design/icons';
-import { Alert, Col, Divider, Input, List, MenuProps, Row, Select, Switch, Typography } from 'antd';
+import { Alert, Col, MenuProps, Row, Select, Switch } from 'antd';
 import { Layout, Menu, theme } from 'antd';
-import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import VirtualList from 'rc-virtual-list';
-import { Network } from '../models/Network';
-import { Host } from '../models/Host';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { getHostRoute, getNetworkRoute } from '../utils/RouteUtils';
 import { useStore } from '../store/store';
 import { AppRoutes } from '@/routes';
@@ -20,44 +17,10 @@ import { useTranslation } from 'react-i18next';
 
 const { Content, Sider } = Layout;
 
-const sideNavItems: MenuProps['items'] = [
-  {
-    key: 'dashboard',
-    icon: UserOutlined,
-    label: 'Dashboard',
-  },
-  {
-    key: 'networks',
-    icon: GlobalOutlined,
-    label: 'Networks',
-  },
-  {
-    key: 'hosts',
-    icon: LaptopOutlined,
-    label: 'Hosts',
-  },
-  {
-    key: 'clients',
-    icon: MobileOutlined,
-    label: 'Clients',
-  },
-  {
-    key: 'enrollment-keys',
-    icon: KeyOutlined,
-    label: 'Enrollment Keys',
-  },
-].map((item) => ({
-  key: item.key,
-  icon: React.createElement(item.icon),
-  label: item.label,
-}));
-
 const SIDE_NAV_EXPANDED_WIDTH = '200px';
 const SIDE_NAV_COLLAPSED_WIDTH = '80px';
 
-const NETWORKS_LIST_HEIGHT = 200;
-const HOSTS_LIST_HEIGHT = 200;
-const selectedColor = '#1668dc';
+// const SELECTED_COLOR = '#1668dc';
 
 export default function MainLayout() {
   const { token: themeToken } = theme.useToken();
@@ -71,17 +34,91 @@ export default function MainLayout() {
   const location = useLocation();
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [networksSearch, setNetworksSearch] = useState('');
-  const [hostsSearch, setHostsSearch] = useState('');
 
-  const filteredNetworks = useMemo(
-    () => store.networks.filter((network) => network.netid.toLowerCase().includes(networksSearch.toLowerCase())),
-    [networksSearch, store.networks]
+  const recentNetworks = useMemo(
+    // TODO: implement most recent ranking
+    () =>
+      structuredClone(store.networks)
+        .sort((a, b) => a.netid.localeCompare(b.netid))
+        .slice(0, 5),
+    [store.networks]
   );
 
-  const filteredHosts = useMemo(
-    () => store.hosts.filter((host) => host.name.toLowerCase().includes(hostsSearch.toLowerCase())),
-    [hostsSearch, store.hosts]
+  const recentHosts = useMemo(
+    // TODO: implement most recent ranking
+    () =>
+      structuredClone(store.hosts)
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .slice(0, 5),
+    [store.hosts]
+  );
+
+  const sideNavItems: MenuProps['items'] = useMemo(
+    () =>
+      [
+        {
+          key: 'dashboard',
+          icon: UserOutlined,
+          label: 'Dashboard',
+        },
+        {
+          key: 'networks',
+          icon: GlobalOutlined,
+          label: 'Networks',
+          children: [
+            ...recentNetworks.map((net) => ({
+              key: `networks/${net.netid}`,
+              label: net.netid,
+              // onClick: () => navigate(getNetworkRoute(net.netid)),
+            })),
+            {
+              type: 'divider',
+            },
+            {
+              key: 'all-networks',
+              label: 'All Networks',
+            },
+          ],
+        },
+        {
+          key: 'hosts',
+          icon: LaptopOutlined,
+          label: 'Hosts',
+          children: [
+            ...recentHosts.map((host) => ({
+              key: `hosts/${host.id}`,
+              label: host.name,
+            })),
+            {
+              type: 'divider',
+            },
+            {
+              key: 'all-hosts',
+              label: 'All Hosts',
+            },
+          ],
+        },
+        {
+          key: 'clients',
+          icon: MobileOutlined,
+          label: 'Clients',
+        },
+        {
+          key: 'enrollment-keys',
+          icon: KeyOutlined,
+          label: 'Enrollment Keys',
+        },
+      ].map((item) => ({
+        key: item.key,
+        icon: React.createElement(item.icon),
+        label: item.label,
+        children: item.children?.map((child) => ({
+          key: (child as any)?.key,
+          label: (child as any)?.label,
+          type: (child as any)?.type,
+        })),
+      })),
+    [recentHosts, recentNetworks]
   );
 
   const sideNavBottomItems: MenuProps['items'] = useMemo(
@@ -244,6 +281,7 @@ export default function MainLayout() {
           items={sideNavItems}
           style={{ borderRight: 'none' }}
           onClick={(menu) => {
+            console.log(menu.key);
             switch (menu.key) {
               case 'dashboard':
                 navigate(AppRoutes.DASHBOARD_ROUTE);
@@ -265,91 +303,6 @@ export default function MainLayout() {
             }
           }}
         />
-
-        {/* networks */}
-        {!isSidebarCollapsed && (
-          <>
-            <Row align="middle" style={{ marginTop: '2rem', marginLeft: '28px', marginRight: '8px' }}>
-              <Col xs={18} style={{ height: '2rem' }}>
-                <Typography.Text>Recent networks</Typography.Text>
-              </Col>
-              <Col xs={6} style={{ height: '2rem' }}>
-                <Divider style={{ marginTop: '.7rem', marginBottom: '0px' }} />
-              </Col>
-              <Col xs={24}>
-                <Input
-                  placeholder="Search network..."
-                  size="small"
-                  value={networksSearch}
-                  onChange={(ev) => setNetworksSearch(ev.target.value)}
-                />
-              </Col>
-            </Row>
-            <List>
-              <VirtualList data={filteredNetworks} height={NETWORKS_LIST_HEIGHT} itemHeight={30} itemKey="netid">
-                {(network: Network) => (
-                  <List.Item key={network.netid} style={{ borderBottom: 'none', height: '30px' }}>
-                    <List.Item.Meta
-                      style={{
-                        fontWeight: 'normal',
-                        height: '30px',
-                      }}
-                      title={
-                        <Link
-                          to={getNetworkRoute(network)}
-                          style={{ color: location.pathname === getNetworkRoute(network) ? selectedColor : undefined }}
-                        >
-                          {network.netid}
-                        </Link>
-                      }
-                    />
-                  </List.Item>
-                )}
-              </VirtualList>
-            </List>
-          </>
-        )}
-
-        {/* hosts */}
-        {!isSidebarCollapsed && (
-          <>
-            <Row align="middle" style={{ marginLeft: '28px', marginRight: '8px' }}>
-              <Col xs={18} style={{ height: '2rem' }}>
-                <Typography.Text>Recent hosts</Typography.Text>
-              </Col>
-              <Col xs={6} style={{ height: '2rem' }}>
-                <Divider style={{ marginTop: '.7rem', marginBottom: '0px' }} />
-              </Col>
-              <Col xs={24}>
-                <Input
-                  placeholder="Search hosts..."
-                  size="small"
-                  value={hostsSearch}
-                  onChange={(ev) => setHostsSearch(ev.target.value)}
-                />
-              </Col>
-            </Row>
-            <List>
-              <VirtualList data={filteredHosts} height={HOSTS_LIST_HEIGHT} itemHeight={30} itemKey="id">
-                {(host: Host) => (
-                  <List.Item key={host.id} style={{ borderBottom: 'none', height: '30px' }}>
-                    <List.Item.Meta
-                      style={{ fontWeight: 'normal', height: '30px' }}
-                      title={
-                        <Link
-                          to={getHostRoute(host)}
-                          style={{ color: location.pathname === getHostRoute(host) ? selectedColor : undefined }}
-                        >
-                          {host.name}
-                        </Link>
-                      }
-                    />
-                  </List.Item>
-                )}
-              </VirtualList>
-            </List>
-          </>
-        )}
 
         {/* bottom items */}
         <Menu
