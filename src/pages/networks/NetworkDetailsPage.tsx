@@ -63,6 +63,7 @@ import '@react-sigma/core/lib/react-sigma.min.css';
 import './NetworkDetailsPage.scss';
 import { ControlsContainer, FullScreenControl, SearchControl, SigmaContainer, ZoomControl } from '@react-sigma/core';
 import NetworkGraph from '@/components/NetworkGraph';
+import UpdateRelayModal from '@/components/modals/update-relay-modal/UpdateRelayModal';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -1927,6 +1928,19 @@ export default function NetworkDetailsPage(props: PageProps) {
         }}
         onCancel={() => setIsAddRelayModalOpen(false)}
       />
+      {selectedRelay && (
+        <UpdateRelayModal
+          key={selectedRelay.id}
+          isOpen={isUpdateRelayModalOpen}
+          relay={selectedRelay}
+          networkId={networkId}
+          onUpdateRelay={() => {
+            // store.fetchHosts();
+            setIsUpdateRelayModalOpen(false);
+          }}
+          onCancel={() => setIsUpdateRelayModalOpen(false)}
+        />
+      )}
     </Layout.Content>
   );
 }
