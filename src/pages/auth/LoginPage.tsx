@@ -54,7 +54,7 @@ export default function LoginPage(props: LoginPageProps) {
   }
 
   return (
-    <Layout style={{ height: '100vh', justifyContent: 'center', alignItems: 'center' }}>
+    <Layout style={{ height: '100%', minHeight: '100vh', justifyContent: 'center', alignItems: 'center' }}>
       <Layout.Content
         style={{
           marginTop: '15vh',
