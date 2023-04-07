@@ -65,7 +65,9 @@ export function truncateCidrFromIp(ip: string): string {
 }
 
 export function isValidIpv4(addr: string): boolean {
-  const ipv4AddressRegex = new RegExp(/^([0-9]{1,3}\.){3}[0-9]{1,3}(\/([0-9]|[1-2][0-9]|3[0-2]))$/i);
+  const ipv4AddressRegex = new RegExp(
+    /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/i
+  );
   return ipv4AddressRegex.test(addr);
 }
 
@@ -96,6 +98,14 @@ export function isValidIp(addr: string): boolean {
 
 export function isValidIpCidr(cidr: string): boolean {
   return isValidIpv4Cidr(cidr) || isValidIpv6Cidr(cidr);
+}
+
+export function isValidIpv4OrCidr(addr: string): boolean {
+  return isValidIpv4(addr) || isValidIpv4Cidr(addr);
+}
+
+export function isValidIpv6OrCidr(addr: string): boolean {
+  return isValidIpv6(addr) || isValidIpv6Cidr(addr);
 }
 
 const validNetworkNames = [

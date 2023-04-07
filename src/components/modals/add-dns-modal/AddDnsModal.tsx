@@ -1,14 +1,13 @@
-import { Button, Col, Divider, Form, Input, Modal, notification, Row, Select } from 'antd';
+import { AutoComplete, Button, Col, Divider, Form, Input, Modal, notification, Row } from 'antd';
 import { MouseEvent, useMemo, useState } from 'react';
 import { NetworksService } from '@/services/NetworksService';
 import { useStore } from '@/store/store';
 import '../CustomModal.scss';
-import { AxiosError } from 'axios';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { Network } from '@/models/Network';
 import { DNS } from '@/models/Dns';
 import { Node } from '@/models/Node';
-import { truncateCidrFromIp } from '@/utils/NetworkUtils';
+import { isValidIpv4OrCidr, isValidIpv6OrCidr, truncateCidrFromIp } from '@/utils/NetworkUtils';
 
 interface AddDnsModalProps {
   isOpen: boolean;
@@ -20,7 +19,7 @@ interface AddDnsModalProps {
 }
 
 export default function AddDnsModal({ isOpen, onCreateDns, onCancel, networkId }: AddDnsModalProps) {
-  const [form] = Form.useForm<DNS>();
+  const [form] = Form.useForm<DNS & { ip: string }>();
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
 
@@ -31,7 +30,7 @@ export default function AddDnsModal({ isOpen, onCreateDns, onCancel, networkId }
         .filter((node) => node.network === networkId)
         .map((node) => ({
           label: `${node.address}, ${node.address6} (${store.hostsCommonDetails[node.hostid]?.name ?? ''})`,
-          value: node.id,
+          value: node.address ?? node.address6 ?? '',
         })),
     [networkId, store.hostsCommonDetails, store.nodes]
   );
@@ -40,23 +39,25 @@ export default function AddDnsModal({ isOpen, onCreateDns, onCancel, networkId }
     try {
       const formData = await form.validateFields();
       setIsSubmitting(true);
-      const node = store.nodes.find((node) => node.id === form.getFieldValue('nodeId'));
+      const isIpv4 = isValidIpv4OrCidr(formData.ip);
+      const isIpv6 = isValidIpv6OrCidr(formData.ip);
+      if (!isIpv4 && !isIpv6) {
+        throw new Error('Invalid IP address');
+      }
       const dns = (
         await NetworksService.createDns(networkId, {
           ...formData,
-          address: truncateCidrFromIp(node?.address ?? ''),
-          address6: truncateCidrFromIp(node?.address6 ?? ''),
+          address: truncateCidrFromIp(isIpv4 ? formData.ip : ''),
+          address6: truncateCidrFromIp(isIpv6 ? formData.ip : ''),
         })
       ).data;
       onCreateDns(dns);
       notify.success({ message: `DNS entry ${dns.name} created` });
     } catch (err) {
-      if (err instanceof AxiosError) {
-        notify.error({
-          message: 'Failed to create network',
-          description: extractErrorMsg(err),
-        });
-      }
+      notify.error({
+        message: 'Failed to create network',
+        description: extractErrorMsg(err as any),
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -78,8 +79,8 @@ export default function AddDnsModal({ isOpen, onCreateDns, onCancel, networkId }
             <Input placeholder="example" addonAfter={`.${networkId}`} />
           </Form.Item>
 
-          <Form.Item label="Host to alias" name="nodeId" rules={[{ required: true }]}>
-            <Select options={nodeOptions} placeholder="Select a host" />
+          <Form.Item label="Address to alias" name="ip" rules={[{ required: true }]}>
+            <AutoComplete options={nodeOptions} style={{ width: '100%' }} placeholder="Address" />
           </Form.Item>
 
           <Row>
