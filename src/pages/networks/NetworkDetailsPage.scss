@@ -31,4 +31,20 @@
       border-left: 4px solid teal;
     }
   }
+
+  .search-container {
+    margin-left: 50px;
+    background-color: transparent;
+    border: none;
+  }
+
+  .react-sigma-search {
+    background-color: transparent;
+
+    input {
+      border: 1px solid #333;
+      border-radius: 50px;
+      padding: .5rem 1rem;
+    }
+  }
 }

@@ -59,8 +59,10 @@ import { AxiosError } from 'axios';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { PageProps } from '../../models/Page';
-
+import '@react-sigma/core/lib/react-sigma.min.css';
 import './NetworkDetailsPage.scss';
+import { ControlsContainer, FullScreenControl, SearchControl, SigmaContainer, ZoomControl } from '@react-sigma/core';
+import NetworkGraph from '@/components/NetworkGraph';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -1570,6 +1572,7 @@ export default function NetworkDetailsPage(props: PageProps) {
               <Table
                 columns={aclTableCols}
                 dataSource={filteredAclData}
+                className="acl-table"
                 rowKey="nodeId"
                 size="small"
                 pagination={false}
@@ -1580,6 +1583,31 @@ export default function NetworkDetailsPage(props: PageProps) {
       </div>
     );
   }, [aclTableCols, acls, filteredAclData, hasAclsBeenEdited, networkId, originalAcls, searchAclHost]);
+
+  const getGraphContent = useCallback(() => {
+    return (
+      <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+        <Row style={{ width: '100%' }}>
+          <Col xs={24} style={{ width: '100%', height: '78vh' }}>
+            <SigmaContainer
+              style={{
+                backgroundColor: themeToken.colorBgContainer,
+              }}
+            >
+              <NetworkGraph />
+              <ControlsContainer position={'top-left'}>
+                <ZoomControl />
+                <FullScreenControl />
+              </ControlsContainer>
+              <ControlsContainer position={'top-left'} className="search-container">
+                <SearchControl />
+              </ControlsContainer>
+            </SigmaContainer>
+          </Col>
+        </Row>
+      </div>
+    );
+  }, [themeToken.colorBgContainer]);
 
   const networkTabs: TabsProps['items'] = useMemo(() => {
     return [
@@ -1619,6 +1647,11 @@ export default function NetworkDetailsPage(props: PageProps) {
         children: network ? getAclsContent() : <Skeleton active />,
       },
       {
+        key: 'graph',
+        label: `Graph`,
+        children: network ? getGraphContent() : <Skeleton active />,
+      },
+      {
         key: 'metrics',
         label: `Metrics`,
         children: 'Content of Metrics Tab',
@@ -1626,17 +1659,18 @@ export default function NetworkDetailsPage(props: PageProps) {
     ];
   }, [
     network,
-    networkHosts.length,
-    clients.length,
-    egresses.length,
-    relays.length,
     getOverviewContent,
+    networkHosts.length,
     getHostsContent,
+    clients.length,
     getClientsContent,
+    egresses.length,
     getEgressContent,
+    relays.length,
     getRelayContent,
     getDnsContent,
     getAclsContent,
+    getGraphContent,
   ]);
 
   const loadClients = useCallback(async () => {
