@@ -108,6 +108,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [selectedRelay, setSelectedRelay] = useState<Host | null>(null);
   const [isAddRelayModalOpen, setIsAddRelayModalOpen] = useState(false);
   const [searchRelay, setSearchRelay] = useState('');
+  const [isUpdateRelayModalOpen, setIsUpdateRelayModalOpen] = useState(false);
   const [searchAclHost, setSearchAclHost] = useState('');
 
   const networkNodes = useMemo(
@@ -1460,7 +1461,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                     <Button
                       type="primary"
                       style={{ marginRight: '1rem' }}
-                      // onClick={() => setIsUpdateEgressModalOpen(true)}
+                      onClick={() => setIsUpdateRelayModalOpen(true)}
                     >
                       <PlusOutlined /> Add relayed host
                     </Button>
@@ -1556,10 +1557,20 @@ export default function NetworkDetailsPage(props: PageProps) {
             <Button
               type="primary"
               onClick={async () => {
-                if (!networkId) return;
-                const newAcls = (await NetworksService.updateAcls(networkId, acls)).data;
-                setOriginalAcls(newAcls);
-                setAcls(newAcls);
+                try {
+                  if (!networkId) return;
+                  const newAcls = (await NetworksService.updateAcls(networkId, acls)).data;
+                  setOriginalAcls(newAcls);
+                  setAcls(newAcls);
+                  notify.success({
+                    message: 'ACLs updated',
+                  });
+                } catch (err) {
+                  notify.error({
+                    message: 'Error updating ACLs',
+                    description: extractErrorMsg(err as any),
+                  });
+                }
               }}
               disabled={hasAclsBeenEdited}
             >
@@ -1582,7 +1593,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         </Row>
       </div>
     );
-  }, [aclTableCols, acls, filteredAclData, hasAclsBeenEdited, networkId, originalAcls, searchAclHost]);
+  }, [aclTableCols, acls, filteredAclData, hasAclsBeenEdited, networkId, notify, originalAcls, searchAclHost]);
 
   const getGraphContent = useCallback(() => {
     return (
