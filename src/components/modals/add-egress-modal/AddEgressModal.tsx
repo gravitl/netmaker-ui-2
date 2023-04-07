@@ -1,4 +1,5 @@
 import {
+  Alert,
   Badge,
   Button,
   Col,
@@ -53,6 +54,8 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
   const [egressSearch, setEgressSearch] = useState('');
   const [selectedEgress, setSelectedEgress] = useState<(Node & HostCommonDetails) | null>(null);
   const idFormField = 'nodeId';
+
+  const natEnabledVal = Form.useWatch('natEnabled', form);
 
   const getNodeConnectivity = useCallback((node: Node) => {
     if (getNodeConnectivityStatus(node) === 'error') return <Badge status="error" text="Error" />;
@@ -139,7 +142,7 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
       style={{ minWidth: '50vw' }}
     >
       <Divider style={{ margin: '0px 0px 2rem 0px' }} />
-      <Form name="add-egress-form" form={form} layout="vertical">
+      <Form name="add-egress-form" form={form} layout="vertical" initialValues={{ natEnabled: true }}>
         <div className="scrollable-modal-body">
           <div className="CustomModalBody">
             <Form.Item
@@ -216,6 +219,12 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
             <Form.Item name="natEnabled" label="Enable NAT for egress traffic" valuePropName="checked">
               <Switch />
             </Form.Item>
+            {!natEnabledVal && (
+              <Alert
+                type="warning"
+                message="Egress may not function properly without NAT. You must ensure the host is properly configured"
+              />
+            )}
 
             <Typography.Title level={4}>Select external ranges</Typography.Title>
 
