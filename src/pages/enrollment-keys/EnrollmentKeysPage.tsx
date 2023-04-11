@@ -268,7 +268,19 @@ export default function EnrollmentKeysPage(props: PageProps) {
 
             <Row className="page-row-padding" justify="space-between">
               <Col xs={24}>
-                <Table columns={tableColumns} dataSource={filteredKeys} rowKey="value" />
+                <Table
+                  columns={tableColumns}
+                  dataSource={filteredKeys}
+                  rowKey="value"
+                  onRow={(key) => {
+                    return {
+                      onClick: () => {
+                        setSelectedKey(key);
+                        setIsKeyDetailsModalOpen(true);
+                      },
+                    };
+                  }}
+                />
               </Col>
             </Row>
           </>
