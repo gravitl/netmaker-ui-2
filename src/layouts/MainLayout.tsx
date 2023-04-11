@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  DatabaseOutlined,
   GlobalOutlined,
   KeyOutlined,
   LaptopOutlined,
@@ -14,6 +15,7 @@ import { getHostRoute, getNetworkRoute } from '../utils/RouteUtils';
 import { useStore } from '../store/store';
 import { AppRoutes } from '@/routes';
 import { useTranslation } from 'react-i18next';
+import { isSaasBuild } from '@/services/BaseService';
 
 const { Content, Sider } = Layout;
 
@@ -58,7 +60,7 @@ export default function MainLayout() {
       [
         {
           key: 'dashboard',
-          icon: UserOutlined,
+          icon: DatabaseOutlined,
           label: 'Dashboard',
         },
         {
@@ -108,16 +110,42 @@ export default function MainLayout() {
           icon: KeyOutlined,
           label: 'Enrollment Keys',
         },
-      ].map((item) => ({
-        key: item.key,
-        icon: React.createElement(item.icon),
-        label: item.label,
-        children: item.children?.map((child) => ({
-          key: (child as any)?.key,
-          label: (child as any)?.label,
-          type: (child as any)?.type,
+        {
+          type: 'divider',
+        },
+      ]
+        .concat(
+          isSaasBuild
+            ? [
+                {
+                  key: 'amui',
+                  icon: UserOutlined,
+                  label: 'Manage Account',
+                },
+              ]
+            : [
+                {
+                  key: 'users',
+                  icon: UserOutlined,
+                  label: 'Users',
+                },
+              ]
+        )
+        .map((item) => ({
+          key: item.key,
+          type: item.type as any,
+          style: {
+            marginTop: item.type === 'divider' ? '1rem' : '',
+            marginBottom: item.type === 'divider' ? '1rem' : '',
+          },
+          icon: item.icon && React.createElement(item.icon),
+          label: item.label,
+          children: item.children?.map((child) => ({
+            key: (child as any)?.key,
+            label: (child as any)?.label,
+            type: (child as any)?.type,
+          })),
         })),
-      })),
     [recentHosts, recentNetworks]
   );
 
@@ -281,7 +309,6 @@ export default function MainLayout() {
           items={sideNavItems}
           style={{ borderRight: 'none' }}
           onClick={(menu) => {
-            console.log(menu.key);
             switch (menu.key) {
               case 'dashboard':
                 navigate(AppRoutes.DASHBOARD_ROUTE);
@@ -297,6 +324,9 @@ export default function MainLayout() {
                 break;
               case 'enrollment-keys':
                 navigate(AppRoutes.ENROLLMENT_KEYS_ROUTE);
+                break;
+              case 'amui':
+                window.location = import.meta.env.VITE_ACCOUNT_DASHBOARD_LOGIN_URL;
                 break;
               default:
                 if (menu.key.startsWith('networks/')) {
