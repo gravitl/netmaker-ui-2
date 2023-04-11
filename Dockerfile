@@ -3,7 +3,7 @@ WORKDIR /usr/app
 COPY . /usr/app
 
 # Switch for SaaS or Standalone build
-ENV VITE_IS_SAAS_BUILD=false
+ENV VITE_IS_SAAS_BUILD=true
 
 # Essential vars
 
@@ -23,6 +23,7 @@ ENV VITE_NETCLIENT_MAC_DOWNLOAD_URL=https://fileserver.netmaker.org/latest/darwi
 
 RUN npm ci
 RUN npm run build
+RUN npm audit fix
 
 # final image
 FROM nginx:1.23.1-alpine
