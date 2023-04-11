@@ -16,7 +16,11 @@ export function setupTenantConfig(): void {
   const baseUrl = url.searchParams.get('backend');
   const accessToken = url.searchParams.get('token');
 
-  const resolvedBaseUrl = baseUrl ? `${baseUrl}/api` : useStore.getState().baseUrl;
+  const resolvedBaseUrl = baseUrl
+    ? baseUrl?.startsWith('https')
+      ? `${baseUrl}/api`
+      : `https://${baseUrl}/api`
+    : useStore.getState().baseUrl;
   baseService.defaults.baseURL = resolvedBaseUrl;
 
   useStore.getState().setStore({

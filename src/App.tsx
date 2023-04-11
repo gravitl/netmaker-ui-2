@@ -29,10 +29,8 @@ function App() {
         setServerMalfunctionCount((prev) => (prev === -1 ? -1 : 1));
       }
       storeSetServerStatus({ ...serverStatus, healthyNetwork: true });
-      if (!isUnhealthy) {
-        storeFetchHosts();
-        storeFetchNodes();
-      }
+      storeFetchHosts();
+      storeFetchNodes();
     } catch (err) {
       if (err instanceof AxiosError) {
         // notify.error({ message: 'Failed to connect to your server', description: (err as AxiosError).message });
