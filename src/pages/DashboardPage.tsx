@@ -87,7 +87,7 @@ export default function DashboardPage(props: PageProps) {
                 </Button>
               </div>
             </Card>
-            {!store.isFetchingNetworks && store.networks.length === 0 && (
+            {store.networks.length === 0 && (
               <Card style={{ maxWidth: '30%' }}>
                 <h3>Add a network</h3>
                 <p>
@@ -102,7 +102,7 @@ export default function DashboardPage(props: PageProps) {
                 </div>
               </Card>
             )}
-            {!store.isFetchingHosts && store.hosts.length === 0 && (
+            {store.hosts.length === 0 && (
               <Card style={{ maxWidth: '30%' }}>
                 <h3>Add a host</h3>
                 <p>
