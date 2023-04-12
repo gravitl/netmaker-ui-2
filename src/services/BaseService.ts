@@ -5,7 +5,7 @@ export const isSaasBuild = import.meta.env.VITE_IS_SAAS_BUILD?.toLocaleLowerCase
 
 export const baseService = axios.create();
 
-export const AMUI_URL: string = isSaasBuild ? (window as any).NMUI_AMUI_URL : '';
+export const AMUI_URL = isSaasBuild ? (window as any).NMUI_AMUI_URL : '';
 
 // function to resolve the particular SaaS tenant's backend URL, ...
 export function setupTenantConfig(): void {
