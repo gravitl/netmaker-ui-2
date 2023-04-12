@@ -89,11 +89,11 @@ export default function LoginPage(props: LoginPageProps) {
 
           <Typography.Text>
             {t('signin.terms1')} {/* eslint-disable-next-line react/jsx-no-target-blank */}
-            <a href="https://netmaker.io" target="_blank">
+            <a href="https://www.netmaker.io/terms-and-conditions" target="_blank">
               {t('signin.terms2')}
             </a>{' '}
             {t('signin.terms3')} {/* eslint-disable-next-line react/jsx-no-target-blank */}
-            <a href="https://netmaker.io" target="_blank">
+            <a href="https://www.netmaker.io/privacy-policy" target="_blank">
               {t('signin.terms4')}
             </a>
             .
