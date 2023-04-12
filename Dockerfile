@@ -8,10 +8,7 @@ ENV VITE_IS_SAAS_BUILD=true
 # Essential vars
 
 # Standalone build mandatory vars
-ENV VITE_BASE_URL=https://api.clustercat.com
-
-# SaaS build mandatory vars
-ENV VITE_ACCOUNT_DASHBOARD_LOGIN_URL=https://dashboard.philip.clustercat.com
+ENV VITE_BASE_URL=
 
 # EE customisations
 ENV VITE_TENANT_LOGO=
@@ -29,4 +26,21 @@ RUN npm audit fix
 FROM nginx:1.23.1-alpine
 EXPOSE 80
 COPY ./nginx.conf /etc/nginx/conf.d/default.conf
+COPY ./generate-config.sh /
+RUN chmod +x generate-config.sh
+RUN ./generate-config.sh
 COPY --from=build /usr/app/dist /usr/share/nginx/html
+
+# LABELS
+LABEL \
+  org.opencontainers.image.authors="Netmaker Inc." \
+  org.opencontainers.image.vendor="ReactJS" \
+  org.opencontainers.image.url="local" \
+  org.opencontainers.image.source="https://dockerhub.com/" \
+  org.opencontainers.image.version="$VERSION" \
+  org.opencontainers.image.revision="$REVISION" \
+  vendor="ReactJS" \
+  name="Netmaker UI" \
+  version="$VERSION-$REVISION" \
+  summary="The frontend of Netmaker. Netmaker builds fast, secure virtual networks." \
+  description="This image contains the Netmaker frontend running with ReactJS."

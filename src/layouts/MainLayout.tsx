@@ -15,7 +15,7 @@ import { getHostRoute, getNetworkRoute } from '../utils/RouteUtils';
 import { useStore } from '../store/store';
 import { AppRoutes } from '@/routes';
 import { useTranslation } from 'react-i18next';
-import { isSaasBuild } from '@/services/BaseService';
+import { AMUI_URL, isSaasBuild } from '@/services/BaseService';
 
 const { Content, Sider } = Layout;
 
@@ -326,7 +326,7 @@ export default function MainLayout() {
                 navigate(AppRoutes.ENROLLMENT_KEYS_ROUTE);
                 break;
               case 'amui':
-                window.location = import.meta.env.VITE_ACCOUNT_DASHBOARD_LOGIN_URL;
+                window.location = AMUI_URL;
                 break;
               default:
                 if (menu.key.startsWith('networks/')) {

@@ -8,7 +8,7 @@ import { AxiosError } from 'axios';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
-import { isSaasBuild } from '../../services/BaseService';
+import { AMUI_URL, isSaasBuild } from '../../services/BaseService';
 
 interface LoginPageProps {
   isFullScreen?: boolean;
@@ -41,7 +41,7 @@ export default function LoginPage(props: LoginPageProps) {
 
   if (isSaasBuild) {
     if (!backend && !token) {
-      window.location.href = import.meta.env.VITE_ACCOUNT_DASHBOARD_LOGIN_URL as string;
+      window.location.href = AMUI_URL;
       return null;
     }
     store.setStore({ jwt: token, baseUrl: backend });
