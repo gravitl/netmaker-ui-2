@@ -1,4 +1,4 @@
-FROM node:16.17.1-alpine3.16 as build
+FROM node:18-alpine3.17 as build
 WORKDIR /usr/app
 COPY . /usr/app
 
@@ -23,7 +23,7 @@ RUN npm run build
 RUN npm audit fix
 
 # final image
-FROM nginx:1.23.1-alpine
+FROM nginx:1.24.0-alpine3.17
 EXPOSE 80
 COPY ./nginx.conf /etc/nginx/conf.d/default.conf
 COPY ./generate-config.sh /
