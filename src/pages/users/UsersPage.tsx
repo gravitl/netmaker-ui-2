@@ -32,6 +32,7 @@ import { NetworksService } from '@/services/NetworksService';
 import { UsersService } from '@/services/UsersService';
 import { User } from '@/models/User';
 import { UserGroup } from '@/models/UserGroup';
+import AddUserModal from '@/components/modals/add-user-modal/AddUserModal';
 
 export default function UsersPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
@@ -47,6 +48,7 @@ export default function UsersPage(props: PageProps) {
   const [isAddGroupModalOpen, setIsAddGroupModalOpen] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState<UserGroup | null>(null);
   const [isUpdateGroupModalOpen, setIsUpdateGroupModalOpen] = useState(false);
+  const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
 
   const confirmDeleteUser = useCallback(
     async (user: User) => {
@@ -328,6 +330,7 @@ export default function UsersPage(props: PageProps) {
               size="large"
               onClick={() => {
                 // TODO: create user
+                setIsAddUserModalOpen(true);
               }}
             >
               <PlusOutlined /> Add a User
@@ -593,6 +596,16 @@ export default function UsersPage(props: PageProps) {
 
       {/* misc */}
       {notifyCtx}
+      <AddUserModal
+        isOpen={isAddUserModalOpen}
+        onCreateUser={(user) => {
+          setUsers([...users, user]);
+          setIsAddUserModalOpen(false);
+        }}
+        onCancel={() => {
+          setIsAddUserModalOpen(false);
+        }}
+      />
     </Layout.Content>
   );
 }
