@@ -1,7 +1,7 @@
 import { Host } from '@/models/Host';
 import { AppRoutes } from '@/routes';
 import { useStore } from '@/store/store';
-import { getHostRoute, getNewHostRoute } from '@/utils/RouteUtils';
+import { getHostRoute, getNetworkRoute, getNewHostRoute } from '@/utils/RouteUtils';
 import { MoreOutlined, PlusOutlined } from '@ant-design/icons';
 import {
   Button,
@@ -46,6 +46,8 @@ export default function UsersPage(props: PageProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [usersSearch, setUsersSearch] = useState('');
   const [selectedHost, setSelectedHost] = useState<Host | null>(null);
+  const [networksSearch, setNetworksSearch] = useState('');
+  const [groupSearch, setGroupSearch] = useState('');
 
   const confirmDeleteUser = useCallback(
     async (user: User) => {
@@ -139,11 +141,69 @@ export default function UsersPage(props: PageProps) {
     [confirmDeleteUser, onEditUser]
   );
 
+  const networksTableColumns: TableColumnsType<Network> = useMemo(
+    () => [
+      {
+        title: 'Network',
+        dataIndex: 'netid',
+        render(_, network) {
+          return <Link to={getNetworkRoute(network)}>{network.netid}</Link>;
+        },
+        sorter(a, b) {
+          return a.netid.localeCompare(b.netid);
+        },
+        defaultSortOrder: 'ascend',
+      },
+      {
+        title: 'Default Access Level',
+        render(_, network) {
+          switch (network.prosettings?.defaultaccesslevel) {
+            case 0:
+              return <Tag>0 - Network Admin</Tag>;
+            case 1:
+              return <Tag>1 - Host Access</Tag>;
+            case 2:
+              return <Tag>2 - Client Access</Tag>;
+            case 3:
+              return <Tag>3 - No Access</Tag>;
+          }
+        },
+        sorter(a, b) {
+          return (a.prosettings?.defaultaccesslevel ?? 0) - (b.prosettings?.defaultaccesslevel ?? 0);
+        },
+      },
+      {
+        title: 'Allowed Groups',
+        render(_, network) {
+          return network.prosettings?.allowedgroups.length;
+        },
+        sorter(a, b) {
+          return (a.prosettings?.allowedgroups.length ?? 0) - (b.prosettings?.allowedgroups.length ?? 0);
+        },
+      },
+      {
+        title: 'Allowed Users',
+        render(_, network) {
+          return network.prosettings?.allowedusers.length;
+        },
+        sorter(a, b) {
+          return (a.prosettings?.allowedusers.length ?? 0) - (b.prosettings?.allowedusers.length ?? 0);
+        },
+      },
+    ],
+    []
+  );
+
   const filteredUsers = useMemo(() => {
     return users.filter((u) => {
       return u.username.toLowerCase().includes(usersSearch.trim().toLowerCase());
     });
   }, [users, usersSearch]);
+
+  const filteredNetworks = useMemo(
+    () => store.networks.filter((net) => net.netid.toLocaleLowerCase().includes(networksSearch.trim().toLowerCase())),
+    [store.networks, networksSearch]
+  );
 
   // ui components
   const getUsersContent = useCallback(() => {
@@ -179,7 +239,29 @@ export default function UsersPage(props: PageProps) {
     );
   }, [filteredUsers, usersSearch, usersTableColumns]);
 
-  const getNetworkAccessContent = useCallback(() => {
+  const getNetworkPermissionsContent = useCallback(() => {
+    return (
+      <>
+        <Row>
+          <Col xs={24} md={8}>
+            <Input
+              size="large"
+              placeholder="Search networks"
+              value={networksSearch}
+              onChange={(ev) => setNetworksSearch(ev.target.value)}
+            />
+          </Col>
+        </Row>
+        <Row className="" style={{ marginTop: '1rem' }}>
+          <Col xs={24}>
+            <Table columns={networksTableColumns} dataSource={filteredNetworks} rowKey="netid" />
+          </Col>
+        </Row>
+      </>
+    );
+  }, [networksSearch, networksTableColumns, filteredNetworks]);
+
+  const getGropusContent = useCallback(() => {
     return <>hello</>;
   }, []);
 
@@ -193,15 +275,15 @@ export default function UsersPage(props: PageProps) {
       {
         key: 'network-permissions',
         label: 'Network Permissions',
-        children: getNetworkAccessContent(),
+        children: getNetworkPermissionsContent(),
       },
       {
         key: 'groups',
         label: 'Groups',
-        children: getNetworkAccessContent(),
+        children: getGropusContent(),
       },
     ],
-    [getUsersContent, getNetworkAccessContent]
+    [getUsersContent, getNetworkPermissionsContent, getGropusContent]
   );
 
   const loadUsers = useCallback(async () => {
