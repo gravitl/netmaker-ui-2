@@ -1,7 +1,5 @@
-import { Host } from '@/models/Host';
-import { AppRoutes } from '@/routes';
 import { useStore } from '@/store/store';
-import { getHostRoute, getNetworkRoute, getNewHostRoute } from '@/utils/RouteUtils';
+import { getNetworkRoute } from '@/utils/RouteUtils';
 import { MoreOutlined, PlusOutlined } from '@ant-design/icons';
 import {
   Button,
@@ -15,7 +13,6 @@ import {
   notification,
   Row,
   Skeleton,
-  Switch,
   Table,
   TableColumnsType,
   Tabs,
@@ -28,9 +25,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { PageProps } from '../../models/Page';
 import './UsersPage.scss';
-import { getNodeConnectivityStatus } from '@/utils/NodeUtils';
 import { Network } from '@/models/Network';
-import { HostsService } from '@/services/HostsService';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { NetworksService } from '@/services/NetworksService';
 import { UsersService } from '@/services/UsersService';
@@ -45,7 +40,6 @@ export default function UsersPage(props: PageProps) {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [usersSearch, setUsersSearch] = useState('');
-  const [selectedHost, setSelectedHost] = useState<Host | null>(null);
   const [networksSearch, setNetworksSearch] = useState('');
   const [groupSearch, setGroupSearch] = useState('');
 
@@ -400,22 +394,6 @@ export default function UsersPage(props: PageProps) {
                 <Typography.Title level={3}>Users</Typography.Title>
               </Col>
             </Row>
-
-            {/* <Row className="page-row-padding" justify="space-between">
-              <Col xs={12} md={8}>
-                <Input
-                  size="large"
-                  placeholder="Search hosts"
-                  value={searchText}
-                  onChange={(ev) => setSearchText(ev.target.value)}
-                />
-              </Col>
-              <Col xs={12} md={6} style={{ textAlign: 'right' }}>
-                <Button type="primary" size="large" onClick={() => navigate(getNewHostRoute(AppRoutes.HOSTS_ROUTE))}>
-                  <PlusOutlined /> Add a User
-                </Button>
-              </Col>
-            </Row> */}
 
             <Row className="page-row-padding" justify="space-between">
               <Col xs={24}>
