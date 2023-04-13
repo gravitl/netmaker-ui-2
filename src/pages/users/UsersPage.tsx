@@ -1,6 +1,6 @@
 import { useStore } from '@/store/store';
 import { getNetworkRoute } from '@/utils/RouteUtils';
-import { MoreOutlined, PlusOutlined } from '@ant-design/icons';
+import { MoreOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons';
 import {
   Button,
   Card,
@@ -13,6 +13,7 @@ import {
   notification,
   Row,
   Skeleton,
+  Switch,
   Table,
   TableColumnsType,
   Tabs,
@@ -30,6 +31,7 @@ import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { NetworksService } from '@/services/NetworksService';
 import { UsersService } from '@/services/UsersService';
 import { User } from '@/models/User';
+import { UserGroup } from '@/models/UserGroup';
 
 export default function UsersPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
@@ -42,6 +44,9 @@ export default function UsersPage(props: PageProps) {
   const [usersSearch, setUsersSearch] = useState('');
   const [networksSearch, setNetworksSearch] = useState('');
   const [groupSearch, setGroupSearch] = useState('');
+  const [isAddGroupModalOpen, setIsAddGroupModalOpen] = useState(false);
+  const [selectedGroup, setSelectedGroup] = useState<UserGroup | null>(null);
+  const [isUpdateGroupModalOpen, setIsUpdateGroupModalOpen] = useState(false);
 
   const confirmDeleteUser = useCallback(
     async (user: User) => {
@@ -65,7 +70,31 @@ export default function UsersPage(props: PageProps) {
     [notify]
   );
 
+  // const confirmDeleteGroup = useCallback(
+  //   async (group: UserGroup) => {
+  //     Modal.confirm({
+  //       title: 'Delete user group',
+  //       content: `Are you sure you want to delete group ${group}?`,
+  //       onOk: async () => {
+  //         try {
+  //           await UsersService.deleteGroup(group);
+  //           notify.success({ message: `User group ${group} deleted` });
+  //           loadUsers();
+  //         } catch (err) {
+  //           notify.error({
+  //             message: 'Failed to delete user group',
+  //             description: extractErrorMsg(err as any),
+  //           });
+  //         }
+  //       },
+  //     });
+  //   },
+  //   [notify]
+  // );
+
   const onEditUser = useCallback((user: User) => {}, []);
+
+  const onEditGroup = useCallback((group: UserGroup) => {}, []);
 
   const usersTableColumns: TableColumnsType<User> = useMemo(
     () => [
@@ -188,6 +217,81 @@ export default function UsersPage(props: PageProps) {
     []
   );
 
+  const groupTableCols: TableColumnsType<{ name: UserGroup }> = useMemo(
+    () => [
+      {
+        title: 'Name',
+        render(_, group) {
+          return <Typography.Text>{group.name}</Typography.Text>;
+        },
+        sorter(a, b) {
+          return a.name.localeCompare(b.name);
+        },
+        defaultSortOrder: 'ascend',
+      },
+      {
+        title: 'Users',
+        render(_, group) {
+          // TODO: calculate users count
+          let usersCount = 0;
+          users.forEach((u) => {
+            if (u.groups?.includes(group.name)) {
+              usersCount++;
+            }
+          });
+          return <Typography.Text>{usersCount}</Typography.Text>;
+        },
+      },
+      {
+        width: '1rem',
+        render(_, group) {
+          return (
+            <Dropdown
+              placement="bottomRight"
+              menu={{
+                items: [
+                  {
+                    key: 'edit',
+                    label: (
+                      <Typography.Text
+                        onClick={(ev) => {
+                          ev.stopPropagation();
+                          onEditGroup(group.name);
+                        }}
+                      >
+                        Edit
+                      </Typography.Text>
+                    ),
+                  },
+                  // {
+                  //   key: 'delete',
+                  //   label: (
+                  //     <Typography.Text
+                  //       onClick={(ev) => {
+                  //         ev.stopPropagation();
+                  //         confirmDeleteGroup(group);
+                  //       }}
+                  //     >
+                  //       Delete
+                  //     </Typography.Text>
+                  //   ),
+                  // },
+                ] as MenuProps['items'],
+              }}
+            >
+              <Button type="text" icon={<MoreOutlined />} />
+            </Dropdown>
+          );
+        },
+      },
+    ],
+    [onEditGroup, users]
+  );
+
+  const usersTableCols2 = usersTableColumns;
+
+  const filteredGroupUsers = users;
+
   const filteredUsers = useMemo(() => {
     return users.filter((u) => {
       return u.username.toLowerCase().includes(usersSearch.trim().toLowerCase());
@@ -199,6 +303,11 @@ export default function UsersPage(props: PageProps) {
     [store.networks, networksSearch]
   );
 
+  const filteredGroups = useMemo(() => {
+    const groups = [...new Set(users.flatMap((u) => u.groups ?? []))].map((g) => ({ name: g }));
+    return groups.filter((g) => g.name.toLowerCase().includes(groupSearch.trim().toLowerCase()));
+  }, [groupSearch, users]);
+
   // ui components
   const getUsersContent = useCallback(() => {
     return (
@@ -208,6 +317,7 @@ export default function UsersPage(props: PageProps) {
             <Input
               size="large"
               placeholder="Search users"
+              prefix={<SearchOutlined />}
               value={usersSearch}
               onChange={(ev) => setUsersSearch(ev.target.value)}
             />
@@ -241,6 +351,7 @@ export default function UsersPage(props: PageProps) {
             <Input
               size="large"
               placeholder="Search networks"
+              prefix={<SearchOutlined />}
               value={networksSearch}
               onChange={(ev) => setNetworksSearch(ev.target.value)}
             />
@@ -256,8 +367,84 @@ export default function UsersPage(props: PageProps) {
   }, [networksSearch, networksTableColumns, filteredNetworks]);
 
   const getGropusContent = useCallback(() => {
-    return <>hello</>;
-  }, []);
+    return (
+      <Row style={{ width: '100%' }}>
+        <Col xs={24} style={{ marginBottom: '2rem' }}>
+          <Input
+            placeholder="Search group"
+            value={groupSearch}
+            onChange={(ev) => setGroupSearch(ev.target.value)}
+            prefix={<SearchOutlined />}
+            style={{ width: '30%' }}
+          />
+        </Col>
+        <Col xs={12}>
+          <Row style={{ width: '100%' }}>
+            <Col xs={12}>
+              <Typography.Title style={{ marginTop: '0px' }} level={5}>
+                Groups
+              </Typography.Title>
+            </Col>
+            <Col xs={11} style={{ textAlign: 'right' }}>
+              <Button type="primary" onClick={() => setIsAddGroupModalOpen(true)}>
+                <PlusOutlined /> Create Group
+              </Button>
+            </Col>
+          </Row>
+          <Row style={{ marginTop: '1rem' }}>
+            <Col xs={23}>
+              <Table
+                columns={groupTableCols}
+                dataSource={filteredGroups}
+                rowKey={(group) => group.name}
+                size="small"
+                rowClassName={(group) => {
+                  return group.name === selectedGroup ? 'selected-row' : '';
+                }}
+                onRow={(group) => {
+                  return {
+                    onClick: () => {
+                      if (selectedGroup === group.name) setSelectedGroup(null);
+                      else setSelectedGroup(group.name);
+                    },
+                  };
+                }}
+              />
+            </Col>
+          </Row>
+        </Col>
+        <Col xs={12}>
+          <Row style={{ width: '100%' }}>
+            <Col xs={12}>
+              <Typography.Title style={{ marginTop: '0px' }} level={5}>
+                Users
+              </Typography.Title>
+            </Col>
+            <Col xs={12} style={{ textAlign: 'right' }}>
+              {selectedGroup && (
+                <Button type="primary" style={{ marginRight: '1rem' }} onClick={() => setIsUpdateGroupModalOpen(true)}>
+                  <PlusOutlined /> Add user to group
+                </Button>
+              )}
+              Display All{' '}
+              <Switch
+                title="Display all user groups. Click a group to filter users only under that group."
+                checked={selectedGroup === null}
+                onClick={() => {
+                  setSelectedGroup(null);
+                }}
+              />
+            </Col>
+          </Row>
+          <Row style={{ marginTop: '1rem' }}>
+            <Col xs={24}>
+              <Table columns={usersTableCols2} dataSource={filteredGroupUsers} rowKey="username" size="small" />
+            </Col>
+          </Row>
+        </Col>
+      </Row>
+    );
+  }, [filteredGroupUsers, filteredGroups, groupSearch, groupTableCols, selectedGroup, usersTableCols2]);
 
   const tabs: TabsProps['items'] = useMemo(
     () => [

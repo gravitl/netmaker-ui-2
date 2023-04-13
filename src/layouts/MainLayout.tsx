@@ -275,6 +275,8 @@ export default function MainLayout() {
       return ['enrollment-keys'];
     } else if (location.pathname === AppRoutes.DASHBOARD_ROUTE) {
       return ['dashboard'];
+    } else if (location.pathname === AppRoutes.USERS_ROUTE) {
+      return ['users'];
     }
   }, [location.pathname]);
 
@@ -329,7 +331,7 @@ export default function MainLayout() {
                 window.location = AMUI_URL;
                 break;
               case 'users':
-                navigate(AppRoutes.USERS);
+                navigate(AppRoutes.USERS_ROUTE);
                 break;
               default:
                 if (menu.key.startsWith('networks/')) {

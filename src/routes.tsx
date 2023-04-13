@@ -27,7 +27,7 @@ export class AppRoutes {
   static NETWORK_DETAILS_ROUTE = '/networks/:networkId';
   static CLIENTS_ROUTE = '/clients';
   static ENROLLMENT_KEYS_ROUTE = '/enrollment-keys';
-  static USERS = '/users';
+  static USERS_ROUTE = '/users';
 }
 
 const routes: RouteObject[] = [
@@ -94,7 +94,7 @@ const routes: RouteObject[] = [
         ),
       },
       {
-        path: AppRoutes.USERS.split('/').slice(1).join('/'),
+        path: AppRoutes.USERS_ROUTE.split('/').slice(1).join('/'),
         element: (
           <ProtectedRoute>
             <UsersPage isFullScreen />
