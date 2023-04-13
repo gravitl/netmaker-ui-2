@@ -42,202 +42,88 @@ export default function UsersPage(props: PageProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const hosts = store.hosts;
-  const storeUpdateHost = store.updateHost;
-  const storeFetchHosts = useStore((state) => state.fetchHosts);
-  const storeFetchNetworks = useStore((state) => state.fetchNetworks);
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  const [searchText, setSearchText] = useState('');
-  const [hasLoaded, setHasLoaded] = useState(false);
+  const [usersSearch, setUsersSearch] = useState('');
   const [selectedHost, setSelectedHost] = useState<Host | null>(null);
-  const [isJoinNetworkModalOpen, setIsJoinNetworkModalOpen] = useState(false);
 
-  const filteredNetworks = useMemo(() => {
-    return store.networks;
-  }, [store.networks]);
-
-  const filteredHosts = useMemo(
-    () =>
-      hosts.filter((host) => {
-        return host.name.toLowerCase().includes(searchText.toLowerCase());
-      }),
-    [hosts, searchText]
-  );
-
-  const confirmToggleHostDefaultness = useCallback(
-    async (host: Host) => {
+  const confirmDeleteUser = useCallback(
+    async (user: User) => {
       Modal.confirm({
-        title: 'Toggle defaultness',
-        content: `Are you sure you want to turn ${!host.isdefault ? 'on' : 'off'} defaultness for this host?`,
+        title: 'Delete user',
+        content: `Are you sure you want to delete user ${user.username}?`,
         onOk: async () => {
           try {
-            const newHost = (await HostsService.updateHost(host.id, { ...host, isdefault: !host.isdefault })).data;
-            notify.success({ message: `Host ${host.id} updated` });
-            storeUpdateHost(host.id, newHost);
+            await UsersService.deleteUser(user.username);
+            notify.success({ message: `User ${user.username} deleted` });
+            setUsers((users) => users.filter((u) => u.username !== user.username));
           } catch (err) {
             notify.error({
-              message: 'Failed to update host',
+              message: 'Failed to delete user',
               description: extractErrorMsg(err as any),
             });
           }
         },
       });
     },
-    [notify, storeUpdateHost]
+    [notify]
   );
 
-  const onEditHost = useCallback(
-    (host: Host) => {
-      navigate(getHostRoute(host, { edit: 'true' }));
-    },
-    [navigate]
-  );
+  const onEditUser = useCallback((user: User) => {}, []);
 
-  const hostsTableColumns: TableColumnsType<Host> = useMemo(
+  const usersTableColumns: TableColumnsType<User> = useMemo(
     () => [
       {
-        title: 'Name',
-        dataIndex: 'name',
-        render: (value, host) => <Link to={getHostRoute(host)}>{host.name}</Link>,
+        title: 'Username',
+        dataIndex: 'username',
         sorter(a, b) {
-          return a.name.localeCompare(b.name);
+          return a.username.localeCompare(b.username);
         },
         defaultSortOrder: 'ascend',
       },
       {
-        title: 'Endpoint',
-        dataIndex: 'endpointip',
-      },
-      {
-        title: 'Public Port',
-        dataIndex: 'listenport',
-      },
-      {
-        title: 'Version',
-        dataIndex: 'version',
-      },
-      {
-        title: 'Proxy Status',
-        dataIndex: 'proxy_enabled',
-        render(value, host) {
-          return <Switch checked={value} />;
+        title: 'Role',
+        render(_, user) {
+          return <Tag color={user.isadmin ? 'warning' : 'default'}>{user.isadmin ? 'Admin' : 'User'}</Tag>;
         },
       },
-      // {
-      //   title: 'Relay status',
-      //   render(_, host) {
-      //     let relayer: Host | undefined;
-
-      //     if (host.isrelayed) {
-      //       relayer = hosts.find((h) => h.id === host.relayed_by);
-      //     }
-
-      //     return (
-      //       <Space direction="horizontal">
-      //         <Tag color={host.isrelay ? 'success' : 'default'}>Relay</Tag>
-      //         <Tag
-      //           color={host.isrelayed ? 'blue' : 'default'}
-      //           title={host.isrelayed ? `Relayed by "${relayer?.name}"` : ''}
-      //         >
-      //           Relayed
-      //         </Tag>
-      //       </Space>
-      //     );
-      //   },
-      // },
       {
-        title: 'Health Status',
-        render(_, host) {
-          const nodeHealths = store.nodes
-            .filter((n) => n.hostid === host.id)
-            .map((n) => getNodeConnectivityStatus(n))
-            .map((h) => {
-              switch (h) {
-                case 'healthy':
-                  return 3;
-                case 'warning':
-                  return 2;
-                case 'error':
-                  return 1;
-                default:
-                  return 0;
-              }
-            })
-            .filter((h) => h !== 0);
-
-          let worstHealth = Number.MAX_SAFE_INTEGER;
-          nodeHealths.forEach((h) => {
-            worstHealth = Math.min(worstHealth, h);
-          });
-
-          switch (worstHealth) {
-            default:
-              return <Tag>Unknown</Tag>;
-            case 1:
-              return <Tag color="error">Error</Tag>;
-            case 2:
-              return <Tag color="warning">Warning</Tag>;
-            case 3:
-              return <Tag color="success">Healthy</Tag>;
-          }
+        title: 'Groups',
+        render(_, user) {
+          return user.groups?.map((g) => <Typography.Text key={g}>{g}</Typography.Text>) ?? '';
         },
-      },
-    ],
-    [store.nodes]
-  );
-
-  const hostsTableCols2: TableColumnsType<Host> = useMemo(
-    () => [
-      {
-        title: 'Name',
-        dataIndex: 'name',
-        render: (value, host) => <Link to={getHostRoute(host)}>{host.name}</Link>,
-        sorter(a, b) {
-          return a.name.localeCompare(b.name);
-        },
-        defaultSortOrder: 'ascend',
-      },
-      {
-        title: 'Endpoint',
-        dataIndex: 'endpointip',
-      },
-      {
-        title: 'Public Port',
-        dataIndex: 'listenport',
       },
       {
         width: '1rem',
-        render(_, host) {
+        render(_, user) {
           return (
             <Dropdown
               placement="bottomRight"
               menu={{
                 items: [
                   {
-                    key: 'default',
-                    label: (
-                      <Typography.Text
-                        onClick={(ev) => {
-                          ev.stopPropagation();
-                          confirmToggleHostDefaultness(host);
-                        }}
-                      >
-                        {host.isdefault ? 'Unmake default' : 'Make default'}
-                      </Typography.Text>
-                    ),
-                  },
-                  {
                     key: 'edit',
                     label: (
                       <Typography.Text
                         onClick={(ev) => {
                           ev.stopPropagation();
-                          onEditHost(host);
+                          onEditUser(user);
                         }}
                       >
-                        Edit Host
+                        Edit
+                      </Typography.Text>
+                    ),
+                  },
+                  {
+                    key: 'default',
+                    label: (
+                      <Typography.Text
+                        onClick={(ev) => {
+                          ev.stopPropagation();
+                          confirmDeleteUser(user);
+                        }}
+                      >
+                        Delete
                       </Typography.Text>
                     ),
                   },
@@ -250,125 +136,52 @@ export default function UsersPage(props: PageProps) {
         },
       },
     ],
-    [confirmToggleHostDefaultness, onEditHost]
+    [confirmDeleteUser, onEditUser]
   );
 
-  const networksTableCols: TableColumnsType<Network> = useMemo(
-    () => [
-      {
-        title: 'Name',
-        dataIndex: 'netid',
-        sorter(a, b) {
-          return a.netid.localeCompare(b.netid);
-        },
-        defaultSortOrder: 'ascend',
-      },
-      {
-        title: 'Address Range (IPv4)',
-        dataIndex: 'addressrange',
-      },
-      {
-        title: 'Address Range (IPv6)',
-        dataIndex: 'addressrange6',
-      },
-    ],
-    []
-  );
+  const filteredUsers = useMemo(() => {
+    return users.filter((u) => {
+      return u.username.toLowerCase().includes(usersSearch.trim().toLowerCase());
+    });
+  }, [users, usersSearch]);
 
   // ui components
   const getUsersContent = useCallback(() => {
     return (
-      <Skeleton loading={!hasLoaded && store.isFetchingHosts} active title={true} className="page-padding">
-        <Row className="">
-          <Col xs={24}>
-            <Table columns={hostsTableColumns} dataSource={filteredHosts} rowKey="id" />
+      <>
+        <Row>
+          <Col xs={24} md={8}>
+            <Input
+              size="large"
+              placeholder="Search users"
+              value={usersSearch}
+              onChange={(ev) => setUsersSearch(ev.target.value)}
+            />
+          </Col>
+          <Col xs={24} md={16} style={{ textAlign: 'right' }}>
+            <Button
+              type="primary"
+              size="large"
+              onClick={() => {
+                // TODO: create user
+              }}
+            >
+              <PlusOutlined /> Add a User
+            </Button>
           </Col>
         </Row>
-      </Skeleton>
+        <Row className="" style={{ marginTop: '1rem' }}>
+          <Col xs={24}>
+            <Table columns={usersTableColumns} dataSource={filteredUsers} rowKey="username" />
+          </Col>
+        </Row>
+      </>
     );
-  }, [filteredHosts, hasLoaded, store.isFetchingHosts, hostsTableColumns]);
+  }, [filteredUsers, usersSearch, usersTableColumns]);
 
   const getNetworkAccessContent = useCallback(() => {
-    return (
-      <Skeleton loading={!hasLoaded && store.isFetchingHosts} active title={true} className="page-padding">
-        <>
-          <Row className="" justify="space-between">
-            <Col xs={12}>
-              <Row style={{ width: '100%' }}>
-                <Col xs={24}>
-                  <Typography.Title style={{ marginTop: '0px' }} level={5}>
-                    Hosts
-                  </Typography.Title>
-                </Col>
-              </Row>
-              <Row style={{ marginTop: '1rem' }}>
-                <Col xs={23}>
-                  <Table
-                    columns={hostsTableCols2}
-                    dataSource={filteredHosts}
-                    rowKey="id"
-                    size="small"
-                    rowClassName={(host) => {
-                      return host.id === selectedHost?.id ? 'selected-row' : '';
-                    }}
-                    onRow={(host) => {
-                      return {
-                        onClick: () => {
-                          if (selectedHost?.id === host.id) setSelectedHost(null);
-                          else setSelectedHost(host);
-                        },
-                      };
-                    }}
-                  />
-                </Col>
-              </Row>
-            </Col>
-            <Col xs={12}>
-              <Row style={{ width: '100%' }}>
-                <Col xs={12}>
-                  <Typography.Title style={{ marginTop: '0px' }} level={5}>
-                    Networks
-                  </Typography.Title>
-                </Col>
-                <Col xs={12} style={{ textAlign: 'right' }}>
-                  {selectedHost && (
-                    <Button
-                      type="primary"
-                      style={{ marginRight: '1rem' }}
-                      onClick={() => setIsJoinNetworkModalOpen(true)}
-                    >
-                      <PlusOutlined /> Join network
-                    </Button>
-                  )}
-                  Display All{' '}
-                  <Switch
-                    title="Display all networks. Click a host to filter networks the host is connected to."
-                    checked={selectedHost === null}
-                    onClick={() => {
-                      setSelectedHost(null);
-                    }}
-                  />
-                </Col>
-              </Row>
-              <Row style={{ marginTop: '1rem' }}>
-                <Col xs={24}>
-                  <Table columns={networksTableCols} dataSource={filteredNetworks} rowKey="netid" size="small" />
-                </Col>
-              </Row>
-            </Col>
-          </Row>
-        </>
-      </Skeleton>
-    );
-  }, [
-    hasLoaded,
-    store.isFetchingHosts,
-    hostsTableCols2,
-    filteredHosts,
-    selectedHost,
-    networksTableCols,
-    filteredNetworks,
-  ]);
+    return <>hello</>;
+  }, []);
 
   const tabs: TabsProps['items'] = useMemo(
     () => [
