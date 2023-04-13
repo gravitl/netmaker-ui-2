@@ -328,6 +328,9 @@ export default function MainLayout() {
               case 'amui':
                 window.location = AMUI_URL;
                 break;
+              case 'users':
+                navigate(AppRoutes.USERS);
+                break;
               default:
                 if (menu.key.startsWith('networks/')) {
                   navigate(getNetworkRoute(menu.key.replace('networks/', '')));

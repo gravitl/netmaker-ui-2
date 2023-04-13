@@ -8,4 +8,6 @@ export class ApiRoutes {
   static SERVER_STATUS = '/server/status';
   static SERVER_CONFIG = '/server/getconfig';
   static ENROLLMENT_KEYS = '/v1/enrollment-keys';
+  static USERS_ADMIN = '/users/adm';
+  static USERS = '/users';
 }

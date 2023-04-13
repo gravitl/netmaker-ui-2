@@ -13,6 +13,7 @@ import NetworkDetailsPage from './pages/networks/NetworkDetailsPage';
 import EnrollmentKeysPage from './pages/enrollment-keys/EnrollmentKeysPage';
 import HostsPage from './pages/hosts/HostsPage';
 import ProtectedRoute from './components/ProtectedRoute';
+import UsersPage from './pages/users/UsersPage';
 
 export class AppRoutes {
   static DASHBOARD_ROUTE = '/';
@@ -26,6 +27,7 @@ export class AppRoutes {
   static NETWORK_DETAILS_ROUTE = '/networks/:networkId';
   static CLIENTS_ROUTE = '/clients';
   static ENROLLMENT_KEYS_ROUTE = '/enrollment-keys';
+  static USERS = '/users';
 }
 
 const routes: RouteObject[] = [
@@ -88,6 +90,14 @@ const routes: RouteObject[] = [
         element: (
           <ProtectedRoute>
             <EnrollmentKeysPage isFullScreen />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: AppRoutes.USERS.split('/').slice(1).join('/'),
+        element: (
+          <ProtectedRoute>
+            <UsersPage isFullScreen />
           </ProtectedRoute>
         ),
       },
