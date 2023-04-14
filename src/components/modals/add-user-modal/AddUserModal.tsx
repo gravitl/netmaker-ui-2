@@ -85,11 +85,11 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
             rules={[
               { required: true, message: '' },
               {
-                validator(rule, value, callback) {
+                validator(_, value) {
                   if (value !== passwordVal) {
-                    callback('Password must match');
+                    return Promise.reject('Password must match');
                   } else {
-                    callback();
+                    Promise.resolve();
                   }
                 },
               },
