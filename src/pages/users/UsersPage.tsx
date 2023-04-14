@@ -33,6 +33,8 @@ import { UsersService } from '@/services/UsersService';
 import { User } from '@/models/User';
 import { UserGroup } from '@/models/UserGroup';
 import AddUserModal from '@/components/modals/add-user-modal/AddUserModal';
+import AddUserGroupModal from '@/components/modals/add-user-group-modal/AddUserGroupModal';
+import UpdateUserGroupModal from '@/components/modals/update-user-group-modal/UpdateUserGroupModal';
 
 export default function UsersPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
@@ -41,6 +43,7 @@ export default function UsersPage(props: PageProps) {
   const { t } = useTranslation();
 
   const [users, setUsers] = useState<User[]>([]);
+  const [userGroups, setUserGroups] = useState<UserGroup[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [usersSearch, setUsersSearch] = useState('');
   const [networksSearch, setNetworksSearch] = useState('');
@@ -96,7 +99,10 @@ export default function UsersPage(props: PageProps) {
 
   const onEditUser = useCallback((user: User) => {}, []);
 
-  const onEditGroup = useCallback((group: UserGroup) => {}, []);
+  const onEditGroup = useCallback((group: UserGroup) => {
+    setSelectedGroup(group);
+    setIsUpdateGroupModalOpen(true);
+  }, []);
 
   const usersTableColumns: TableColumnsType<User> = useMemo(
     () => [
@@ -117,7 +123,7 @@ export default function UsersPage(props: PageProps) {
       {
         title: 'Groups',
         render(_, user) {
-          return user.groups?.map((g) => <Typography.Text key={g}>{g}</Typography.Text>) ?? '';
+          return <Typography.Text>{user.groups?.join(', ')}</Typography.Text>;
         },
       },
       {
@@ -292,8 +298,6 @@ export default function UsersPage(props: PageProps) {
 
   const usersTableCols2 = usersTableColumns;
 
-  const filteredGroupUsers = users;
-
   const filteredUsers = useMemo(() => {
     return users.filter((u) => {
       return u.username.toLowerCase().includes(usersSearch.trim().toLowerCase());
@@ -306,9 +310,21 @@ export default function UsersPage(props: PageProps) {
   );
 
   const filteredGroups = useMemo(() => {
-    const groups = [...new Set(users.flatMap((u) => u.groups ?? []))].map((g) => ({ name: g }));
-    return groups.filter((g) => g.name.toLowerCase().includes(groupSearch.trim().toLowerCase()));
-  }, [groupSearch, users]);
+    return userGroups
+      .map((g) => ({ name: g }))
+      .filter((g) => g.name.toLowerCase().includes(groupSearch.trim().toLowerCase()));
+  }, [groupSearch, userGroups]);
+
+  const filteredGroupUsers = useMemo(() => {
+    if (selectedGroup) {
+      return users.filter((u) => u.groups?.includes(selectedGroup));
+    }
+    const groupsMap = filteredGroups.reduce((acc, g) => {
+      acc[g.name] = true;
+      return acc;
+    }, {} as Record<UserGroup, boolean>);
+    return users.filter((u) => u.groups?.some((g) => groupsMap[g]));
+  }, [filteredGroups, selectedGroup, users]);
 
   // ui components
   const getUsersContent = useCallback(() => {
@@ -425,7 +441,13 @@ export default function UsersPage(props: PageProps) {
             </Col>
             <Col xs={12} style={{ textAlign: 'right' }}>
               {selectedGroup && (
-                <Button type="primary" style={{ marginRight: '1rem' }} onClick={() => setIsUpdateGroupModalOpen(true)}>
+                <Button
+                  type="primary"
+                  style={{ marginRight: '1rem' }}
+                  onClick={() => {
+                    onEditGroup(selectedGroup);
+                  }}
+                >
                   <PlusOutlined /> Add user to group
                 </Button>
               )}
@@ -447,7 +469,7 @@ export default function UsersPage(props: PageProps) {
         </Col>
       </Row>
     );
-  }, [filteredGroupUsers, filteredGroups, groupSearch, groupTableCols, selectedGroup, usersTableCols2]);
+  }, [filteredGroupUsers, filteredGroups, groupSearch, groupTableCols, onEditGroup, selectedGroup, usersTableCols2]);
 
   const tabs: TabsProps['items'] = useMemo(
     () => [
@@ -485,9 +507,22 @@ export default function UsersPage(props: PageProps) {
     }
   }, [notify]);
 
+  const loadUserGroups = useCallback(async () => {
+    try {
+      const groups = await UsersService.getUserGroups();
+      setUserGroups(groups);
+    } catch (err) {
+      notify.error({
+        message: 'Failed to load user groups',
+        description: extractErrorMsg(err as any),
+      });
+    }
+  }, [notify]);
+
   useEffect(() => {
     loadUsers();
-  }, [loadUsers]);
+    loadUserGroups();
+  }, [loadUsers, loadUserGroups]);
 
   return (
     <Layout.Content
@@ -606,6 +641,32 @@ export default function UsersPage(props: PageProps) {
           setIsAddUserModalOpen(false);
         }}
       />
+      <AddUserGroupModal
+        isOpen={isAddGroupModalOpen}
+        onCreateUserGroup={() => {
+          loadUserGroups();
+          loadUsers();
+          setIsAddGroupModalOpen(false);
+        }}
+        onCancel={() => {
+          setIsAddGroupModalOpen(false);
+        }}
+      />
+      {selectedGroup && (
+        <UpdateUserGroupModal
+          isOpen={isUpdateGroupModalOpen}
+          key={selectedGroup}
+          group={selectedGroup}
+          onUpdateUserGroup={() => {
+            loadUserGroups();
+            loadUsers();
+            setIsUpdateGroupModalOpen(false);
+          }}
+          onCancel={() => {
+            setIsUpdateGroupModalOpen(false);
+          }}
+        />
+      )}
     </Layout.Content>
   );
 }

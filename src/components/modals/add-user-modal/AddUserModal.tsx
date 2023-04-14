@@ -100,7 +100,13 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
           </Form.Item>
 
           <Form.Item label="Is admin" name="isadmin" valuePropName="checked">
-            <Switch />
+            <Switch
+              onChange={(newVal) => {
+                if (newVal) {
+                  form.setFieldValue('networks', []);
+                }
+              }}
+            />
           </Form.Item>
 
           <Form.Item label="User groups">

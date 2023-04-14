@@ -10,4 +10,5 @@ export class ApiRoutes {
   static ENROLLMENT_KEYS = '/v1/enrollment-keys';
   static USERS_ADMIN = '/users/adm';
   static USERS = '/users';
+  static USER_GROUPS = '/usergroups';
 }

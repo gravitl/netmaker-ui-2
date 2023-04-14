@@ -5,7 +5,7 @@ import {
   KeyOutlined,
   LaptopOutlined,
   LogoutOutlined,
-  MobileOutlined,
+  // MobileOutlined,
   UserOutlined,
 } from '@ant-design/icons';
 import { Alert, Col, MenuProps, Row, Select, Switch } from 'antd';
@@ -100,11 +100,11 @@ export default function MainLayout() {
             },
           ],
         },
-        {
-          key: 'clients',
-          icon: MobileOutlined,
-          label: 'Clients',
-        },
+        // {
+        //   key: 'clients',
+        //   icon: MobileOutlined,
+        //   label: 'Clients',
+        // },
         {
           key: 'enrollment-keys',
           icon: KeyOutlined,

@@ -2,6 +2,7 @@ import { ApiRoutes } from '@/constants/ApiRoutes';
 import { baseService } from './BaseService';
 import { User } from '@/models/User';
 import { UpdateUserReqDto } from './dtos/UserDtos';
+import { UserGroup } from '@/models/UserGroup';
 
 function getUsers() {
   return baseService.get<User[]>(ApiRoutes.USERS);
@@ -27,7 +28,7 @@ function updateUser(username: User['username'], payload: UpdateUserReqDto) {
   return baseService.put<User>(`${ApiRoutes.USERS}/${username}`, payload);
 }
 
-function updateUserNetworks(username: User['username'], payload: User) {
+function updateUserDetails(username: User['username'], payload: User) {
   return baseService.put<User>(`${ApiRoutes.USERS}/networks/${username}`, payload);
 }
 
@@ -39,6 +40,20 @@ function deleteUser(username: User['username']) {
   return baseService.delete<void>(`${ApiRoutes.USERS}/${username}`);
 }
 
+function createUserGroup(userGroupName: UserGroup) {
+  return baseService.post<void>(`${ApiRoutes.USER_GROUPS}/${userGroupName}`);
+}
+
+function getUserGroups(): Promise<UserGroup[]> {
+  return baseService
+    .get<Record<UserGroup, never>>(`${ApiRoutes.USER_GROUPS}`)
+    .then((userGroups) => Object.keys(userGroups.data));
+}
+
+function deleteUserGroup(userGroupName: UserGroup) {
+  return baseService.delete<void>(`${ApiRoutes.USER_GROUPS}/${userGroupName}`);
+}
+
 export const UsersService = {
   getUsers,
   getUser,
@@ -46,7 +61,10 @@ export const UsersService = {
   createAdminUser,
   createUser,
   updateUser,
-  updateUserNetworks,
+  updateUserDetails,
   updateAdminUser,
   deleteUser,
+  createUserGroup,
+  getUserGroups,
+  deleteUserGroup,
 };
