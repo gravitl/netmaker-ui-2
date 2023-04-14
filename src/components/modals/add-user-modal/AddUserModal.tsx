@@ -20,6 +20,8 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
   const store = useStore();
 
   const [users, setUsers] = useState<User[]>([]);
+  const isAdminVal = Form.useWatch('isadmin', form);
+  const passwordVal = Form.useWatch('password', form);
 
   const userGroups = useMemo(() => {
     const groups = new Set<string>();
@@ -30,9 +32,8 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
   const createUser = async () => {
     try {
       const formData = await form.validateFields();
-      if (formData.password !== formData['confirm-password']) {
-        // form.
-        throw new Error('Password must match');
+      if (isAdminVal) {
+        formData.networks = [];
       }
       const newUser = (await UsersService.createUser(formData)).data;
       notify.success({ message: `User ${newUser.username} created` });
@@ -81,7 +82,19 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
           <Form.Item
             label="Confirm Password"
             name="confirm-password"
-            rules={[{ pattern: new RegExp(form.getFieldValue('password')), message: 'Password must match' }]}
+            rules={[
+              { required: true, message: '' },
+              {
+                validator(rule, value, callback) {
+                  if (value !== passwordVal) {
+                    callback('Password must match');
+                  } else {
+                    callback();
+                  }
+                },
+              },
+            ]}
+            dependencies={['password']}
           >
             <Input placeholder="Confirm Password" type="password" />
           </Form.Item>
@@ -92,7 +105,7 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
 
           <Form.Item label="User groups">
             <Row>
-              <Col xs={16}>
+              <Col xs={18}>
                 <Form.Item name="groups" noStyle>
                   <Select
                     mode="multiple"
@@ -101,7 +114,7 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
                   />
                 </Form.Item>
               </Col>
-              <Col xs={8} style={{ textAlign: 'right' }}>
+              <Col xs={6} style={{ textAlign: 'right' }}>
                 <Button
                   onClick={() => {
                     form.setFieldValue('groups', userGroups);
@@ -115,17 +128,19 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
 
           <Form.Item label="Allowed Networks">
             <Row>
-              <Col xs={16}>
+              <Col xs={18}>
                 <Form.Item name="networks" noStyle>
                   <Select
+                    disabled={isAdminVal}
                     mode="multiple"
                     placeholder="Networks"
                     options={store.networks.map((n) => ({ label: n.netid, value: n.netid }))}
                   />
                 </Form.Item>
               </Col>
-              <Col xs={8} style={{ textAlign: 'right' }}>
+              <Col xs={6} style={{ textAlign: 'right' }}>
                 <Button
+                  disabled={isAdminVal}
                   onClick={() => {
                     form.setFieldValue(
                       'networks',
