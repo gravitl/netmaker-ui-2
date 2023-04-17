@@ -56,6 +56,12 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
   }, []);
 
   useEffect(() => {
+    if (isAdminVal) {
+      form.setFieldsValue({ networks: [] });
+    }
+  }, [form, isAdminVal]);
+
+  useEffect(() => {
     loadUsers();
   }, [loadUsers]);
 
@@ -89,7 +95,7 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
                   if (value !== passwordVal) {
                     return Promise.reject('Password must match');
                   } else {
-                    Promise.resolve();
+                    return Promise.resolve();
                   }
                 },
               },
