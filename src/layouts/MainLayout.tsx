@@ -111,26 +111,36 @@ export default function MainLayout() {
           label: 'Enrollment Keys',
         },
         {
+          key: 'users',
+          icon: UserOutlined,
+          label: 'Users',
+        },
+        {
           type: 'divider',
         },
+        {
+          key: 'amui',
+          icon: UserOutlined,
+          label: 'Manage Account',
+        },
       ]
-        .concat(
-          isSaasBuild
-            ? [
-                {
-                  key: 'amui',
-                  icon: UserOutlined,
-                  label: 'Manage Account',
-                },
-              ]
-            : [
-                {
-                  key: 'users',
-                  icon: UserOutlined,
-                  label: 'Users',
-                },
-              ]
-        )
+        // .concat(
+        //   isSaasBuild
+        //     ? [
+        //         {
+        //           key: 'amui',
+        //           icon: UserOutlined,
+        //           label: 'Manage Account',
+        //         },
+        //       ]
+        //     : [
+        //         {
+        //           key: 'users',
+        //           icon: UserOutlined,
+        //           label: 'Users',
+        //         },
+        //       ]
+        // )
         .map((item) => ({
           key: item.key,
           type: item.type as any,
