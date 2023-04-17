@@ -32,7 +32,7 @@ function updateUserDetails(username: User['username'], payload: User) {
   return baseService.put<User>(`${ApiRoutes.USERS}/networks/${username}`, payload);
 }
 
-function updateAdminUser(username: User['username'], payload: UpdateUserReqDto) {
+function updateAdminUser(username: User['username'], payload: User) {
   return baseService.put<User>(`${ApiRoutes.USERS}/${username}/adm`, payload);
 }
 

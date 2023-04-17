@@ -1,10 +1,11 @@
 import { Button, Col, Divider, Form, Input, Modal, notification, Row, Select } from 'antd';
-import { MouseEvent, useCallback, useEffect, useState } from 'react';
+import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import '../CustomModal.scss';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { User } from '@/models/User';
 import { UsersService } from '@/services/UsersService';
 import { UserGroup } from '@/models/UserGroup';
+import { useStore } from '@/store/store';
 
 interface AddUserGroupModalProps {
   isOpen: boolean;
@@ -17,8 +18,17 @@ type CreateUserGroupForm = { usergroup: string; users: string[] };
 export default function AddUserGroupModal({ isOpen, onCreateUserGroup, onCancel }: AddUserGroupModalProps) {
   const [form] = Form.useForm<CreateUserGroupForm>();
   const [notify, notifyCtx] = notification.useNotification();
+  const store = useStore();
 
   const [users, setUsers] = useState<User[]>([]);
+
+  const selectableUsers = useMemo(
+    () =>
+      users
+        .filter((u) => !u.isadmin || (u.isadmin && u.username === store.username))
+        .map((u) => ({ label: u.username, value: u.username })),
+    [store.username, users]
+  );
 
   const createUserGroup = async () => {
     let groupName = '';
@@ -42,6 +52,11 @@ export default function AddUserGroupModal({ isOpen, onCreateUserGroup, onCancel 
 
     try {
       users.forEach(async (u) => {
+        if (u.isadmin && u.username === store.username) {
+          const newGroups = u.groups ? [...new Set([...u.groups, groupName])] : [groupName];
+          await UsersService.updateAdminUser(u.username, { ...u, groups: newGroups });
+          return;
+        }
         if (selectedUsers.includes(u.username)) {
           const newGroups = u.groups ? [...new Set([...u.groups, groupName])] : [groupName];
           await UsersService.updateUserDetails(u.username, { ...u, groups: newGroups });
@@ -88,20 +103,13 @@ export default function AddUserGroupModal({ isOpen, onCreateUserGroup, onCancel 
             <Row>
               <Col xs={18}>
                 <Form.Item name="users" noStyle>
-                  <Select
-                    mode="multiple"
-                    placeholder="Users"
-                    options={users.filter((u) => !u.isadmin).map((u) => ({ label: u.username, value: u.username }))}
-                  />
+                  <Select mode="multiple" placeholder="Users" options={selectableUsers} />
                 </Form.Item>
               </Col>
               <Col xs={6} style={{ textAlign: 'right' }}>
                 <Button
                   onClick={() => {
-                    form.setFieldValue(
-                      'users',
-                      users.filter((u) => !u.isadmin).map((u) => u.username)
-                    );
+                    form.setFieldValue('users', selectableUsers);
                   }}
                 >
                   Select All

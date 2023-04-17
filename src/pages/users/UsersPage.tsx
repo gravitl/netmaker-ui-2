@@ -35,6 +35,7 @@ import { UserGroup } from '@/models/UserGroup';
 import AddUserModal from '@/components/modals/add-user-modal/AddUserModal';
 import AddUserGroupModal from '@/components/modals/add-user-group-modal/AddUserGroupModal';
 import UpdateUserGroupModal from '@/components/modals/update-user-group-modal/UpdateUserGroupModal';
+import UpdateUserModal from '@/components/modals/update-user-modal/UpdateUserModal';
 
 export default function UsersPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
@@ -52,6 +53,8 @@ export default function UsersPage(props: PageProps) {
   const [selectedGroup, setSelectedGroup] = useState<UserGroup | null>(null);
   const [isUpdateGroupModalOpen, setIsUpdateGroupModalOpen] = useState(false);
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
+  const [isUpdateUserModalOpen, setIsUpdateUserModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   const confirmDeleteUser = useCallback(
     async (user: User) => {
@@ -97,7 +100,10 @@ export default function UsersPage(props: PageProps) {
   //   [notify]
   // );
 
-  const onEditUser = useCallback((user: User) => {}, []);
+  const onEditUser = useCallback((user: User) => {
+    setSelectedUser(user);
+    setIsUpdateUserModalOpen(true);
+  }, []);
 
   const onEditGroup = useCallback((group: UserGroup) => {
     setSelectedGroup(group);
@@ -665,6 +671,20 @@ export default function UsersPage(props: PageProps) {
           onCancel={() => {
             setIsUpdateGroupModalOpen(false);
           }}
+        />
+      )}
+      {selectedUser && (
+        <UpdateUserModal
+          isOpen={isUpdateUserModalOpen}
+          key={selectedUser.username}
+          onUpdateUser={() => {
+            // loadUsers();
+            setIsUpdateUserModalOpen(false);
+          }}
+          onCancel={() => {
+            setIsUpdateUserModalOpen(false);
+          }}
+          user={selectedUser}
         />
       )}
     </Layout.Content>
