@@ -142,16 +142,19 @@ export default function UsersPage(props: PageProps) {
                 items: [
                   {
                     key: 'edit',
-                    label: (
-                      <Typography.Text
-                        onClick={(ev) => {
-                          ev.stopPropagation();
-                          onEditUser(user);
-                        }}
-                      >
-                        Edit
-                      </Typography.Text>
-                    ),
+                    label:
+                      !user.isadmin || (user.isadmin && user.username === store.username) ? (
+                        <Typography.Text
+                          onClick={(ev) => {
+                            ev.stopPropagation();
+                            onEditUser(user);
+                          }}
+                        >
+                          Edit
+                        </Typography.Text>
+                      ) : (
+                        <></>
+                      ),
                   },
                   {
                     key: 'default',
