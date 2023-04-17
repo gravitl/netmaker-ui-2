@@ -22,13 +22,11 @@ import {
   Typography,
 } from 'antd';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { PageProps } from '../../models/Page';
 import './UsersPage.scss';
 import { Network } from '@/models/Network';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
-import { NetworksService } from '@/services/NetworksService';
 import { UsersService } from '@/services/UsersService';
 import { User } from '@/models/User';
 import { UserGroup } from '@/models/UserGroup';
@@ -36,12 +34,11 @@ import AddUserModal from '@/components/modals/add-user-modal/AddUserModal';
 import AddUserGroupModal from '@/components/modals/add-user-group-modal/AddUserGroupModal';
 import UpdateUserGroupModal from '@/components/modals/update-user-group-modal/UpdateUserGroupModal';
 import UpdateUserModal from '@/components/modals/update-user-modal/UpdateUserModal';
+import NetworkPermissionsModal from '@/components/modals/network-permissions-modal/NetworkPermissionsModal';
 
 export default function UsersPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
-  const navigate = useNavigate();
-  const { t } = useTranslation();
 
   const [users, setUsers] = useState<User[]>([]);
   const [userGroups, setUserGroups] = useState<UserGroup[]>([]);
@@ -55,6 +52,35 @@ export default function UsersPage(props: PageProps) {
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
   const [isUpdateUserModalOpen, setIsUpdateUserModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [isNetworkPermissionsModalOpen, setIsNetworkPermissionsModalOpen] = useState(false);
+  const [selectedNetwork, setSelectedNetwork] = useState<Network | null>(null);
+
+  const loadUsers = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const users = (await UsersService.getUsers()).data;
+      setUsers(users);
+    } catch (err) {
+      notify.error({
+        message: 'Failed to load users',
+        description: extractErrorMsg(err as any),
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [notify]);
+
+  const loadUserGroups = useCallback(async () => {
+    try {
+      const groups = await UsersService.getUserGroups();
+      setUserGroups(groups);
+    } catch (err) {
+      notify.error({
+        message: 'Failed to load user groups',
+        description: extractErrorMsg(err as any),
+      });
+    }
+  }, [notify]);
 
   const confirmDeleteUser = useCallback(
     async (user: User) => {
@@ -78,27 +104,28 @@ export default function UsersPage(props: PageProps) {
     [notify]
   );
 
-  // const confirmDeleteGroup = useCallback(
-  //   async (group: UserGroup) => {
-  //     Modal.confirm({
-  //       title: 'Delete user group',
-  //       content: `Are you sure you want to delete group ${group}?`,
-  //       onOk: async () => {
-  //         try {
-  //           await UsersService.deleteGroup(group);
-  //           notify.success({ message: `User group ${group} deleted` });
-  //           loadUsers();
-  //         } catch (err) {
-  //           notify.error({
-  //             message: 'Failed to delete user group',
-  //             description: extractErrorMsg(err as any),
-  //           });
-  //         }
-  //       },
-  //     });
-  //   },
-  //   [notify]
-  // );
+  const confirmDeleteGroup = useCallback(
+    async (group: UserGroup) => {
+      Modal.confirm({
+        title: 'Delete user group',
+        content: `Are you sure you want to delete group ${group}?`,
+        onOk: async () => {
+          try {
+            await UsersService.deleteUserGroup(group);
+            notify.success({ message: `User group ${group} deleted` });
+            loadUsers();
+            loadUserGroups();
+          } catch (err) {
+            notify.error({
+              message: 'Failed to delete user group',
+              description: extractErrorMsg(err as any),
+            });
+          }
+        },
+      });
+    },
+    [loadUserGroups, loadUsers, notify]
+  );
 
   const onEditUser = useCallback((user: User) => {
     setSelectedUser(user);
@@ -178,7 +205,7 @@ export default function UsersPage(props: PageProps) {
         },
       },
     ],
-    [confirmDeleteUser, onEditUser]
+    [confirmDeleteUser, onEditUser, store.username]
   );
 
   const networksTableColumns: TableColumnsType<Network> = useMemo(
@@ -187,7 +214,16 @@ export default function UsersPage(props: PageProps) {
         title: 'Network',
         dataIndex: 'netid',
         render(_, network) {
-          return <Link to={getNetworkRoute(network)}>{network.netid}</Link>;
+          return (
+            <Typography.Link
+              onClick={() => {
+                setSelectedNetwork(network);
+                setIsNetworkPermissionsModalOpen(true);
+              }}
+            >
+              {network.netid}
+            </Typography.Link>
+          );
         },
         sorter(a, b) {
           return a.netid.localeCompare(b.netid);
@@ -249,7 +285,6 @@ export default function UsersPage(props: PageProps) {
       {
         title: 'Users',
         render(_, group) {
-          // TODO: calculate users count
           let usersCount = 0;
           users.forEach((u) => {
             if (u.groups?.includes(group.name)) {
@@ -280,19 +315,19 @@ export default function UsersPage(props: PageProps) {
                       </Typography.Text>
                     ),
                   },
-                  // {
-                  //   key: 'delete',
-                  //   label: (
-                  //     <Typography.Text
-                  //       onClick={(ev) => {
-                  //         ev.stopPropagation();
-                  //         confirmDeleteGroup(group);
-                  //       }}
-                  //     >
-                  //       Delete
-                  //     </Typography.Text>
-                  //   ),
-                  // },
+                  {
+                    key: 'delete',
+                    label: (
+                      <Typography.Text
+                        onClick={(ev) => {
+                          ev.stopPropagation();
+                          confirmDeleteGroup(group.name);
+                        }}
+                      >
+                        Delete
+                      </Typography.Text>
+                    ),
+                  },
                 ] as MenuProps['items'],
               }}
             >
@@ -302,7 +337,7 @@ export default function UsersPage(props: PageProps) {
         },
       },
     ],
-    [onEditGroup, users]
+    [confirmDeleteGroup, onEditGroup, users]
   );
 
   const usersTableCols2 = usersTableColumns;
@@ -394,7 +429,7 @@ export default function UsersPage(props: PageProps) {
     );
   }, [networksSearch, networksTableColumns, filteredNetworks]);
 
-  const getGropusContent = useCallback(() => {
+  const getGroupsContent = useCallback(() => {
     return (
       <Row style={{ width: '100%' }}>
         <Col xs={24} style={{ marginBottom: '2rem' }}>
@@ -495,38 +530,11 @@ export default function UsersPage(props: PageProps) {
       {
         key: 'groups',
         label: 'Groups',
-        children: getGropusContent(),
+        children: getGroupsContent(),
       },
     ],
-    [getUsersContent, getNetworkPermissionsContent, getGropusContent]
+    [getUsersContent, getNetworkPermissionsContent, getGroupsContent]
   );
-
-  const loadUsers = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      const users = (await UsersService.getUsers()).data;
-      setUsers(users);
-    } catch (err) {
-      notify.error({
-        message: 'Failed to load users',
-        description: extractErrorMsg(err as any),
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [notify]);
-
-  const loadUserGroups = useCallback(async () => {
-    try {
-      const groups = await UsersService.getUserGroups();
-      setUserGroups(groups);
-    } catch (err) {
-      notify.error({
-        message: 'Failed to load user groups',
-        description: extractErrorMsg(err as any),
-      });
-    }
-  }, [notify]);
 
   useEffect(() => {
     loadUsers();
@@ -688,6 +696,19 @@ export default function UsersPage(props: PageProps) {
             setIsUpdateUserModalOpen(false);
           }}
           user={selectedUser}
+        />
+      )}
+      {selectedNetwork && (
+        <NetworkPermissionsModal
+          key={selectedNetwork.netid}
+          isOpen={isNetworkPermissionsModalOpen}
+          network={selectedNetwork}
+          onUpdate={() => {
+            loadUsers();
+          }}
+          onCancel={() => {
+            setIsNetworkPermissionsModalOpen(false);
+          }}
         />
       )}
     </Layout.Content>
