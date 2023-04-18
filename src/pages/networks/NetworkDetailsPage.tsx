@@ -24,6 +24,7 @@ import {
   DashOutlined,
   DeleteOutlined,
   ExclamationCircleFilled,
+  LoadingOutlined,
   MoreOutlined,
   PlusOutlined,
   ReloadOutlined,
@@ -1597,16 +1598,35 @@ export default function NetworkDetailsPage(props: PageProps) {
   }, [aclTableCols, acls, filteredAclData, hasAclsBeenEdited, networkId, notify, originalAcls, searchAclHost]);
 
   const getGraphContent = useCallback(() => {
+    const containerHeight = '78vh';
+
+    if (!network) {
+      return (
+        <div
+          className=""
+          style={{
+            width: '100%',
+            height: containerHeight,
+            display: 'flex',
+            justifyContent: 'center',
+            alignContent: 'center',
+          }}
+        >
+          <LoadingOutlined style={{ fontSize: '5rem' }} spin />
+        </div>
+      );
+    }
+
     return (
       <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
         <Row style={{ width: '100%' }}>
-          <Col xs={24} style={{ width: '100%', height: '78vh' }}>
+          <Col xs={24} style={{ width: '100%', height: containerHeight }}>
             <SigmaContainer
               style={{
                 backgroundColor: themeToken.colorBgContainer,
               }}
             >
-              <NetworkGraph />
+              <NetworkGraph network={network} hosts={networkHosts} nodes={networkNodes} />
               <ControlsContainer position={'top-left'}>
                 <ZoomControl />
                 <FullScreenControl />
@@ -1619,7 +1639,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         </Row>
       </div>
     );
-  }, [themeToken.colorBgContainer]);
+  }, [network, networkHosts, networkNodes, themeToken.colorBgContainer]);
 
   const networkTabs: TabsProps['items'] = useMemo(() => {
     return [
