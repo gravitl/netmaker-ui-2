@@ -1803,6 +1803,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       onOk() {
         onNetworkDelete();
       },
+      okType: 'danger',
     });
   };
 
@@ -1839,7 +1840,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                 </Typography.Title>
               </Col>
               <Col xs={6} style={{ textAlign: 'right' }}>
-                {!isEditingNetwork && (
+                {/* {!isEditingNetwork && (
                   <Button type="default" style={{ marginRight: '.5rem' }} onClick={() => setIsEditingNetwork(true)}>
                     Edit
                   </Button>
@@ -1858,8 +1859,8 @@ export default function NetworkDetailsPage(props: PageProps) {
                       Cancel
                     </Button>
                   </>
-                )}
-                <Button type="default" onClick={promptConfirmDelete}>
+                )} */}
+                <Button danger type="default" onClick={promptConfirmDelete}>
                   Delete
                 </Button>
               </Col>
