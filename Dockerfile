@@ -3,12 +3,14 @@ WORKDIR /usr/app
 COPY . /usr/app
 
 # Switch for SaaS or Standalone build
-ENV VITE_IS_SAAS_BUILD=true
+ENV VITE_IS_SAAS_BUILD=false
 
 # Essential vars
 
 # Standalone build mandatory vars
-ENV VITE_BASE_URL=
+# This value is used if `BACKEND_URL` env var is unset.
+# BACKEND_URL is used for dynamic URL injection
+ENV VITE_BASE_URL=https://api.clustercat.com
 
 # EE customisations
 ENV VITE_TENANT_LOGO=

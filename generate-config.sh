@@ -2,10 +2,18 @@
 
 # AMUI_URL is the URL of the Account Managenent UI.
 # If not set, it will default to https://account.netmaker.io
-
 if [ -z "${AMUI_URL:-}" ]; then
   AMUI_URL='https://account.netmaker.io'
 fi
 
-echo "window.NMUI_AMUI_URL='$AMUI_URL';" > /usr/share/nginx/html/nmui-config.js
+if [ -z "${BACKEND_URL:-}" ]; then
+  BACKEND_URL="http://localhost:8081"
+fi
+
+cat >/usr/share/nginx/html/nmui-config.js <<EOF
+window.NMUI_AMUI_URL='$AMUI_URL';
+window.NMUI_BACKEND_URL='$BACKEND_URL';
+EOF
+
 echo ">>>> NMUI_AMUI_URL set to: $AMUI_URL <<<<<"
+echo ">>>> NMUI_BACKEND_URL set to: $BACKEND_URL <<<<<"

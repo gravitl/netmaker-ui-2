@@ -10,7 +10,8 @@ export const AMUI_URL = isSaasBuild ? (window as any).NMUI_AMUI_URL : '';
 // function to resolve the particular SaaS tenant's backend URL, ...
 export function setupTenantConfig(): void {
   if (!isSaasBuild) {
-    baseService.defaults.baseURL = `${import.meta.env.VITE_BASE_URL}/api`;
+    const dynamicBaseUrl = (window as any).NMUI_BACKEND_URL;
+    baseService.defaults.baseURL = dynamicBaseUrl || `${import.meta.env.VITE_BASE_URL}/api`;
     return;
   }
 
