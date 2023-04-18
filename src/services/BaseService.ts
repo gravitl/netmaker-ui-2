@@ -11,7 +11,7 @@ export const AMUI_URL = isSaasBuild ? (window as any).NMUI_AMUI_URL : '';
 export function setupTenantConfig(): void {
   if (!isSaasBuild) {
     const dynamicBaseUrl = (window as any).NMUI_BACKEND_URL;
-    baseService.defaults.baseURL = dynamicBaseUrl || `${import.meta.env.VITE_BASE_URL}/api`;
+    baseService.defaults.baseURL = dynamicBaseUrl ? `${dynamicBaseUrl}/api` : `${import.meta.env.VITE_BASE_URL}/api`;
     return;
   }
 
