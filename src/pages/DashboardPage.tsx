@@ -1,5 +1,13 @@
-import { Alert, Button, Card, Col, Input, Layout, Row, Space, Tooltip } from 'antd';
-import { ArrowRightOutlined, PlusOutlined, QuestionCircleOutlined, SearchOutlined } from '@ant-design/icons';
+import { Alert, Button, Card, Col, Dropdown, Input, Layout, Row, Space, Tooltip, Typography } from 'antd';
+import {
+  ArrowRightOutlined,
+  DownOutlined,
+  GlobalOutlined,
+  LaptopOutlined,
+  PlusOutlined,
+  QuestionCircleOutlined,
+  SearchOutlined,
+} from '@ant-design/icons';
 import UpgradeModal from '../components/modals/upgrade-modal/UpgradeModal';
 import { PageProps } from '../models/Page';
 import { AppRoutes } from '../routes';
@@ -44,10 +52,31 @@ export default function DashboardPage(props: PageProps) {
                   suffix={<SearchOutlined />}
                   style={{ borderRadius: '24px', width: '20rem' }}
                 />
-                <Button type="primary" style={{}}>
-                  <PlusOutlined /> Create
-                </Button>
-                <Tooltip title="Help">
+                <Dropdown.Button
+                  style={{ marginTop: '-3rem', height: '100%' }}
+                  type="primary"
+                  menu={{
+                    items: [
+                      {
+                        key: 'host',
+                        label: (
+                          <>
+                            <LaptopOutlined /> <Typography.Text>Connect new Host</Typography.Text>
+                          </>
+                        ),
+                        onClick: () => {
+                          navigate(getNewHostRoute(AppRoutes.HOSTS_ROUTE));
+                        },
+                      },
+                    ],
+                  }}
+                  placement="bottomRight"
+                  icon={<DownOutlined />}
+                  onClick={() => setIsAddNetworkModalOpen(true)}
+                >
+                  <GlobalOutlined /> Create
+                </Dropdown.Button>
+                <Tooltip title="Docs">
                   <QuestionCircleOutlined
                     style={{ cursor: 'pointer', fontSize: '1.2rem' }}
                     onClick={() => {
