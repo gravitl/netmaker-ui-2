@@ -54,13 +54,20 @@ export default function HostDetailsPage(props: PageProps) {
       {
         title: 'Name',
         dataIndex: 'name',
+        render: (name) => {
+          return (
+            <Typography.Text>
+              {name} {name === host?.defaultinterface ? <Tag>Default</Tag> : <></>}
+            </Typography.Text>
+          );
+        },
       },
       {
         title: 'IP Address',
         dataIndex: 'addressString',
       },
     ],
-    []
+    [host?.defaultinterface]
   );
 
   const onUpdateHost = useCallback(() => {
@@ -263,6 +270,14 @@ export default function HostDetailsPage(props: PageProps) {
             </Col>
             <Col xs={12}>
               <Typography.Text>{host.verbosity}</Typography.Text>
+            </Col>
+          </Row>
+          <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+            <Col xs={12}>
+              <Typography.Text disabled>Default Interface</Typography.Text>
+            </Col>
+            <Col xs={12}>
+              <Typography.Text>{host.defaultinterface}</Typography.Text>
             </Col>
           </Row>
           <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
