@@ -17,6 +17,8 @@ export function setupTenantConfig(): void {
   const url = new URL(window.location.href);
   const baseUrl = url.searchParams.get('backend');
   const accessToken = url.searchParams.get('token');
+  const amuiAuthToken = url.searchParams.get('sToken') ?? '';
+  const tenantId = url.searchParams.get('tenantId') ?? '';
 
   const resolvedBaseUrl = baseUrl
     ? baseUrl?.startsWith('https')
@@ -28,6 +30,8 @@ export function setupTenantConfig(): void {
   useStore.getState().setStore({
     baseUrl: resolvedBaseUrl,
     jwt: accessToken ?? useStore.getState().jwt,
+    tenantId,
+    amuiAuthToken,
   });
 }
 

@@ -11,11 +11,11 @@ import {
 import { Alert, Col, MenuProps, Row, Select, Switch } from 'antd';
 import { Layout, Menu, theme } from 'antd';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { getHostRoute, getNetworkRoute } from '../utils/RouteUtils';
+import { getAmuiUrl, getHostRoute, getNetworkRoute } from '../utils/RouteUtils';
 import { useStore } from '../store/store';
 import { AppRoutes } from '@/routes';
 import { useTranslation } from 'react-i18next';
-import { AMUI_URL, isSaasBuild } from '@/services/BaseService';
+import { isSaasBuild } from '@/services/BaseService';
 
 const { Content, Sider } = Layout;
 
@@ -338,7 +338,7 @@ export default function MainLayout() {
                 navigate(AppRoutes.ENROLLMENT_KEYS_ROUTE);
                 break;
               case 'amui':
-                window.location = AMUI_URL;
+                window.location = getAmuiUrl() as any;
                 break;
               case 'users':
                 navigate(AppRoutes.USERS_ROUTE);

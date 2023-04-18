@@ -2,6 +2,8 @@ import { Network } from '@/models/Network';
 import { useLocation } from 'react-router-dom';
 import { Host } from '../models/Host';
 import { AppRoutes } from '../routes';
+import { AMUI_URL } from '@/services/BaseService';
+import { useStore } from '@/store/store';
 
 // Get host route from host obj or ID
 export function getHostRoute(hostOrId: Host | Host['id'], ...queryParams: { [key: string]: string }[]): string {
@@ -31,4 +33,9 @@ export function getNewHostRoute(redirectTo?: string): string {
 // Custom hook to use query params
 export function useQuery() {
   return new URLSearchParams(useLocation().search);
+}
+
+// Function to get AMUI dashboard route
+export function getAmuiUrl() {
+  return `${AMUI_URL}/dashboard?tenantId=${useStore.getState().tenantId}&sToken=${useStore.getState().amuiAuthToken}`;
 }

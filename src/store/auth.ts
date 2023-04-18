@@ -7,6 +7,7 @@ export interface IAuthSlice {
   username: TenantConfig['username'];
   tenantId: TenantConfig['tenantId'];
   baseUrl: TenantConfig['baseUrl'];
+  amuiAuthToken: TenantConfig['amuiAuthToken'];
 
   // methods
   isLoggedIn: () => boolean;
@@ -20,6 +21,7 @@ const createAuthSlice: StateCreator<IAuthSlice, [], [], IAuthSlice> = (set, get)
   tenantId: '',
   username: '',
   baseUrl: '',
+  amuiAuthToken: '',
 
   isLoggedIn() {
     return !!get().jwt;
@@ -34,6 +36,7 @@ const createAuthSlice: StateCreator<IAuthSlice, [], [], IAuthSlice> = (set, get)
       username: '',
       tenantId: '',
       baseUrl: '',
+      amuiAuthToken: '',
     });
   },
 });

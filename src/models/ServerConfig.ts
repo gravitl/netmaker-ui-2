@@ -32,6 +32,7 @@ export interface TenantConfig {
   email?: string;
   username?: string;
   tenantId?: string;
+  amuiAuthToken?: string;
 }
 
 export interface ServerStatus {
