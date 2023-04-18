@@ -1,4 +1,19 @@
 FROM node:18-alpine3.17 as build
+
+# LABELS
+LABEL \
+  org.opencontainers.image.authors="Netmaker Inc." \
+  org.opencontainers.image.vendor="ReactJS" \
+  org.opencontainers.image.url="local" \
+  org.opencontainers.image.source="https://dockerhub.com/" \
+  org.opencontainers.image.version="$VERSION" \
+  org.opencontainers.image.revision="$REVISION" \
+  vendor="ReactJS" \
+  name="Netmaker UI" \
+  version="$VERSION-$REVISION" \
+  summary="The frontend of Netmaker. Netmaker builds fast, secure virtual networks." \
+  description="This image contains the Netmaker frontend running with ReactJS."
+
 WORKDIR /usr/app
 COPY . /usr/app
 
@@ -26,23 +41,14 @@ RUN npm audit fix
 
 # final image
 FROM nginx:1.24.0-alpine3.17
-EXPOSE 80
+
 COPY ./nginx.conf /etc/nginx/conf.d/default.conf
 COPY ./generate-config.sh /
-RUN chmod +x generate-config.sh
-RUN ./generate-config.sh
+COPY ./docker-entrypoint.sh /
+
+RUN chmod +x generate-config.sh docker-entrypoint.sh
+
 COPY --from=build /usr/app/dist /usr/share/nginx/html
 
-# LABELS
-LABEL \
-  org.opencontainers.image.authors="Netmaker Inc." \
-  org.opencontainers.image.vendor="ReactJS" \
-  org.opencontainers.image.url="local" \
-  org.opencontainers.image.source="https://dockerhub.com/" \
-  org.opencontainers.image.version="$VERSION" \
-  org.opencontainers.image.revision="$REVISION" \
-  vendor="ReactJS" \
-  name="Netmaker UI" \
-  version="$VERSION-$REVISION" \
-  summary="The frontend of Netmaker. Netmaker builds fast, secure virtual networks." \
-  description="This image contains the Netmaker frontend running with ReactJS."
+EXPOSE 80
+ENTRYPOINT ["/docker-entrypoint.sh"]
