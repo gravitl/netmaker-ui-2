@@ -19,6 +19,7 @@ export function setupTenantConfig(): void {
   const accessToken = url.searchParams.get('token');
   const amuiAuthToken = url.searchParams.get('sToken') ?? '';
   const tenantId = url.searchParams.get('tenantId') ?? '';
+  const tenantName = url.searchParams.get('tenantName') ?? '';
 
   const resolvedBaseUrl = baseUrl
     ? baseUrl?.startsWith('https')
@@ -31,6 +32,7 @@ export function setupTenantConfig(): void {
     baseUrl: resolvedBaseUrl,
     jwt: accessToken ?? useStore.getState().jwt,
     tenantId,
+    tenantName,
     amuiAuthToken,
   });
 }

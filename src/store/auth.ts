@@ -6,6 +6,7 @@ export interface IAuthSlice {
   email: TenantConfig['email'];
   username: TenantConfig['username'];
   tenantId: TenantConfig['tenantId'];
+  tenantName: TenantConfig['tenantName'];
   baseUrl: TenantConfig['baseUrl'];
   amuiAuthToken: TenantConfig['amuiAuthToken'];
 
@@ -19,6 +20,7 @@ const createAuthSlice: StateCreator<IAuthSlice, [], [], IAuthSlice> = (set, get)
   jwt: '',
   email: '',
   tenantId: '',
+  tenantName: '',
   username: '',
   baseUrl: '',
   amuiAuthToken: '',
@@ -35,6 +37,7 @@ const createAuthSlice: StateCreator<IAuthSlice, [], [], IAuthSlice> = (set, get)
       email: '',
       username: '',
       tenantId: '',
+      tenantName: '',
       baseUrl: '',
       amuiAuthToken: '',
     });
