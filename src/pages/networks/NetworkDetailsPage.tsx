@@ -1626,7 +1626,13 @@ export default function NetworkDetailsPage(props: PageProps) {
                 backgroundColor: themeToken.colorBgContainer,
               }}
             >
-              <NetworkGraph network={network} hosts={networkHosts} nodes={networkNodes} />
+              <NetworkGraph
+                network={network}
+                hosts={networkHosts}
+                nodes={networkNodes}
+                acl={networkAcls}
+                clients={clients}
+              />
               <ControlsContainer position={'top-left'}>
                 <ZoomControl />
                 <FullScreenControl />
@@ -1639,7 +1645,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         </Row>
       </div>
     );
-  }, [network, networkHosts, networkNodes, themeToken.colorBgContainer]);
+  }, [clients, network, networkAcls, networkHosts, networkNodes, themeToken.colorBgContainer]);
 
   const networkTabs: TabsProps['items'] = useMemo(() => {
     return [

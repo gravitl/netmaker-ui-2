@@ -231,8 +231,8 @@ export default function AddClientModal({ isOpen, onCreateClient, onCancel, netwo
             <Input placeholder="Public key" />
           </Form.Item>
 
-          <Form.Item label="Addresses" name="address">
-            <Select mode="tags" placeholder="IP Addresses" clearIcon disabled />
+          <Form.Item label="Additional Addresses" name="address">
+            <Select mode="tags" placeholder="Additional IP Addresses" clearIcon disabled />
           </Form.Item>
         </div>
 
