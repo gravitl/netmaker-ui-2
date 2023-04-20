@@ -11,4 +11,6 @@ export class ApiRoutes {
   static USERS_ADMIN = '/users/adm';
   static USERS = '/users';
   static USER_GROUPS = '/usergroups';
+  static METRICS = '/metrics';
+  static METRICS_EXTERNAL_CLIENT = '/metrics-ext';
 }
