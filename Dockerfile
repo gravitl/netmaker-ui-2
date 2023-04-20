@@ -18,7 +18,7 @@ WORKDIR /usr/app
 COPY . /usr/app
 
 # Switch for SaaS or Standalone build
-ENV VITE_IS_SAAS_BUILD=false
+ENV VITE_IS_SAAS_BUILD=true
 
 # Essential vars
 
