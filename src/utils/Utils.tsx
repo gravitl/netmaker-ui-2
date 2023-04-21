@@ -13,3 +13,11 @@ export function renderNodeHealth(health: NodeConnectivityStatus) {
       return <Tag color="success">Healthy</Tag>;
   }
 }
+
+export function getTimeMinHrs(duration: number) {
+  // TODO: review this calc
+  const minutes = duration / 60000000000;
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = Math.ceil(((minutes / 60) % 1) * 60);
+  return { hours, min: remainingMinutes };
+}

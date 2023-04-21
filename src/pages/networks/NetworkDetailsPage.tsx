@@ -46,10 +46,12 @@ import {
   MenuProps,
   Modal,
   notification,
+  Progress,
   Radio,
   Row,
   Select,
   Skeleton,
+  Space,
   Switch,
   Table,
   TableColumnProps,
@@ -69,6 +71,7 @@ import { ControlsContainer, FullScreenControl, SearchControl, SigmaContainer, Zo
 import NetworkGraph from '@/components/NetworkGraph';
 import UpdateRelayModal from '@/components/modals/update-relay-modal/UpdateRelayModal';
 import { NetworkMetrics } from '@/models/Metrics';
+import { getTimeMinHrs } from '@/utils/Utils';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -83,13 +86,35 @@ interface AclTableData {
 
 type MetricCategories = 'connectivity-status' | 'latency' | 'bytes-sent' | 'bytes-received' | 'uptime';
 
-interface NodeConnectivityMetricsTableData {
+interface UptimeNodeMetrics {
+  uptime: number;
+  fractionalUptime: number;
+  totalFractionalUptime: number;
+  uptimePercent: number;
+}
+
+interface NodeMetricsTableData {
   nodeId: Node['id'];
   nodeName: ExtendedNode['name'];
-  connectivity: {
+  connectivity?: {
     [nodeId: string]: boolean;
   };
+  latency?: {
+    [nodeId: string]: number;
+  };
+  bytesSent?: {
+    [nodeId: string]: number;
+  };
+  bytesReceived?: {
+    [nodeId: string]: number;
+  };
+  uptime?: {
+    [nodeId: string]: UptimeNodeMetrics;
+  };
 }
+
+const METRIC_LATENCY_DANGER_THRESHOLD = 500;
+const METRIC_LATENCY_WARNING_THRESHOLD = 300;
 
 export default function NetworkDetailsPage(props: PageProps) {
   const { networkId } = useParams<{ networkId: string }>();
@@ -246,16 +271,85 @@ export default function NetworkDetailsPage(props: PageProps) {
     }
   }, [networkHosts, selectedRelay]);
 
-  const connectivityStatusMetricsData = useMemo<NodeConnectivityMetricsTableData[]>(() => {
+  const connectivityStatusMetricsData = useMemo<NodeMetricsTableData[]>(() => {
     return Object.keys(networkNodeMetrics?.nodes ?? {}).map((nodeId) => {
       const nodeConnectivityMap = networkNodeMetrics?.nodes[nodeId].connectivity;
       const res = {
         nodeId: nodeId,
         nodeName: networkNodeMetrics?.nodes[nodeId].node_name ?? '',
-        connectivity: {} as NodeConnectivityMetricsTableData['connectivity'],
+        connectivity: {} as NodeMetricsTableData['connectivity'],
       };
       Object.keys(nodeConnectivityMap ?? {}).reduce((acc, key) => {
-        acc.connectivity[key] = nodeConnectivityMap?.[key].connected ?? false;
+        acc.connectivity![key] = nodeConnectivityMap?.[key].connected ?? false;
+        return acc;
+      }, res);
+      return res;
+    });
+  }, [networkNodeMetrics?.nodes]);
+
+  const latencyMetricsData = useMemo<NodeMetricsTableData[]>(() => {
+    return Object.keys(networkNodeMetrics?.nodes ?? {}).map((nodeId) => {
+      const nodeConnectivityMap = networkNodeMetrics?.nodes[nodeId].connectivity;
+      const res = {
+        nodeId: nodeId,
+        nodeName: networkNodeMetrics?.nodes[nodeId].node_name ?? '',
+        latency: {} as NodeMetricsTableData['latency'],
+      };
+      Object.keys(nodeConnectivityMap ?? {}).reduce((acc, key) => {
+        acc.latency![key] = nodeConnectivityMap?.[key].latency ?? 0;
+        return acc;
+      }, res);
+      return res;
+    });
+  }, [networkNodeMetrics?.nodes]);
+
+  const bytesSentMetricsData = useMemo<NodeMetricsTableData[]>(() => {
+    return Object.keys(networkNodeMetrics?.nodes ?? {}).map((nodeId) => {
+      const nodeConnectivityMap = networkNodeMetrics?.nodes[nodeId].connectivity;
+      const res = {
+        nodeId: nodeId,
+        nodeName: networkNodeMetrics?.nodes[nodeId].node_name ?? '',
+        bytesSent: {} as NodeMetricsTableData['bytesSent'],
+      };
+      Object.keys(nodeConnectivityMap ?? {}).reduce((acc, key) => {
+        acc.bytesSent![key] = nodeConnectivityMap?.[key].totalsent ?? 0;
+        return acc;
+      }, res);
+      return res;
+    });
+  }, [networkNodeMetrics?.nodes]);
+
+  const bytesReceivedMetricsData = useMemo<NodeMetricsTableData[]>(() => {
+    return Object.keys(networkNodeMetrics?.nodes ?? {}).map((nodeId) => {
+      const nodeConnectivityMap = networkNodeMetrics?.nodes[nodeId].connectivity;
+      const res = {
+        nodeId: nodeId,
+        nodeName: networkNodeMetrics?.nodes[nodeId].node_name ?? '',
+        bytesReceived: {} as NodeMetricsTableData['bytesReceived'],
+      };
+      Object.keys(nodeConnectivityMap ?? {}).reduce((acc, key) => {
+        acc.bytesReceived![key] = nodeConnectivityMap?.[key].totalreceived ?? 0;
+        return acc;
+      }, res);
+      return res;
+    });
+  }, [networkNodeMetrics?.nodes]);
+
+  const uptimeMetricsData = useMemo<NodeMetricsTableData[]>(() => {
+    return Object.keys(networkNodeMetrics?.nodes ?? {}).map((nodeId) => {
+      const nodeConnectivityMap = networkNodeMetrics?.nodes[nodeId].connectivity;
+      const res = {
+        nodeId: nodeId,
+        nodeName: networkNodeMetrics?.nodes[nodeId].node_name ?? '',
+        uptime: {} as NodeMetricsTableData['uptime'],
+      };
+      Object.keys(nodeConnectivityMap ?? {}).reduce((acc, key) => {
+        acc.uptime![key] = {
+          fractionalUptime: nodeConnectivityMap?.[key].uptime ?? 0,
+          totalFractionalUptime: nodeConnectivityMap?.[key].totaltime ?? 0,
+          uptime: nodeConnectivityMap?.[key].actualuptime ?? 0,
+          uptimePercent: nodeConnectivityMap?.[key].percentup ?? 0,
+        };
         return acc;
       }, res);
       return res;
@@ -869,9 +963,59 @@ export default function NetworkDetailsPage(props: PageProps) {
 
   const hasAclsBeenEdited = useMemo(() => JSON.stringify(acls) === JSON.stringify(originalAcls), [acls, originalAcls]);
 
-  const metricsTableCols = useMemo<TableColumnProps<NodeConnectivityMetricsTableData>[]>(() => {
+  const metricsTableCols = useMemo<TableColumnProps<NodeMetricsTableData>[]>(() => {
+    const getFormattedData = (data: number) => {
+      let unit = '';
+      let value = '';
+
+      // derive unit
+      if (data > 1000000000000) {
+        unit = 'TiB';
+      } else if (data > 1000000000) {
+        unit = 'GiB';
+      } else if (data > 1000000) {
+        unit = 'MiB';
+      } else if (data > 1000) {
+        unit = 'KiB';
+      } else {
+        unit = 'B';
+      }
+
+      // derive value
+      if (data > 1000000000000) {
+        value = (data / 1000000000000).toFixed(2);
+      } else if (data > 1000000000) {
+        value = (data / 1000000000).toFixed(2);
+      } else if (data > 1000000) {
+        value = (data / 1000000).toFixed(2);
+      } else if (data > 1000) {
+        value = (data / 1000).toFixed(2);
+      } else {
+        value = `${data}`;
+      }
+
+      return `${value} (${unit})`;
+    };
+
+    const getFormattedTime = (time: number) => {
+      let timeString = '';
+      if (time) {
+        const { hours, min } = getTimeMinHrs(time);
+        timeString = `${hours}h${min}m`;
+      } else {
+        timeString = '0h0m';
+      }
+      return timeString;
+    };
+
     const renderMetricValue = (metricType: MetricCategories, value: unknown) => {
+      let fractionalDowntime: number;
+      let downtime: number;
+
       switch (metricType) {
+        default:
+          return <></>;
+          break;
         case 'connectivity-status':
           if (value === true) {
             return (
@@ -887,6 +1031,65 @@ export default function NetworkDetailsPage(props: PageProps) {
             );
           }
           return <CloseOutlined style={{ color: '#D32029' }} />;
+          break;
+        case 'latency':
+          return (
+            <Typography.Text
+              style={{
+                color:
+                  (value as number) > METRIC_LATENCY_DANGER_THRESHOLD
+                    ? '#D32029'
+                    : (value as number) > METRIC_LATENCY_WARNING_THRESHOLD
+                    ? '#D8BD14'
+                    : undefined,
+              }}
+            >
+              {value as number} ms
+            </Typography.Text>
+          );
+          break;
+        case 'bytes-sent':
+          return <Typography.Text>{getFormattedData(value as number)}</Typography.Text>;
+          break;
+        case 'bytes-received':
+          return <Typography.Text>{getFormattedData(value as number)}</Typography.Text>;
+          break;
+        case 'uptime':
+          fractionalDowntime =
+            (value as UptimeNodeMetrics).totalFractionalUptime / (value as UptimeNodeMetrics).fractionalUptime;
+          downtime =
+            (fractionalDowntime * (value as UptimeNodeMetrics).uptime) / (value as UptimeNodeMetrics).fractionalUptime;
+          return (
+            <Tooltip
+              title={
+                <Space style={{ width: '8rem' }} direction="vertical">
+                  <Row>
+                    <Col xs={12}>
+                      <Progress showInfo={false} percent={100} status="exception" />
+                    </Col>
+                    <Col xs={12} style={{ textAlign: 'right' }}>
+                      <Typography.Text>{getFormattedTime(downtime)}</Typography.Text>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col xs={12}>
+                      <Progress showInfo={false} percent={100} status="success" />
+                    </Col>
+                    <Col xs={12} style={{ textAlign: 'right' }}>
+                      <Typography.Text>{getFormattedTime((value as UptimeNodeMetrics).uptime)}</Typography.Text>
+                    </Col>
+                  </Row>
+                </Space>
+              }
+            >
+              <Progress
+                style={{ width: '3rem' }}
+                showInfo={false}
+                percent={100}
+                success={{ percent: (value as UptimeNodeMetrics).uptimePercent }}
+              />
+            </Tooltip>
+          );
           break;
       }
     };
@@ -916,10 +1119,113 @@ export default function NetworkDetailsPage(props: PageProps) {
           })),
         ];
         break;
+      case 'latency':
+        return [
+          {
+            title: '',
+            width: '10rem',
+            render(_, entry) {
+              return (
+                <Typography.Text onClick={() => setFilteredMetricNodeId(entry.nodeId)}>
+                  {entry.nodeName}
+                </Typography.Text>
+              );
+            },
+          },
+          ...latencyMetricsData.map((metricData) => ({
+            title: metricData.nodeName,
+            render(_: unknown, metricEntry: (typeof latencyMetricsData)[0]) {
+              if (metricEntry.nodeId === metricData.nodeId) {
+                return <DashOutlined />;
+              }
+              return renderMetricValue(currentMetric, metricData?.latency?.[metricEntry?.nodeId] ?? 0);
+            },
+          })),
+        ];
+        break;
+      case 'bytes-sent':
+        return [
+          {
+            title: '',
+            width: '10rem',
+            render(_, entry) {
+              return (
+                <Typography.Text onClick={() => setFilteredMetricNodeId(entry.nodeId)}>
+                  {entry.nodeName}
+                </Typography.Text>
+              );
+            },
+          },
+          ...bytesSentMetricsData.map((metricData) => ({
+            title: metricData.nodeName,
+            render(_: unknown, metricEntry: (typeof bytesSentMetricsData)[0]) {
+              if (metricEntry.nodeId === metricData.nodeId) {
+                return <DashOutlined />;
+              }
+              return renderMetricValue(currentMetric, metricData?.bytesSent?.[metricEntry?.nodeId] ?? 0);
+            },
+          })),
+        ];
+        break;
+      case 'bytes-received':
+        return [
+          {
+            title: '',
+            width: '10rem',
+            render(_, entry) {
+              return (
+                <Typography.Text onClick={() => setFilteredMetricNodeId(entry.nodeId)}>
+                  {entry.nodeName}
+                </Typography.Text>
+              );
+            },
+          },
+          ...bytesReceivedMetricsData.map((metricData) => ({
+            title: metricData.nodeName,
+            render(_: unknown, metricEntry: (typeof bytesReceivedMetricsData)[0]) {
+              if (metricEntry.nodeId === metricData.nodeId) {
+                return <DashOutlined />;
+              }
+              return renderMetricValue(currentMetric, metricData?.bytesReceived?.[metricEntry?.nodeId] ?? 0);
+            },
+          })),
+        ];
+        break;
+      case 'uptime':
+        return [
+          {
+            title: '',
+            width: '10rem',
+            render(_, entry) {
+              return (
+                <Typography.Text onClick={() => setFilteredMetricNodeId(entry.nodeId)}>
+                  {entry.nodeName}
+                </Typography.Text>
+              );
+            },
+          },
+          ...uptimeMetricsData.map((metricData) => ({
+            title: metricData.nodeName,
+            render(_: unknown, metricEntry: (typeof uptimeMetricsData)[0]) {
+              if (metricEntry.nodeId === metricData.nodeId) {
+                return <DashOutlined />;
+              }
+              return renderMetricValue(currentMetric, metricData?.uptime?.[metricEntry?.nodeId] ?? {});
+            },
+          })),
+        ];
+        break;
       default:
         return [];
     }
-  }, [connectivityStatusMetricsData, currentMetric]);
+  }, [
+    bytesReceivedMetricsData,
+    bytesSentMetricsData,
+    connectivityStatusMetricsData,
+    currentMetric,
+    latencyMetricsData,
+    uptimeMetricsData,
+  ]);
 
   // ui components
   const getOverviewContent = useCallback(() => {
@@ -1767,12 +2073,61 @@ export default function NetworkDetailsPage(props: PageProps) {
                   pagination={false}
                 />
               )}
+              {currentMetric === 'latency' && (
+                <Table
+                  columns={metricsTableCols}
+                  dataSource={latencyMetricsData}
+                  className="latency-metrics-table"
+                  rowKey="nodeId"
+                  size="small"
+                  pagination={false}
+                />
+              )}
+              {currentMetric === 'bytes-sent' && (
+                <Table
+                  columns={metricsTableCols}
+                  dataSource={bytesSentMetricsData}
+                  className="bytes-sent-metrics-table"
+                  rowKey="nodeId"
+                  size="small"
+                  pagination={false}
+                />
+              )}
+              {currentMetric === 'bytes-received' && (
+                <Table
+                  columns={metricsTableCols}
+                  dataSource={bytesReceivedMetricsData}
+                  className="bytes-received-metrics-table"
+                  rowKey="nodeId"
+                  size="small"
+                  pagination={false}
+                />
+              )}
+              {currentMetric === 'uptime' && (
+                <Table
+                  columns={metricsTableCols}
+                  dataSource={latencyMetricsData}
+                  className="latency-metrics-table"
+                  rowKey="nodeId"
+                  size="small"
+                  pagination={false}
+                />
+              )}
             </div>
           </Col>
         </Row>
       </div>
     );
-  }, [currentMetric, downloadMetrics, connectivityStatusMetricsData, isDownloadingMetrics, metricsTableCols]);
+  }, [
+    currentMetric,
+    isDownloadingMetrics,
+    metricsTableCols,
+    connectivityStatusMetricsData,
+    latencyMetricsData,
+    bytesSentMetricsData,
+    bytesReceivedMetricsData,
+    downloadMetrics,
+  ]);
 
   const networkTabs: TabsProps['items'] = useMemo(() => {
     return [
