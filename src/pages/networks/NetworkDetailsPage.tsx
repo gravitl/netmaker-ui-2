@@ -2059,7 +2059,7 @@ export default function NetworkDetailsPage(props: PageProps) {
           <Col xs={8} style={{ textAlign: 'right' }}>
             <Button type="primary" loading={isDownloadingMetrics} onClick={() => downloadMetrics()}>
               <DownloadOutlined />
-              Download CSV
+              Download Metrics
             </Button>
           </Col>
 
