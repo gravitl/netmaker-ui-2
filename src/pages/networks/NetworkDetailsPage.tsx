@@ -1068,7 +1068,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                       <Progress showInfo={false} percent={100} status="exception" />
                     </Col>
                     <Col xs={12} style={{ textAlign: 'right' }}>
-                      <Typography.Text>{getFormattedTime(downtime)}</Typography.Text>
+                      {getFormattedTime(downtime)}
                     </Col>
                   </Row>
                   <Row>
@@ -1076,7 +1076,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                       <Progress showInfo={false} percent={100} status="success" />
                     </Col>
                     <Col xs={12} style={{ textAlign: 'right' }}>
-                      <Typography.Text>{getFormattedTime((value as UptimeNodeMetrics).uptime)}</Typography.Text>
+                      {getFormattedTime((value as UptimeNodeMetrics).uptime)}
                     </Col>
                   </Row>
                 </Space>
@@ -1085,9 +1085,11 @@ export default function NetworkDetailsPage(props: PageProps) {
               <Progress
                 style={{ width: '3rem' }}
                 showInfo={false}
+                type="line"
                 percent={100}
                 success={{ percent: (value as UptimeNodeMetrics).uptimePercent }}
-              />
+              />{' '}
+              {(value as UptimeNodeMetrics).uptimePercent}%
             </Tooltip>
           );
           break;
