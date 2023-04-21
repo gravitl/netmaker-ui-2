@@ -21,8 +21,10 @@ import { getHostRoute, getNetworkRoute, getNewHostRoute } from '@/utils/RouteUti
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import {
   CheckOutlined,
+  CloseOutlined,
   DashOutlined,
   DeleteOutlined,
+  DownloadOutlined,
   ExclamationCircleFilled,
   LoadingOutlined,
   MoreOutlined,
@@ -44,6 +46,7 @@ import {
   MenuProps,
   Modal,
   notification,
+  Radio,
   Row,
   Select,
   Skeleton,
@@ -65,6 +68,7 @@ import './NetworkDetailsPage.scss';
 import { ControlsContainer, FullScreenControl, SearchControl, SigmaContainer, ZoomControl } from '@react-sigma/core';
 import NetworkGraph from '@/components/NetworkGraph';
 import UpdateRelayModal from '@/components/modals/update-relay-modal/UpdateRelayModal';
+import { NetworkMetrics } from '@/models/Metrics';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -75,6 +79,16 @@ interface AclTableData {
   nodeId: Node['id'];
   name: Host['name'];
   acls: NodeAcl;
+}
+
+type MetricCategories = 'connectivity-status' | 'latency' | 'bytes-sent' | 'bytes-received' | 'uptime';
+
+interface NodeConnectivityMetricsTableData {
+  nodeId: Node['id'];
+  nodeName: ExtendedNode['name'];
+  connectivity: {
+    [nodeId: string]: boolean;
+  };
 }
 
 export default function NetworkDetailsPage(props: PageProps) {
@@ -112,6 +126,10 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [searchRelay, setSearchRelay] = useState('');
   const [isUpdateRelayModalOpen, setIsUpdateRelayModalOpen] = useState(false);
   const [searchAclHost, setSearchAclHost] = useState('');
+  const [isDownloadingMetrics, setIsDownloadingMetrics] = useState(false);
+  const [currentMetric, setCurrentMetric] = useState<MetricCategories>('connectivity-status');
+  const [networkNodeMetrics, setNetworkNodeMetrics] = useState<NetworkMetrics | null>(null);
+  const [filteredMetricNodeId, setFilteredMetricNodeId] = useState<Node['id'] | null>(null);
 
   const networkNodes = useMemo(
     () =>
@@ -228,6 +246,22 @@ export default function NetworkDetailsPage(props: PageProps) {
     }
   }, [networkHosts, selectedRelay]);
 
+  const connectivityStatusMetricsData = useMemo<NodeConnectivityMetricsTableData[]>(() => {
+    return Object.keys(networkNodeMetrics?.nodes ?? {}).map((nodeId) => {
+      const nodeConnectivityMap = networkNodeMetrics?.nodes[nodeId].connectivity;
+      const res = {
+        nodeId: nodeId,
+        nodeName: networkNodeMetrics?.nodes[nodeId].node_name ?? '',
+        connectivity: {} as NodeConnectivityMetricsTableData['connectivity'],
+      };
+      Object.keys(nodeConnectivityMap ?? {}).reduce((acc, key) => {
+        acc.connectivity[key] = nodeConnectivityMap?.[key].connected ?? false;
+        return acc;
+      }, res);
+      return res;
+    });
+  }, [networkNodeMetrics?.nodes]);
+
   const loadAcls = useCallback(async () => {
     try {
       if (!networkId) return;
@@ -247,6 +281,8 @@ export default function NetworkDetailsPage(props: PageProps) {
   const goToNewHostPage = useCallback(() => {
     navigate(getNewHostRoute(networkId && getNetworkRoute(networkId)));
   }, [navigate, networkId]);
+
+  const downloadMetrics = useCallback(() => {}, []);
 
   const confirmDeleteClient = useCallback(
     (client: ExternalClient) => {
@@ -832,6 +868,58 @@ export default function NetworkDetailsPage(props: PageProps) {
   }, [aclTableData, originalAcls]);
 
   const hasAclsBeenEdited = useMemo(() => JSON.stringify(acls) === JSON.stringify(originalAcls), [acls, originalAcls]);
+
+  const metricsTableCols = useMemo<TableColumnProps<NodeConnectivityMetricsTableData>[]>(() => {
+    const renderMetricValue = (metricType: MetricCategories, value: unknown) => {
+      switch (metricType) {
+        case 'connectivity-status':
+          if (value === true) {
+            return (
+              <div
+                style={{
+                  border: '2px solid #49AA19',
+                  borderRadius: '50%',
+                  background: '#162312',
+                  width: '15px',
+                  height: '15px',
+                }}
+              ></div>
+            );
+          }
+          return <CloseOutlined style={{ color: '#D32029' }} />;
+          break;
+      }
+    };
+
+    switch (currentMetric) {
+      case 'connectivity-status':
+        return [
+          {
+            title: '',
+            width: '10rem',
+            render(_, entry) {
+              return (
+                <Typography.Text onClick={() => setFilteredMetricNodeId(entry.nodeId)}>
+                  {entry.nodeName}
+                </Typography.Text>
+              );
+            },
+          },
+          ...connectivityStatusMetricsData.map((metricData) => ({
+            title: metricData.nodeName,
+            render(_: unknown, metricEntry: (typeof connectivityStatusMetricsData)[0]) {
+              if (metricEntry.nodeId === metricData.nodeId) {
+                return <DashOutlined />;
+              }
+              return renderMetricValue(currentMetric, metricData?.connectivity?.[metricEntry?.nodeId] ?? false);
+            },
+          })),
+        ];
+        break;
+      default:
+        return [];
+    }
+  }, [connectivityStatusMetricsData, currentMetric]);
 
   // ui components
   const getOverviewContent = useCallback(() => {
@@ -1647,6 +1735,45 @@ export default function NetworkDetailsPage(props: PageProps) {
     );
   }, [clients, network, networkAcls, networkHosts, networkNodes, themeToken.colorBgContainer]);
 
+  const getMetricsContent = useCallback(() => {
+    return (
+      <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+        <Row style={{ width: '100%' }}>
+          <Col xs={16}>
+            <Radio.Group value={currentMetric} onChange={(ev) => setCurrentMetric(ev.target.value)}>
+              <Radio.Button value="connectivity-status">Connectivity Status</Radio.Button>
+              <Radio.Button value="latency">Latency</Radio.Button>
+              <Radio.Button value="bytes-sent">Bytes Sent</Radio.Button>
+              <Radio.Button value="bytes-received">Bytes Received</Radio.Button>
+              <Radio.Button value="uptime">Uptime</Radio.Button>
+            </Radio.Group>
+          </Col>
+          <Col xs={8} style={{ textAlign: 'right' }}>
+            <Button type="primary" loading={isDownloadingMetrics} onClick={() => downloadMetrics()}>
+              <DownloadOutlined />
+              Download CSV
+            </Button>
+          </Col>
+
+          <Col xs={24} style={{ paddingTop: '1rem' }}>
+            <div className="" style={{ width: '100%', overflow: 'auto' }}>
+              {currentMetric === 'connectivity-status' && (
+                <Table
+                  columns={metricsTableCols}
+                  dataSource={connectivityStatusMetricsData}
+                  className="connectivity-status-metrics-table"
+                  rowKey="nodeId"
+                  size="small"
+                  pagination={false}
+                />
+              )}
+            </div>
+          </Col>
+        </Row>
+      </div>
+    );
+  }, [currentMetric, downloadMetrics, connectivityStatusMetricsData, isDownloadingMetrics, metricsTableCols]);
+
   const networkTabs: TabsProps['items'] = useMemo(() => {
     return [
       {
@@ -1692,23 +1819,24 @@ export default function NetworkDetailsPage(props: PageProps) {
       {
         key: 'metrics',
         label: `Metrics`,
-        children: 'Content of Metrics Tab',
+        children: network ? getMetricsContent() : <Skeleton active />,
       },
     ];
   }, [
     network,
-    getOverviewContent,
     networkHosts.length,
-    getHostsContent,
     clients.length,
-    getClientsContent,
     egresses.length,
-    getEgressContent,
     relays.length,
+    getOverviewContent,
+    getHostsContent,
+    getClientsContent,
+    getEgressContent,
     getRelayContent,
     getDnsContent,
     getAclsContent,
     getGraphContent,
+    getMetricsContent,
   ]);
 
   const loadClients = useCallback(async () => {
@@ -1743,6 +1871,19 @@ export default function NetworkDetailsPage(props: PageProps) {
     }
   }, [networkId, notify]);
 
+  const loadMetrics = useCallback(async () => {
+    try {
+      if (!networkId) return;
+      const nodeMetrics = (await NetworksService.getNodeMetrics(networkId)).data;
+      setNetworkNodeMetrics(nodeMetrics);
+    } catch (err) {
+      notify.error({
+        message: 'Error loading host metrics',
+        description: extractErrorMsg(err as any),
+      });
+    }
+  }, [networkId, notify]);
+
   const loadNetwork = useCallback(() => {
     setIsLoading(true);
     // route to networks if id is not present
@@ -1762,10 +1903,10 @@ export default function NetworkDetailsPage(props: PageProps) {
     loadDnses();
     loadAcls();
     loadClients();
+    loadMetrics();
 
     setIsLoading(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navigate, networkId, notify, store.networks, loadDnses]);
+  }, [networkId, store.networks, loadDnses, loadAcls, loadClients, loadMetrics, navigate, notify]);
 
   const onNetworkFormEdit = useCallback(async () => {
     try {
