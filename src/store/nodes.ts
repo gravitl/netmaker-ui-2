@@ -31,7 +31,7 @@ const createNodeSlice: StateCreator<INodeSlice, [], [], INodeSlice> = (set, get)
   async fetchNodes() {
     try {
       set((state) => ({ isFetchingNodes: true }));
-      const nodes = (await NodesService.getNodes()).data;
+      const nodes = (await NodesService.getNodes()).data ?? [];
       set((state) => ({ nodes, isFetchingNodes: false }));
     } catch (err) {
       console.error(err);

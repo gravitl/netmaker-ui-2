@@ -33,7 +33,7 @@ const createHostSlice: StateCreator<IHostSlice, [], [], IHostSlice> = (set) => (
   async fetchHosts() {
     try {
       set(() => ({ isFetchingHosts: true }));
-      const hosts = (await HostsService.getHosts()).data;
+      const hosts = (await HostsService.getHosts()).data ?? [];
       const commonDetails: Record<Host['id'], HostCommonDetails> = {};
       hosts.forEach((host) => {
         commonDetails[host.id] = {

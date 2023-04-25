@@ -26,7 +26,6 @@ export default function NewHostPage(props: PageProps) {
   const navigate = useNavigate();
   const store = useStore();
   const query = useQuery();
-  const DEFAULT_REDIRECT = AppRoutes.HOSTS_ROUTE;
 
   const storeFetchNetworks = useStore((state) => state.fetchNetworks);
   const [currentStep, setCurrentStep] = useState(0);
@@ -34,19 +33,19 @@ export default function NewHostPage(props: PageProps) {
   const [selectedOs, setSelectedOs] = useState<AvailableOses>('windows');
   const [isAddNetworkModalOpen, setIsAddNetworkModalOpen] = useState(false);
 
-  const onStepChange = (newStep: number) => {
+  const onStepChange = useCallback((newStep: number) => {
     setCurrentStep(newStep);
-  };
+  }, []);
 
-  const onFinish = () => {
-    navigate(query.get('redirectTo') ?? DEFAULT_REDIRECT);
-  };
+  const onFinish = useCallback(() => {
+    navigate(query.get('redirectTo') ?? AppRoutes.HOSTS_ROUTE);
+  }, [navigate, query]);
 
-  const onCancel = () => {
-    navigate(query.get('redirectTo') ?? DEFAULT_REDIRECT);
-  };
+  const onCancel = useCallback(() => {
+    navigate(query.get('redirectTo') ?? AppRoutes.HOSTS_ROUTE);
+  }, [navigate, query]);
 
-  const onShowInstallGuide = (ev: MouseEvent, os: AvailableOses) => {
+  const onShowInstallGuide = useCallback((ev: MouseEvent, os: AvailableOses) => {
     const btnSelector = '.NewHostPage .os-button';
     const activeBtnClass = 'active';
     document.querySelectorAll(btnSelector).forEach((btn) => {
@@ -54,7 +53,7 @@ export default function NewHostPage(props: PageProps) {
     });
     (ev.currentTarget as HTMLElement).classList.add(activeBtnClass);
     setSelectedOs(os);
-  };
+  }, []);
 
   const loadNetworks = useCallback(() => {
     storeFetchNetworks();
@@ -64,9 +63,11 @@ export default function NewHostPage(props: PageProps) {
     loadNetworks();
   }, [loadNetworks]);
 
-  if (store?.networks?.length === 1) {
-    setSelectedNetwork(store?.networks[0]);
-  }
+  useEffect(() => {
+    if (store.networks.length === 1) {
+      setSelectedNetwork(store.networks[0]);
+    }
+  }, [store.networks]);
 
   return (
     <Layout.Content

@@ -47,6 +47,7 @@ export default function HostsPage(props: PageProps) {
   const [hasLoaded, setHasLoaded] = useState(false);
   const [selectedHost, setSelectedHost] = useState<Host | null>(null);
   const [isJoinNetworkModalOpen, setIsJoinNetworkModalOpen] = useState(false);
+  const [hasAdvicedHosts, setHasAdvicedHosts] = useState(false);
 
   const filteredNetworks = useMemo(() => {
     return store.networks;
@@ -387,7 +388,8 @@ export default function HostsPage(props: PageProps) {
   }, [storeFetchHosts, storeFetchNetworks]);
 
   useEffect(() => {
-    if (hosts.length <= 1) {
+    if (hosts.length <= 1 && !hasAdvicedHosts) {
+      setHasAdvicedHosts(true);
       notify.info({
         message: t('info.connectmultiplehosts'),
         description: t('info.connectatleasttwohostsonanetworktobegincommunication'),
@@ -401,7 +403,7 @@ export default function HostsPage(props: PageProps) {
         ),
       });
     }
-  }, [hosts.length, navigate, notify, t]);
+  }, [hasAdvicedHosts, hosts.length, navigate, notify, t]);
 
   return (
     <Layout.Content

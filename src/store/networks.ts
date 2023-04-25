@@ -24,7 +24,7 @@ const createNetworkSlice: StateCreator<INetworkSlice, [], [], INetworkSlice> = (
   async fetchNetworks() {
     try {
       set(() => ({ isFetchingNetworks: true }));
-      const networks = (await NetworksService.getNetworks()).data;
+      const networks = (await NetworksService.getNetworks()).data ?? [];
       set(() => ({
         networks: networks.map((network) => convertNetworkPayloadToUiNetwork(network)),
         isFetchingNetworks: false,
