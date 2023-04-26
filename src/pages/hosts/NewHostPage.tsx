@@ -1,9 +1,13 @@
+import AddNetworkModal from '@/components/modals/add-network-modal/AddNetworkModal';
+import { Network } from '@/models/Network';
+import { AppRoutes } from '@/routes';
+import { useStore } from '@/store/store';
+import { useQuery } from '@/utils/RouteUtils';
 import { CopyOutlined, PlusOutlined } from '@ant-design/icons';
 import { Button, Card, Col, Divider, Input, Layout, List, Row, Steps } from 'antd';
-import { MouseEvent, useState } from 'react';
+import { MouseEvent, useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageProps } from '../../models/Page';
-import { AppRoutes } from '../../routes';
 
 import './NewHostPage.scss';
 
@@ -20,21 +24,28 @@ const steps = [
 
 export default function NewHostPage(props: PageProps) {
   const navigate = useNavigate();
+  const store = useStore();
+  const query = useQuery();
 
+  const storeFetchNetworks = useStore((state) => state.fetchNetworks);
   const [currentStep, setCurrentStep] = useState(0);
-  const [networks, setNetworks] = useState([]);
-  const [selectedNetwork, setSelectedNetwork] = useState(null);
+  const [selectedNetwork, setSelectedNetwork] = useState<Network | null>(null);
   const [selectedOs, setSelectedOs] = useState<AvailableOses>('windows');
+  const [isAddNetworkModalOpen, setIsAddNetworkModalOpen] = useState(false);
 
-  const onStepChange = (newStep: number) => {
+  const onStepChange = useCallback((newStep: number) => {
     setCurrentStep(newStep);
-  };
+  }, []);
 
-  const onFinish = () => {
-    navigate(AppRoutes.HOST_ROUTE);
-  };
+  const onFinish = useCallback(() => {
+    navigate(query.get('redirectTo') ?? AppRoutes.HOSTS_ROUTE);
+  }, [navigate, query]);
 
-  const onShowInstallGuide = (ev: MouseEvent, os: AvailableOses) => {
+  const onCancel = useCallback(() => {
+    navigate(query.get('redirectTo') ?? AppRoutes.HOSTS_ROUTE);
+  }, [navigate, query]);
+
+  const onShowInstallGuide = useCallback((ev: MouseEvent, os: AvailableOses) => {
     const btnSelector = '.NewHostPage .os-button';
     const activeBtnClass = 'active';
     document.querySelectorAll(btnSelector).forEach((btn) => {
@@ -42,11 +53,21 @@ export default function NewHostPage(props: PageProps) {
     });
     (ev.currentTarget as HTMLElement).classList.add(activeBtnClass);
     setSelectedOs(os);
-  };
+  }, []);
 
-  if (networks.length === 1) {
-    setSelectedNetwork(networks[0]);
-  }
+  const loadNetworks = useCallback(() => {
+    storeFetchNetworks();
+  }, [storeFetchNetworks]);
+
+  useEffect(() => {
+    loadNetworks();
+  }, [loadNetworks]);
+
+  useEffect(() => {
+    if (store.networks.length === 1) {
+      setSelectedNetwork(store.networks[0]);
+    }
+  }, [store.networks]);
 
   return (
     <Layout.Content
@@ -71,43 +92,26 @@ export default function NewHostPage(props: PageProps) {
                 className="networks-list"
                 style={{ maxHeight: '50vh', overflow: 'auto', marginTop: '.5rem' }}
               >
-                <List.Item
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => {
-                    onStepChange(1);
-                  }}
-                >
-                  <List.Item.Meta title="Network 1" description="123.123.123.0/24, abc9::/8" />
-                </List.Item>
-                <List.Item>
-                  <List.Item.Meta title="Network 2" description="123.123.123.0/24, abc9::/8" />
-                </List.Item>
-                <List.Item>
-                  <List.Item.Meta title="Network 2" description="123.123.123.0/24, abc9::/8" />
-                </List.Item>
-                <List.Item>
-                  <List.Item.Meta title="Network 2" description="123.123.123.0/24, abc9::/8" />
-                </List.Item>
-                <List.Item>
-                  <List.Item.Meta title="Network 2" description="123.123.123.0/24, abc9::/8" />
-                </List.Item>
-                <List.Item>
-                  <List.Item.Meta title="Network 2" description="123.123.123.0/24, abc9::/8" />
-                </List.Item>
-                <List.Item>
-                  <List.Item.Meta title="Network 2" description="123.123.123.0/24, abc9::/8" />
-                </List.Item>
-                <List.Item>
-                  <List.Item.Meta title="Network 2" description="123.123.123.0/24, abc9::/8" />
-                </List.Item>
-                <List.Item>
-                  <List.Item.Meta title="Network 2" description="123.123.123.0/24, abc9::/8" />
-                </List.Item>
-                <List.Item>
-                  <List.Item.Meta title="Network 2" description="123.123.123.0/24, abc9::/8" />
-                </List.Item>
+                {store.networks
+                  .sort((a, b) => a.netid.localeCompare(b.netid))
+                  .map((network) => (
+                    <List.Item
+                      key={network.netid}
+                      style={{ cursor: 'pointer' }}
+                      onClick={() => {
+                        setSelectedNetwork(network);
+                        onStepChange(1);
+                      }}
+                    >
+                      <List.Item.Meta
+                        style={{ cursor: 'pointer' }}
+                        title={network.netid}
+                        description={`IPv4 Range: ${network.addressrange}, IPv6 Range: ${network.addressrange6}`}
+                      />
+                    </List.Item>
+                  ))}
               </List>
-              <Button type="link">
+              <Button type="link" style={{ marginTop: '1rem' }} onClick={() => setIsAddNetworkModalOpen(true)}>
                 <PlusOutlined /> Add network
               </Button>
             </Card>
@@ -121,7 +125,10 @@ export default function NewHostPage(props: PageProps) {
           <Col xs={24} lg={12}>
             <Card>
               <p>
-                Connect host to <span style={{ fontWeight: 'bold' }}>Network 1 (123.123.123.0/24, abc9::/8)</span>{' '}
+                Connect host to{' '}
+                <span style={{ fontWeight: 'bold' }}>
+                  {selectedNetwork?.netid} ({`${selectedNetwork?.addressrange}, ${selectedNetwork?.addressrange6}`})
+                </span>{' '}
                 <Button type="link" size="small" onClick={() => setCurrentStep(0)}>
                   Change
                 </Button>
@@ -132,31 +139,31 @@ export default function NewHostPage(props: PageProps) {
               <Row style={{ height: '4rem' }} justify="center">
                 <Col xs={4} style={{ textAlign: 'center' }}>
                   <div className="os-button active" onClick={(ev) => onShowInstallGuide(ev, 'windows')}>
-                    <img src="/src/assets/icons/windows.svg" alt="windows icon" className="logo" />
+                    <img src="/icons/windows.svg" alt="windows icon" className="logo" />
                     <p>Windows</p>
                   </div>
                 </Col>
                 <Col xs={4} style={{ textAlign: 'center' }}>
                   <div className="os-button" onClick={(ev) => onShowInstallGuide(ev, 'macos')}>
-                    <img src="/src/assets/icons/macos.svg" alt="macos icon" className="logo" />
+                    <img src="/icons/macos.svg" alt="macos icon" className="logo" />
                     <p>Mac</p>
                   </div>
                 </Col>
                 <Col xs={4} style={{ textAlign: 'center' }}>
                   <div className="os-button" onClick={(ev) => onShowInstallGuide(ev, 'linux')}>
-                    <img src="/src/assets/icons/linux.svg" alt="linux icon" className="logo" />
+                    <img src="/icons/linux.svg" alt="linux icon" className="logo" />
                     <p>Linux</p>
                   </div>
                 </Col>
                 <Col xs={4} style={{ textAlign: 'center' }}>
                   <div className="os-button" onClick={(ev) => onShowInstallGuide(ev, 'freebsd')}>
-                    <img src="/src/assets/icons/freebsd.svg" alt="freebsd icon" className="logo" />
+                    <img src="/icons/freebsd.svg" alt="freebsd icon" className="logo" />
                     <p>FreeBSD</p>
                   </div>
                 </Col>
                 <Col xs={4} style={{ textAlign: 'center' }}>
                   <div className="os-button" onClick={(ev) => onShowInstallGuide(ev, 'docker')}>
-                    <img src="/src/assets/icons/docker.svg" alt="docker icon" className="logo" />
+                    <img src="/icons/docker.svg" alt="docker icon" className="logo" />
                     <p>Docker</p>
                   </div>
                 </Col>
@@ -171,7 +178,7 @@ export default function NewHostPage(props: PageProps) {
                     <Col xs={24} style={{ textAlign: 'center' }}>
                       <Button
                         type="primary"
-                        href="https://fileserver.netmaker.org/latest/windows/netclient_x86.msi"
+                        href={import.meta.env.VITE_NETCLIENT_WINDOWS_DOWNLOAD_URL}
                         style={{ width: '100%' }}
                       >
                         Download
@@ -204,7 +211,7 @@ export default function NewHostPage(props: PageProps) {
                     <Col xs={24} style={{ textAlign: 'center' }}>
                       <Button
                         type="primary"
-                        href="https://fileserver.netmaker.org/latest/darwin/Netclient.pkg"
+                        href={import.meta.env.VITE_NETCLIENT_MAC_DOWNLOAD_URL}
                         style={{ width: '100%' }}
                       >
                         Download
@@ -289,9 +296,14 @@ export default function NewHostPage(props: PageProps) {
       <Layout.Footer style={{ position: 'absolute', bottom: '0', width: '100%' }}>
         <Row justify="center">
           <Col xs={24} lg={12} style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <Button type="link" onClick={() => setCurrentStep(currentStep - 1)} disabled={currentStep <= 0}>
-              Previous
-            </Button>
+            <div className="">
+              <Button type="link" danger onClick={onCancel}>
+                Cancel
+              </Button>
+              <Button type="link" onClick={() => setCurrentStep(currentStep - 1)} disabled={currentStep <= 0}>
+                Previous
+              </Button>
+            </div>
             {currentStep === steps.length - 1 ? (
               <Button type="primary" onClick={onFinish}>
                 Finish
@@ -304,6 +316,17 @@ export default function NewHostPage(props: PageProps) {
           </Col>
         </Row>
       </Layout.Footer>
+
+      {/* misc */}
+      <AddNetworkModal
+        isOpen={isAddNetworkModalOpen}
+        onCreateNetwork={() => {
+          setIsAddNetworkModalOpen(false);
+        }}
+        onCancel={() => {
+          setIsAddNetworkModalOpen(false);
+        }}
+      />
     </Layout.Content>
   );
 }

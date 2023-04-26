@@ -1,0 +1,50 @@
+.NetworkDetailsPage {
+  .tab-menu {
+    width: 100%;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: end;
+
+    .tab-menu-item {
+      margin-right: 2rem;
+      font-size: medium;
+      font-weight: bold;
+      padding: 0px .5rem;
+      cursor: pointer;
+
+      &:last-of-type {
+        margin-left: auto;
+      }
+
+      &.active {
+        border-bottom: 4px solid black;
+      }
+    }
+  }
+
+  .selected-row {
+    // TODO: get a better color
+    // background-color: rgba(0, 0, 0, 0.3);
+
+    td:first-of-type {
+      transition: all 200ms;
+      border-left: 4px solid teal;
+    }
+  }
+
+  .search-container {
+    margin-left: 50px;
+    background-color: transparent;
+    border: none;
+  }
+
+  .react-sigma-search {
+    background-color: transparent;
+
+    input {
+      border: 1px solid #333;
+      border-radius: 50px;
+      padding: .5rem 1rem;
+    }
+  }
+}

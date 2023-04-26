@@ -1,4 +1,4 @@
-import { ExternalClient } from './ExternalClient';
+import { Modify } from '@/types/react-app-env';
 import { ProSettings } from './ProSettings';
 
 export interface Network {
@@ -13,9 +13,6 @@ export interface Network {
   defaultpostup: string;
   defaultpostdown: string;
   defaultkeepalive: number;
-  // accesskeys: Array<AccessKey>;
-  externalclients: Array<ExternalClient>;
-  islocal: boolean;
   isipv4: boolean;
   isipv6: boolean;
   localrange: string;
@@ -26,3 +23,13 @@ export interface Network {
   defaultacl: boolean;
   prosettings: ProSettings | undefined;
 }
+
+export type NetworkPayload = Modify<
+  Network,
+  {
+    isipv4: 'no' | 'yes';
+    isipv6: 'no' | 'yes';
+    defaultudpholepunch: 'no' | 'yes';
+    defaultacl: 'no' | 'yes';
+  }
+>;

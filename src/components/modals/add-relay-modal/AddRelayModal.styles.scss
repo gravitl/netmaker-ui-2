@@ -1,0 +1,17 @@
+// .AddRelayModal {
+  .selected-row {
+    td:first-of-type {
+      transition: all 200ms;
+      border-left: 4px solid teal;
+    }
+  }
+
+  .unavailable-row {
+    color: grey !important;
+    cursor: not-allowed;
+
+    a {
+      color: grey !important;
+    }
+  }
+// }

@@ -1,27 +1,28 @@
-export type NodeMetrics = Record<string, NodeMetricsContainer>;
-
-export interface NodeMetricsContainer {
-  connectivity: NodeMetricsTable;
-}
-
-export type NodeMetricsTable = Record<string, NodeMetric>;
+import { Network } from './Network';
+import { ExtendedNode, Node } from './Node';
 
 export interface NodeMetric {
-  node_name: string;
+  node_name: ExtendedNode['name'];
+  connected: boolean;
+  actualuptime: number;
   uptime: number;
-  totaltime: number;
+  percentup: number;
+  collected_by_proxy: boolean;
   latency: number;
   totalreceived: number;
   totalsent: number;
-  actualuptime: number;
-  percentup: number;
-  connected: boolean;
+  totaltime: number;
 }
 
-export type NetworkMetrics = Record<string, MetricsContainer>;
-
-export interface MetricsContainer {
-  nodes: MetricsTable;
-}
-
-export type MetricsTable = Record<string, NodeMetricsContainer>;
+export type NetworkMetrics = {
+  nodes: Record<
+    Node['id'],
+    {
+      connectivity: Record<Node['id'], NodeMetric>;
+      needsfailover: Record<string, any>;
+      network: Network['netid'];
+      node_id: Node['id'];
+      node_name: ExtendedNode['name'];
+    }
+  >;
+};

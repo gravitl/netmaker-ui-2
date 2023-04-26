@@ -6,23 +6,44 @@ export interface IAuthSlice {
   email: TenantConfig['email'];
   username: TenantConfig['username'];
   tenantId: TenantConfig['tenantId'];
+  tenantName: TenantConfig['tenantName'];
+  baseUrl: TenantConfig['baseUrl'];
+  amuiAuthToken: TenantConfig['amuiAuthToken'];
+
+  // methods
   isLoggedIn: () => boolean;
-  setStore: (config: TenantConfig) => void;
+  setStore: (config: Partial<TenantConfig>) => void;
+  logout: () => void;
 }
 
 const createAuthSlice: StateCreator<IAuthSlice, [], [], IAuthSlice> = (set, get) => ({
   jwt: '',
+  email: '',
+  tenantId: '',
+  tenantName: '',
+  username: '',
+  baseUrl: '',
+  amuiAuthToken: '',
+
   isLoggedIn() {
     return !!get().jwt;
   },
   setStore(config) {
     set(config);
   },
-  email: '',
-  tenantId: '',
-  username: '',
+  logout() {
+    set({
+      jwt: '',
+      email: '',
+      username: '',
+      tenantId: '',
+      tenantName: '',
+      baseUrl: '',
+      amuiAuthToken: '',
+    });
+  },
 });
 
-export const AppSlice = {
-  createAppSlice: createAuthSlice,
+export const AuthSlice = {
+  createAuthSlice,
 };

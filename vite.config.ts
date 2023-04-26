@@ -10,6 +10,11 @@ export default defineConfig({
   build: {
     sourcemap: process.env.NODE_ENV !== 'production',
   },
+  resolve: {
+    alias: {
+      '@': `${__dirname}/src`,
+    },
+  },
   test: {
     globals: true,
     environment: 'jsdom',

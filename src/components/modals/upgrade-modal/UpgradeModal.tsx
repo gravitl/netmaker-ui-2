@@ -1,6 +1,6 @@
 import { Button, Divider, Modal } from 'antd';
 import { MouseEvent } from 'react';
-import './CustomModal.scss';
+import '../CustomModal.scss';
 
 interface UpgradeModalProps {
   isOpen: boolean;

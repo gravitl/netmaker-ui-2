@@ -28,3 +28,19 @@ export interface Host {
   isrelay: boolean;
   relay_hosts: string[]; // host ids
 }
+
+export interface HostCommonDetails {
+  name: Host['name'];
+  version: Host['version'];
+  endpointip: Host['endpointip'];
+  publickey: Host['publickey'];
+  os: Host['os'];
+  listenport: Host['listenport'];
+  isstatic: Host['isstatic'];
+  mtu: Host['mtu'];
+  interfaces: Host['interfaces'];
+  isrelay: Host['isrelay'];
+  relay_hosts: Host['relay_hosts'];
+  isrelayed: Host['isrelayed'];
+  macaddress: Host['macaddress'];
+}

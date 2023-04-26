@@ -3,6 +3,7 @@ import { initReactI18next } from 'react-i18next';
 import { produce } from 'immer';
 
 import { en } from './resources/en';
+import { fr } from './resources/fr';
 
 // the translations
 // (tip move them in a JSON file and import them,
@@ -10,6 +11,9 @@ import { en } from './resources/en';
 const resources: Resource = {
   en: {
     translation: en,
+  },
+  fr: {
+    translation: fr,
   },
 };
 
@@ -23,6 +27,7 @@ i18n
     lng: 'en', // language to use, more information here: https://www.i18next.com/overview/configuration-options#languages-namespaces-resources
     // you can use the i18n.changeLanguage function to change the language manually: https://www.i18next.com/overview/api#changelanguage
     // if you're using a language detector, do not define the lng option
+    fallbackLng: 'en', // fallback language, more information here: https://www.i18next.com/overview/configuration-options#fallbacklng
     saveMissing: true,
     missingKeyHandler: (lngs, ns, key, fallbackValue) => {
       (window as any).missingTranslations = produce<any, any>(

@@ -32,4 +32,12 @@ export interface TenantConfig {
   email?: string;
   username?: string;
   tenantId?: string;
+  tenantName?: string;
+  amuiAuthToken?: string;
+}
+
+export interface ServerStatus {
+  db_connected: boolean;
+  broker_connected: boolean;
+  healthyNetwork: boolean;
 }

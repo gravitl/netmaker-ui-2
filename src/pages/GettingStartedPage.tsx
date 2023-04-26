@@ -32,7 +32,7 @@ export default function GettingStartedPage() {
     const maxNumOfStepsIndex = gettingStartedSteps.length - 1;
     // if on last step
     if (currentStep === maxNumOfStepsIndex) {
-      navigate(AppRoutes.HOME_ROUTE);
+      navigate(AppRoutes.DASHBOARD_ROUTE);
       return;
     }
 
@@ -70,7 +70,23 @@ export default function GettingStartedPage() {
               </Col>
             </Row>
           </Col>
-          <Col xs={0} md={8} style={{ backgroundColor: 'white', height: '100%' }}></Col>
+          <Col
+            xs={0}
+            md={8}
+            style={{
+              backgroundColor: '#141413',
+              height: '100%',
+              width: '100%',
+              display: 'flex',
+              flexFlow: 'column nowrap',
+              gap: '1rem',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <img src="/icons/hello-loading.gif" alt="loading" style={{ width: '10rem', height: '10rem' }} />
+            <Typography.Text style={{ color: 'white' }}>Your instance is being prepared...</Typography.Text>
+          </Col>
         </Row>
       </Content>
     </Layout>

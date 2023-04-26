@@ -1,26 +1,66 @@
+import { useStore } from '@/store/store';
 import axios from 'axios';
-import { isSaasBuild } from '../main';
-import { TenantConfig } from '../models/ServerConfig';
+
+export const isSaasBuild = import.meta.env.VITE_IS_SAAS_BUILD?.toLocaleLowerCase() === 'true';
+
+export const baseService = axios.create();
+
+export const AMUI_URL = isSaasBuild ? (window as any).NMUI_AMUI_URL : '';
 
 // function to resolve the particular SaaS tenant's backend URL, ...
-export function getTenantConfig(): TenantConfig {
+export function setupTenantConfig(): void {
   if (!isSaasBuild) {
-    return {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      baseUrl: process.env.REACT_BASE_URL!,
-    };
+    const dynamicBaseUrl = (window as any).NMUI_BACKEND_URL;
+    baseService.defaults.baseURL = dynamicBaseUrl ? `${dynamicBaseUrl}/api` : `${import.meta.env.VITE_BASE_URL}/api`;
+    return;
   }
 
-  // TODO: API call
-  return {
-    baseUrl: '',
-  };
+  const url = new URL(window.location.href);
+  const baseUrl = url.searchParams.get('backend');
+  const accessToken = url.searchParams.get('token');
+  const amuiAuthToken = url.searchParams.get('sToken') ?? '';
+  const tenantId = url.searchParams.get('tenantId') ?? '';
+  const tenantName = url.searchParams.get('tenantName') ?? '';
 
-  // TODO: commit config in store
+  const resolvedBaseUrl = baseUrl
+    ? baseUrl?.startsWith('https')
+      ? `${baseUrl}/api`
+      : `https://${baseUrl}/api`
+    : useStore.getState().baseUrl;
+  baseService.defaults.baseURL = resolvedBaseUrl;
+
+  useStore.getState().setStore({
+    baseUrl: resolvedBaseUrl,
+    jwt: accessToken ?? useStore.getState().jwt,
+    tenantId,
+    tenantName,
+    amuiAuthToken,
+  });
 }
 
-const API_PREFIX = '/api';
+// token interceptor for axios
+baseService.interceptors.request.use((config) => {
+  const token = useStore.getState().jwt;
 
-export const baseService = axios.create({
-  baseURL: getTenantConfig().baseUrl + API_PREFIX,
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return config;
 });
+
+baseService.interceptors.response.use(
+  (res) => {
+    return res;
+  },
+  (err) => {
+    // Check if the error is a 401 response
+    if (err.response.status === 401) {
+      useStore.getState().logout();
+      // Full redirect the user to the login page or display a message
+      window.location.href = '/login';
+    }
+    // Return the error so it can be handled by the calling code
+    return Promise.reject(err);
+  }
+);
