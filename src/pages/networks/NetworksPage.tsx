@@ -38,6 +38,13 @@ export default function NetworksPage(props: PageProps) {
       key: 'addressrange6',
     },
     {
+      title: 'Hosts Count',
+      render(_, network) {
+        const nodeCount = store.nodes.filter((node) => node.network === network.netid).length;
+        return <Typography.Text>{nodeCount}</Typography.Text>;
+      },
+    },
+    {
       title: 'Network Last Modified',
       dataIndex: 'networklastmodified',
       key: 'networklastmodified',
