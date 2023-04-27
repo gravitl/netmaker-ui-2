@@ -28,7 +28,7 @@ import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { AxiosError } from 'axios';
 import { NodesService } from '@/services/NodesService';
-import { isValidIp } from '@/utils/NetworkUtils';
+import { isValidIp, isValidIpCidr } from '@/utils/NetworkUtils';
 import { CreateEgressNodeDto } from '@/services/dtos/CreateEgressNodeDto';
 
 interface AddEgressModalProps {
@@ -257,7 +257,7 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
                           {
                             required: true,
                             validator(_, value) {
-                              if (!isValidIp(value)) {
+                              if (!isValidIpCidr(value)) {
                                 return Promise.reject('Invalid CIDR');
                               } else {
                                 return Promise.resolve();
