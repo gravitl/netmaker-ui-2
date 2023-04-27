@@ -15,7 +15,7 @@ import { getAmuiUrl, getHostRoute, getNetworkRoute } from '../utils/RouteUtils';
 import { useStore } from '../store/store';
 import { AppRoutes } from '@/routes';
 import { useTranslation } from 'react-i18next';
-// import { isSaasBuild } from '@/services/BaseService';
+import { isSaasBuild } from '@/services/BaseService';
 
 const { Content, Sider } = Layout;
 
@@ -119,28 +119,28 @@ export default function MainLayout() {
           type: 'divider',
         },
         {
-          key: 'amui',
+          key: 'users',
           icon: UserOutlined,
-          label: 'Manage Account',
+          label: 'Users',
         },
       ]
-        // .concat(
-        //   isSaasBuild
-        //     ? [
-        //         {
-        //           key: 'amui',
-        //           icon: UserOutlined,
-        //           label: 'Manage Account',
-        //         },
-        //       ]
-        //     : [
-        //         {
-        //           key: 'users',
-        //           icon: UserOutlined,
-        //           label: 'Users',
-        //         },
-        //       ]
-        // )
+        .concat(
+          isSaasBuild
+            ? [
+                {
+                  key: 'amui',
+                  icon: UserOutlined,
+                  label: 'Manage Account',
+                },
+              ]
+            : [
+                // {
+                //   key: 'users',
+                //   icon: UserOutlined,
+                //   label: 'Users',
+                // },
+              ]
+        )
         .map((item) => ({
           key: item.key,
           type: item.type as any,
