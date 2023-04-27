@@ -5,7 +5,6 @@ import { CreateNetworkDto } from '@/services/dtos/CreateNetworkDto';
 import { NetworksService } from '@/services/NetworksService';
 import { useStore } from '@/store/store';
 import '../CustomModal.scss';
-import { AxiosError } from 'axios';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { Network } from '@/models/Network';
 import {
@@ -40,13 +39,12 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
       store.addNetwork(network);
       notify.success({ message: `Network ${network.netid} created` });
       onCreateNetwork(network);
+      form.resetFields();
     } catch (err) {
-      if (err instanceof AxiosError) {
-        notify.error({
-          message: 'Failed to create network',
-          description: extractErrorMsg(err),
-        });
-      }
+      notify.error({
+        message: 'Failed to create network',
+        description: extractErrorMsg(err as any),
+      });
     }
   };
 
@@ -65,7 +63,10 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
     <Modal
       title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Create a Network</span>}
       open={isOpen}
-      onCancel={onCancel}
+      onCancel={(ev) => {
+        form.resetFields();
+        onCancel && onCancel(ev);
+      }}
       footer={null}
       centered
       className="CustomModal"
