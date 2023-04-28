@@ -15,13 +15,14 @@ import { useNavigate } from 'react-router-dom';
 import AddNetworkModal from '@/components/modals/add-network-modal/AddNetworkModal';
 import { useState } from 'react';
 import { useStore } from '@/store/store';
-import { getNewHostRoute } from '@/utils/RouteUtils';
+import { getAmuiUrl, getNewHostRoute } from '@/utils/RouteUtils';
 
 export default function DashboardPage(props: PageProps) {
   const navigate = useNavigate();
   const store = useStore();
 
   const [isAddNetworkModalOpen, setIsAddNetworkModalOpen] = useState(false);
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
 
   const goToNewHostPage = () => {
     navigate(getNewHostRoute(AppRoutes.HOSTS_ROUTE));
@@ -37,7 +38,13 @@ export default function DashboardPage(props: PageProps) {
                 message="You are on the free plan"
                 type="warning"
                 action={
-                  <Button type="link">
+                  <Button
+                    type="link"
+                    onClick={() => {
+                      window.location = getAmuiUrl() as any;
+                      // setIsUpgradeModalOpen(true);
+                    }}
+                  >
                     <span style={{ textDecoration: 'underline', color: '#D4B106' }}>Upgrade now</span>
                   </Button>
                 }
@@ -151,7 +158,7 @@ export default function DashboardPage(props: PageProps) {
       </Row>
 
       {/* misc */}
-      <UpgradeModal isOpen={false} />
+      <UpgradeModal isOpen={isUpgradeModalOpen} onCancel={() => setIsUpgradeModalOpen(false)} />
       <AddNetworkModal
         isOpen={isAddNetworkModalOpen}
         onCreateNetwork={() => {
