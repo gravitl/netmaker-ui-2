@@ -1229,6 +1229,13 @@ export default function NetworkDetailsPage(props: PageProps) {
     uptimeMetricsData,
   ]);
 
+  const isDefaultDns = useCallback(
+    (dns: DNS) => {
+      return networkNodes.some((node) => getExtendedNode(node, store.hostsCommonDetails).name === dns.name);
+    },
+    [networkNodes, store.hostsCommonDetails]
+  );
+
   // ui components
   const getOverviewContent = useCallback(() => {
     if (!network) return <Skeleton active />;
@@ -1458,9 +1465,13 @@ export default function NetworkDetailsPage(props: PageProps) {
                         items: [
                           {
                             key: 'delete',
+                            disabled: isDefaultDns(dns),
                             label: (
-                              <Tooltip title="Cannot delete default DNS">
-                                <Typography.Text onClick={() => confirmDeleteDns(dns)}>
+                              <Tooltip title={isDefaultDns(dns) ? 'Cannot delete default DNS' : 'Delete DNS'}>
+                                <Typography.Text
+                                  disabled={isDefaultDns(dns)}
+                                  onClick={() => (isDefaultDns(dns) ? undefined : confirmDeleteDns(dns))}
+                                >
                                   <DeleteOutlined /> Delete
                                 </Typography.Text>
                               </Tooltip>
@@ -1474,7 +1485,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   ),
                 },
               ]}
-              dataSource={dnses}
+              dataSource={dnses.filter((dns) => dns.name.toLocaleLowerCase().includes(searchDns.toLocaleLowerCase()))}
               rowKey="name"
               size="small"
             />
@@ -1482,7 +1493,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         </Row>
       </div>
     );
-  }, [confirmDeleteDns, dnses, searchDns]);
+  }, [confirmDeleteDns, dnses, isDefaultDns, searchDns]);
 
   const getClientsContent = useCallback(() => {
     return (
