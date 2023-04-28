@@ -115,7 +115,7 @@ export default function NetworksPage(props: PageProps) {
               </Col>
             </Row>
 
-            <Row style={{ marginTop: '8rem', padding: '0px 5.125rem' }} gutter={[0, 20]}>
+            <Row style={{ marginTop: '8rem', marginBottom: '4rem', padding: '0px 5.125rem' }} gutter={[0, 20]}>
               <Col xs={24}>
                 <Typography.Title level={3}>Add a Network</Typography.Title>
               </Col>
