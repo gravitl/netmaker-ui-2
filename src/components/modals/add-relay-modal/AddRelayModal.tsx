@@ -120,6 +120,14 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
 
   const relayedTableCols = useMemo<TableColumnProps<Host>[]>(() => relayTableCols, [relayTableCols]);
 
+  const resetModal = () => {
+    form.resetFields();
+    setRelaySearch('');
+    setRelayedSearch('');
+    setSelectedRelay(null);
+    setSelectedRelayedIds([]);
+  };
+
   const createRelay = async () => {
     try {
       const formData = await form.validateFields();
@@ -128,15 +136,14 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
       if (!selectedRelay) return;
 
       await HostsService.createHostRelay(selectedRelay.id, { ...formData, relayed_hosts: selectedRelayedIds });
+      resetModal();
       onCreateRelay();
       notify.success({ message: `Relay created` });
     } catch (err) {
-      if (err instanceof AxiosError) {
-        notify.error({
-          message: 'Failed to create relay',
-          description: extractErrorMsg(err),
-        });
-      }
+      notify.error({
+        message: 'Failed to create relay',
+        description: extractErrorMsg(err as any),
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -147,7 +154,10 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
     <Modal
       title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Create a Relay</span>}
       open={isOpen}
-      onCancel={onCancel}
+      onCancel={(ev) => {
+        resetModal();
+        onCancel?.(ev);
+      }}
       footer={null}
       className="CustomModal AddRelayModal"
       style={{ minWidth: '50vw' }}

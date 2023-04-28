@@ -30,6 +30,10 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
   const isIpv4Val = Form.useWatch('isipv4', form);
   const isIpv6Val = Form.useWatch('isipv6', form);
 
+  const resetModal = () => {
+    form.resetFields();
+  };
+
   const createNetwork = async () => {
     try {
       const formData = await form.validateFields();
@@ -39,7 +43,7 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
       store.addNetwork(network);
       notify.success({ message: `Network ${network.netid} created` });
       onCreateNetwork(network);
-      form.resetFields();
+      resetModal();
     } catch (err) {
       notify.error({
         message: 'Failed to create network',
@@ -64,7 +68,7 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
       title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Create a Network</span>}
       open={isOpen}
       onCancel={(ev) => {
-        form.resetFields();
+        resetModal();
         onCancel && onCancel(ev);
       }}
       footer={null}

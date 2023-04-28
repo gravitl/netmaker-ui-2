@@ -29,6 +29,10 @@ export default function AddEnrollmentKeyModal({ isOpen, onCreateKey, onCancel }:
 
   const [type, setType] = useState<'unlimited' | 'uses' | 'time'>('unlimited');
 
+  const resetModal = () => {
+    form.resetFields();
+  };
+
   const createEnrollmentKey = async () => {
     try {
       const formData = await form.validateFields();
@@ -40,6 +44,7 @@ export default function AddEnrollmentKeyModal({ isOpen, onCreateKey, onCancel }:
       };
       const key = (await EnrollmentKeysService.createEnrollmentKey(payload)).data;
       notify.success({ message: `Enrollment key with tags ${key.tags.join(', ')} created` });
+      resetModal();
       navigate(AppRoutes.ENROLLMENT_KEYS_ROUTE);
       onCreateKey(key);
     } catch (err) {
@@ -56,7 +61,10 @@ export default function AddEnrollmentKeyModal({ isOpen, onCreateKey, onCancel }:
     <Modal
       title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Create a Key</span>}
       open={isOpen}
-      onCancel={onCancel}
+      onCancel={(ev) => {
+        resetModal();
+        onCancel && onCancel(ev);
+      }}
       footer={null}
       centered
       className="CustomModal"

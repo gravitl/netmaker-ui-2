@@ -30,6 +30,10 @@ export default function AddUserGroupModal({ isOpen, onCreateUserGroup, onCancel 
     [store.username, users]
   );
 
+  const resetModal = () => {
+    form.resetFields();
+  };
+
   const createUserGroup = async () => {
     let groupName = '';
     let selectedUsers: User['username'][] = [];
@@ -38,6 +42,7 @@ export default function AddUserGroupModal({ isOpen, onCreateUserGroup, onCancel 
       groupName = formData.usergroup;
       selectedUsers = formData.users ?? [];
       await UsersService.createUserGroup(formData.usergroup);
+      resetModal();
       notify.success({
         message: `User group ${formData.usergroup} created`,
         description: formData.users?.length > 0 ? 'Adding users to the group...' : '',
@@ -87,7 +92,10 @@ export default function AddUserGroupModal({ isOpen, onCreateUserGroup, onCancel 
     <Modal
       title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Create a User Group</span>}
       open={isOpen}
-      onCancel={onCancel}
+      onCancel={(ev) => {
+        resetModal();
+        onCancel?.(ev);
+      }}
       footer={null}
       centered
       className="CustomModal"

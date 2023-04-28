@@ -453,6 +453,7 @@ export default function HostDetailsPage(props: PageProps) {
       {notifyCtx}
       {!!host && (
         <UpdateHostModal
+          key={host.id}
           isOpen={isEditingHost}
           host={host}
           onCancel={() => {

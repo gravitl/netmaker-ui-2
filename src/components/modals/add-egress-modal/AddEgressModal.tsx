@@ -28,7 +28,7 @@ import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { AxiosError } from 'axios';
 import { NodesService } from '@/services/NodesService';
-import { isValidIp, isValidIpCidr } from '@/utils/NetworkUtils';
+import { isValidIpCidr } from '@/utils/NetworkUtils';
 import { CreateEgressNodeDto } from '@/services/dtos/CreateEgressNodeDto';
 
 interface AddEgressModalProps {
@@ -107,6 +107,12 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
     ];
   }, [getNodeConnectivity]);
 
+  const resetModal = () => {
+    form.resetFields();
+    setEgressSearch('');
+    setSelectedEgress(null);
+  };
+
   const createEgress = async () => {
     try {
       const formData = await form.validateFields();
@@ -117,6 +123,7 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
         ...formData,
         natEnabled: formData.natEnabled ? 'yes' : 'no',
       });
+      resetModal();
       onCreateEgress();
       notify.success({ message: `Egress gateway created` });
     } catch (err) {
@@ -136,7 +143,10 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
     <Modal
       title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Create an Egress</span>}
       open={isOpen}
-      onCancel={onCancel}
+      onCancel={(ev) => {
+        resetModal();
+        onCancel && onCancel(ev);
+      }}
       footer={null}
       className="CustomModal"
       style={{ minWidth: '50vw' }}

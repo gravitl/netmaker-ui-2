@@ -29,6 +29,10 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
     return Array.from(groups);
   }, [users]);
 
+  const resetModal = () => {
+    form.resetFields();
+  };
+
   const createUser = async () => {
     try {
       const formData = await form.validateFields();
@@ -36,6 +40,7 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
         formData.networks = [];
       }
       const newUser = (await UsersService.createUser(formData)).data;
+      resetModal();
       notify.success({ message: `User ${newUser.username} created` });
       onCreateUser(newUser);
     } catch (err) {
@@ -69,7 +74,10 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
     <Modal
       title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Create a User</span>}
       open={isOpen}
-      onCancel={onCancel}
+      onCancel={(ev) => {
+        resetModal();
+        onCancel?.(ev);
+      }}
       footer={null}
       centered
       className="CustomModal"

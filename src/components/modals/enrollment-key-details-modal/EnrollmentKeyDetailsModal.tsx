@@ -63,7 +63,7 @@ export default function EnrollmentKeyDetailsModal({ isOpen, enrollmentKey, onCan
             <Typography.Text>Expires at</Typography.Text>
           </Col>
           <Col xs={16}>
-            <Typography.Text>{moment(enrollmentKey.expiration).format('Do MMM, YYY at HH:mm')}</Typography.Text>
+            <Typography.Text>{moment(enrollmentKey.expiration).toLocaleString()}</Typography.Text>
           </Col>
         </Row>
         <Divider style={{ margin: '1rem 0px 1rem 0px' }} />

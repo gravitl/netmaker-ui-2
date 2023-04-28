@@ -35,6 +35,10 @@ export default function AddDnsModal({ isOpen, onCreateDns, onCancel, networkId }
     [networkId, store.hostsCommonDetails, store.nodes]
   );
 
+  const resetModal = () => {
+    form.resetFields();
+  };
+
   const createDns = async () => {
     try {
       const formData = await form.validateFields();
@@ -51,6 +55,7 @@ export default function AddDnsModal({ isOpen, onCreateDns, onCancel, networkId }
           address6: truncateCidrFromIp(isIpv6 ? formData.ip : ''),
         })
       ).data;
+      resetModal();
       onCreateDns(dns);
       notify.success({ message: `DNS entry ${dns.name} created` });
     } catch (err) {
@@ -67,7 +72,10 @@ export default function AddDnsModal({ isOpen, onCreateDns, onCancel, networkId }
     <Modal
       title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Create a DNS Entry</span>}
       open={isOpen}
-      onCancel={onCancel}
+      onCancel={(ev) => {
+        resetModal();
+        onCancel && onCancel(ev);
+      }}
       footer={null}
       centered
       className="CustomModal"
