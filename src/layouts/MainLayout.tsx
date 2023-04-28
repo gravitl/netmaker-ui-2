@@ -111,11 +111,6 @@ export default function MainLayout() {
           label: 'Enrollment Keys',
         },
         {
-          key: 'users',
-          icon: UserOutlined,
-          label: 'Users',
-        },
-        {
           type: 'divider',
         },
         {
