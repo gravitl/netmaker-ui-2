@@ -11,6 +11,8 @@ interface EnrollmentKeyDetailsModalProps {
 }
 
 export default function EnrollmentKeyDetailsModal({ isOpen, enrollmentKey, onCancel }: EnrollmentKeyDetailsModalProps) {
+  const shouldShowExpDate = enrollmentKey.uses_remaining === 0 && enrollmentKey.unlimited === false;
+
   return (
     <Modal
       title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Enrollment Key</span>}
@@ -63,7 +65,9 @@ export default function EnrollmentKeyDetailsModal({ isOpen, enrollmentKey, onCan
             <Typography.Text>Expires at</Typography.Text>
           </Col>
           <Col xs={16}>
-            <Typography.Text>{moment(enrollmentKey.expiration).toLocaleString()}</Typography.Text>
+            <Typography.Text>
+              {shouldShowExpDate ? moment(enrollmentKey.expiration).toLocaleString() : 'n/a'}
+            </Typography.Text>
           </Col>
         </Row>
         <Divider style={{ margin: '1rem 0px 1rem 0px' }} />
