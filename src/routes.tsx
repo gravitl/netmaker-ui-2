@@ -14,6 +14,7 @@ import EnrollmentKeysPage from './pages/enrollment-keys/EnrollmentKeysPage';
 import HostsPage from './pages/hosts/HostsPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import UsersPage from './pages/users/UsersPage';
+import SignupPage from './pages/auth/SignupPage';
 
 export class AppRoutes {
   static DASHBOARD_ROUTE = '/';
@@ -28,6 +29,7 @@ export class AppRoutes {
   static CLIENTS_ROUTE = '/clients';
   static ENROLLMENT_KEYS_ROUTE = '/enrollment-keys';
   static USERS_ROUTE = '/users';
+  static SIGNUP_ROUTE = '/signup';
 }
 
 const routes: RouteObject[] = [
@@ -106,6 +108,7 @@ const routes: RouteObject[] = [
   { path: AppRoutes.GETTING_STARTED_ROUTE, element: <GettingStartedPage /> },
   { path: AppRoutes.STARTUP_ROUTE, element: <StartupPage /> },
   { path: AppRoutes.LOGIN_ROUTE, element: <LoginPage /> },
+  { path: AppRoutes.SIGNUP_ROUTE, element: <SignupPage /> },
 
   // fallback route
   { path: '*', element: <Error404Page /> },

@@ -3,6 +3,7 @@ import { baseService } from './BaseService';
 import { User } from '@/models/User';
 import { UpdateUserReqDto } from './dtos/UserDtos';
 import { UserGroup } from '@/models/UserGroup';
+import { CreateUserReqDto } from './dtos/UserDtos';
 
 function getUsers() {
   return baseService.get<User[]>(ApiRoutes.USERS);
@@ -16,7 +17,7 @@ function serverHasAdmin() {
   return baseService.get<boolean>(`${ApiRoutes.USERS_ADMIN}/hasadmin`);
 }
 
-function createAdminUser(payload: User) {
+function createAdminUser(payload: CreateUserReqDto) {
   return baseService.post<User>(`${ApiRoutes.USERS_ADMIN}/createadmin`, payload);
 }
 

@@ -3,6 +3,10 @@ export interface LanguageResource {
     hello: string;
     hosts: string;
   };
+  auth: {
+    signup: string;
+    terms5: string;
+  };
   signin: {
     signin: string;
     rememberme: string;
@@ -11,6 +15,7 @@ export interface LanguageResource {
     logout: string;
     username: string;
     password: string;
+    'confirm-password': string;
     terms1: string;
     terms2: string;
     terms3: string;
