@@ -3,17 +3,19 @@ import { AppRoutes } from '@/routes';
 import { PlusOutlined } from '@ant-design/icons';
 import { Button, Card, Col, Input, Layout, Row, Skeleton, Table, TableColumnsType, Typography } from 'antd';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import AddNetworkModal from '../../components/modals/add-network-modal/AddNetworkModal';
 import { PageProps } from '../../models/Page';
 import { useStore } from '../../store/store';
 
 import './NetworksPage.scss';
+import { getNetworkRoute } from '@/utils/RouteUtils';
 
 export default function NetworksPage(props: PageProps) {
   const store = useStore();
-  const networks = store.networks;
+  const navigate = useNavigate();
 
+  const networks = store.networks;
   const [isAddNetworkModalOpen, setIsAddNetworkModalOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
   const tableColumns: TableColumnsType<Network> = [
@@ -36,6 +38,13 @@ export default function NetworksPage(props: PageProps) {
       title: 'Address Range (IPv6)',
       dataIndex: 'addressrange6',
       key: 'addressrange6',
+    },
+    {
+      title: 'Hosts Count',
+      render(_, network) {
+        const nodeCount = store.nodes.filter((node) => node.network === network.netid).length;
+        return <Typography.Text>{nodeCount}</Typography.Text>;
+      },
     },
     {
       title: 'Network Last Modified',
@@ -106,7 +115,7 @@ export default function NetworksPage(props: PageProps) {
               </Col>
             </Row>
 
-            <Row style={{ marginTop: '8rem', padding: '0px 5.125rem' }} gutter={[0, 20]}>
+            <Row style={{ marginTop: '8rem', marginBottom: '4rem', padding: '0px 5.125rem' }} gutter={[0, 20]}>
               <Col xs={24}>
                 <Typography.Title level={3}>Add a Network</Typography.Title>
               </Col>
@@ -176,7 +185,18 @@ export default function NetworksPage(props: PageProps) {
 
             <Row className="page-row-padding" justify="space-between">
               <Col xs={24}>
-                <Table columns={tableColumns} dataSource={filteredNetworks} rowKey="netid" />
+                <Table
+                  columns={tableColumns}
+                  dataSource={filteredNetworks}
+                  rowKey="netid"
+                  onRow={(network) => {
+                    return {
+                      onClick: () => {
+                        navigate(getNetworkRoute(network));
+                      },
+                    };
+                  }}
+                />
               </Col>
             </Row>
           </>

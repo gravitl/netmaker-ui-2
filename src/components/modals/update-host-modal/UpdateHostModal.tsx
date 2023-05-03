@@ -21,6 +21,10 @@ export default function UpdateHostModal({ isOpen, host, onUpdateHost, onCancel }
   const storeUpdateHost = store.updateHost;
   const isStaticVal: Host['isstatic'] = Form.useWatch('isstatic', form);
 
+  const resetModal = () => {
+    form.resetFields();
+  };
+
   const updateHost = async () => {
     try {
       const formData = await form.validateFields();
@@ -44,7 +48,10 @@ export default function UpdateHostModal({ isOpen, host, onUpdateHost, onCancel }
         </Typography.Title>
       }
       open={isOpen}
-      onCancel={onCancel}
+      onCancel={(ev) => {
+        resetModal();
+        onCancel?.(ev);
+      }}
       footer={null}
       centered
       className="CustomModal"

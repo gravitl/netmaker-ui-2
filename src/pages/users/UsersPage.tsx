@@ -679,6 +679,7 @@ export default function UsersPage(props: PageProps) {
           }}
           onCancel={() => {
             setIsUpdateGroupModalOpen(false);
+            setSelectedGroup(null);
           }}
         />
       )}
@@ -686,14 +687,15 @@ export default function UsersPage(props: PageProps) {
         <UpdateUserModal
           isOpen={isUpdateUserModalOpen}
           key={selectedUser.username}
+          user={selectedUser}
           onUpdateUser={() => {
             // loadUsers();
             setIsUpdateUserModalOpen(false);
           }}
           onCancel={() => {
             setIsUpdateUserModalOpen(false);
+            setSelectedUser(null);
           }}
-          user={selectedUser}
         />
       )}
       {selectedNetwork && (
@@ -706,6 +708,7 @@ export default function UsersPage(props: PageProps) {
           }}
           onCancel={() => {
             setIsNetworkPermissionsModalOpen(false);
+            setSelectedNetwork(null);
           }}
         />
       )}

@@ -22,8 +22,8 @@ function deleteHostRelay(hostId: Host['id']) {
 
 function updateHostsNetworks(hostId: Host['id'], networkId: Network['netid'], action: 'join' | 'leave') {
   return action === 'join'
-    ? baseService.post<void>(`${ApiRoutes.HOSTS}/networks/${networkId}`)
-    : baseService.delete<void>(`${ApiRoutes.HOSTS}/networks/${networkId}`);
+    ? baseService.post<void>(`${ApiRoutes.HOSTS}/${hostId}/networks/${networkId}`)
+    : baseService.delete<void>(`${ApiRoutes.HOSTS}/${hostId}/networks/${networkId}`);
 }
 
 function updateHost(hostId: Host['id'], payload: Host) {

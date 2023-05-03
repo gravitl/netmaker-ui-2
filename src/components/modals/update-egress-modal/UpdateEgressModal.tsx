@@ -21,7 +21,6 @@ import { Node } from '@/models/Node';
 import { getExtendedNode, getNodeConnectivityStatus } from '@/utils/NodeUtils';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
-import { AxiosError } from 'axios';
 import { NodesService } from '@/services/NodesService';
 import { isValidIp } from '@/utils/NetworkUtils';
 import { CreateEgressNodeDto } from '@/services/dtos/CreateEgressNodeDto';
@@ -67,6 +66,10 @@ export default function UpdateEgressModal({
     else return <Badge status="processing" text="Unknown" />;
   }, []);
 
+  const resetModal = () => {
+    form.resetFields();
+  };
+
   const updateEgress = async () => {
     try {
       const formData = await form.validateFields();
@@ -79,15 +82,14 @@ export default function UpdateEgressModal({
           natEnabled: formData.natEnabled ? 'yes' : 'no',
         });
       }
+      resetModal();
       onUpdateEgress();
       notify.success({ message: `Egress gateway updated` });
     } catch (err) {
-      if (err instanceof AxiosError) {
-        notify.error({
-          message: 'Failed to update egress gateway',
-          description: extractErrorMsg(err),
-        });
-      }
+      notify.error({
+        message: 'Failed to update egress gateway',
+        description: extractErrorMsg(err as any),
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -98,7 +100,10 @@ export default function UpdateEgressModal({
     <Modal
       title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Update Egress</span>}
       open={isOpen}
-      onCancel={onCancel}
+      onCancel={(ev) => {
+        resetModal();
+        onCancel?.(ev);
+      }}
       footer={null}
       className="CustomModal"
       style={{ minWidth: '50vw' }}

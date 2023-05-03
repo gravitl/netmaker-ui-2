@@ -46,7 +46,6 @@ export default function UpdateRelayModal({ relay, isOpen, onUpdateRelay, onCance
 
   const [form] = Form.useForm<UpdateRelayFormFields>();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [relaySearch, setRelaySearch] = useState('');
   const [selectedRelayedIds, setSelectedRelayedIds] = useState<Host['id'][]>(relay.relay_hosts ?? []);
   const [relayedSearch, setRelayedSearch] = useState('');
 
@@ -80,8 +79,8 @@ export default function UpdateRelayModal({ relay, isOpen, onUpdateRelay, onCance
   }, [networkId, store.hosts, store.nodes]);
 
   const filteredNetworkHosts = useMemo<Host[]>(
-    () => networkHosts.filter((host) => host.name?.toLowerCase().includes(relaySearch.toLowerCase())),
-    [networkHosts, relaySearch]
+    () => networkHosts.filter((host) => host.name?.toLowerCase().includes(relayedSearch.toLowerCase())),
+    [networkHosts, relayedSearch]
   );
 
   const selectedRelayAssocNode = useMemo<Node | null>(() => {
@@ -116,6 +115,12 @@ export default function UpdateRelayModal({ relay, isOpen, onUpdateRelay, onCance
 
   const relayedTableCols = useMemo<TableColumnProps<Host>[]>(() => relayTableCols, [relayTableCols]);
 
+  const resetModal = () => {
+    form.resetFields();
+    setRelayedSearch('');
+    setSelectedRelayedIds(relay.relay_hosts ?? []);
+  };
+
   const updateRelay = async () => {
     try {
       await form.validateFields();
@@ -144,7 +149,10 @@ export default function UpdateRelayModal({ relay, isOpen, onUpdateRelay, onCance
     <Modal
       title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Update Relay</span>}
       open={isOpen}
-      onCancel={onCancel}
+      onCancel={(ev) => {
+        resetModal();
+        onCancel?.(ev);
+      }}
       footer={null}
       className="CustomModal UpdateRelayModal"
       style={{ minWidth: '50vw' }}

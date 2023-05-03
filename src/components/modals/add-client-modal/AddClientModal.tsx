@@ -104,6 +104,12 @@ export default function AddClientModal({ isOpen, onCreateClient, onCancel, netwo
     ];
   }, [getNodeConnectivity]);
 
+  const resetModal = () => {
+    form.resetFields();
+    setSelectedGateway(null);
+    setGatewaySearch('');
+  };
+
   const createClient = async () => {
     try {
       const formData = await form.validateFields();
@@ -118,6 +124,7 @@ export default function AddClientModal({ isOpen, onCreateClient, onCancel, netwo
       await NodesService.createExternalClient(selectedGateway.id, networkId, formData);
       onCreateClient();
       notify.success({ message: `External client created` });
+      resetModal();
     } catch (err) {
       if (err instanceof AxiosError) {
         notify.error({
@@ -135,9 +142,11 @@ export default function AddClientModal({ isOpen, onCreateClient, onCancel, netwo
     <Modal
       title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Create a Client</span>}
       open={isOpen}
-      onCancel={onCancel}
+      onCancel={(ev) => {
+        resetModal();
+        onCancel && onCancel(ev);
+      }}
       footer={null}
-      // centered
       className="CustomModal"
       style={{ minWidth: '50vw' }}
     >

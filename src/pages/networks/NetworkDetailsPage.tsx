@@ -71,7 +71,8 @@ import { ControlsContainer, FullScreenControl, SearchControl, SigmaContainer, Zo
 import NetworkGraph from '@/components/NetworkGraph';
 import UpdateRelayModal from '@/components/modals/update-relay-modal/UpdateRelayModal';
 import { NetworkMetrics } from '@/models/Metrics';
-import { getTimeMinHrs } from '@/utils/Utils';
+import { getHostHealth, getTimeMinHrs } from '@/utils/Utils';
+import AddHostsToNetworkModal from '@/components/modals/add-hosts-to-network-modal/AddHostsToNetworkModal';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -155,6 +156,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [currentMetric, setCurrentMetric] = useState<MetricCategories>('connectivity-status');
   const [networkNodeMetrics, setNetworkNodeMetrics] = useState<NetworkMetrics | null>(null);
   const [filteredMetricNodeId, setFilteredMetricNodeId] = useState<Node['id'] | null>(null);
+  const [isAddHostsToNetworkModalOpen, setIsAddHostsToNetworkModalOpen] = useState(false);
 
   const networkNodes = useMemo(
     () =>
@@ -1229,6 +1231,40 @@ export default function NetworkDetailsPage(props: PageProps) {
     uptimeMetricsData,
   ]);
 
+  const isDefaultDns = useCallback(
+    (dns: DNS) => {
+      return networkNodes.some((node) => getExtendedNode(node, store.hostsCommonDetails).name === dns.name);
+    },
+    [networkNodes, store.hostsCommonDetails]
+  );
+
+  const toggleNodeConnectionStatus = useCallback(
+    (newStatus: boolean, node: ExtendedNode) => {
+      Modal.confirm({
+        title: 'Toggle host connectivity to network',
+        content: `Are you sure you want to ${newStatus ? 'connect' : 'disconnect'} node ${node?.name ?? ''}?`,
+        async onOk() {
+          try {
+            if (!networkId) return;
+            await HostsService.updateHostsNetworks(node.hostid, networkId, newStatus ? 'join' : 'leave');
+            notify.success({
+              message: `Successfully ${newStatus ? 'connected' : 'disconnected'}`,
+              description: `${node?.name ?? 'Host'} is now ${
+                newStatus ? 'connected to' : 'disconnected from'
+              } network ${networkId}. This may take some seconds to reflect.`,
+            });
+          } catch (err) {
+            notify.error({
+              message: 'Failed to update host',
+              description: extractErrorMsg(err as any),
+            });
+          }
+        },
+      });
+    },
+    [networkId, notify]
+  );
+
   // ui components
   const getOverviewContent = useCallback(() => {
     if (!network) return <Skeleton active />;
@@ -1349,7 +1385,14 @@ export default function NetworkDetailsPage(props: PageProps) {
             />
           </Col>
           <Col xs={12} md={6} style={{ textAlign: 'right' }}>
-            <Button type="primary" size="large" onClick={goToNewHostPage}>
+            <Button
+              type="primary"
+              size="large"
+              onClick={() => {
+                // goToNewHostPage()
+                setIsAddHostsToNetworkModalOpen(true);
+              }}
+            >
               <PlusOutlined /> Add Host
             </Button>
           </Col>
@@ -1371,30 +1414,44 @@ export default function NetworkDetailsPage(props: PageProps) {
                   defaultSortOrder: 'ascend',
                 },
                 {
-                  title: 'Private Address',
+                  title: 'Private Address (IPv4)',
                   dataIndex: 'address',
-                  render: (address: string, node) => (
-                    <>
-                      <Typography.Text copyable>{address}</Typography.Text>
-                      <Typography.Text copyable={!!node.address6}>{node.address6}</Typography.Text>
-                    </>
-                  ),
                 },
+                network?.isipv6
+                  ? {
+                      title: 'Private Address (IPv6)',
+                      dataIndex: 'address6',
+                    }
+                  : {},
                 {
                   title: 'Public Address',
-                  dataIndex: 'name',
+                  render(_, node) {
+                    return getExtendedNode(node, store.hostsCommonDetails)?.endpointip ?? '';
+                  },
                 },
-                {
-                  title: 'Preferred DNS',
-                  dataIndex: 'name',
-                },
+                // {
+                //   title: 'Preferred DNS',
+                //   dataIndex: 'name',
+                // },
                 {
                   title: 'Health Status',
-                  dataIndex: 'name',
+                  render(_, node) {
+                    return getHostHealth(node.hostid, [node]);
+                  },
                 },
                 {
                   title: 'Connection status',
-                  // dataIndex: 'name',
+                  dataIndex: 'connected',
+                  render(connected: boolean, node) {
+                    return (
+                      <Switch
+                        checked={connected}
+                        onChange={(newStatus) =>
+                          toggleNodeConnectionStatus(newStatus, getExtendedNode(node, store.hostsCommonDetails))
+                        }
+                      />
+                    );
+                  },
                 },
               ]}
               dataSource={networkNodes}
@@ -1405,7 +1462,14 @@ export default function NetworkDetailsPage(props: PageProps) {
         </Row>
       </div>
     );
-  }, [goToNewHostPage, networkNodes, searchHost, store.hostsCommonDetails]);
+  }, [
+    searchHost,
+    // goToNewHostPage,
+    network?.isipv6,
+    networkNodes,
+    store.hostsCommonDetails,
+    toggleNodeConnectionStatus,
+  ]);
 
   const getDnsContent = useCallback(() => {
     return (
@@ -1458,9 +1522,13 @@ export default function NetworkDetailsPage(props: PageProps) {
                         items: [
                           {
                             key: 'delete',
+                            disabled: isDefaultDns(dns),
                             label: (
-                              <Tooltip title="Cannot delete default DNS">
-                                <Typography.Text onClick={() => confirmDeleteDns(dns)}>
+                              <Tooltip title={isDefaultDns(dns) ? 'Cannot delete default DNS' : 'Delete DNS'}>
+                                <Typography.Text
+                                  disabled={isDefaultDns(dns)}
+                                  onClick={() => (isDefaultDns(dns) ? undefined : confirmDeleteDns(dns))}
+                                >
                                   <DeleteOutlined /> Delete
                                 </Typography.Text>
                               </Tooltip>
@@ -1474,7 +1542,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   ),
                 },
               ]}
-              dataSource={dnses}
+              dataSource={dnses.filter((dns) => dns.name.toLocaleLowerCase().includes(searchDns.toLocaleLowerCase()))}
               rowKey="name"
               size="small"
             />
@@ -1482,7 +1550,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         </Row>
       </div>
     );
-  }, [confirmDeleteDns, dnses, searchDns]);
+  }, [confirmDeleteDns, dnses, isDefaultDns, searchDns]);
 
   const getClientsContent = useCallback(() => {
     return (
@@ -2466,6 +2534,15 @@ export default function NetworkDetailsPage(props: PageProps) {
           onCancel={() => setIsUpdateRelayModalOpen(false)}
         />
       )}
+      <AddHostsToNetworkModal
+        isOpen={isAddHostsToNetworkModalOpen}
+        networkId={networkId}
+        onNetworkUpdated={() => {
+          store.fetchNetworks();
+          setIsAddHostsToNetworkModalOpen(false);
+        }}
+        onCancel={() => setIsAddHostsToNetworkModalOpen(false)}
+      />
     </Layout.Content>
   );
 }

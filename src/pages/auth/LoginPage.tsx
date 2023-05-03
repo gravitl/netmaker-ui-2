@@ -3,7 +3,18 @@ import { AuthService } from '@/services/AuthService';
 import { LoginDto } from '@/services/dtos/LoginDto';
 import { useStore } from '@/store/store';
 import { LockOutlined, MailOutlined } from '@ant-design/icons';
-import { Button, Checkbox, Col, Divider, Form, Input, Layout, notification, Row, Typography } from 'antd';
+import {
+  Button,
+  Checkbox,
+  Col,
+  // Divider,
+  Form,
+  Input,
+  Layout,
+  notification,
+  Row,
+  Typography,
+} from 'antd';
 import { AxiosError } from 'axios';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -37,7 +48,7 @@ export default function LoginPage(props: LoginPageProps) {
     }
   };
 
-  const onSSOLogin = () => {};
+  // const onSSOLogin = () => {};
 
   if (isSaasBuild) {
     if (!backend && !token) {
@@ -70,7 +81,15 @@ export default function LoginPage(props: LoginPageProps) {
           </Col>
         </Row>
 
-        <Form form={form} layout="vertical">
+        <Form
+          form={form}
+          layout="vertical"
+          onKeyUp={(ev) => {
+            if (ev.key === 'Enter') {
+              onLogin();
+            }
+          }}
+        >
           <Form.Item name="username" label={t('signin.username')} rules={[{ required: true }]}>
             <Input placeholder={String(t('signin.username'))} size="large" prefix={<MailOutlined />} />
           </Form.Item>
@@ -104,14 +123,14 @@ export default function LoginPage(props: LoginPageProps) {
               {t('signin.signin')}
             </Button>
           </Form.Item>
-          <Divider>
+          {/* <Divider>
             <Typography.Text>{t('signin.or')}</Typography.Text>
           </Divider>
           <Form.Item style={{ marginTop: '1.5rem' }}>
             <Button type="default" block onClick={onSSOLogin}>
               {t('signin.sso')}
             </Button>
-          </Form.Item>
+          </Form.Item> */}
         </Form>
       </Layout.Content>
 

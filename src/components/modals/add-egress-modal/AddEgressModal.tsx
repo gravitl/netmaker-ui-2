@@ -17,7 +17,7 @@ import {
   Tooltip,
   Typography,
 } from 'antd';
-import { MouseEvent, useCallback, useMemo, useState } from 'react';
+import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useStore } from '@/store/store';
 import '../CustomModal.scss';
 import { Network } from '@/models/Network';
@@ -28,7 +28,7 @@ import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { AxiosError } from 'axios';
 import { NodesService } from '@/services/NodesService';
-import { isValidIp } from '@/utils/NetworkUtils';
+import { isValidIpCidr } from '@/utils/NetworkUtils';
 import { CreateEgressNodeDto } from '@/services/dtos/CreateEgressNodeDto';
 
 interface AddEgressModalProps {
@@ -42,7 +42,11 @@ interface AddEgressModalProps {
 
 type AddEgressFormFields = CreateEgressNodeDto & {
   nodeId: Node['id'];
+  isInternetGateway: boolean;
 };
+
+const internetRangeIpv4 = '0.0.0.0/0';
+const internetRangeIpv6 = '::/0';
 
 export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, networkId }: AddEgressModalProps) {
   const [form] = Form.useForm<AddEgressFormFields>();
@@ -56,6 +60,8 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
   const idFormField = 'nodeId';
 
   const natEnabledVal = Form.useWatch('natEnabled', form);
+  const isInternetGatewayVal = Form.useWatch('isInternetGateway', form);
+  const rangesVal = Form.useWatch('ranges', form);
 
   const getNodeConnectivity = useCallback((node: Node) => {
     if (getNodeConnectivityStatus(node) === 'error') return <Badge status="error" text="Error" />;
@@ -64,11 +70,17 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
     else return <Badge status="processing" text="Unknown" />;
   }, []);
 
+  const network = useMemo<Network | undefined>(
+    () => store.networks.find((net) => net.netid === networkId),
+    [networkId, store.networks]
+  );
+
   const networkHosts = useMemo<(Node & HostCommonDetails)[]>(() => {
     return store.nodes
       .filter((node) => node.network === networkId)
       .map((node) => ({ ...node, ...store.hostsCommonDetails[node.hostid] }));
   }, [networkId, store.hostsCommonDetails, store.nodes]);
+
   const filteredNetworkHosts = useMemo<(Node & HostCommonDetails)[]>(
     () =>
       networkHosts.filter(
@@ -78,6 +90,7 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
       ),
     [egressSearch, networkHosts]
   );
+
   const egressTableCols = useMemo<TableColumnProps<Node & HostCommonDetails>[]>(() => {
     return [
       {
@@ -107,6 +120,12 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
     ];
   }, [getNodeConnectivity]);
 
+  const resetModal = () => {
+    form.resetFields();
+    setEgressSearch('');
+    setSelectedEgress(null);
+  };
+
   const createEgress = async () => {
     try {
       const formData = await form.validateFields();
@@ -117,6 +136,7 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
         ...formData,
         natEnabled: formData.natEnabled ? 'yes' : 'no',
       });
+      resetModal();
       onCreateEgress();
       notify.success({ message: `Egress gateway created` });
     } catch (err) {
@@ -131,12 +151,27 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
     }
   };
 
+  useEffect(() => {
+    if (isInternetGatewayVal) {
+      form.setFieldsValue({
+        ranges: [...new Set([...rangesVal, internetRangeIpv4].concat(network?.isipv6 ? [internetRangeIpv6] : []))],
+      });
+    } else {
+      form.setFieldsValue({
+        ranges: rangesVal?.filter((range) => ![internetRangeIpv4, internetRangeIpv6].includes(range)),
+      });
+    }
+  }, [form, isInternetGatewayVal, network?.isipv6, rangesVal]);
+
   // TODO: add autofill for fields
   return (
     <Modal
       title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Create an Egress</span>}
       open={isOpen}
-      onCancel={onCancel}
+      onCancel={(ev) => {
+        resetModal();
+        onCancel && onCancel(ev);
+      }}
       footer={null}
       className="CustomModal"
       style={{ minWidth: '50vw' }}
@@ -228,6 +263,10 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
 
             <Typography.Title level={4}>Select external ranges</Typography.Title>
 
+            <Form.Item name="isInternetGateway" label="Internet Gateway" valuePropName="checked">
+              <Switch />
+            </Form.Item>
+
             <Form.List
               name="ranges"
               initialValue={['']}
@@ -257,7 +296,7 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
                           {
                             required: true,
                             validator(_, value) {
-                              if (!isValidIp(value)) {
+                              if (!isValidIpCidr(value)) {
                                 return Promise.reject('Invalid CIDR');
                               } else {
                                 return Promise.resolve();

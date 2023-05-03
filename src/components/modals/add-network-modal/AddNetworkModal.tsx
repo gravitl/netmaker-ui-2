@@ -1,14 +1,19 @@
 import { EditOutlined } from '@ant-design/icons';
 import { Button, Col, Divider, Form, Input, Modal, notification, Row, Select, Switch, theme } from 'antd';
-import { MouseEvent, useState } from 'react';
+import { MouseEvent, useCallback } from 'react';
 import { CreateNetworkDto } from '@/services/dtos/CreateNetworkDto';
 import { NetworksService } from '@/services/NetworksService';
 import { useStore } from '@/store/store';
 import '../CustomModal.scss';
-import { AxiosError } from 'axios';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { Network } from '@/models/Network';
-import { convertNetworkPayloadToUiNetwork } from '@/utils/NetworkUtils';
+import {
+  convertNetworkPayloadToUiNetwork,
+  generateCIDR,
+  generateCIDR6,
+  generateNetworkName,
+} from '@/utils/NetworkUtils';
+import { convertUiNetworkToNetworkPayload } from '@/utils/NetworkUtils';
 
 interface AddNetworkModalProps {
   isOpen: boolean;
@@ -22,31 +27,50 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
 
-  const [hasIpv4, setHasIpv4] = useState(true);
-  const [hasIpv6, setHasIpv6] = useState(false);
+  const isIpv4Val = Form.useWatch('isipv4', form);
+  const isIpv6Val = Form.useWatch('isipv6', form);
+
+  const resetModal = () => {
+    form.resetFields();
+  };
 
   const createNetwork = async () => {
     try {
       const formData = await form.validateFields();
-      const network = convertNetworkPayloadToUiNetwork((await NetworksService.createNetwork(formData)).data);
+      const network = convertNetworkPayloadToUiNetwork(
+        (await NetworksService.createNetwork(convertUiNetworkToNetworkPayload(formData as unknown as Network))).data
+      );
       store.addNetwork(network);
       notify.success({ message: `Network ${network.netid} created` });
       onCreateNetwork(network);
+      resetModal();
     } catch (err) {
-      if (err instanceof AxiosError) {
-        notify.error({
-          message: 'Failed to create network',
-          description: extractErrorMsg(err),
-        });
-      }
+      notify.error({
+        message: 'Failed to create network',
+        description: extractErrorMsg(err as any),
+      });
     }
   };
+
+  const autoFillDetails = useCallback(() => {
+    form.setFieldValue('isipv4', true);
+    form.setFieldsValue({
+      netid: generateNetworkName(),
+      addressrange: generateCIDR(),
+      addressrange6: isIpv6Val ? generateCIDR6() : '',
+      defaultacl: 'yes',
+      defaultDns: '',
+    });
+  }, [form, isIpv6Val]);
 
   return (
     <Modal
       title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Create a Network</span>}
       open={isOpen}
-      onCancel={onCancel}
+      onCancel={(ev) => {
+        resetModal();
+        onCancel && onCancel(ev);
+      }}
       footer={null}
       centered
       className="CustomModal"
@@ -54,12 +78,17 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
       <Divider style={{ margin: '0px 0px 2rem 0px' }} />
       <div className="CustomModalBody">
         <div className="" style={{ marginBottom: '2rem' }}>
-          <Button>
+          <Button onClick={() => autoFillDetails()}>
             <EditOutlined /> Autofill
           </Button>
         </div>
 
-        <Form name="add-network-form" form={form} layout="vertical" initialValues={{ defaultacl: 'yes' }}>
+        <Form
+          name="add-network-form"
+          form={form}
+          layout="vertical"
+          initialValues={{ isipv4: true, isipv6: false, defaultacl: 'yes' }}
+        >
           <Form.Item label="Network name" name="netid" rules={[{ required: true }]}>
             <Input placeholder="Network name" />
           </Form.Item>
@@ -74,13 +103,15 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
             }}
           >
             <Col xs={24}>
-              <Row justify="space-between" style={{ marginBottom: hasIpv4 ? '.5rem' : '0px' }}>
+              <Row justify="space-between" style={{ marginBottom: isIpv4Val ? '.5rem' : '0px' }}>
                 <Col>IPv4</Col>
                 <Col>
-                  <Switch checked={hasIpv4} onChange={(val) => setHasIpv4(val)} />
+                  <Form.Item name="isipv4" noStyle valuePropName="checked">
+                    <Switch />
+                  </Form.Item>
                 </Col>
               </Row>
-              {hasIpv4 && (
+              {isIpv4Val && (
                 <Row>
                   <Col xs={24}>
                     <Form.Item name="addressrange" style={{ marginBottom: '0px' }}>
@@ -102,13 +133,15 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
             }}
           >
             <Col xs={24}>
-              <Row justify="space-between" style={{ marginBottom: hasIpv6 ? '.5rem' : '0px' }}>
+              <Row justify="space-between" style={{ marginBottom: isIpv6Val ? '.5rem' : '0px' }}>
                 <Col>IPv6</Col>
                 <Col>
-                  <Switch checked={hasIpv6} onChange={(val) => setHasIpv6(val)} />
+                  <Form.Item name="isipv6" noStyle valuePropName="checked">
+                    <Switch />
+                  </Form.Item>
                 </Col>
               </Row>
-              {hasIpv6 && (
+              {isIpv6Val && (
                 <Row>
                   <Col xs={24}>
                     <Form.Item name="addressrange6" style={{ marginBottom: '0px' }}>

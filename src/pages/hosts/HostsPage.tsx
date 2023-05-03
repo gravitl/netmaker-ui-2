@@ -436,7 +436,6 @@ export default function HostsPage(props: PageProps) {
                   </Typography.Text>
                   <Row style={{ marginTop: 'auto' }}>
                     <Col>
-                      {/* TODO: add redirect to */}
                       <Button
                         type="primary"
                         size="large"
@@ -450,7 +449,7 @@ export default function HostsPage(props: PageProps) {
               </Col>
             </Row>
 
-            <Row style={{ marginTop: '8rem', padding: '0px 5.125rem' }} gutter={[0, 20]}>
+            <Row style={{ marginTop: '8rem', marginBottom: '4rem', padding: '0px 5.125rem' }} gutter={[0, 20]}>
               <Col xs={24}>
                 <Typography.Title level={3}>Connect a Host</Typography.Title>
               </Col>

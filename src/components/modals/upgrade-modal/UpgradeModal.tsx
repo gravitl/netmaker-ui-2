@@ -1,6 +1,7 @@
 import { Button, Divider, Modal } from 'antd';
 import { MouseEvent } from 'react';
 import '../CustomModal.scss';
+import { getAmuiUrl } from '@/utils/RouteUtils';
 
 interface UpgradeModalProps {
   isOpen: boolean;
@@ -9,6 +10,10 @@ interface UpgradeModalProps {
 }
 
 export default function UpgradeModal({ isOpen, onUpgrade: onOk, onCancel }: UpgradeModalProps) {
+  const goToAmui = () => {
+    window.location = getAmuiUrl() as any;
+  };
+
   return (
     <Modal
       title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Upgrade Plan</span>}
@@ -25,10 +30,11 @@ export default function UpgradeModal({ isOpen, onUpgrade: onOk, onCancel }: Upgr
         <div>
           <span style={{ fontSize: '2rem', fontWeight: 'bold' }}>$99</span> per month
         </div>
-        <p style={{ marginTop: '0px' }}>Unlock unlimited networks</p>
-        <div>
-          {/* TODO: redirect to accounts platform -- open new tab, refresh netmaker ui when process is complete */}
-          <Button type="primary">I&apos;m Ready to Upgrade</Button>
+        <p>Unlock unlimited networks and so much more!</p>
+        <div style={{ marginTop: '2rem' }}>
+          <Button type="primary" onClick={goToAmui}>
+            I&apos;m Ready to Upgrade
+          </Button>
         </div>
       </div>
     </Modal>

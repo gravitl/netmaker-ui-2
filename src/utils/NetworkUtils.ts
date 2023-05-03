@@ -142,14 +142,14 @@ const validNetworkNames = [
   'wg-vnet',
 ];
 
-export const genRandomNumber = (size: number, inclusive: boolean) => {
+export const generateRandomNumber = (size: number, inclusive: boolean) => {
   if (inclusive) {
     return Math.floor(Math.random() * size + 1);
   }
   return Math.floor(Math.random() * size);
 };
 
-const genRandomHex = (size: number) => {
+const generateRandomHex = (size: number) => {
   const result = [];
   const hexRef = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'];
 
@@ -159,8 +159,8 @@ const genRandomHex = (size: number) => {
   return result.join('');
 };
 
-export const randomCIDR = () => `10.${genRandomNumber(254, true)}.${genRandomNumber(254, true)}.0/24`;
+export const generateCIDR = () => `10.${generateRandomNumber(254, true)}.${generateRandomNumber(254, true)}.0/24`;
 
-export const randomCIDR6 = () => `${genRandomHex(4)}:4206:9753:2021::/64`;
+export const generateCIDR6 = () => `${generateRandomHex(4)}:4206:9753:2021::/64`;
 
-export const randomNetworkName = () => validNetworkNames[genRandomNumber(validNetworkNames.length, false)];
+export const generateNetworkName = () => validNetworkNames[generateRandomNumber(validNetworkNames.length, false)];
