@@ -2,7 +2,7 @@ import { Host } from '@/models/Host';
 import { AppRoutes } from '@/routes';
 import { useStore } from '@/store/store';
 import { getHostRoute, getNewHostRoute } from '@/utils/RouteUtils';
-import { MoreOutlined, PlusOutlined } from '@ant-design/icons';
+import { MoreOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons';
 import {
   Button,
   Card,
@@ -48,6 +48,7 @@ export default function HostsPage(props: PageProps) {
   const [selectedHost, setSelectedHost] = useState<Host | null>(null);
   const [isJoinNetworkModalOpen, setIsJoinNetworkModalOpen] = useState(false);
   const [hasAdvicedHosts, setHasAdvicedHosts] = useState(false);
+  const [isRefreshingHosts, setIsRefreshingHosts] = useState(false);
 
   const filteredNetworks = useMemo(() => {
     return store.networks;
@@ -89,6 +90,30 @@ export default function HostsPage(props: PageProps) {
     },
     [navigate]
   );
+
+  const refreshAllHostKeys = useCallback(() => {
+    Modal.confirm({
+      title: 'Refresh all hosts keys',
+      content: 'Are you sure you want to refresh all hosts keys?',
+      onOk: async () => {
+        try {
+          setIsRefreshingHosts(true);
+          await HostsService.refreshAllHostsKeys();
+          notify.success({
+            message: 'Hosts keys refreshing...',
+            description: 'Host key pairs are refreshing. This may take a while.',
+          });
+        } catch (err) {
+          notify.error({
+            message: 'Failed to refresh hosts keys',
+            description: extractErrorMsg(err as any),
+          });
+        } finally {
+          setIsRefreshingHosts(false);
+        }
+      },
+    });
+  }, [notify]);
 
   const hostsTableColumns: TableColumnsType<Host> = useMemo(
     () => [
@@ -511,6 +536,15 @@ export default function HostsPage(props: PageProps) {
                 />
               </Col>
               <Col xs={12} md={6} style={{ textAlign: 'right' }}>
+                <Button
+                  size="large"
+                  style={{ marginRight: '1rem' }}
+                  onClick={() => refreshAllHostKeys()}
+                  loading={isRefreshingHosts}
+                >
+                  <ReloadOutlined /> Refesh Hosts Keys
+                </Button>
+
                 <Button type="primary" size="large" onClick={() => navigate(getNewHostRoute(AppRoutes.HOSTS_ROUTE))}>
                   <PlusOutlined /> Connect a host
                 </Button>

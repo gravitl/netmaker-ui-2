@@ -30,6 +30,14 @@ function updateHost(hostId: Host['id'], payload: Host) {
   return baseService.put<Host>(`${ApiRoutes.HOSTS}/${hostId}`, payload);
 }
 
+function refreshAllHostsKeys() {
+  return baseService.put<void>(`${ApiRoutes.HOSTS}/keys`);
+}
+
+function refreshHostKeys(hostId: Host['id']) {
+  return baseService.put<void>(`${ApiRoutes.HOSTS}/${hostId}/keys`);
+}
+
 export const HostsService = {
   getHosts,
   deleteHost,
@@ -37,4 +45,6 @@ export const HostsService = {
   deleteHostRelay,
   updateHostsNetworks,
   updateHost,
+  refreshAllHostsKeys,
+  refreshHostKeys,
 };
