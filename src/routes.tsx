@@ -15,6 +15,7 @@ import HostsPage from './pages/hosts/HostsPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import UsersPage from './pages/users/UsersPage';
 import SignupPage from './pages/auth/SignupPage';
+import { isSaasBuild } from './services/BaseService';
 
 export class AppRoutes {
   static DASHBOARD_ROUTE = '/';
@@ -108,11 +109,15 @@ const routes: RouteObject[] = [
   { path: AppRoutes.GETTING_STARTED_ROUTE, element: <GettingStartedPage /> },
   { path: AppRoutes.STARTUP_ROUTE, element: <StartupPage /> },
   { path: AppRoutes.LOGIN_ROUTE, element: <LoginPage /> },
-  { path: AppRoutes.SIGNUP_ROUTE, element: <SignupPage /> },
 
   // fallback route
   { path: '*', element: <Error404Page /> },
 ];
+
+// routes only available in standalone build
+if (!isSaasBuild) {
+  routes.push({ path: AppRoutes.SIGNUP_ROUTE, element: <SignupPage /> });
+}
 
 const router = createBrowserRouter(routes);
 

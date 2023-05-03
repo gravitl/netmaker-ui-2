@@ -2,7 +2,7 @@ import { AppRoutes } from '@/routes';
 import { AuthService } from '@/services/AuthService';
 import { useStore } from '@/store/store';
 import { LockOutlined, MailOutlined } from '@ant-design/icons';
-import { Button, Col, Form, Input, Layout, notification, Row, Typography } from 'antd';
+import { Button, Col, Divider, Form, Input, Layout, notification, Row, Typography } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { UsersService } from '@/services/UsersService';
@@ -103,6 +103,16 @@ export default function SignupPage(props: SignupPageProps) {
           <Form.Item style={{ marginTop: '1.5rem' }}>
             <Button type="primary" block onClick={onSignup} loading={isSigninup}>
               {t('signin.signup')}
+            </Button>
+          </Form.Item>
+
+          <Divider>
+            <Typography.Text>{t('common.or')}</Typography.Text>
+          </Divider>
+
+          <Form.Item>
+            <Button type="link" block onClick={() => navigate(AppRoutes.LOGIN_ROUTE)} loading={isSigninup}>
+              {t('auth.login')}
             </Button>
           </Form.Item>
         </Form>

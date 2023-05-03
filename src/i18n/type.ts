@@ -2,8 +2,10 @@ export interface LanguageResource {
   common: {
     hello: string;
     hosts: string;
+    or: string;
   };
   auth: {
+    login: string;
     signup: string;
     terms5: string;
   };

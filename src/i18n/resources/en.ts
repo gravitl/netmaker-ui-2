@@ -4,8 +4,10 @@ export const en: LanguageResource = {
   common: {
     hello: 'Hello',
     hosts: 'Hosts',
+    or: 'OR',
   },
   auth: {
+    login: 'Login',
     signup: 'Sign Up',
     terms5: 'By signing up you agree to our',
   },
