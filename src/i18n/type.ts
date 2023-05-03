@@ -2,6 +2,12 @@ export interface LanguageResource {
   common: {
     hello: string;
     hosts: string;
+    or: string;
+  };
+  auth: {
+    login: string;
+    signup: string;
+    terms5: string;
   };
   signin: {
     signin: string;
@@ -11,6 +17,7 @@ export interface LanguageResource {
     logout: string;
     username: string;
     password: string;
+    'confirm-password': string;
     terms1: string;
     terms2: string;
     terms3: string;

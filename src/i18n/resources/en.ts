@@ -4,6 +4,12 @@ export const en: LanguageResource = {
   common: {
     hello: 'Hello',
     hosts: 'Hosts',
+    or: 'OR',
+  },
+  auth: {
+    login: 'Login',
+    signup: 'Sign Up',
+    terms5: 'By signing up you agree to our',
   },
   signin: {
     signin: 'Sign in',
@@ -13,6 +19,7 @@ export const en: LanguageResource = {
     logout: 'Logout',
     username: 'Username',
     password: 'Password',
+    'confirm-password': 'Confirm Password',
     terms1: 'By signing in you agree to our',
     terms2: 'Terms of Service',
     terms3: 'and',

@@ -14,6 +14,8 @@ import EnrollmentKeysPage from './pages/enrollment-keys/EnrollmentKeysPage';
 import HostsPage from './pages/hosts/HostsPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import UsersPage from './pages/users/UsersPage';
+import SignupPage from './pages/auth/SignupPage';
+import { isSaasBuild } from './services/BaseService';
 
 export class AppRoutes {
   static DASHBOARD_ROUTE = '/';
@@ -28,6 +30,7 @@ export class AppRoutes {
   static CLIENTS_ROUTE = '/clients';
   static ENROLLMENT_KEYS_ROUTE = '/enrollment-keys';
   static USERS_ROUTE = '/users';
+  static SIGNUP_ROUTE = '/signup';
 }
 
 const routes: RouteObject[] = [
@@ -110,6 +113,11 @@ const routes: RouteObject[] = [
   // fallback route
   { path: '*', element: <Error404Page /> },
 ];
+
+// routes only available in standalone build
+if (!isSaasBuild) {
+  routes.push({ path: AppRoutes.SIGNUP_ROUTE, element: <SignupPage /> });
+}
 
 const router = createBrowserRouter(routes);
 

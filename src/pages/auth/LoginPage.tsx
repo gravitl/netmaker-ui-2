@@ -16,10 +16,11 @@ import {
   Typography,
 } from 'antd';
 import { AxiosError } from 'axios';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AMUI_URL, isSaasBuild } from '../../services/BaseService';
+import { UsersService } from '@/services/UsersService';
 
 interface LoginPageProps {
   isFullScreen?: boolean;
@@ -48,7 +49,16 @@ export default function LoginPage(props: LoginPageProps) {
     }
   };
 
-  // const onSSOLogin = () => {};
+  const checkIfServerHasAdminAndRedirect = useCallback(async () => {
+    const hasAdmin = (await UsersService.serverHasAdmin()).data;
+    if (!hasAdmin) navigate(AppRoutes.SIGNUP_ROUTE);
+  }, [navigate]);
+
+  // const onSSOLogin = useCallback(() => {}, []);
+
+  useEffect(() => {
+    checkIfServerHasAdminAndRedirect();
+  }, [checkIfServerHasAdminAndRedirect]);
 
   if (isSaasBuild) {
     if (!backend && !token) {
