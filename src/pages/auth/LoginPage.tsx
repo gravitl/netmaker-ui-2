@@ -3,23 +3,12 @@ import { AuthService } from '@/services/AuthService';
 import { LoginDto } from '@/services/dtos/LoginDto';
 import { useStore } from '@/store/store';
 import { LockOutlined, MailOutlined } from '@ant-design/icons';
-import {
-  Button,
-  Checkbox,
-  Col,
-  // Divider,
-  Form,
-  Input,
-  Layout,
-  notification,
-  Row,
-  Typography,
-} from 'antd';
-import { AxiosError } from 'axios';
-import { useCallback, useEffect, useState } from 'react';
+import { Button, Checkbox, Col, Form, Input, Layout, notification, Row, Typography } from 'antd';
+import { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AMUI_URL, isSaasBuild } from '../../services/BaseService';
+import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { UsersService } from '@/services/UsersService';
 
 interface LoginPageProps {
@@ -43,9 +32,7 @@ export default function LoginPage(props: LoginPageProps) {
       store.setStore({ jwt: data.Response.AuthToken, username: data.Response.UserName });
       navigate(AppRoutes.DASHBOARD_ROUTE);
     } catch (err) {
-      if (err instanceof AxiosError) {
-        notify.error({ message: 'Failed to create network', description: (err as AxiosError).message });
-      }
+      notify.error({ message: 'Failed to login', description: extractErrorMsg(err as any) });
     }
   };
 
