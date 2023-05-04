@@ -9,6 +9,7 @@ import { UsersService } from '@/services/UsersService';
 import { CreateUserReqDto } from '@/services/dtos/UserDtos';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { useState } from 'react';
+import { AxiosError } from 'axios';
 
 interface SignupPageProps {
   isFullScreen?: boolean;
@@ -16,7 +17,6 @@ interface SignupPageProps {
 
 export default function SignupPage(props: SignupPageProps) {
   const [form] = Form.useForm<CreateUserReqDto>();
-  const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -29,7 +29,7 @@ export default function SignupPage(props: SignupPageProps) {
       store.setStore({ jwt: data.Response.AuthToken, username: data.Response.UserName });
       navigate(AppRoutes.DASHBOARD_ROUTE);
     } catch (err) {
-      notify.error({ message: 'Failed to login', description: err as any });
+      notification.error({ message: 'Failed to login', description: err as any });
       navigate(AppRoutes.LOGIN_ROUTE);
     }
   };
@@ -41,7 +41,10 @@ export default function SignupPage(props: SignupPageProps) {
       await UsersService.createAdminUser(formData);
       login(formData);
     } catch (err) {
-      notify.error({ message: 'Failed to create admin', description: extractErrorMsg(err as any) });
+      notification.error({ message: 'Failed to create admin', description: extractErrorMsg(err as any) });
+      if (err instanceof AxiosError && err.response?.status === 400) {
+        navigate(AppRoutes.LOGIN_ROUTE);
+      }
     } finally {
       setIsSigningup(false);
     }
@@ -117,9 +120,6 @@ export default function SignupPage(props: SignupPageProps) {
           </Form.Item>
         </Form>
       </Layout.Content>
-
-      {/* misc */}
-      {notifyCtx}
     </Layout>
   );
 }
