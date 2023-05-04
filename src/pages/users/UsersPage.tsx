@@ -33,6 +33,8 @@ import AddUserGroupModal from '@/components/modals/add-user-group-modal/AddUserG
 import UpdateUserGroupModal from '@/components/modals/update-user-group-modal/UpdateUserGroupModal';
 import UpdateUserModal from '@/components/modals/update-user-modal/UpdateUserModal';
 import NetworkPermissionsModal from '@/components/modals/network-permissions-modal/NetworkPermissionsModal';
+import { isSaasBuild } from '@/services/BaseService';
+import { getAmuiUrl } from '@/utils/RouteUtils';
 
 export default function UsersPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
@@ -133,6 +135,15 @@ export default function UsersPage(props: PageProps) {
   const onEditGroup = useCallback((group: UserGroup) => {
     setSelectedGroup(group);
     setIsUpdateGroupModalOpen(true);
+  }, []);
+
+  const onAddUser = useCallback(() => {
+    if (isSaasBuild) {
+      window.location = getAmuiUrl('invite-user') as any;
+      return;
+    } else {
+      setIsAddUserModalOpen(true);
+    }
   }, []);
 
   const usersTableColumns: TableColumnsType<User> = useMemo(
@@ -383,14 +394,7 @@ export default function UsersPage(props: PageProps) {
             />
           </Col>
           <Col xs={24} md={16} style={{ textAlign: 'right' }}>
-            <Button
-              type="primary"
-              size="large"
-              onClick={() => {
-                // TODO: create user
-                setIsAddUserModalOpen(true);
-              }}
-            >
+            <Button type="primary" size="large" onClick={onAddUser}>
               <PlusOutlined /> Add a User
             </Button>
           </Col>
@@ -402,7 +406,7 @@ export default function UsersPage(props: PageProps) {
         </Row>
       </>
     );
-  }, [filteredUsers, usersSearch, usersTableColumns]);
+  }, [filteredUsers, usersSearch, usersTableColumns, onAddUser]);
 
   const getNetworkPermissionsContent = useCallback(() => {
     return (
@@ -568,13 +572,7 @@ export default function UsersPage(props: PageProps) {
                   <Typography.Text>Users access the Netmaker UI to configure their networks.</Typography.Text>
                   <Row style={{ marginTop: 'auto' }}>
                     <Col>
-                      <Button
-                        type="primary"
-                        size="large"
-                        onClick={() => {
-                          // TODO: create user
-                        }}
-                      >
+                      <Button type="primary" size="large" onClick={onAddUser}>
                         <PlusOutlined /> Create a User
                       </Button>
                     </Col>
