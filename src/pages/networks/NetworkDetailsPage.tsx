@@ -24,7 +24,7 @@ import {
   CloseOutlined,
   DashOutlined,
   DeleteOutlined,
-  DownloadOutlined,
+  // DownloadOutlined,
   ExclamationCircleFilled,
   LoadingOutlined,
   MoreOutlined,
@@ -152,7 +152,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [searchRelay, setSearchRelay] = useState('');
   const [isUpdateRelayModalOpen, setIsUpdateRelayModalOpen] = useState(false);
   const [searchAclHost, setSearchAclHost] = useState('');
-  const [isDownloadingMetrics, setIsDownloadingMetrics] = useState(false);
+  // const [isDownloadingMetrics, setIsDownloadingMetrics] = useState(false);
   const [currentMetric, setCurrentMetric] = useState<MetricCategories>('connectivity-status');
   const [networkNodeMetrics, setNetworkNodeMetrics] = useState<NetworkMetrics | null>(null);
   const [filteredMetricNodeId, setFilteredMetricNodeId] = useState<Node['id'] | null>(null);
@@ -233,6 +233,33 @@ export default function NetworkDetailsPage(props: PageProps) {
   const filteredRelays = useMemo<Host[]>(
     () => relays.filter((relay) => relay.name?.toLowerCase().includes(searchRelay.toLowerCase()) ?? false),
     [relays, searchRelay]
+  );
+
+  const toggleClientStatus = useCallback(
+    async (client: ExternalClient, newStatus: boolean) => {
+      if (!networkId) return;
+      Modal.confirm({
+        title: `Are you sure you want to ${newStatus ? 'enable' : 'disable'} client ${client.clientid}?`,
+        content: `Client ${client.clientid} will be ${newStatus ? 'enabled' : 'disabled'}.`,
+        onOk: async () => {
+          try {
+            const newClient = (
+              await NodesService.updateExternalClient(client.clientid, networkId, {
+                clientid: client.clientid,
+                enabled: newStatus,
+              })
+            ).data;
+            setClients((prev) => prev.map((c) => (c.clientid === newClient.clientid ? newClient : c)));
+          } catch (err) {
+            notify.error({
+              message: 'Failed to update client',
+              description: extractErrorMsg(err as any),
+            });
+          }
+        },
+      });
+    },
+    [networkId, notify]
   );
 
   const networkAcls = useMemo(() => {
@@ -738,17 +765,15 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       },
       {
-        title: 'Status',
+        title: 'Enabled',
         dataIndex: 'enabled',
-        render(value) {
+        render(value, client) {
           return (
             <Switch
               checked={value}
-              // onChange={(checked) => {
-              //   const newClients = [...clients];
-              //   newClients[index].enabled = checked;
-              //   setClients(newClients);
-              // }}
+              onChange={(checked) => {
+                toggleClientStatus(client, checked);
+              }}
             />
           );
         },
@@ -779,7 +804,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       },
     ],
-    [confirmDeleteClient, openClientDetails]
+    [confirmDeleteClient, openClientDetails, toggleClientStatus]
   );
 
   const relayTableCols = useMemo<TableColumnProps<Host>[]>(
@@ -2125,10 +2150,10 @@ export default function NetworkDetailsPage(props: PageProps) {
             </Radio.Group>
           </Col>
           <Col xs={8} style={{ textAlign: 'right' }}>
-            <Button type="primary" loading={isDownloadingMetrics} onClick={() => downloadMetrics()}>
+            {/* <Button type="primary" loading={isDownloadingMetrics} onClick={() => downloadMetrics()}>
               <DownloadOutlined />
               Download Metrics
-            </Button>
+            </Button> */}
           </Col>
 
           <Col xs={24} style={{ paddingTop: '1rem' }}>
@@ -2190,13 +2215,13 @@ export default function NetworkDetailsPage(props: PageProps) {
     );
   }, [
     currentMetric,
-    isDownloadingMetrics,
+    // isDownloadingMetrics,
     metricsTableCols,
     connectivityStatusMetricsData,
     latencyMetricsData,
     bytesSentMetricsData,
     bytesReceivedMetricsData,
-    downloadMetrics,
+    // downloadMetrics,
   ]);
 
   const networkTabs: TabsProps['items'] = useMemo(() => {
@@ -2496,6 +2521,10 @@ export default function NetworkDetailsPage(props: PageProps) {
           // onDeleteClient={() => {
           //   loadClients();
           // }}
+          onUpdateClient={(updatedClient: ExternalClient) => {
+            setClients((prev) => prev.map((c) => (c.clientid === targetClient.clientid ? updatedClient : c)));
+            setTargetClient(updatedClient);
+          }}
           onCancel={() => setIsClientDetailsModalOpen(false)}
         />
       )}

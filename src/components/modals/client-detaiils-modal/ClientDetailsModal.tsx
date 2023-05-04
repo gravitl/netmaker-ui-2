@@ -13,9 +13,10 @@ interface ClientDetailsModalProps {
   closeModal?: () => void;
   onOk?: (e: MouseEvent<HTMLButtonElement>) => void;
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
+  onUpdateClient: (newClient: ExternalClient) => void;
 }
 
-export default function ClientDetailsModal({ client, isOpen, onCancel }: ClientDetailsModalProps) {
+export default function ClientDetailsModal({ client, isOpen, onCancel, onUpdateClient }: ClientDetailsModalProps) {
   const [notify, notifyCtx] = notification.useNotification();
 
   const [qrCode, setQrCode] = useState(' '); // hack to allow qr code display
@@ -38,6 +39,32 @@ export default function ClientDetailsModal({ client, isOpen, onCancel }: ClientD
       }
     }
   }, [client, notify]);
+
+  const toggleClientStatus = useCallback(
+    async (newStatus: boolean) => {
+      Modal.confirm({
+        title: `Are you sure you want to ${newStatus ? 'enable' : 'disable'} client ${client.clientid}?`,
+        content: `Client ${client.clientid} will be ${newStatus ? 'enabled' : 'disabled'}.`,
+        onOk: async () => {
+          try {
+            const newClient = (
+              await NodesService.updateExternalClient(client.clientid, client.network, {
+                clientid: client.clientid,
+                enabled: newStatus,
+              })
+            ).data;
+            onUpdateClient(newClient);
+          } catch (err) {
+            notify.error({
+              message: 'Failed to update client',
+              description: extractErrorMsg(err as any),
+            });
+          }
+        },
+      });
+    },
+    [client.clientid, client.network, notify, onUpdateClient]
+  );
 
   useEffect(() => {
     loadQrCode();
@@ -96,7 +123,7 @@ export default function ClientDetailsModal({ client, isOpen, onCancel }: ClientD
             <Typography.Text>Status</Typography.Text>
           </Col>
           <Col xs={16}>
-            <Switch />
+            <Switch checked={client.enabled} onChange={(checked) => toggleClientStatus(checked)} />
           </Col>
         </Row>
         <Divider style={{ margin: '1rem 0px 1rem 0px' }} />
