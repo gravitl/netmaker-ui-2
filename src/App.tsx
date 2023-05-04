@@ -13,6 +13,7 @@ const POLL_INTERVAL = 10_000;
 
 function App() {
   const store = useStore();
+  const storeFetchServerConfig = store.fetchServerConfig;
   const storeSetServerStatus = store.setServerStatus;
   const storeFetchNodes = store.fetchNodes;
   const storeFetchHosts = store.fetchHosts;
@@ -50,6 +51,15 @@ function App() {
     }, POLL_INTERVAL);
     return () => clearInterval(id);
   }, [getUpdates, storeIsLoggedIn]);
+
+  // one-time loads
+  useEffect(
+    () => {
+      storeFetchServerConfig();
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
 
   return (
     <div className="App">

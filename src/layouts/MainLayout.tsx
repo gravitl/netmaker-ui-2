@@ -8,7 +8,7 @@ import {
   // MobileOutlined,
   UserOutlined,
 } from '@ant-design/icons';
-import { Alert, Col, MenuProps, Row, Select, Switch } from 'antd';
+import { Alert, Col, MenuProps, Row, Select, Switch, Typography } from 'antd';
 import { Layout, Menu, theme } from 'antd';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { getAmuiUrl, getHostRoute, getNetworkRoute } from '../utils/RouteUtils';
@@ -16,6 +16,7 @@ import { useStore } from '../store/store';
 import { AppRoutes } from '@/routes';
 import { useTranslation } from 'react-i18next';
 import { isSaasBuild } from '@/services/BaseService';
+import { ServerConfigService } from '@/services/ServerConfigService';
 
 const { Content, Sider } = Layout;
 
@@ -308,7 +309,8 @@ export default function MainLayout() {
         }}
       >
         {/* logo */}
-        <img src="/logo.png" alt="logo" style={{ width: '100%', padding: '1rem' }} />
+        <img src="/logo.png" alt="logo" style={{ width: '100%', padding: '.5rem 1rem 0rem 1rem' }} />
+
         <Menu
           theme="light"
           mode="inline"
@@ -348,6 +350,17 @@ export default function MainLayout() {
             }
           }}
         />
+
+        {/* server version */}
+        {!isSidebarCollapsed && (
+          <div style={{ marginTop: '1rem', padding: '0rem 1.5rem', fontSize: '.8rem' }}>
+            <Typography.Text style={{ fontSize: 'inherit' }}>UI: {ServerConfigService.getUiVersion()}</Typography.Text>
+            <br />
+            <Typography.Text style={{ fontSize: 'inherit' }} type="secondary">
+              Server: {store.serverConfig?.Version ?? 'n/a'}
+            </Typography.Text>
+          </div>
+        )}
 
         {/* bottom items */}
         <Menu
