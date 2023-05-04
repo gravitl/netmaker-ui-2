@@ -181,6 +181,28 @@ export default function HostDetailsPage(props: PageProps) {
     });
   };
 
+  const refreshHostKeys = useCallback(() => {
+    if (!hostId) return;
+    Modal.confirm({
+      title: 'Refresh host keys',
+      content: "Are you sure you want to refresh this host's keys?",
+      onOk: async () => {
+        try {
+          await HostsService.refreshHostKeys(hostId);
+          notify.success({
+            message: 'Host keys refreshing...',
+            description: 'Host key pairs are refreshing. This may take a while.',
+          });
+        } catch (err) {
+          notify.error({
+            message: 'Failed to refresh host keys',
+            description: extractErrorMsg(err as any),
+          });
+        }
+      },
+    });
+  }, [notify, hostId]);
+
   const getOverviewContent = useCallback(() => {
     if (!host) return <Skeleton active />;
     return (
@@ -418,6 +440,14 @@ export default function HostDetailsPage(props: PageProps) {
                   placement="bottomRight"
                   menu={{
                     items: [
+                      {
+                        key: 'refresh-key',
+                        label: <Typography.Text>Refresh Key</Typography.Text>,
+                        onClick: (ev) => {
+                          ev.domEvent.stopPropagation();
+                          refreshHostKeys();
+                        },
+                      },
                       {
                         key: 'edit',
                         label: <Typography.Text>Edit</Typography.Text>,
