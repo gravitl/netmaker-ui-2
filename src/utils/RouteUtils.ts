@@ -5,6 +5,8 @@ import { AppRoutes } from '../routes';
 import { AMUI_URL } from '@/services/BaseService';
 import { useStore } from '@/store/store';
 
+type AmuiRouteAction = '' | 'upgrade' | 'invite-user';
+
 // Get host route from host obj or ID
 export function getHostRoute(hostOrId: Host | Host['id'], ...queryParams: { [key: string]: string }[]): string {
   const placeholder = ':hostId';
@@ -36,6 +38,8 @@ export function useQuery() {
 }
 
 // Function to get AMUI dashboard route
-export function getAmuiUrl() {
-  return `${AMUI_URL}/dashboard?tenantId=${useStore.getState().tenantId}&sToken=${useStore.getState().amuiAuthToken}`;
+export function getAmuiUrl(action: AmuiRouteAction = '') {
+  return `${AMUI_URL}/dashboard?tenantId=${useStore.getState().tenantId}&sToken=${
+    useStore.getState().amuiAuthToken
+  }&action=${action}`;
 }
