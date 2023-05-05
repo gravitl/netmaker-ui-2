@@ -55,7 +55,7 @@ baseService.interceptors.response.use(
   },
   (err) => {
     // Check if the error is a 401 response
-    if (err.response.status === 401) {
+    if (err.response?.status === 401) {
       useStore.getState().logout();
       // Full redirect the user to the login page or display a message
       window.location.href = '/login';

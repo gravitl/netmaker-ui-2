@@ -11,6 +11,7 @@ import {
   Button,
   Card,
   Col,
+  Collapse,
   Dropdown,
   Input,
   Layout,
@@ -32,6 +33,10 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { PageProps } from '../../models/Page';
 import './NetworkHostDetailsPage.scss';
 import { getNetworkRoute, useQuery } from '@/utils/RouteUtils';
+import { Node } from '@/models/Node';
+import { NodeConnectivityStatus } from '@/models/NodeConnectivityStatus';
+import moment from 'moment';
+import { DATE_TIME_FORMAT } from '@/constants/AppConstants';
 
 export default function NetworkHostDetailsPage(props: PageProps) {
   const { hostId, networkId } = useParams<{ hostId: string; networkId: string }>();
@@ -45,7 +50,10 @@ export default function NetworkHostDetailsPage(props: PageProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isEditingHost, setIsEditingHost] = useState(false);
   const [host, setHost] = useState<Host | null>(null);
+  const [node, setNode] = useState<Node | null>(null);
   const [searchText, setSearchText] = useState('');
+
+  const network = store.networks.find((n) => n.netid === networkId);
 
   const interfacesTableCols: TableColumnsType<Interface> = useMemo(
     () => [
@@ -95,41 +103,21 @@ export default function NetworkHostDetailsPage(props: PageProps) {
   );
 
   const getHostHealth = useCallback(() => {
-    const nodeHealths = store.nodes
-      .filter((n) => n.hostid === host?.id)
-      .map((n) => getNodeConnectivityStatus(n))
-      .map((h) => {
-        switch (h) {
-          case 'healthy':
-            return 3;
-          case 'warning':
-            return 2;
-          case 'error':
-            return 1;
-          default:
-            return 0;
-        }
-      })
-      .filter((h) => h !== 0);
+    const nodeHealth: NodeConnectivityStatus = node ? getNodeConnectivityStatus(node) : 'unknown';
 
-    let worstHealth = Number.MAX_SAFE_INTEGER;
-    nodeHealths.forEach((h) => {
-      worstHealth = Math.min(worstHealth, h);
-    });
-
-    switch (worstHealth) {
+    switch (nodeHealth) {
       default:
         return <Tag>&#9679; Unknown</Tag>;
-      case 1:
+      case 'error':
         return <Tag color="error">&#9679; Error</Tag>;
-      case 2:
+      case 'warning':
         return <Tag color="warning">&#9679; Warning</Tag>;
-      case 3:
+      case 'healthy':
         return <Tag color="success">&#9679; Healthy</Tag>;
     }
-  }, [host?.id, store.nodes]);
+  }, [node]);
 
-  const loadHost = useCallback(() => {
+  const loadDetails = useCallback(() => {
     setIsLoading(true);
     if (!networkId) {
       navigate(AppRoutes.NETWORKS_ROUTE);
@@ -141,15 +129,17 @@ export default function NetworkHostDetailsPage(props: PageProps) {
     }
     // load from store
     const host = store.hosts.find((h) => h.id === hostId);
-    if (!host) {
+    const node = store.nodes.find((n) => n.network === networkId && n.hostid === hostId);
+    if (!host || !node) {
       notify.error({ message: `Host ${hostId} not found` });
-      navigate(AppRoutes.HOSTS_ROUTE);
+      navigate(getNetworkRoute(networkId));
       return;
     }
     setHost(host);
+    setNode(node);
 
     setIsLoading(false);
-  }, [hostId, networkId, store.hosts, navigate, notify]);
+  }, [networkId, hostId, store.hosts, store.nodes, navigate, notify]);
 
   const onHostDelete = useCallback(async () => {
     try {
@@ -214,138 +204,277 @@ export default function NetworkHostDetailsPage(props: PageProps) {
           // backgroundColor: 'black',
         }}
       >
-        <Card style={{ width: '50%' }}>
+        <Card style={{ width: '50%', marginTop: '2rem' }}>
           <Typography.Title level={5} style={{ marginTop: '0rem' }}>
-            Host details
+            Host network settings
           </Typography.Title>
 
           <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
             <Col xs={12}>
-              <Typography.Text disabled>ID</Typography.Text>
+              <Typography.Text disabled>Network</Typography.Text>
             </Col>
             <Col xs={12}>
-              <Typography.Text>{host.id}</Typography.Text>
-            </Col>
-          </Row>
-          <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
-            <Col xs={12}>
-              <Typography.Text disabled>Endpoint</Typography.Text>
-            </Col>
-            <Col xs={12}>
-              <Typography.Text>{host.endpointip}</Typography.Text>
+              <Typography.Text>{node?.network ?? ''}</Typography.Text>
             </Col>
           </Row>
+
           <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
             <Col xs={12}>
-              <Typography.Text disabled>Listen Port</Typography.Text>
+              <Typography.Text disabled>IP Address (IPv4)</Typography.Text>
             </Col>
             <Col xs={12}>
-              <Typography.Text>{host.listenport}</Typography.Text>
+              <Typography.Text>{node?.address ?? ''}</Typography.Text>
             </Col>
           </Row>
+
+          {network && network.isipv6 && (
+            <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+              <Col xs={12}>
+                <Typography.Text disabled>IP Address (IPv6)</Typography.Text>
+              </Col>
+              <Col xs={12}>
+                <Typography.Text>{node?.address6 ?? ''}</Typography.Text>
+              </Col>
+            </Row>
+          )}
+
           <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
             <Col xs={12}>
-              <Typography.Text disabled>MAC Address</Typography.Text>
+              <Typography.Text disabled>Local Address</Typography.Text>
             </Col>
             <Col xs={12}>
-              <Typography.Text>{host.macaddress}</Typography.Text>
+              <Typography.Text>{node?.localaddress ?? ''}</Typography.Text>
             </Col>
           </Row>
+
+          {node?.isegressgateway && (
+            <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+              <Col xs={12}>
+                <Typography.Text disabled>Egress Gateway Ranges</Typography.Text>
+              </Col>
+              <Col xs={12}>
+                <Typography.Text>{node?.egressgatewayranges?.join(', ') ?? ''}</Typography.Text>
+              </Col>
+            </Row>
+          )}
+
           <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
             <Col xs={12}>
-              <Typography.Text disabled>MTU</Typography.Text>
+              <Typography.Text disabled>Is Connected</Typography.Text>
             </Col>
             <Col xs={12}>
-              <Typography.Text>{host.mtu}</Typography.Text>
+              <Typography.Text>{node?.connected ? 'Yes' : 'No'}</Typography.Text>
             </Col>
           </Row>
+
           <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
             <Col xs={12}>
-              <Typography.Text disabled>Public Key</Typography.Text>
+              <Typography.Text disabled>Persistent Keepalive</Typography.Text>
             </Col>
             <Col xs={12}>
-              <Typography.Text>{host.publickey}</Typography.Text>
+              <Typography.Text>{node?.persistentkeepalive ?? ''}</Typography.Text>
             </Col>
           </Row>
+
           <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
             <Col xs={12}>
-              <Typography.Text disabled>Operating System</Typography.Text>
+              <Typography.Text disabled>Default ACL</Typography.Text>
             </Col>
             <Col xs={12}>
-              <Typography.Text>{host.os}</Typography.Text>
+              <Typography.Text>{node?.defaultacl ?? ''}</Typography.Text>
             </Col>
           </Row>
+
           <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
             <Col xs={12}>
-              <Typography.Text disabled>Version</Typography.Text>
+              <Typography.Text disabled>DNA On</Typography.Text>
             </Col>
             <Col xs={12}>
-              <Typography.Text>{host.version}</Typography.Text>
+              <Typography.Text>{node?.dnson ? 'Yes' : 'No'}</Typography.Text>
             </Col>
           </Row>
+
           <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
             <Col xs={12}>
-              <Typography.Text disabled>Verbosity</Typography.Text>
+              <Typography.Text disabled>Last Check-in Time</Typography.Text>
             </Col>
             <Col xs={12}>
-              <Typography.Text>{host.verbosity}</Typography.Text>
+              <Typography.Text>
+                {moment((node?.lastcheckin ?? 0) * 1000).format(DATE_TIME_FORMAT) ?? ''}
+              </Typography.Text>
             </Col>
           </Row>
+
           <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
             <Col xs={12}>
-              <Typography.Text disabled>Default Interface</Typography.Text>
+              <Typography.Text disabled>Node Expiration Date</Typography.Text>
             </Col>
             <Col xs={12}>
-              <Typography.Text>{host.defaultinterface}</Typography.Text>
+              <Typography.Text>
+                {moment((node?.expdatetime ?? 0) * 1000).format(DATE_TIME_FORMAT) ?? ''}
+              </Typography.Text>
             </Col>
           </Row>
+
           <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
             <Col xs={12}>
-              <Typography.Text disabled>Default Host</Typography.Text>
+              <Typography.Text disabled>Last Modified Time</Typography.Text>
             </Col>
             <Col xs={12}>
-              <Typography.Text>{host.isdefault ? 'Yes' : 'No'}</Typography.Text>
-            </Col>
-          </Row>
-          <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
-            <Col xs={12}>
-              <Typography.Text disabled>Static Endpoint</Typography.Text>
-            </Col>
-            <Col xs={12}>
-              <Typography.Text>{host.isstatic ? 'Yes' : 'No'}</Typography.Text>
-            </Col>
-          </Row>
-          <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
-            <Col xs={12}>
-              <Typography.Text disabled>Debug</Typography.Text>
-            </Col>
-            <Col xs={12}>
-              <Typography.Text>{host.debug ? 'Yes' : 'No'}</Typography.Text>
+              <Typography.Text>
+                {moment((node?.lastmodified ?? 0) * 1000).format(DATE_TIME_FORMAT) ?? ''}
+              </Typography.Text>
             </Col>
           </Row>
         </Card>
 
         <Card style={{ width: '50%', marginTop: '2rem' }}>
-          <Typography.Title level={5} style={{ marginTop: '0rem' }}>
-            Advanced settings
-          </Typography.Title>
-          <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
-            <Col xs={12}>
-              <Typography.Text disabled>Internet Gateway</Typography.Text>
-            </Col>
-            <Col xs={12}>
-              <Typography.Text>{host.internetgateway}</Typography.Text>
-            </Col>
-          </Row>
+          <Collapse ghost size="small">
+            <Collapse.Panel
+              key="details"
+              header={
+                <Typography.Title level={5} style={{ marginTop: '0rem' }}>
+                  Host details
+                </Typography.Title>
+              }
+            >
+              <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+                <Col xs={12}>
+                  <Typography.Text disabled>ID</Typography.Text>
+                </Col>
+                <Col xs={12}>
+                  <Typography.Text>{host.id}</Typography.Text>
+                </Col>
+              </Row>
+              <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+                <Col xs={12}>
+                  <Typography.Text disabled>Endpoint</Typography.Text>
+                </Col>
+                <Col xs={12}>
+                  <Typography.Text>{host.endpointip}</Typography.Text>
+                </Col>
+              </Row>
+              <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+                <Col xs={12}>
+                  <Typography.Text disabled>Listen Port</Typography.Text>
+                </Col>
+                <Col xs={12}>
+                  <Typography.Text>{host.listenport}</Typography.Text>
+                </Col>
+              </Row>
+              <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+                <Col xs={12}>
+                  <Typography.Text disabled>MAC Address</Typography.Text>
+                </Col>
+                <Col xs={12}>
+                  <Typography.Text>{host.macaddress}</Typography.Text>
+                </Col>
+              </Row>
+              <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+                <Col xs={12}>
+                  <Typography.Text disabled>MTU</Typography.Text>
+                </Col>
+                <Col xs={12}>
+                  <Typography.Text>{host.mtu}</Typography.Text>
+                </Col>
+              </Row>
+              <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+                <Col xs={12}>
+                  <Typography.Text disabled>Public Key</Typography.Text>
+                </Col>
+                <Col xs={12}>
+                  <Typography.Text>{host.publickey}</Typography.Text>
+                </Col>
+              </Row>
+              <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+                <Col xs={12}>
+                  <Typography.Text disabled>Operating System</Typography.Text>
+                </Col>
+                <Col xs={12}>
+                  <Typography.Text>{host.os}</Typography.Text>
+                </Col>
+              </Row>
+              <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+                <Col xs={12}>
+                  <Typography.Text disabled>Version</Typography.Text>
+                </Col>
+                <Col xs={12}>
+                  <Typography.Text>{host.version}</Typography.Text>
+                </Col>
+              </Row>
+              <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+                <Col xs={12}>
+                  <Typography.Text disabled>Verbosity</Typography.Text>
+                </Col>
+                <Col xs={12}>
+                  <Typography.Text>{host.verbosity}</Typography.Text>
+                </Col>
+              </Row>
+              <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+                <Col xs={12}>
+                  <Typography.Text disabled>Default Interface</Typography.Text>
+                </Col>
+                <Col xs={12}>
+                  <Typography.Text>{host.defaultinterface}</Typography.Text>
+                </Col>
+              </Row>
+              <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+                <Col xs={12}>
+                  <Typography.Text disabled>Default Host</Typography.Text>
+                </Col>
+                <Col xs={12}>
+                  <Typography.Text>{host.isdefault ? 'Yes' : 'No'}</Typography.Text>
+                </Col>
+              </Row>
+              <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+                <Col xs={12}>
+                  <Typography.Text disabled>Static Endpoint</Typography.Text>
+                </Col>
+                <Col xs={12}>
+                  <Typography.Text>{host.isstatic ? 'Yes' : 'No'}</Typography.Text>
+                </Col>
+              </Row>
+              <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+                <Col xs={12}>
+                  <Typography.Text disabled>Debug</Typography.Text>
+                </Col>
+                <Col xs={12}>
+                  <Typography.Text>{host.debug ? 'Yes' : 'No'}</Typography.Text>
+                </Col>
+              </Row>
+            </Collapse.Panel>
+          </Collapse>
+        </Card>
 
-          <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
-            <Col xs={12}>
-              <Typography.Text disabled>Proxy Listen Port</Typography.Text>
-            </Col>
-            <Col xs={12}>
-              <Typography.Text>{host.listenport}</Typography.Text>
-            </Col>
-          </Row>
+        <Card style={{ width: '50%', marginTop: '2rem' }}>
+          <Collapse ghost size="small">
+            <Collapse.Panel
+              key="details"
+              header={
+                <Typography.Title level={5} style={{ marginTop: '0rem' }}>
+                  Advanced settings
+                </Typography.Title>
+              }
+            >
+              <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+                <Col xs={12}>
+                  <Typography.Text disabled>Internet Gateway</Typography.Text>
+                </Col>
+                <Col xs={12}>
+                  <Typography.Text>{host.internetgateway}</Typography.Text>
+                </Col>
+              </Row>
+
+              <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+                <Col xs={12}>
+                  <Typography.Text disabled>Proxy Listen Port</Typography.Text>
+                </Col>
+                <Col xs={12}>
+                  <Typography.Text>{host.listenport}</Typography.Text>
+                </Col>
+              </Row>
+            </Collapse.Panel>
+          </Collapse>
         </Card>
       </div>
     );
@@ -403,8 +532,8 @@ export default function NetworkHostDetailsPage(props: PageProps) {
   ]);
 
   useEffect(() => {
-    loadHost();
-  }, [loadHost]);
+    loadDetails();
+  }, [loadDetails]);
 
   // run only once
   useEffect(() => {
@@ -424,7 +553,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
         {/* top bar */}
         <Row className="tabbed-page-row-padding">
           <Col xs={24}>
-            <Link to={AppRoutes.HOSTS_ROUTE}>View All Hosts</Link>
+            <Link to={getNetworkRoute(networkId || '')}>View Network</Link>
             <Row>
               <Col xs={18}>
                 <Typography.Title level={2} style={{ marginTop: '.5rem', marginBottom: '2rem' }}>

@@ -16,6 +16,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import UsersPage from './pages/users/UsersPage';
 import SignupPage from './pages/auth/SignupPage';
 import { isSaasBuild } from './services/BaseService';
+import NetworkHostDetailsPage from './pages/hosts/NetworkHostDetailsPage';
 
 export class AppRoutes {
   static DASHBOARD_ROUTE = '/';
@@ -25,6 +26,7 @@ export class AppRoutes {
   static NEW_HOST_ROUTE = '/hosts-new';
   static HOSTS_ROUTE = '/hosts';
   static HOST_ROUTE = '/hosts/:hostId';
+  static NETWORK_HOST_ROUTE = '/networks/:networkId/hosts/:hostId';
   static NETWORKS_ROUTE = '/networks';
   static NETWORK_DETAILS_ROUTE = '/networks/:networkId';
   static CLIENTS_ROUTE = '/clients';
@@ -85,6 +87,14 @@ const routes: RouteObject[] = [
         element: (
           <ProtectedRoute>
             <NetworkDetailsPage isFullScreen />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: AppRoutes.NETWORK_HOST_ROUTE.split('/').slice(1).join('/'),
+        element: (
+          <ProtectedRoute>
+            <NetworkHostDetailsPage isFullScreen />
           </ProtectedRoute>
         ),
       },

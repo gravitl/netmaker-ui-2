@@ -17,7 +17,7 @@ import { NodesService } from '@/services/NodesService';
 import { useStore } from '@/store/store';
 import { convertNetworkPayloadToUiNetwork, convertUiNetworkToNetworkPayload } from '@/utils/NetworkUtils';
 import { getExtendedNode } from '@/utils/NodeUtils';
-import { getHostRoute, getNetworkRoute, getNewHostRoute } from '@/utils/RouteUtils';
+import { getHostRoute, getNetworkHostRoute, getNetworkRoute, getNewHostRoute } from '@/utils/RouteUtils';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import {
   CheckOutlined,
@@ -1429,7 +1429,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   title: 'Host Name',
                   render: (_, node) => {
                     const hostName = store.hostsCommonDetails[node.hostid].name;
-                    return <Link to={getHostRoute(hostName)}>{hostName}</Link>;
+                    return <Link to={getNetworkHostRoute(node.hostid, node.network)}>{hostName}</Link>;
                   },
                   sorter: (a, b) => {
                     const hostNameA = store.hostsCommonDetails[a.hostid].name;
