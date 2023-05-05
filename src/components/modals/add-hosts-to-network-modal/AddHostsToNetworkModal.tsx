@@ -125,12 +125,13 @@ export default function AddHostsToNetworkModal({
                     dataIndex: 'version',
                   },
                   {
-                    title: 'Connectivity Status',
+                    align: 'right',
                     render(_, host) {
-                      const isConnected =
-                        store.nodes.find((node) => node.hostid === host.id && node.network === networkId)?.connected ??
-                        false;
-                      return <Switch checked={isConnected} onChange={() => connectHostToNetwork(host)} />;
+                      return (
+                        <Button size="small" onClick={() => connectHostToNetwork(host)}>
+                          Connect
+                        </Button>
+                      );
                     },
                   },
                 ]}

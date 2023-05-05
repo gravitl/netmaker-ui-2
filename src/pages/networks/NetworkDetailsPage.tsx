@@ -17,7 +17,7 @@ import { NodesService } from '@/services/NodesService';
 import { useStore } from '@/store/store';
 import { convertNetworkPayloadToUiNetwork, convertUiNetworkToNetworkPayload } from '@/utils/NetworkUtils';
 import { getExtendedNode } from '@/utils/NodeUtils';
-import { getHostRoute, getNetworkRoute, getNewHostRoute } from '@/utils/RouteUtils';
+import { getHostRoute, getNetworkHostRoute, getNetworkRoute, getNewHostRoute } from '@/utils/RouteUtils';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import {
   CheckOutlined,
@@ -161,10 +161,10 @@ export default function NetworkDetailsPage(props: PageProps) {
   const networkNodes = useMemo(
     () =>
       store.nodes
+        .map((node) => getExtendedNode(node, store.hostsCommonDetails))
         .filter((node) => node.network === networkId)
-        // TODO: add name search
-        .filter((node) => node.address.toLowerCase().includes(searchHost.toLowerCase())),
-    [store.nodes, networkId, searchHost]
+        .filter((node) => `${node?.name ?? ''}${node.address}`.toLowerCase().includes(searchHost.toLowerCase())),
+    [store.nodes, store.hostsCommonDetails, networkId, searchHost]
   );
 
   const clientGateways = useMemo<ExtendedNode[]>(() => {
@@ -1263,11 +1263,11 @@ export default function NetworkDetailsPage(props: PageProps) {
     [networkNodes, store.hostsCommonDetails]
   );
 
-  const toggleNodeConnectionStatus = useCallback(
+  const disconnectNodeFromNetwork = useCallback(
     (newStatus: boolean, node: ExtendedNode) => {
       Modal.confirm({
-        title: 'Toggle host connectivity to network',
-        content: `Are you sure you want to ${newStatus ? 'connect' : 'disconnect'} node ${node?.name ?? ''}?`,
+        title: 'Disconnect host connectivity from network',
+        content: `Are you sure you want to ${newStatus ? 'connect' : 'disconnect'} ${node?.name ?? ''}?`,
         async onOk() {
           try {
             if (!networkId) return;
@@ -1429,7 +1429,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   title: 'Host Name',
                   render: (_, node) => {
                     const hostName = store.hostsCommonDetails[node.hostid].name;
-                    return <Link to={getHostRoute(hostName)}>{hostName}</Link>;
+                    return <Link to={getNetworkHostRoute(node.hostid, node.network)}>{hostName}</Link>;
                   },
                   sorter: (a, b) => {
                     const hostNameA = store.hostsCommonDetails[a.hostid].name;
@@ -1465,16 +1465,24 @@ export default function NetworkDetailsPage(props: PageProps) {
                   },
                 },
                 {
-                  title: 'Connection status',
-                  dataIndex: 'connected',
-                  render(connected: boolean, node) {
+                  width: '1rem',
+                  align: 'right',
+                  render(_: boolean, node) {
                     return (
-                      <Switch
-                        checked={connected}
-                        onChange={(newStatus) =>
-                          toggleNodeConnectionStatus(newStatus, getExtendedNode(node, store.hostsCommonDetails))
-                        }
-                      />
+                      <Dropdown
+                        menu={{
+                          items: [
+                            {
+                              key: 'disconnect',
+                              label: 'Disconnect',
+                              onClick: () =>
+                                disconnectNodeFromNetwork(false, getExtendedNode(node, store.hostsCommonDetails)),
+                            },
+                          ],
+                        }}
+                      >
+                        <MoreOutlined />
+                      </Dropdown>
                     );
                   },
                 },
@@ -1493,7 +1501,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     network?.isipv6,
     networkNodes,
     store.hostsCommonDetails,
-    toggleNodeConnectionStatus,
+    disconnectNodeFromNetwork,
   ]);
 
   const getDnsContent = useCallback(() => {

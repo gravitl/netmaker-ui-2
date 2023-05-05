@@ -20,6 +20,18 @@ export function getHostRoute(hostOrId: Host | Host['id'], ...queryParams: { [key
   return route;
 }
 
+// Get network host route from host ID and network ID or objects
+export function getNetworkHostRoute(hostOrId: Host | Host['id'], networkOrId: Network | Network['netid']): string {
+  const networkPlaceholder = ':networkId';
+  const hostPlaceholder = ':hostId';
+  let route = AppRoutes.NETWORK_HOST_ROUTE;
+  if (typeof hostOrId === 'string') route = route.replace(hostPlaceholder, hostOrId);
+  else route = route.replace(hostPlaceholder, hostOrId.id);
+  if (typeof networkOrId === 'string') route = route.replace(networkPlaceholder, networkOrId);
+  else route = route.replace(networkPlaceholder, networkOrId.netid);
+  return route;
+}
+
 // Get network route from network obj or ID
 export function getNetworkRoute(networkOrId: Network | Network['netid']): string {
   const placeholder = ':networkId';
