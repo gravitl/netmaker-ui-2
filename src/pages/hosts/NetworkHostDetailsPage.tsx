@@ -467,6 +467,15 @@ export default function NetworkHostDetailsPage(props: PageProps) {
 
               <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
                 <Col xs={12}>
+                  <Typography.Text disabled>Proxy Enabled</Typography.Text>
+                </Col>
+                <Col xs={12}>
+                  <Typography.Text>{host.proxy_enabled ? 'Yes' : 'No'}</Typography.Text>
+                </Col>
+              </Row>
+
+              <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+                <Col xs={12}>
                   <Typography.Text disabled>Proxy Listen Port</Typography.Text>
                 </Col>
                 <Col xs={12}>
@@ -558,10 +567,10 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                 </Typography.Title>
               </Col>
               <Col xs={6} style={{ textAlign: 'right' }}>
-                <span style={{ marginRight: '2rem' }}>
+                {/* <span style={{ marginRight: '2rem' }}>
                   <Typography.Text style={{ marginRight: '1rem' }}>Proxy Status</Typography.Text>
                   <Switch checked={host?.proxy_enabled} onChange={toggleProxyStatus} />
-                </span>
+                </span> */}
                 <Dropdown
                   placement="bottomRight"
                   menu={{

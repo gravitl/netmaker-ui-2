@@ -20,6 +20,7 @@ export default function UpdateHostModal({ isOpen, host, onUpdateHost, onCancel }
 
   const storeUpdateHost = store.updateHost;
   const isStaticVal: Host['isstatic'] = Form.useWatch('isstatic', form);
+  const proxyEnabledVal: Host['proxy_enabled'] = Form.useWatch('proxy_enabled', form);
 
   const resetModal = () => {
     form.resetFields();
@@ -84,8 +85,17 @@ export default function UpdateHostModal({ isOpen, host, onUpdateHost, onCancel }
               <Input placeholder="Endpoint IP" disabled={!isStaticVal} />
             </Form.Item>
 
-            <Form.Item label="Proxy Listen Port" name="proxy_listen_port" rules={[{ required: true }]}>
-              <InputNumber placeholder="Proxy Listen Port" min={0} style={{ width: '100%' }} />
+            <Form.Item label="Proxy Status" name="proxy_enabled" valuePropName="checked" rules={[{ required: true }]}>
+              <Switch />
+            </Form.Item>
+
+            <Form.Item label="Proxy Listen Port" name="proxy_listen_port" rules={[{ required: proxyEnabledVal }]}>
+              <InputNumber
+                placeholder="Proxy Listen Port"
+                min={0}
+                style={{ width: '100%' }}
+                disabled={!proxyEnabledVal}
+              />
             </Form.Item>
 
             <Form.Item label="Default Host" name="isdefault" valuePropName="checked" rules={[{ required: true }]}>
