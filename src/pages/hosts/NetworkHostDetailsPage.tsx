@@ -18,7 +18,6 @@ import {
   notification,
   Row,
   Skeleton,
-  Switch,
   Table,
   TableColumnsType,
   Tabs,
