@@ -37,6 +37,7 @@ import { Node } from '@/models/Node';
 import { NodeConnectivityStatus } from '@/models/NodeConnectivityStatus';
 import moment from 'moment';
 import { DATE_TIME_FORMAT } from '@/constants/AppConstants';
+import UpdateNodeModal from '@/components/modals/update-node-modal/UpdateNodeModal';
 
 export default function NetworkHostDetailsPage(props: PageProps) {
   const { hostId, networkId } = useParams<{ hostId: string; networkId: string }>();
@@ -48,7 +49,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
 
   const storeUpdateHost = store.updateHost;
   const [isLoading, setIsLoading] = useState(false);
-  const [isEditingHost, setIsEditingHost] = useState(false);
+  const [isEditingNode, setIsEditingNode] = useState(false);
   const [host, setHost] = useState<Host | null>(null);
   const [node, setNode] = useState<Node | null>(null);
   const [searchText, setSearchText] = useState('');
@@ -76,8 +77,8 @@ export default function NetworkHostDetailsPage(props: PageProps) {
     [host?.defaultinterface]
   );
 
-  const onUpdateHost = useCallback(() => {
-    setIsEditingHost(false);
+  const onUpdateNode = useCallback(() => {
+    setIsEditingNode(false);
   }, []);
 
   const toggleProxyStatus = useCallback(
@@ -278,7 +279,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
 
           <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
             <Col xs={12}>
-              <Typography.Text disabled>Default ACL</Typography.Text>
+              <Typography.Text disabled>Node ACL</Typography.Text>
             </Col>
             <Col xs={12}>
               <Typography.Text>{node?.defaultacl ?? ''}</Typography.Text>
@@ -287,7 +288,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
 
           <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
             <Col xs={12}>
-              <Typography.Text disabled>DNA On</Typography.Text>
+              <Typography.Text disabled>DNS On</Typography.Text>
             </Col>
             <Col xs={12}>
               <Typography.Text>{node?.dnson ? 'Yes' : 'No'}</Typography.Text>
@@ -307,7 +308,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
 
           <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
             <Col xs={12}>
-              <Typography.Text disabled>Node Expiration Date</Typography.Text>
+              <Typography.Text disabled>Expiration Date</Typography.Text>
             </Col>
             <Col xs={12}>
               <Typography.Text>
@@ -519,17 +520,13 @@ export default function NetworkHostDetailsPage(props: PageProps) {
         label: `Overview`,
         children: host ? getOverviewContent() : <Skeleton active />,
       },
-      // {
-      //   key: 'network-interface',
-      //   label: `Network Interfaces`,
-      //   children: host ? getNetworkInterfacesContent() : <Skeleton active />,
-      // },
+      {
+        key: 'network-interface',
+        label: `Network Interfaces`,
+        children: host ? getNetworkInterfacesContent() : <Skeleton active />,
+      },
     ];
-  }, [
-    // getNetworkInterfacesContent,
-    getOverviewContent,
-    host,
-  ]);
+  }, [getNetworkInterfacesContent, getOverviewContent, host]);
 
   useEffect(() => {
     loadDetails();
@@ -539,7 +536,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
   useEffect(() => {
     const shouldEdit = queryParams.get('edit');
     if (shouldEdit === 'true') {
-      setIsEditingHost(true);
+      setIsEditingNode(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -583,7 +580,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                         label: <Typography.Text>Edit</Typography.Text>,
                         onClick: (ev) => {
                           ev.domEvent.stopPropagation();
-                          setIsEditingHost(true);
+                          setIsEditingNode(true);
                         },
                       },
                       {
@@ -611,15 +608,15 @@ export default function NetworkHostDetailsPage(props: PageProps) {
 
       {/* misc */}
       {notifyCtx}
-      {!!host && (
-        <UpdateHostModal
-          key={host.id}
-          isOpen={isEditingHost}
-          host={host}
+      {!!node && (
+        <UpdateNodeModal
+          key={node.id}
+          isOpen={isEditingNode}
+          node={node}
           onCancel={() => {
-            setIsEditingHost(false);
+            setIsEditingNode(false);
           }}
-          onUpdateHost={onUpdateHost}
+          onUpdateNode={onUpdateNode}
         />
       )}
     </Layout.Content>
