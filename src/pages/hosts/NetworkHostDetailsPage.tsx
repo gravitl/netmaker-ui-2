@@ -478,7 +478,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
         </Card>
       </div>
     );
-  }, [host, themeToken.colorBorder]);
+  }, [host, network, node, themeToken.colorBorder]);
 
   const getNetworkInterfacesContent = useCallback(() => {
     return (
