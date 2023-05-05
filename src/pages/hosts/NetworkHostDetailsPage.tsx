@@ -1,4 +1,3 @@
-import UpdateHostModal from '@/components/modals/update-host-modal/UpdateHostModal';
 import { Host } from '@/models/Host';
 import { Interface } from '@/models/Interface';
 import { AppRoutes } from '@/routes';
