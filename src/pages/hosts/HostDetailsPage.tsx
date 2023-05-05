@@ -432,10 +432,10 @@ export default function HostDetailsPage(props: PageProps) {
                 </Typography.Title>
               </Col>
               <Col xs={6} style={{ textAlign: 'right' }}>
-                <span style={{ marginRight: '2rem' }}>
+                {/* <span style={{ marginRight: '2rem' }}>
                   <Typography.Text style={{ marginRight: '1rem' }}>Proxy Status</Typography.Text>
                   <Switch checked={host?.proxy_enabled} onChange={toggleProxyStatus} />
-                </span>
+                </span> */}
                 <Dropdown
                   placement="bottomRight"
                   menu={{
