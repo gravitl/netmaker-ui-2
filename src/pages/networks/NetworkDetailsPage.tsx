@@ -161,10 +161,10 @@ export default function NetworkDetailsPage(props: PageProps) {
   const networkNodes = useMemo(
     () =>
       store.nodes
+        .map((node) => getExtendedNode(node, store.hostsCommonDetails))
         .filter((node) => node.network === networkId)
-        // TODO: add name search
-        .filter((node) => node.address.toLowerCase().includes(searchHost.toLowerCase())),
-    [store.nodes, networkId, searchHost]
+        .filter((node) => `${node?.name ?? ''}${node.address}`.toLowerCase().includes(searchHost.toLowerCase())),
+    [store.nodes, store.hostsCommonDetails, networkId, searchHost]
   );
 
   const clientGateways = useMemo<ExtendedNode[]>(() => {
