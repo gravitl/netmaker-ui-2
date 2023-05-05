@@ -1263,11 +1263,11 @@ export default function NetworkDetailsPage(props: PageProps) {
     [networkNodes, store.hostsCommonDetails]
   );
 
-  const toggleNodeConnectionStatus = useCallback(
+  const disconnectNodeFromNetwork = useCallback(
     (newStatus: boolean, node: ExtendedNode) => {
       Modal.confirm({
-        title: 'Toggle host connectivity to network',
-        content: `Are you sure you want to ${newStatus ? 'connect' : 'disconnect'} node ${node?.name ?? ''}?`,
+        title: 'Disconnect host connectivity from network',
+        content: `Are you sure you want to ${newStatus ? 'connect' : 'disconnect'} ${node?.name ?? ''}?`,
         async onOk() {
           try {
             if (!networkId) return;
@@ -1465,16 +1465,24 @@ export default function NetworkDetailsPage(props: PageProps) {
                   },
                 },
                 {
-                  title: 'Connection status',
-                  dataIndex: 'connected',
-                  render(connected: boolean, node) {
+                  width: '1rem',
+                  align: 'right',
+                  render(_: boolean, node) {
                     return (
-                      <Switch
-                        checked={connected}
-                        onChange={(newStatus) =>
-                          toggleNodeConnectionStatus(newStatus, getExtendedNode(node, store.hostsCommonDetails))
-                        }
-                      />
+                      <Dropdown
+                        menu={{
+                          items: [
+                            {
+                              key: 'disconnect',
+                              label: 'Disconnect',
+                              onClick: () =>
+                                disconnectNodeFromNetwork(false, getExtendedNode(node, store.hostsCommonDetails)),
+                            },
+                          ],
+                        }}
+                      >
+                        <MoreOutlined />
+                      </Dropdown>
                     );
                   },
                 },
@@ -1493,7 +1501,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     network?.isipv6,
     networkNodes,
     store.hostsCommonDetails,
-    toggleNodeConnectionStatus,
+    disconnectNodeFromNetwork,
   ]);
 
   const getDnsContent = useCallback(() => {
