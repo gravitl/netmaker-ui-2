@@ -13,6 +13,7 @@ const POLL_INTERVAL = 10_000;
 
 function App() {
   const store = useStore();
+
   const storeFetchServerConfig = store.fetchServerConfig;
   const storeSetServerStatus = store.setServerStatus;
   const storeFetchNodes = store.fetchNodes;
@@ -20,6 +21,7 @@ function App() {
   const storeIsLoggedIn = store.isLoggedIn;
   const [notify, notifyCtx] = notification.useNotification();
   const [serverMalfunctionCount, setServerMalfunctionCount] = useState(0);
+  const [hasFetchedServerConfig, setHasFetchedServerConfig] = useState(false);
 
   const getUpdates = useCallback(async () => {
     try {
@@ -43,23 +45,20 @@ function App() {
   }, [storeFetchHosts, storeFetchNodes, storeSetServerStatus]);
 
   useEffect(() => {
-    const id = setInterval(() => {
-      // TODO: retest. seems buggy
+    const id = setInterval(async () => {
       if (storeIsLoggedIn()) {
         getUpdates();
+
+        if (!hasFetchedServerConfig) {
+          const res = await storeFetchServerConfig();
+          if (res) {
+            () => setHasFetchedServerConfig(true);
+          }
+        }
       }
     }, POLL_INTERVAL);
     return () => clearInterval(id);
-  }, [getUpdates, storeIsLoggedIn]);
-
-  // one-time loads
-  useEffect(
-    () => {
-      storeFetchServerConfig();
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
-  );
+  }, [getUpdates, hasFetchedServerConfig, storeFetchServerConfig, storeIsLoggedIn]);
 
   return (
     <div className="App">
