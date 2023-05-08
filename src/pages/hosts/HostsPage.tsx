@@ -46,7 +46,6 @@ export default function HostsPage(props: PageProps) {
   const [searchText, setSearchText] = useState('');
   const [hasLoaded, setHasLoaded] = useState(false);
   const [selectedHost, setSelectedHost] = useState<Host | null>(null);
-  const [isJoinNetworkModalOpen, setIsJoinNetworkModalOpen] = useState(false);
   const [hasAdvicedHosts, setHasAdvicedHosts] = useState(false);
   const [isRefreshingHosts, setIsRefreshingHosts] = useState(false);
 
@@ -142,7 +141,29 @@ export default function HostsPage(props: PageProps) {
         title: 'Proxy Status',
         dataIndex: 'proxy_enabled',
         render(value, host) {
-          return <Switch checked={value} />;
+          return (
+            <Switch
+              checked={value}
+              onChange={(newStatus: boolean) => {
+                Modal.confirm({
+                  title: 'Toggle proxy status',
+                  content: `Are you sure you want to turn ${newStatus ? 'on' : 'off'} proxy for host ${host.name}?`,
+                  onOk: async () => {
+                    try {
+                      const newHost = (await HostsService.updateHost(host.id, { ...host, proxy_enabled: newStatus }))
+                        .data;
+                      storeUpdateHost(host.id, newHost);
+                    } catch (err) {
+                      notify.error({
+                        message: 'Failed to update host',
+                        description: extractErrorMsg(err as any),
+                      });
+                    }
+                  },
+                });
+              }}
+            />
+          );
         },
       },
       // {
@@ -205,7 +226,7 @@ export default function HostsPage(props: PageProps) {
         },
       },
     ],
-    [store.nodes]
+    [notify, store.nodes, storeUpdateHost]
   );
 
   const hostsTableCols2: TableColumnsType<Host> = useMemo(
@@ -291,8 +312,52 @@ export default function HostsPage(props: PageProps) {
         title: 'Address Range (IPv6)',
         dataIndex: 'addressrange6',
       },
+      selectedHost
+        ? {
+            title: 'Connection Status',
+            render(_: any, network: Network) {
+              const isConnected = store.nodes.some(
+                (node) => node.network === network.netid && node.hostid === selectedHost.id
+              );
+              return (
+                <Switch
+                  key={selectedHost.id}
+                  checked={isConnected}
+                  onChange={() => {
+                    Modal.confirm({
+                      title: `${isConnected ? 'Disconnect' : 'Connect'} host ${selectedHost.name} ${
+                        isConnected ? 'from' : 'to'
+                      } ${network.netid}`,
+                      async onOk() {
+                        try {
+                          await HostsService.updateHostsNetworks(
+                            selectedHost.id,
+                            network.netid,
+                            isConnected ? 'leave' : 'join'
+                          );
+                          notify.success({
+                            message: `Host successfully ${
+                              isConnected ? 'removed from' : 'added to'
+                            } network. It might take a while to reflect`,
+                            description: '',
+                          });
+                        } catch (err) {
+                          notify.error({
+                            message: `Failed to ${isConnected ? 'remove' : 'add'} host ${
+                              isConnected ? 'from' : 'to'
+                            } network`,
+                          });
+                        }
+                      },
+                    });
+                  }}
+                />
+              );
+            },
+          }
+        : {},
     ],
-    []
+    [notify, selectedHost, store.nodes]
   );
 
   // ui components
@@ -349,25 +414,6 @@ export default function HostsPage(props: PageProps) {
                   <Typography.Title style={{ marginTop: '0px' }} level={5}>
                     Networks
                   </Typography.Title>
-                </Col>
-                <Col xs={12} style={{ textAlign: 'right' }}>
-                  {selectedHost && (
-                    <Button
-                      type="primary"
-                      style={{ marginRight: '1rem' }}
-                      onClick={() => setIsJoinNetworkModalOpen(true)}
-                    >
-                      <PlusOutlined /> Join network
-                    </Button>
-                  )}
-                  Display All{' '}
-                  <Switch
-                    title="Display all networks. Click a host to filter networks the host is connected to."
-                    checked={selectedHost === null}
-                    onClick={() => {
-                      setSelectedHost(null);
-                    }}
-                  />
                 </Col>
               </Row>
               <Row style={{ marginTop: '1rem' }}>
