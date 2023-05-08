@@ -6,4 +6,5 @@ export interface EnrollmentKey {
   expiration: number;
   uses_remaining: number;
   unlimited: boolean;
+  type: 'Undefined' | 'TimeExpiration' | 'Uses' | 'Unlimited';
 }

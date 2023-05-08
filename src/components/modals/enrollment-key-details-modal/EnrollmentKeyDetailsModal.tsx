@@ -1,8 +1,9 @@
 import '../CustomModal.scss';
-import { Col, Divider, Modal, Row, Typography } from 'antd';
+import { Col, Divider, Modal, Row, Tag, Typography } from 'antd';
 import { EnrollmentKey } from '@/models/EnrollmentKey';
 import moment from 'moment';
 import { MouseEvent } from 'react';
+import { isEnrollmentKeyValid } from '@/utils/EnrollmentKeysUtils';
 
 interface EnrollmentKeyDetailsModalProps {
   isOpen: boolean;
@@ -11,7 +12,9 @@ interface EnrollmentKeyDetailsModalProps {
 }
 
 export default function EnrollmentKeyDetailsModal({ isOpen, enrollmentKey, onCancel }: EnrollmentKeyDetailsModalProps) {
-  const shouldShowExpDate = enrollmentKey.uses_remaining === 0 && enrollmentKey.unlimited === false;
+  const shouldShowExpDate =
+    enrollmentKey.type === 'TimeExpiration' ||
+    (enrollmentKey.uses_remaining === 0 && enrollmentKey.unlimited === false);
 
   return (
     <Modal
@@ -26,19 +29,31 @@ export default function EnrollmentKeyDetailsModal({ isOpen, enrollmentKey, onCan
       <div className="CustomModalBody">
         <Row>
           <Col xs={8}>
-            <Typography.Text>Tags</Typography.Text>
+            <Typography.Text>Name</Typography.Text>
           </Col>
           <Col xs={16}>
             <Typography.Text>{enrollmentKey.tags.join(', ')}</Typography.Text>
+            <Tag style={{ marginLeft: '1rem' }} color={isEnrollmentKeyValid(enrollmentKey) ? 'success' : 'error'}>
+              {isEnrollmentKeyValid(enrollmentKey) ? 'Valid' : 'Invalid'}
+            </Tag>
           </Col>
         </Row>
         <Divider style={{ margin: '1rem 0px 1rem 0px' }} />
         <Row>
           <Col xs={8}>
-            <Typography.Text>Value</Typography.Text>
+            <Typography.Text>Key</Typography.Text>
           </Col>
           <Col xs={16}>
-            <Typography.Text>{enrollmentKey.value}</Typography.Text>
+            <Typography.Text>{enrollmentKey.token}</Typography.Text>
+          </Col>
+        </Row>
+        <Divider style={{ margin: '1rem 0px 1rem 0px' }} />
+        <Row>
+          <Col xs={8}>
+            <Typography.Text>Type</Typography.Text>
+          </Col>
+          <Col xs={16}>
+            <Typography.Text>{enrollmentKey.type}</Typography.Text>
           </Col>
         </Row>
         <Divider style={{ margin: '1rem 0px 1rem 0px' }} />
@@ -56,7 +71,7 @@ export default function EnrollmentKeyDetailsModal({ isOpen, enrollmentKey, onCan
             <Typography.Text>Uses remaining</Typography.Text>
           </Col>
           <Col xs={16}>
-            <Typography.Text>{enrollmentKey.uses_remaining}</Typography.Text>
+            <Typography.Text>{enrollmentKey.type === 'Uses' ? enrollmentKey.uses_remaining : 'n/a'}</Typography.Text>
           </Col>
         </Row>
         <Divider style={{ margin: '1rem 0px 1rem 0px' }} />
@@ -66,7 +81,7 @@ export default function EnrollmentKeyDetailsModal({ isOpen, enrollmentKey, onCan
           </Col>
           <Col xs={16}>
             <Typography.Text>
-              {shouldShowExpDate ? moment(enrollmentKey.expiration).toLocaleString() : 'n/a'}
+              {shouldShowExpDate ? moment(enrollmentKey.expiration).toLocaleString() : 'never'}
             </Typography.Text>
           </Col>
         </Row>
@@ -82,9 +97,9 @@ export default function EnrollmentKeyDetailsModal({ isOpen, enrollmentKey, onCan
         <Divider style={{ margin: '1rem 0px 1rem 0px' }} />
         <Row>
           <Col xs={24}>
-            <Typography.Text type="secondary">Netclient CLI command:</Typography.Text>
+            <Typography.Text type="secondary">Join Server via CLI:</Typography.Text>
             <br />
-            <Typography.Text copyable>{`netclient register -t ${enrollmentKey.token}`}</Typography.Text>
+            <Typography.Text copyable code>{`netclient join -t ${enrollmentKey.token}`}</Typography.Text>
           </Col>
         </Row>
         <Divider style={{ margin: '1rem 0px 1rem 0px' }} />
