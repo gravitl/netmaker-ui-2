@@ -50,9 +50,9 @@ function App() {
         getUpdates();
 
         if (!hasFetchedServerConfig) {
-          const res = await storeFetchServerConfig();
-          if (res) {
-            () => setHasFetchedServerConfig(true);
+          const hasFetched = await storeFetchServerConfig();
+          if (hasFetched) {
+            setHasFetchedServerConfig(true);
           }
         }
       }
