@@ -49,7 +49,10 @@ export default function AddEnrollmentKeyModal({ isOpen, onCreateKey, onCancel }:
     try {
       const formData = await form.validateFields();
 
+      // reformat payload for backend
+      // type is automatically determined by backend
       formData.tags = [form.getFieldValue('tags')];
+      formData.type = 0;
 
       const payload: CreateEnrollmentKeyReqDto = {
         ...formData,
@@ -85,7 +88,7 @@ export default function AddEnrollmentKeyModal({ isOpen, onCreateKey, onCancel }:
       <Divider style={{ margin: '0px 0px 2rem 0px' }} />
       <div className="CustomModalBody">
         <Form name="add-enrollment-key-form" form={form} layout="vertical">
-          <Form.Item label="Tags" name="tags" rules={[{ required: true }]}>
+          <Form.Item label="Name" name="tags" rules={[{ required: true }]}>
             {/* <Select mode="tags" style={{ width: '100%' }} placeholder="Tags" /> */}
             <Input placeholder="Name" />
           </Form.Item>

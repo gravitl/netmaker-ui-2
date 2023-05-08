@@ -1,9 +1,9 @@
 import '../CustomModal.scss';
 import { Col, Divider, Modal, Row, Tag, Typography } from 'antd';
-import { EnrollmentKey } from '@/models/EnrollmentKey';
+import { EnrollmentKey, TimeBoundEnrollmentKey, UsesBasedEnrollmentKey } from '@/models/EnrollmentKey';
 import moment from 'moment';
 import { MouseEvent } from 'react';
-import { isEnrollmentKeyValid } from '@/utils/EnrollmentKeysUtils';
+import { isEnrollmentKeyValid, renderEnrollmentKeyType } from '@/utils/EnrollmentKeysUtils';
 
 interface EnrollmentKeyDetailsModalProps {
   isOpen: boolean;
@@ -13,7 +13,7 @@ interface EnrollmentKeyDetailsModalProps {
 
 export default function EnrollmentKeyDetailsModal({ isOpen, enrollmentKey, onCancel }: EnrollmentKeyDetailsModalProps) {
   const shouldShowExpDate =
-    enrollmentKey.type === 'TimeExpiration' ||
+    enrollmentKey.type === TimeBoundEnrollmentKey ||
     (enrollmentKey.uses_remaining === 0 && enrollmentKey.unlimited === false);
 
   return (
@@ -53,7 +53,7 @@ export default function EnrollmentKeyDetailsModal({ isOpen, enrollmentKey, onCan
             <Typography.Text>Type</Typography.Text>
           </Col>
           <Col xs={16}>
-            <Typography.Text>{enrollmentKey.type}</Typography.Text>
+            <Typography.Text>{renderEnrollmentKeyType(enrollmentKey.type)}</Typography.Text>
           </Col>
         </Row>
         <Divider style={{ margin: '1rem 0px 1rem 0px' }} />
@@ -71,7 +71,9 @@ export default function EnrollmentKeyDetailsModal({ isOpen, enrollmentKey, onCan
             <Typography.Text>Uses remaining</Typography.Text>
           </Col>
           <Col xs={16}>
-            <Typography.Text>{enrollmentKey.type === 'Uses' ? enrollmentKey.uses_remaining : 'n/a'}</Typography.Text>
+            <Typography.Text>
+              {enrollmentKey.type === UsesBasedEnrollmentKey ? enrollmentKey.uses_remaining : 'n/a'}
+            </Typography.Text>
           </Col>
         </Row>
         <Divider style={{ margin: '1rem 0px 1rem 0px' }} />
