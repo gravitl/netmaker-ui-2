@@ -15,7 +15,7 @@ export interface IAppSlice {
   setLogoUrl: (url: string) => void;
   setServerName: (name: string) => void;
   setServerStatus: (status: ServerStatus) => void;
-  fetchServerConfig: () => Promise<void>;
+  fetchServerConfig: () => Promise<boolean>;
 }
 
 const createAppSlice: StateCreator<IAppSlice, [], [], IAppSlice> = (set) => ({
@@ -39,8 +39,10 @@ const createAppSlice: StateCreator<IAppSlice, [], [], IAppSlice> = (set) => ({
     try {
       const serverConfig = (await ServerConfigService.getServerConfig()).data;
       set(() => ({ serverConfig }));
+      return Promise.resolve(true);
     } catch (err) {
       console.error(err);
+      return Promise.reject(false);
     }
   },
 });
