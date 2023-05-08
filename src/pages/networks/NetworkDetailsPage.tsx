@@ -1601,16 +1601,27 @@ export default function NetworkDetailsPage(props: PageProps) {
                 Clients
               </Typography.Title>
               <Typography.Text style={{ color: 'white ' }}>
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque amet modi cum aut doloremque dicta
-                reiciendis odit molestias nam animi enim et molestiae consequatur quas quo facere magni, maiores rem.
+                Client Gateways enable secure access to your network via Clients. The Gateway forwards traffic from the
+                clients into the network, and from the network back to the clients. Clients are simple WireGuard config
+                files, supported on most devices. To use Clients, you must configure a Client Gateway, which is
+                typically deployed in a public cloud environment, e.g. on a server with a public IP, so that it is
+                easily reachable from the Clients.{' '}
+                <a href="https://www.netmaker.io/features/ingress" target="_blank" rel="noreferrer">
+                  Learn More
+                </a>
               </Typography.Text>
             </Col>
             <Col xs={(24 * 1) / 3} style={{ position: 'relative' }}>
               <Card className="header-card" style={{ position: 'absolute', width: '100%' }}>
                 <Typography.Title level={3}>Create Client</Typography.Title>
                 <Typography.Text>
-                  Enable remote access to your network with clients. Clients enable you to connect mobile and other
-                  devices to your networks.
+                  Enable remote access to your network with a Client. A Client is a simple config file that runs on any
+                  device that supports{' '}
+                  <a href="https://www.wireguard.com/install" target="_blank" rel="noreferrer">
+                    (WireGuard)
+                  </a>
+                  . Apply the config file on your device, and it will have secure access to your network via the Client
+                  Gateway.
                 </Typography.Text>
                 {clientGateways.length === 0 && (
                   <Alert
@@ -1745,15 +1756,20 @@ export default function NetworkDetailsPage(props: PageProps) {
               </Typography.Title>
               <Typography.Text style={{ color: 'white ' }}>
                 Enable devices in your network to communicate with other devices outside the network via egress
-                gateways.
+                gateways. An office network, home network, data center, or cloud region all become easily accessible via
+                the Egress Gateway. You can even set a machine as an Internet Gateway to create a “traditional” VPN{' '}
+                <a href="https://www.netmaker.io/features/egress" target="_blank" rel="noreferrer">
+                  (Learn more)
+                </a>
+                .
               </Typography.Text>
             </Col>
             <Col xs={8} style={{ position: 'relative' }}>
               <Card className="header-card" style={{ position: 'absolute', width: '100%' }}>
                 <Typography.Title level={3}>Create Egress</Typography.Title>
                 <Typography.Text>
-                  Enable devices in your network to communicate with other devices outside the network via egress
-                  gateways.
+                  Select a device to act as your Egress Gateway. This device must have access to the target network, and
+                  must run Linux (for now).
                 </Typography.Text>
                 <Row style={{ marginTop: '5rem' }}>
                   <Col>
@@ -1881,14 +1897,21 @@ export default function NetworkDetailsPage(props: PageProps) {
                 Relays
               </Typography.Title>
               <Typography.Text style={{ color: 'white ' }}>
-                Enable devices in your network to communicate with othererwise unreachable devices with relays.
+                Enable devices in your network to communicate with othererwise unreachable devices with relays. Netmaker
+                uses Turn servers to automatically route traffic in these scenarios, but sometimes, you’d rather specify
+                which device should be routing the traffic
+                <a href="https://www.netmaker.io/features/relay" target="_blank" rel="noreferrer">
+                  (Learn More)
+                </a>
+                .
               </Typography.Text>
             </Col>
             <Col xs={8} style={{ position: 'relative' }}>
               <Card className="header-card" style={{ position: 'absolute', width: '100%' }}>
                 <Typography.Title level={3}>Create Relay</Typography.Title>
                 <Typography.Text>
-                  Enable devices in your network to communicate with otherwise unreachable devices with relays.
+                  Select a device to relay traffic to/from another device. The Relay is typically (but not always)
+                  publicly accessible, and in a nearby location to the target device, to minimize latency.
                 </Typography.Text>
                 <Row style={{ marginTop: '5rem' }}>
                   <Col>

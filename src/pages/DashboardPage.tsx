@@ -110,14 +110,14 @@ export default function DashboardPage(props: PageProps) {
             <Card>
               <h3>Start using Netmaker</h3>
               <p>
-                Lorem ipsum dolor sit amet consectetur, adipisicing elit. Tempore impedit soluta reprehenderit quo velit
-                corporis assumenda vel enim sed repellat quibusdam molestias voluptatibus illum magni laborum
-                recusandae, odit saepe provident aliquam repudiandae iste nostrum, possimus at eligendi. Ab quibusdam
-                sunt voluptates corporis nesciunt rem, libero doloribus officiis architecto accusantium aliquam nisi
-                praesentium placeat explicabo tempore officia quia quod fuga quasi.
+                Netmaker automates a secure superhighway between devices, clouds, virtual machines, and servers using
+                WireGuard®. It blows past any NAT’s, firewalls, or subnets that stand between them to create a flat,
+                simple network. The result is a secure overlay network that spans all your devices, wherever they are.
+                Of course, Netmaker does a lot more than that. With ACL’s, Ingress, Egress, and Relays, you have
+                complete control of your network.
               </p>
               <div>
-                <Button type="link">
+                <Button type="link" href="https://netmaker.io" target="_blank" rel="noreferrer">
                   <ArrowRightOutlined />
                   Take the tutorial
                 </Button>
@@ -127,13 +127,12 @@ export default function DashboardPage(props: PageProps) {
               <Card style={{ maxWidth: '30%' }}>
                 <h3>Add a network</h3>
                 <p>
-                  Lorem ipsum dolor sit amet consectetur, adipisicing elit. Consequatur possimus ex quae veritatis
-                  architecto esse.
+                  Enable fast and secure connections between your devices. Create a network, and then add your hosts.
                 </p>
                 <div>
                   <Button type="primary" onClick={() => setIsAddNetworkModalOpen(true)}>
                     <PlusOutlined />
-                    Get Started
+                    Get started with a network
                   </Button>
                 </div>
               </Card>
@@ -142,13 +141,13 @@ export default function DashboardPage(props: PageProps) {
               <Card style={{ maxWidth: '30%' }}>
                 <h3>Add a host</h3>
                 <p>
-                  Lorem ipsum dolor sit amet consectetur, adipisicing elit. Consequatur possimus ex quae veritatis
-                  architecto esse.
+                  Start creating your network by adding controllable devices as “hosts” on your platform. Servers, VM’s,
+                  your laptop, and more are all fair game.
                 </p>
                 <div>
                   <Button type="primary" onClick={goToNewHostPage}>
                     <PlusOutlined />
-                    Get Started
+                    Add a Host
                   </Button>
                 </div>
               </Card>

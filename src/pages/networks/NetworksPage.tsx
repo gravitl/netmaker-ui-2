@@ -96,14 +96,18 @@ export default function NetworksPage(props: PageProps) {
                   Networks
                 </Typography.Title>
                 <Typography.Text style={{ color: 'white ' }}>
-                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque amet modi cum aut doloremque dicta
-                  reiciendis odit molestias nam animi enim et molestiae consequatur quas quo facere magni, maiores rem.
+                  A network is how your hosts and clients communicate. Each machine gets a private IP address within the
+                  defined subnet and communicates securely with all the other devices in the network. The network is
+                  your base layer. Once it&apos;s created you can add Ingress, Egress, Relay, and more. Create multiple
+                  networks and manage multiple secure domains for your devices!
                 </Typography.Text>
               </Col>
               <Col xs={(24 * 1) / 3} style={{ position: 'relative' }}>
                 <Card className="header-card" style={{ height: '20rem', position: 'absolute', width: '100%' }}>
                   <Typography.Title level={3}>Add a Network</Typography.Title>
-                  <Typography.Text>Add networks to enable fast and secure communication between hosts</Typography.Text>
+                  <Typography.Text>
+                    Enable fast and secure connections between your devices. Create a network, and then add your hosts.
+                  </Typography.Text>
                   <Row style={{ marginTop: 'auto' }}>
                     <Col>
                       <Button type="primary" size="large" onClick={() => setIsAddNetworkModalOpen(true)}>
@@ -123,36 +127,55 @@ export default function NetworksPage(props: PageProps) {
               <Col xs={7} style={{ marginRight: '1rem' }}>
                 <Card>
                   <Typography.Title level={4} style={{ marginTop: '0px' }}>
-                    Communicate via networks
+                    Define a subnet
                   </Typography.Title>
                   <Typography.Text>
-                    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deleniti, beatae quis. Possimus commodi
-                    quas eveniet, nostrum iure eaque unde illo deleniti obcaecati aut aliquid ab sapiente ipsum soluta
-                    ex quis.
+                    Your devices will each get an IP address within the subnet you define. You should use a{' '}
+                    <a
+                      href="https://www.arin.net/reference/research/statistics/address_filters/"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      private range
+                    </a>
+                    . If you use the auto-fill feature, we will choose a private range for you. Most of the time, a /24
+                    range is more than enough, as it can hold 254 devices. If you think you need more, use a /16, which
+                    can hold 64,000.
                   </Typography.Text>
                 </Card>
               </Col>
               <Col xs={7} style={{ marginRight: '1rem' }}>
                 <Card>
                   <Typography.Title level={4} style={{ marginTop: '0px' }}>
-                    Communicate via networks
+                    Define a default ACL policy
                   </Typography.Title>
                   <Typography.Text>
-                    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deleniti, beatae quis. Possimus commodi
-                    quas eveniet, nostrum iure eaque unde illo deleniti obcaecati aut aliquid ab sapiente ipsum soluta
-                    ex quis.
+                    You can use either a default policy of ALLOW or DENY. Typically, you want ALLOW, and then any device
+                    you add to the network can reach all the others. Sometimes, you want to manually define all the
+                    connections, in which case you use a default of DENY. In either case, as devices are added, you can
+                    manually modify which devices can connect using the ACL list on the network.
                   </Typography.Text>
                 </Card>
               </Col>
               <Col xs={7}>
                 <Card>
                   <Typography.Title level={4} style={{ marginTop: '0px' }}>
-                    Communicate via networks
+                    After Creation
                   </Typography.Title>
                   <Typography.Text>
-                    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deleniti, beatae quis. Possimus commodi
-                    quas eveniet, nostrum iure eaque unde illo deleniti obcaecati aut aliquid ab sapiente ipsum soluta
-                    ex quis.
+                    Add hosts to your network. Make a host into a{' '}
+                    <a href="https://www.netmaker.io/features/ingress" target="_blank" rel="noreferrer">
+                      Client Gateway
+                    </a>{' '}
+                    to begin using Clients. Make a host an{' '}
+                    <a href="https://www.netmaker.io/features/egress" target="_blank" rel="noreferrer">
+                      egress gateway
+                    </a>{' '}
+                    to begin forwarding traffic to external networks like an office, data center, or the internet. Use{' '}
+                    <a href="https://www.netmaker.io/features/acls" target="_blank" rel="noreferrer">
+                      ACLs
+                    </a>{' '}
+                    to shape your network.
                   </Typography.Text>
                 </Card>
               </Col>
