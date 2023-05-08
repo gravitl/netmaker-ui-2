@@ -495,15 +495,17 @@ export default function HostsPage(props: PageProps) {
                   Hosts
                 </Typography.Title>
                 <Typography.Text style={{ color: 'white ' }}>
-                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque amet modi cum aut doloremque dicta
-                  reiciendis odit molestias nam animi enim et molestiae consequatur quas quo facere magni, maiores rem.
+                  Hosts are your devices. Servers, devices, VM&apos;s, containers, laptops, and more can all be Hosts.
+                  Windows, Linux, Mac, and FreeBSD are all supported. Register a Host with your server and add them to
+                  networks to give them secure access to other hosts and resources.
                 </Typography.Text>
               </Col>
               <Col xs={(24 * 1) / 3} style={{ position: 'relative' }}>
                 <Card className="header-card" style={{ height: '20rem', position: 'absolute', width: '100%' }}>
                   <Typography.Title level={3}>Add a Key</Typography.Title>
                   <Typography.Text>
-                    Hosts (netclients) can be physical or virtual machines capable of joining Netmaker networks.
+                    Start creating your network by adding controllable devices as “hosts” on your platform. Servers,
+                    VM’s, your laptop, and more are all fair game.
                   </Typography.Text>
                   <Row style={{ marginTop: 'auto' }}>
                     <Col>
@@ -531,33 +533,32 @@ export default function HostsPage(props: PageProps) {
                     Connect via Enrollment Keys
                   </Typography.Title>
                   <Typography.Text>
-                    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deleniti, beatae quis. Possimus commodi
-                    quas eveniet, nostrum iure eaque unde illo deleniti obcaecati aut aliquid ab sapiente ipsum soluta
-                    ex quis.
+                    Create an enrollment key which defines the networks a host has access to. Then join via cli{' '}
+                    <code>netclient join -t &lt;enrollment key&gt;</code> or the netclient GUI, and the host will join
+                    all of the defined networks.
                   </Typography.Text>
                 </Card>
               </Col>
               <Col xs={7} style={{ marginRight: '1rem' }}>
                 <Card>
                   <Typography.Title level={4} style={{ marginTop: '0px' }}>
-                    Connect via Enrollment Keys
+                    Connect via user auth
                   </Typography.Title>
                   <Typography.Text>
-                    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deleniti, beatae quis. Possimus commodi
-                    quas eveniet, nostrum iure eaque unde illo deleniti obcaecati aut aliquid ab sapiente ipsum soluta
-                    ex quis.
+                    If you are an authorized user on the system, you can join a network directly using either basic auth
+                    or sso. <code>netclient join -s &lt;server&gt; -n &lt;network&gt; [-u &lt;user&gt;]</code>
                   </Typography.Text>
                 </Card>
               </Col>
               <Col xs={7}>
                 <Card>
                   <Typography.Title level={4} style={{ marginTop: '0px' }}>
-                    Connect via Enrollment Keys
+                    Add host directly
                   </Typography.Title>
                   <Typography.Text>
-                    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deleniti, beatae quis. Possimus commodi
-                    quas eveniet, nostrum iure eaque unde illo deleniti obcaecati aut aliquid ab sapiente ipsum soluta
-                    ex quis.
+                    If a host is already registered with the server, you can add it into any network directly from the
+                    dashboard. Simply go to Network Access Management tab under the{' '}
+                    <Link to={AppRoutes.HOSTS_ROUTE}>Hosts page</Link>.
                   </Typography.Text>
                 </Card>
               </Col>

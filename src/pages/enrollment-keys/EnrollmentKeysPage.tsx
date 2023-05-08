@@ -176,8 +176,8 @@ export default function EnrollmentKeysPage(props: PageProps) {
                   Enrollment Keys
                 </Typography.Title>
                 <Typography.Text style={{ color: 'white ' }}>
-                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque amet modi cum aut doloremque dicta
-                  reiciendis odit molestias nam animi enim et molestiae consequatur quas quo facere magni, maiores rem.
+                  Enrollment keys allow you to enroll devices with your networks. You can automate enrollment and
+                  control access by defining expiration, number of uses, or making an infinitely usable key.
                 </Typography.Text>
               </Col>
               <Col xs={(24 * 1) / 3} style={{ position: 'relative' }}>
@@ -206,36 +206,31 @@ export default function EnrollmentKeysPage(props: PageProps) {
               <Col xs={7} style={{ marginRight: '1rem' }}>
                 <Card>
                   <Typography.Title level={4} style={{ marginTop: '0px' }}>
-                    Connect via Enrollment Keys
+                    Time-bound keys
                   </Typography.Title>
                   <Typography.Text>
-                    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deleniti, beatae quis. Possimus commodi
-                    quas eveniet, nostrum iure eaque unde illo deleniti obcaecati aut aliquid ab sapiente ipsum soluta
-                    ex quis.
+                    Use an expiration date for a time-sensitive invite to your networks.
                   </Typography.Text>
                 </Card>
               </Col>
               <Col xs={7} style={{ marginRight: '1rem' }}>
                 <Card>
                   <Typography.Title level={4} style={{ marginTop: '0px' }}>
-                    Connect via Enrollment Keys
+                    Usage-based keys
                   </Typography.Title>
                   <Typography.Text>
-                    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deleniti, beatae quis. Possimus commodi
-                    quas eveniet, nostrum iure eaque unde illo deleniti obcaecati aut aliquid ab sapiente ipsum soluta
-                    ex quis.
+                    Set an explicit number of uses for an enrollment key if you know how many devices need to join. Or
+                    just set as 1 if joining one device.
                   </Typography.Text>
                 </Card>
               </Col>
               <Col xs={7}>
                 <Card>
                   <Typography.Title level={4} style={{ marginTop: '0px' }}>
-                    Connect via Enrollment Keys
+                    Unlimited keys
                   </Typography.Title>
                   <Typography.Text>
-                    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deleniti, beatae quis. Possimus commodi
-                    quas eveniet, nostrum iure eaque unde illo deleniti obcaecati aut aliquid ab sapiente ipsum soluta
-                    ex quis.
+                    Make an unlimited key for easy use to enroll devices, and delete it when you&apos;re done.
                   </Typography.Text>
                 </Card>
               </Col>
