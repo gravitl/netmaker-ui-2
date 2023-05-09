@@ -1,7 +1,19 @@
 import '../CustomModal.scss';
-import { Button, Col, DatePicker, Divider, Form, InputNumber, Modal, notification, Radio, Row, Select } from 'antd';
+import {
+  Button,
+  Col,
+  DatePicker,
+  Divider,
+  Form,
+  Input,
+  InputNumber,
+  Modal,
+  notification,
+  Radio,
+  Row,
+  Select,
+} from 'antd';
 import { MouseEvent, useState } from 'react';
-import { AxiosError } from 'axios';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { useNavigate } from 'react-router-dom';
 import { AppRoutes } from '@/routes';
@@ -36,6 +48,12 @@ export default function AddEnrollmentKeyModal({ isOpen, onCreateKey, onCancel }:
   const createEnrollmentKey = async () => {
     try {
       const formData = await form.validateFields();
+
+      // reformat payload for backend
+      // type is automatically determined by backend
+      formData.tags = [form.getFieldValue('tags')];
+      formData.type = 0;
+
       const payload: CreateEnrollmentKeyReqDto = {
         ...formData,
         unlimited: type === 'unlimited' ? true : false,
@@ -43,17 +61,15 @@ export default function AddEnrollmentKeyModal({ isOpen, onCreateKey, onCancel }:
         expiration: type === 'time' ? Math.round(formData.expiration.unix()) : 0,
       };
       const key = (await EnrollmentKeysService.createEnrollmentKey(payload)).data;
-      notify.success({ message: `Enrollment key with tags ${key.tags.join(', ')} created` });
+      notify.success({ message: `Enrollment key with name ${key.tags.join(', ')} created` });
       resetModal();
       navigate(AppRoutes.ENROLLMENT_KEYS_ROUTE);
       onCreateKey(key);
     } catch (err) {
-      if (err instanceof AxiosError) {
-        notify.error({
-          message: 'Failed to create key',
-          description: extractErrorMsg(err),
-        });
-      }
+      notify.error({
+        message: 'Failed to create key',
+        description: extractErrorMsg(err as any),
+      });
     }
   };
 
@@ -72,8 +88,9 @@ export default function AddEnrollmentKeyModal({ isOpen, onCreateKey, onCancel }:
       <Divider style={{ margin: '0px 0px 2rem 0px' }} />
       <div className="CustomModalBody">
         <Form name="add-enrollment-key-form" form={form} layout="vertical">
-          <Form.Item label="Tags" name="tags" rules={[{ required: true }]}>
-            <Select mode="tags" style={{ width: '100%' }} placeholder="Tags" />
+          <Form.Item label="Name" name="tags" rules={[{ required: true }]}>
+            {/* <Select mode="tags" style={{ width: '100%' }} placeholder="Tags" /> */}
+            <Input placeholder="Name" />
           </Form.Item>
 
           <Form.Item label="Type" name="type" rules={[{ required: true }]}>

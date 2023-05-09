@@ -73,7 +73,7 @@ export default function EnrollmentKeysPage(props: PageProps) {
 
   const tableColumns: TableColumnsType<EnrollmentKey> = [
     {
-      title: 'Tags',
+      title: 'Name',
       dataIndex: 'tags',
       render: (value, key) => <Typography.Link onClick={() => openKeyDetails(key)}>{value.join(', ')}</Typography.Link>,
       sorter(a, b) {
