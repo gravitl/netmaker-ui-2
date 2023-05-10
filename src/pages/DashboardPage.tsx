@@ -16,6 +16,7 @@ import AddNetworkModal from '@/components/modals/add-network-modal/AddNetworkMod
 import { useState } from 'react';
 import { useStore } from '@/store/store';
 import { getAmuiUrl, getNewHostRoute } from '@/utils/RouteUtils';
+// import NewHostModal from '@/components/modals/new-host-modal/NewHostModal';
 
 export default function DashboardPage(props: PageProps) {
   const navigate = useNavigate();
@@ -41,7 +42,7 @@ export default function DashboardPage(props: PageProps) {
                   <Button
                     type="link"
                     onClick={() => {
-                      window.location = getAmuiUrl() as any;
+                      window.location = getAmuiUrl('upgrade') as any;
                       // setIsUpgradeModalOpen(true);
                     }}
                   >
@@ -166,6 +167,7 @@ export default function DashboardPage(props: PageProps) {
         }}
         onCancel={() => setIsAddNetworkModalOpen(false)}
       />
+      {/* <NewHostModal isOpen={true} /> */}
     </Layout.Content>
   );
 }
