@@ -32,8 +32,7 @@ ENV VITE_TENANT_LOGO=
 ENV VITE_TENANT_NAME=
 
 # Other vars
-ENV VITE_NETCLIENT_WINDOWS_DOWNLOAD_URL=https://fileserver.netmaker.org/latest/windows/netclient_x86.msi
-ENV VITE_NETCLIENT_MAC_DOWNLOAD_URL=https://fileserver.netmaker.org/latest/darwin/Netclient.pkg
+ENV VITE_NETCLIENT_BIN_URL_TEMPLATE=https://fileserver.netmaker.org/latest/windows/:fileName
 
 RUN npm ci
 RUN npm run build

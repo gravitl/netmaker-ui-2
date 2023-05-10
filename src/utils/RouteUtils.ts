@@ -4,6 +4,7 @@ import { Host } from '../models/Host';
 import { AppRoutes } from '../routes';
 import { AMUI_URL } from '@/services/BaseService';
 import { useStore } from '@/store/store';
+import { AvailableArchs, AvailableOses } from '@/models/AvailableOses';
 
 type AmuiRouteAction = '' | 'upgrade' | 'invite-user';
 
@@ -54,4 +55,30 @@ export function getAmuiUrl(action: AmuiRouteAction = '') {
   return `${AMUI_URL}/dashboard?tenantId=${useStore.getState().tenantId}&sToken=${
     useStore.getState().amuiAuthToken
   }&action=${action}`;
+}
+
+// Function to get netclient download link based on OS
+export function getNetclientDownloadLink(
+  os: AvailableOses,
+  arch: AvailableArchs,
+  appType: 'gui' | 'cli' = 'gui'
+): string {
+  const placeholder = ':fileName';
+  const netclientWindowsTemplate: string = import.meta.env.VITE_NETCLIENT_WINDOWS_DOWNLOAD_URL;
+  const netclientMacTemplate: string = import.meta.env.VITE_NETCLIENT_MAC_DOWNLOAD_URL;
+
+  const serverVersion = useStore.getState().serverConfig?.Version ?? '';
+
+  if (!serverVersion) return 'about:blank';
+
+  switch (os) {
+    default:
+      return 'about:blank';
+    case 'windows':
+      // TODO: get correct url based on server version
+      return netclientWindowsTemplate.replace(placeholder, 'netclient_x86.msi');
+    case 'macos':
+      // TODO: get correct url based on server version
+      return netclientMacTemplate.replace(placeholder, 'Netclient.pkg');
+  }
 }
