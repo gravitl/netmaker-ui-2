@@ -63,22 +63,24 @@ export function getNetclientDownloadLink(
   arch: AvailableArchs,
   appType: 'gui' | 'cli' = 'gui'
 ): string {
-  const placeholder = ':fileName';
-  const netclientWindowsTemplate: string = import.meta.env.VITE_NETCLIENT_WINDOWS_DOWNLOAD_URL;
-  const netclientMacTemplate: string = import.meta.env.VITE_NETCLIENT_MAC_DOWNLOAD_URL;
+  const fileNamePlaceholder = ':fileName';
+  const verisonPlaceholder = ':version';
+  const netclientBinTemplate: string = import.meta.env.VITE_NETCLIENT_BIN_URL_TEMPLATE;
 
+  const platform = os === 'macos' ? 'darwin' : os;
   const serverVersion = useStore.getState().serverConfig?.Version ?? '';
+  let effectiveFileName = 'netclient';
 
   if (!serverVersion) return 'about:blank';
 
-  switch (os) {
-    default:
-      return 'about:blank';
-    case 'windows':
-      // TODO: get correct url based on server version
-      return netclientWindowsTemplate.replace(placeholder, 'netclient_x86.msi');
-    case 'macos':
-      // TODO: get correct url based on server version
-      return netclientMacTemplate.replace(placeholder, 'Netclient.pkg');
+  if (appType === 'gui') {
+    effectiveFileName += '-gui';
   }
+  effectiveFileName += `-${platform}-${arch}`;
+
+  if (platform === 'windows') effectiveFileName += '.exe';
+
+  return netclientBinTemplate
+    .replace(verisonPlaceholder, serverVersion)
+    .replace(fileNamePlaceholder, effectiveFileName);
 }

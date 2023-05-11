@@ -1,4 +1,4 @@
-import { ArrowRightOutlined, CopyOutlined, PlusOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, ArrowRightOutlined, CopyOutlined, PlusOutlined } from '@ant-design/icons';
 import '../CustomModal.scss';
 import './NewHostModal.scss';
 import {
@@ -31,6 +31,7 @@ import AddEnrollmentKeyModal from '../add-enrollment-key-modal/AddEnrollmentKeyM
 
 interface NewHostModal {
   isOpen: boolean;
+  preferredNetwork?: Network;
   onFinish?: () => void;
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
 }
@@ -47,7 +48,7 @@ const steps = [
   },
 ];
 
-export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModal) {
+export default function NewHostModal({ isOpen, preferredNetwork, onCancel, onFinish }: NewHostModal) {
   const store = useStore();
   const [notify, notifyCtx] = notification.useNotification();
 
@@ -101,16 +102,29 @@ export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModa
     }
   }, [notify]);
 
+  const resetModal = () => {
+    setCurrentStep(0);
+    setIsAddEnrollmentKeyModalOpen(false);
+    setIsAddNetworkModalOpen(false);
+    setSelectedEnrollmentKey(null);
+    setSelectedNetwork(null);
+    setSelectedOs('windows');
+    setSelectedArch('amd64');
+  };
+
   useEffect(() => {
     // autoselect network
-    if (store.networks.length === 1) {
+    if (preferredNetwork) {
+      setSelectedNetwork(preferredNetwork);
+      onStepChange(1);
+    } else if (store.networks.length === 1) {
       setSelectedNetwork(store.networks[0]);
       onStepChange(1);
     }
-  }, [onStepChange, store.networks]);
+  }, [onStepChange, preferredNetwork, store.networks]);
 
-  // reset arch on OS change
   useEffect(() => {
+    // reset arch on OS change
     setSelectedArch('amd64');
   }, [selectedOs]);
 
@@ -123,19 +137,30 @@ export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModa
       title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Add a new host</span>}
       open={isOpen}
       className="CustomModal NewHostModal"
-      onCancel={onCancel}
+      onCancel={(ev) => {
+        resetModal();
+        onCancel?.(ev);
+      }}
       style={{ minWidth: '50vw' }}
       footer={
         currentStep > 0 ? (
           <div className="CustomModalBody">
             <Row>
               <Col xs={24}>
-                <Button onClick={(ev) => onCancel && onCancel(ev as any)}>Cancel</Button>
+                <Button onClick={() => onStepChange(currentStep - 1)}>
+                  <ArrowLeftOutlined /> Back
+                </Button>
                 <Button
                   type="primary"
                   onClick={() => {
-                    if (isOnLastStep) onStepChange(currentStep + 1);
-                    else onFinish?.();
+                    if (isOnLastStep) {
+                      notify.success({
+                        message: 'Host added successfully',
+                        description: 'It might take a moment to reflect...',
+                      });
+                      resetModal();
+                      onFinish?.();
+                    } else onStepChange(currentStep + 1);
                   }}
                 >
                   {isOnLastStep ? (
@@ -159,7 +184,7 @@ export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModa
       <div className="CustomModalBody">
         <Row justify="center" style={{ marginBottom: '1rem' }}>
           <Col xs={24}>
-            <Steps size="small" current={currentStep} items={steps} onChange={onStepChange} />
+            <Steps size="small" current={currentStep} items={steps} />
           </Col>
         </Row>
       </div>
@@ -232,31 +257,46 @@ export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModa
                 <Divider />
                 <Row style={{ height: '4rem' }} justify="center">
                   <Col xs={4} style={{ textAlign: 'center' }}>
-                    <div className="os-button" onClick={(ev) => onShowInstallGuide(ev, 'windows')}>
+                    <div
+                      className={`os-button ${selectedOs === 'windows' ? 'active' : ''}`}
+                      onClick={(ev) => onShowInstallGuide(ev, 'windows')}
+                    >
                       <img src={`/icons/windows-${theme}.jpg`} alt="windows icon" className="logo" />
                       <p>Windows</p>
                     </div>
                   </Col>
                   <Col xs={4} style={{ textAlign: 'center' }}>
-                    <div className="os-button" onClick={(ev) => onShowInstallGuide(ev, 'macos')}>
+                    <div
+                      className={`os-button ${selectedOs === 'macos' ? 'active' : ''}`}
+                      onClick={(ev) => onShowInstallGuide(ev, 'macos')}
+                    >
                       <img src={`/icons/macos-${theme}.jpg`} alt="macos icon" className="logo" />
                       <p>Mac</p>
                     </div>
                   </Col>
                   <Col xs={4} style={{ textAlign: 'center' }}>
-                    <div className="os-button" onClick={(ev) => onShowInstallGuide(ev, 'linux')}>
+                    <div
+                      className={`os-button ${selectedOs === 'linux' ? 'active' : ''}`}
+                      onClick={(ev) => onShowInstallGuide(ev, 'linux')}
+                    >
                       <img src={`/icons/linux-${theme}.jpg`} alt="linux icon" className="logo" />
                       <p>Linux</p>
                     </div>
                   </Col>
                   <Col xs={4} style={{ textAlign: 'center' }}>
-                    <div className="os-button" onClick={(ev) => onShowInstallGuide(ev, 'freebsd')}>
+                    <div
+                      className={`os-button ${selectedOs === 'freebsd' ? 'active' : ''}`}
+                      onClick={(ev) => onShowInstallGuide(ev, 'freebsd')}
+                    >
                       <img src={`/icons/freebsd-${theme}.jpg`} alt="freebsd icon" className="logo" />
                       <p>FreeBSD</p>
                     </div>
                   </Col>
                   <Col xs={4} style={{ textAlign: 'center' }}>
-                    <div className="os-button" onClick={(ev) => onShowInstallGuide(ev, 'docker')}>
+                    <div
+                      className={`os-button ${selectedOs === 'docker' ? 'active' : ''}`}
+                      onClick={(ev) => onShowInstallGuide(ev, 'docker')}
+                    >
                       <img src={`/icons/docker-${theme}.jpg`} alt="docker icon" className="logo" />
                       <p>Docker</p>
                     </div>
@@ -338,7 +378,7 @@ export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModa
                         <Button
                           block
                           type="primary"
-                          href={getNetclientDownloadLink('linux', selectedArch)}
+                          href={getNetclientDownloadLink('linux', selectedArch, 'cli')}
                           target="_blank"
                           rel="noreferrer"
                         >
@@ -384,7 +424,7 @@ export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModa
                         <Button
                           block
                           type="primary"
-                          href={getNetclientDownloadLink('freebsd', 'amd64')}
+                          href={getNetclientDownloadLink('freebsd', 'amd64', 'cli')}
                           target="_blank"
                           rel="noreferrer"
                         >

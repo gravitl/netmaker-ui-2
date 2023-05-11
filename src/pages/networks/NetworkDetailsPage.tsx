@@ -24,6 +24,7 @@ import {
   CloseOutlined,
   DashOutlined,
   DeleteOutlined,
+  DownOutlined,
   // DownloadOutlined,
   ExclamationCircleFilled,
   LoadingOutlined,
@@ -73,6 +74,7 @@ import UpdateRelayModal from '@/components/modals/update-relay-modal/UpdateRelay
 import { NetworkMetrics } from '@/models/Metrics';
 import { getHostHealth, getTimeMinHrs } from '@/utils/Utils';
 import AddHostsToNetworkModal from '@/components/modals/add-hosts-to-network-modal/AddHostsToNetworkModal';
+import NewHostModal from '@/components/modals/new-host-modal/NewHostModal';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -157,6 +159,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [networkNodeMetrics, setNetworkNodeMetrics] = useState<NetworkMetrics | null>(null);
   const [filteredMetricNodeId, setFilteredMetricNodeId] = useState<Node['id'] | null>(null);
   const [isAddHostsToNetworkModalOpen, setIsAddHostsToNetworkModalOpen] = useState(false);
+  const [isAddNewHostModalOpen, setIsAddNewHostModalOpen] = useState(false);
 
   const networkNodes = useMemo(
     () =>
@@ -1410,7 +1413,26 @@ export default function NetworkDetailsPage(props: PageProps) {
             />
           </Col>
           <Col xs={12} md={6} style={{ textAlign: 'right' }}>
-            <Button
+            <Dropdown.Button
+              type="primary"
+              style={{ justifyContent: 'end' }}
+              icon={<DownOutlined />}
+              menu={{
+                items: [
+                  {
+                    key: 'new-host',
+                    label: 'Add New Host',
+                    onClick() {
+                      setIsAddNewHostModalOpen(true);
+                    },
+                  },
+                ],
+              }}
+              onClick={() => setIsAddHostsToNetworkModalOpen(true)}
+            >
+              <PlusOutlined /> Add Existing Host
+            </Dropdown.Button>
+            {/* <Button
               type="primary"
               size="large"
               onClick={() => {
@@ -1419,7 +1441,7 @@ export default function NetworkDetailsPage(props: PageProps) {
               }}
             >
               <PlusOutlined /> Add Host
-            </Button>
+            </Button> */}
           </Col>
 
           <Col xs={24} style={{ paddingTop: '1rem' }}>
@@ -2602,6 +2624,12 @@ export default function NetworkDetailsPage(props: PageProps) {
           setIsAddHostsToNetworkModalOpen(false);
         }}
         onCancel={() => setIsAddHostsToNetworkModalOpen(false)}
+      />
+      <NewHostModal
+        isOpen={isAddNewHostModalOpen}
+        preferredNetwork={network ?? undefined}
+        onFinish={() => setIsAddNewHostModalOpen(false)}
+        onCancel={() => setIsAddNewHostModalOpen(false)}
       />
     </Layout.Content>
   );

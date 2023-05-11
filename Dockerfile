@@ -32,7 +32,7 @@ ENV VITE_TENANT_LOGO=
 ENV VITE_TENANT_NAME=
 
 # Other vars
-ENV VITE_NETCLIENT_BIN_URL_TEMPLATE=https://fileserver.netmaker.org/latest/windows/:fileName
+ENV VITE_NETCLIENT_BIN_URL_TEMPLATE=https://fileserver.netmaker.org/releases/download/:version/:fileName
 
 RUN npm ci
 RUN npm run build
