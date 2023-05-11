@@ -180,9 +180,9 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
             </Col>
           </Row>
 
-          <Form.Item label="Default Client DNS" name="defaultDns">
+          {/* <Form.Item label="Default Client DNS" name="defaultDns">
             <Input placeholder="Default Client DNS" />
-          </Form.Item>
+          </Form.Item> */}
 
           <Row>
             <Col xs={24} style={{ textAlign: 'right' }}>

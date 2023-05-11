@@ -32,6 +32,7 @@ import {
   PlusOutlined,
   ReloadOutlined,
   SearchOutlined,
+  SettingOutlined,
   StopOutlined,
 } from '@ant-design/icons';
 import {
@@ -2530,9 +2531,23 @@ export default function NetworkDetailsPage(props: PageProps) {
                     </Button>
                   </>
                 )} */}
-                <Button danger type="default" onClick={promptConfirmDelete}>
-                  Delete
-                </Button>
+                <Dropdown
+                  menu={{
+                    items: [
+                      {
+                        key: 'delete',
+                        label: 'Delete',
+                        danger: true,
+                        icon: <DeleteOutlined />,
+                        onClick: promptConfirmDelete,
+                      },
+                    ],
+                  }}
+                >
+                  <Button>
+                    <SettingOutlined /> Network Settings
+                  </Button>
+                </Dropdown>
               </Col>
             </Row>
 
