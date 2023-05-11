@@ -527,6 +527,7 @@ export default function NewHostModal({ isOpen, preferredNetwork, onCancel, onFin
                       <li>Select &quot;Add New Network&quot;</li>
                       <li>Click Join via SSO</li>
                       <li>Enter &quot;{store.serverConfig?.APIHost ?? '<server name>'}&quot; as server name</li>
+                      <li>Enter &quot;{selectedNetwork?.netid ?? '<network name>'}&quot; as network</li>
                       <li>Login and get connected :)</li>
                     </ol>
                   </div>
