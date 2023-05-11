@@ -176,7 +176,11 @@ export default function NewHostPage(props: PageProps) {
                 <>
                   <Row>
                     <Col xs={24} style={{ textAlign: 'center' }}>
-                      <Button type="primary" href={getNetclientDownloadLink()} style={{ width: '100%' }}>
+                      <Button
+                        type="primary"
+                        href={getNetclientDownloadLink('windows', 'amd64')}
+                        style={{ width: '100%' }}
+                      >
                         Download
                       </Button>
                       <small>Requires Windows 7 SP1 or later</small>
