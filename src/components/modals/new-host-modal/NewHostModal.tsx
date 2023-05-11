@@ -494,9 +494,11 @@ export default function NewHostModal({ isOpen, preferredNetwork, onCancel, onFin
                               Join network({selectedEnrollmentKey.networks.join(', ')}) with the below command:
                             </Typography.Title>
                             <Typography.Text code copyable>
-                              sudo docker run -d --network host --privileged -e TOKEN={selectedEnrollmentKey.token} -v
-                              /etc/netclient:/etc/netclient --name netclient gravitl/netclient:
-                              {store.serverConfig?.Version ?? '<version>'}
+                              {`sudo docker run -d --network host --privileged -e TOKEN=${
+                                selectedEnrollmentKey.token
+                              } -v /etc/netclient:/etc/netclient --name netclient gravitl/netclient: ${
+                                store.serverConfig?.Version ?? '<version>'
+                              }`}
                             </Typography.Text>
                           </>
                         )}
