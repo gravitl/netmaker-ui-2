@@ -79,6 +79,7 @@ export function getNetclientDownloadLink(
   effectiveFileName += `-${platform}-${arch}`;
 
   if (platform === 'windows') effectiveFileName += '.exe';
+  else if (platform === 'darwin') effectiveFileName += '.pkg';
 
   return netclientBinTemplate
     .replace(verisonPlaceholder, serverVersion)
