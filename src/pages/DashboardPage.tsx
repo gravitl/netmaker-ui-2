@@ -15,7 +15,8 @@ import { useNavigate } from 'react-router-dom';
 import AddNetworkModal from '@/components/modals/add-network-modal/AddNetworkModal';
 import { useState } from 'react';
 import { useStore } from '@/store/store';
-import { getAmuiUrl, getNewHostRoute } from '@/utils/RouteUtils';
+import { getAmuiUrl } from '@/utils/RouteUtils';
+import NewHostModal from '@/components/modals/new-host-modal/NewHostModal';
 
 export default function DashboardPage(props: PageProps) {
   const navigate = useNavigate();
@@ -23,10 +24,7 @@ export default function DashboardPage(props: PageProps) {
 
   const [isAddNetworkModalOpen, setIsAddNetworkModalOpen] = useState(false);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
-
-  const goToNewHostPage = () => {
-    navigate(getNewHostRoute(AppRoutes.HOSTS_ROUTE));
-  };
+  const [isNewHostModalOpen, setIsNewHostModalOpen] = useState(false);
 
   return (
     <Layout.Content style={{ padding: props.isFullScreen ? 0 : 24 }}>
@@ -41,7 +39,7 @@ export default function DashboardPage(props: PageProps) {
                   <Button
                     type="link"
                     onClick={() => {
-                      window.location = getAmuiUrl() as any;
+                      window.location = getAmuiUrl('upgrade') as any;
                       // setIsUpgradeModalOpen(true);
                     }}
                   >
@@ -72,7 +70,8 @@ export default function DashboardPage(props: PageProps) {
                           </>
                         ),
                         onClick: () => {
-                          navigate(getNewHostRoute(AppRoutes.HOSTS_ROUTE));
+                          // navigate(getNewHostRoute(AppRoutes.HOSTS_ROUTE));
+                          setIsNewHostModalOpen(true);
                         },
                       },
                     ],
@@ -145,7 +144,7 @@ export default function DashboardPage(props: PageProps) {
                   your laptop, and more are all fair game.
                 </p>
                 <div>
-                  <Button type="primary" onClick={goToNewHostPage}>
+                  <Button type="primary" onClick={() => setIsNewHostModalOpen(true)}>
                     <PlusOutlined />
                     Add a Host
                   </Button>
@@ -165,6 +164,11 @@ export default function DashboardPage(props: PageProps) {
           navigate(AppRoutes.NETWORKS_ROUTE);
         }}
         onCancel={() => setIsAddNetworkModalOpen(false)}
+      />
+      <NewHostModal
+        isOpen={isNewHostModalOpen}
+        onFinish={() => navigate(AppRoutes.HOSTS_ROUTE)}
+        onCancel={() => setIsNewHostModalOpen(false)}
       />
     </Layout.Content>
   );

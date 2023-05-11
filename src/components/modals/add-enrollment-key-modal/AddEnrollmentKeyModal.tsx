@@ -15,8 +15,6 @@ import {
 } from 'antd';
 import { MouseEvent, useState } from 'react';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
-import { useNavigate } from 'react-router-dom';
-import { AppRoutes } from '@/routes';
 import { EnrollmentKey } from '@/models/EnrollmentKey';
 import { CreateEnrollmentKeyReqDto } from '@/services/dtos/CreateEnrollmentKeyReqDto';
 import { EnrollmentKeysService } from '@/services/EnrollmentKeysService';
@@ -35,7 +33,6 @@ type AddEnrollmentKeyFormData = Modify<CreateEnrollmentKeyReqDto, { expiration: 
 export default function AddEnrollmentKeyModal({ isOpen, onCreateKey, onCancel }: AddEnrollmentKeyModalProps) {
   const [form] = Form.useForm<AddEnrollmentKeyFormData>();
   const [notify, notifyCtx] = notification.useNotification();
-  const navigate = useNavigate();
   const store = useStore();
   const networkOptions = store.networks.map((n) => ({ label: n.netid, value: n.netid }));
 
@@ -63,7 +60,6 @@ export default function AddEnrollmentKeyModal({ isOpen, onCreateKey, onCancel }:
       const key = (await EnrollmentKeysService.createEnrollmentKey(payload)).data;
       notify.success({ message: `Enrollment key with name ${key.tags.join(', ')} created` });
       resetModal();
-      navigate(AppRoutes.ENROLLMENT_KEYS_ROUTE);
       onCreateKey(key);
     } catch (err) {
       notify.error({

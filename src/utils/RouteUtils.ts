@@ -4,6 +4,7 @@ import { Host } from '../models/Host';
 import { AppRoutes } from '../routes';
 import { AMUI_URL } from '@/services/BaseService';
 import { useStore } from '@/store/store';
+import { AvailableArchs, AvailableOses } from '@/models/AvailableOses';
 
 type AmuiRouteAction = '' | 'upgrade' | 'invite-user';
 
@@ -54,4 +55,32 @@ export function getAmuiUrl(action: AmuiRouteAction = '') {
   return `${AMUI_URL}/dashboard?tenantId=${useStore.getState().tenantId}&sToken=${
     useStore.getState().amuiAuthToken
   }&action=${action}`;
+}
+
+// Function to get netclient download link based on OS
+export function getNetclientDownloadLink(
+  os: AvailableOses,
+  arch: AvailableArchs,
+  appType: 'gui' | 'cli' = 'gui'
+): string {
+  const fileNamePlaceholder = ':fileName';
+  const verisonPlaceholder = ':version';
+  const netclientBinTemplate: string = import.meta.env.VITE_NETCLIENT_BIN_URL_TEMPLATE;
+
+  const platform = os === 'macos' ? 'darwin' : os;
+  const serverVersion = useStore.getState().serverConfig?.Version ?? '';
+  let effectiveFileName = 'netclient';
+
+  if (!serverVersion) return 'about:blank';
+
+  if (appType === 'gui') {
+    effectiveFileName += '-gui';
+  }
+  effectiveFileName += `-${platform}-${arch}`;
+
+  if (platform === 'windows') effectiveFileName += '.exe';
+
+  return netclientBinTemplate
+    .replace(verisonPlaceholder, serverVersion)
+    .replace(fileNamePlaceholder, effectiveFileName);
 }

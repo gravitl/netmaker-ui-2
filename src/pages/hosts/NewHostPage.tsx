@@ -2,7 +2,7 @@ import AddNetworkModal from '@/components/modals/add-network-modal/AddNetworkMod
 import { Network } from '@/models/Network';
 import { AppRoutes } from '@/routes';
 import { useStore } from '@/store/store';
-import { useQuery } from '@/utils/RouteUtils';
+import { getNetclientDownloadLink, useQuery } from '@/utils/RouteUtils';
 import { CopyOutlined, PlusOutlined } from '@ant-design/icons';
 import { Button, Card, Col, Divider, Input, Layout, List, Row, Steps } from 'antd';
 import { MouseEvent, useCallback, useEffect, useState } from 'react';
@@ -178,7 +178,7 @@ export default function NewHostPage(props: PageProps) {
                     <Col xs={24} style={{ textAlign: 'center' }}>
                       <Button
                         type="primary"
-                        href={import.meta.env.VITE_NETCLIENT_WINDOWS_DOWNLOAD_URL}
+                        href={getNetclientDownloadLink('windows', 'amd64')}
                         style={{ width: '100%' }}
                       >
                         Download
