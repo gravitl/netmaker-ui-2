@@ -79,6 +79,7 @@ import AddHostsToNetworkModal from '@/components/modals/add-hosts-to-network-mod
 import NewHostModal from '@/components/modals/new-host-modal/NewHostModal';
 import AddIngressModal from '@/components/modals/add-ingress-modal/AddIngressModal';
 import UpdateIngressModal from '@/components/modals/update-ingress-modal/UpdateIngressModal';
+import UpdateClientModal from '@/components/modals/update-client-modal/UpdateClientModal';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -166,6 +167,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [isAddNewHostModalOpen, setIsAddNewHostModalOpen] = useState(false);
   const [isAddClientGatewayModalOpen, setIsAddClientGatewayModalOpen] = useState(false);
   const [isUpdateGatewayModalOpen, setIsUpdateGatewayModalOpen] = useState(false);
+  const [isUpdateClientModalOpen, setIsUpdateClientModalOpen] = useState(false);
 
   const networkNodes = useMemo(
     () =>
@@ -254,6 +256,7 @@ export default function NetworkDetailsPage(props: PageProps) {
           try {
             const newClient = (
               await NodesService.updateExternalClient(client.clientid, networkId, {
+                ...client,
                 clientid: client.clientid,
                 enabled: newStatus,
               })
@@ -839,6 +842,19 @@ export default function NetworkDetailsPage(props: PageProps) {
               placement="bottomRight"
               menu={{
                 items: [
+                  {
+                    key: 'edit',
+                    label: (
+                      <Typography.Text
+                        onClick={() => {
+                          setTargetClient(client);
+                          setIsUpdateClientModalOpen(true);
+                        }}
+                      >
+                        <EditOutlined /> Edit
+                      </Typography.Text>
+                    ),
+                  },
                   {
                     key: 'delete',
                     label: (
@@ -2706,6 +2722,19 @@ export default function NetworkDetailsPage(props: PageProps) {
           onUpdateIngress={() => {
             setIsUpdateGatewayModalOpen(false);
           }}
+        />
+      )}
+      {targetClient && (
+        <UpdateClientModal
+          key={targetClient.clientid}
+          isOpen={isUpdateClientModalOpen}
+          client={targetClient}
+          networkId={networkId}
+          onUpdateClient={() => {
+            loadClients();
+            setIsUpdateClientModalOpen(false);
+          }}
+          onCancel={() => setIsUpdateClientModalOpen(false)}
         />
       )}
     </Layout.Content>
