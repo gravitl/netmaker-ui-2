@@ -49,6 +49,7 @@ export default function ClientDetailsModal({ client, isOpen, onCancel, onUpdateC
           try {
             const newClient = (
               await NodesService.updateExternalClient(client.clientid, client.network, {
+                ...client,
                 clientid: client.clientid,
                 enabled: newStatus,
               })
@@ -63,7 +64,7 @@ export default function ClientDetailsModal({ client, isOpen, onCancel, onUpdateC
         },
       });
     },
-    [client.clientid, client.network, notify, onUpdateClient]
+    [client, notify, onUpdateClient]
   );
 
   useEffect(() => {
