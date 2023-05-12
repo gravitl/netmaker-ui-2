@@ -13,4 +13,6 @@ export interface ExternalClient {
   ownerid: string;
   internal_ip_addr: string;
   internal_ip_addr6: string;
+  dns: string;
+  extraallowedips: string[];
 }

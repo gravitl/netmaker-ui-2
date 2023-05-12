@@ -19,6 +19,7 @@ export interface Node {
   pendingdelete: boolean;
   isegressgateway: boolean;
   isingressgateway: boolean;
+  extclientdns: string;
   egressgatewayranges: string[];
   egressgatewaynatenabled: boolean;
   failovernode: string;

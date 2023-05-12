@@ -54,6 +54,15 @@ function App() {
     return () => clearInterval(id);
   }, [getUpdates, hasFetchedServerConfig, storeFetchServerConfig, storeIsLoggedIn]);
 
+  useEffect(
+    () => {
+      // set server status to healthy initially
+      storeSetServerStatus({ db_connected: true, broker_connected: true, healthyNetwork: true });
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
+
   return (
     <div className="App">
       <ConfigProvider

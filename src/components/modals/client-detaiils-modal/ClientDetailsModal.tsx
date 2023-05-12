@@ -120,6 +120,16 @@ export default function ClientDetailsModal({ client, isOpen, onCancel, onUpdateC
 
         <Row>
           <Col xs={8}>
+            <Typography.Text>Client DNS</Typography.Text>
+          </Col>
+          <Col xs={16}>
+            <Typography.Text copyable>{client.dns}</Typography.Text>
+          </Col>
+        </Row>
+        <Divider style={{ margin: '1rem 0px 1rem 0px' }} />
+
+        <Row>
+          <Col xs={8}>
             <Typography.Text>Status</Typography.Text>
           </Col>
           <Col xs={16}>
