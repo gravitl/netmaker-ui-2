@@ -57,12 +57,12 @@ export function getAmuiUrl(action: AmuiRouteAction = '') {
   }&action=${action}`;
 }
 
-// Function to get netclient download link based on OS
+// Function to get netclient download link and filename based on OS, arch and type
 export function getNetclientDownloadLink(
   os: AvailableOses,
   arch: AvailableArchs,
   appType: 'gui' | 'cli' = 'gui'
-): string {
+): [string, string] {
   const fileNamePlaceholder = ':fileName';
   const verisonPlaceholder = ':version';
   const netclientBinTemplate: string = import.meta.env.VITE_NETCLIENT_BIN_URL_TEMPLATE;
@@ -71,17 +71,21 @@ export function getNetclientDownloadLink(
   const serverVersion = useStore.getState().serverConfig?.Version ?? '';
   let effectiveFileName = 'netclient';
 
-  if (!serverVersion) return 'about:blank';
+  if (!serverVersion) return ['about:blank', ''];
 
   if (appType === 'gui') {
     effectiveFileName += '-gui';
   }
   effectiveFileName += `-${platform}-${arch}`;
 
-  if (platform === 'windows') effectiveFileName += '.exe';
-  else if (platform === 'darwin') effectiveFileName += '.pkg';
+  if (platform === 'windows') effectiveFileName = 'netclient_x86.msi';
+  else if (platform === 'darwin') {
+    if (arch === 'amd64') effectiveFileName = 'Netclient-Intel.pkg';
+    else if (arch === 'arm64') effectiveFileName = 'Netclient-M1.pkg';
+  }
 
-  return netclientBinTemplate
-    .replace(verisonPlaceholder, serverVersion)
-    .replace(fileNamePlaceholder, effectiveFileName);
+  return [
+    netclientBinTemplate.replace(verisonPlaceholder, serverVersion).replace(fileNamePlaceholder, effectiveFileName),
+    effectiveFileName,
+  ];
 }

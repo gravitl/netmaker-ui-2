@@ -178,7 +178,7 @@ export default function NewHostPage(props: PageProps) {
                     <Col xs={24} style={{ textAlign: 'center' }}>
                       <Button
                         type="primary"
-                        href={getNetclientDownloadLink('windows', 'amd64')}
+                        href={getNetclientDownloadLink('windows', 'amd64')[0]}
                         style={{ width: '100%' }}
                       >
                         Download
