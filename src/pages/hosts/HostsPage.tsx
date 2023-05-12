@@ -1,7 +1,7 @@
 import { Host } from '@/models/Host';
 import { AppRoutes } from '@/routes';
 import { useStore } from '@/store/store';
-import { getHostRoute, getNewHostRoute } from '@/utils/RouteUtils';
+import { getHostRoute } from '@/utils/RouteUtils';
 import { MoreOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons';
 import {
   Button,
@@ -32,6 +32,7 @@ import { getNodeConnectivityStatus } from '@/utils/NodeUtils';
 import { Network } from '@/models/Network';
 import { HostsService } from '@/services/HostsService';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
+import NewHostModal from '@/components/modals/new-host-modal/NewHostModal';
 
 export default function HostsPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
@@ -48,6 +49,7 @@ export default function HostsPage(props: PageProps) {
   const [selectedHost, setSelectedHost] = useState<Host | null>(null);
   const [hasAdvicedHosts, setHasAdvicedHosts] = useState(false);
   const [isRefreshingHosts, setIsRefreshingHosts] = useState(false);
+  const [isAddNewHostModalOpen, setIsAddNewHostModalOpen] = useState(false);
 
   const filteredNetworks = useMemo(() => {
     return store.networks;
@@ -509,11 +511,7 @@ export default function HostsPage(props: PageProps) {
                   </Typography.Text>
                   <Row style={{ marginTop: 'auto' }}>
                     <Col>
-                      <Button
-                        type="primary"
-                        size="large"
-                        onClick={() => navigate(getNewHostRoute(AppRoutes.HOSTS_ROUTE))}
-                      >
+                      <Button type="primary" size="large" onClick={() => setIsAddNewHostModalOpen(true)}>
                         <PlusOutlined /> Connect a Host
                       </Button>
                     </Col>
@@ -592,7 +590,7 @@ export default function HostsPage(props: PageProps) {
                   <ReloadOutlined /> Refesh Hosts Keys
                 </Button>
 
-                <Button type="primary" size="large" onClick={() => navigate(getNewHostRoute(AppRoutes.HOSTS_ROUTE))}>
+                <Button type="primary" size="large" onClick={() => setIsAddNewHostModalOpen(true)}>
                   <PlusOutlined /> Connect a host
                 </Button>
               </Col>
@@ -609,6 +607,14 @@ export default function HostsPage(props: PageProps) {
 
       {/* misc */}
       {notifyCtx}
+      <NewHostModal
+        isOpen={isAddNewHostModalOpen}
+        onFinish={() => {
+          setIsAddNewHostModalOpen(false);
+          navigate(AppRoutes.HOSTS_ROUTE);
+        }}
+        onCancel={() => setIsAddNewHostModalOpen(false)}
+      />
     </Layout.Content>
   );
 }

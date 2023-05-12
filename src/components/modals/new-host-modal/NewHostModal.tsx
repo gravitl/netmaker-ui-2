@@ -1,4 +1,4 @@
-import { ArrowLeftOutlined, ArrowRightOutlined, CopyOutlined, PlusOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, ArrowRightOutlined, PlusOutlined } from '@ant-design/icons';
 import '../CustomModal.scss';
 import './NewHostModal.scss';
 import {
@@ -312,7 +312,7 @@ export default function NewHostModal({ isOpen, preferredNetwork, onCancel, onFin
                       <Col xs={24} style={{ textAlign: 'center' }}>
                         <Button
                           type="primary"
-                          href={getNetclientDownloadLink('windows', 'amd64')}
+                          href={getNetclientDownloadLink('windows', 'amd64')[0]}
                           block
                           target="_blank"
                           rel="noreferrer"
@@ -341,7 +341,7 @@ export default function NewHostModal({ isOpen, preferredNetwork, onCancel, onFin
                         </Form.Item>
                         <Button
                           type="primary"
-                          href={getNetclientDownloadLink('macos', selectedArch)}
+                          href={getNetclientDownloadLink('macos', selectedArch)[0]}
                           block
                           target="_blank"
                           rel="noreferrer"
@@ -378,26 +378,23 @@ export default function NewHostModal({ isOpen, preferredNetwork, onCancel, onFin
                         <Button
                           block
                           type="primary"
-                          href={getNetclientDownloadLink('linux', selectedArch, 'cli')}
+                          href={getNetclientDownloadLink('linux', selectedArch, 'cli')[0]}
                           target="_blank"
                           rel="noreferrer"
                         >
                           Download CLI for {selectedArch}
                         </Button>
                         <h4>Install with this command</h4>
-                        <Input.Group compact>
-                          <Input
-                            disabled
-                            style={{ width: 'calc(100% - 32px)' }}
-                            defaultValue={'sudo chmod +x ./netclient && sudo ./netclient install'}
-                          />
-                          <Button icon={<CopyOutlined />} />
-                        </Input.Group>
+                        <Typography.Text code copyable>{`sudo chmod +x ./${
+                          getNetclientDownloadLink('linux', selectedArch, 'cli')[1]
+                        } && sudo ./${
+                          getNetclientDownloadLink('linux', selectedArch, 'cli')[1]
+                        } install`}</Typography.Text>
                         <Divider />
                         <div className="" style={{ marginTop: '1rem', textAlign: 'center' }}>
                           <Button
                             type="link"
-                            href={getNetclientDownloadLink('linux', selectedArch, 'gui')}
+                            href={getNetclientDownloadLink('linux', selectedArch, 'gui')[0]}
                             target="_blank"
                             rel="noreferrer"
                           >
@@ -424,21 +421,18 @@ export default function NewHostModal({ isOpen, preferredNetwork, onCancel, onFin
                         <Button
                           block
                           type="primary"
-                          href={getNetclientDownloadLink('freebsd', 'amd64', 'cli')}
+                          href={getNetclientDownloadLink('freebsd', 'amd64', 'cli')[0]}
                           target="_blank"
                           rel="noreferrer"
                         >
                           Download
                         </Button>
                         <h4>Install with this command</h4>
-                        <Input.Group compact>
-                          <Input
-                            disabled
-                            style={{ width: 'calc(100% - 32px)' }}
-                            defaultValue={'sudo chmod +x ./netclient && sudo ./netclient install'}
-                          />
-                          <Button icon={<CopyOutlined />} />
-                        </Input.Group>
+                        <Typography.Text code copyable>{`sudo chmod +x ./${
+                          getNetclientDownloadLink('freebsd', 'amd64', 'cli')[1]
+                        } && sudo ./${
+                          getNetclientDownloadLink('freebsd', 'amd64', 'cli')[1]
+                        } install`}</Typography.Text>
                       </Col>
                     </Row>
                   </>
