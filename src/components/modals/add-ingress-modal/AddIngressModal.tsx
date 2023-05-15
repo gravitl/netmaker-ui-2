@@ -113,11 +113,11 @@ export default function AddIngressModal({ isOpen, onCreateIngress, onCancel, net
         extclientdns: formData.extclientdns,
       });
       resetModal();
-      notify.success({ message: `Ingress gateway created` });
+      notify.success({ message: `Client gateway created` });
       onCreateIngress();
     } catch (err) {
       notify.error({
-        message: 'Failed to create ingress gateway',
+        message: 'Failed to create client gateway',
         description: extractErrorMsg(err as any),
       });
     } finally {
@@ -133,7 +133,7 @@ export default function AddIngressModal({ isOpen, onCreateIngress, onCancel, net
 
   return (
     <Modal
-      title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Add Ingress</span>}
+      title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Add Client Gateway</span>}
       open={isOpen}
       onCancel={(ev) => {
         resetModal();
@@ -233,7 +233,7 @@ export default function AddIngressModal({ isOpen, onCreateIngress, onCancel, net
           <Row>
             <Col xs={24} style={{ textAlign: 'right' }}>
               <Button type="primary" onClick={createIngress} loading={isSubmitting}>
-                Create Ingress
+                Create Gateway
               </Button>
             </Col>
           </Row>
