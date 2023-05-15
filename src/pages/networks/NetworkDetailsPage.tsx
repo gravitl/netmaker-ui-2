@@ -642,7 +642,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       },
       {
         title: 'Default Client DNS',
-        dataIndex: 'extclientdns',
+        dataIndex: 'ingressdns',
       },
       {
         render(_, gateway) {

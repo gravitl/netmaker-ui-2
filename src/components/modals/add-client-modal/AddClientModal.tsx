@@ -248,9 +248,11 @@ export default function AddClientModal({
             )}
           </Form.Item>
 
-          <Form.Item name="extclientdns" label="Default Client DNS">
-            <Input placeholder="Default DNS for associated clients" />
-          </Form.Item>
+          {selectedGateway && !selectedGateway.isingressgateway && (
+            <Form.Item name="extclientdns" label="Default Client DNS">
+              <Input placeholder="Default DNS for associated clients" />
+            </Form.Item>
+          )}
         </div>
 
         <Divider style={{ margin: '0px 0px 2rem 0px' }} />
