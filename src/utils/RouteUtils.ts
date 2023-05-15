@@ -65,7 +65,12 @@ export function getNetclientDownloadLink(
 ): [string, string] {
   const fileNamePlaceholder = ':fileName';
   const verisonPlaceholder = ':version';
-  const netclientBinTemplate: string = import.meta.env.VITE_NETCLIENT_BIN_URL_TEMPLATE;
+  const netclientBinTemplate: string | undefined = import.meta.env.VITE_NETCLIENT_BIN_URL_TEMPLATE;
+
+  if (!netclientBinTemplate) {
+    console.error('NETCLIENT TEMPLATE is not defined. Contact your server admin');
+    return ['about:blank', ''];
+  }
 
   const platform = os === 'macos' ? 'darwin' : os;
   const serverVersion = useStore.getState().serverConfig?.Version ?? '';
