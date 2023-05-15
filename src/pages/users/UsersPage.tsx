@@ -40,6 +40,7 @@ export default function UsersPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
 
+  const isServerEE = store.serverConfig?.IsEE === 'yes';
   const [users, setUsers] = useState<User[]>([]);
   const [userGroups, setUserGroups] = useState<UserGroup[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -518,30 +519,38 @@ export default function UsersPage(props: PageProps) {
   }, [filteredGroupUsers, filteredGroups, groupSearch, groupTableCols, onEditGroup, selectedGroup, usersTableCols2]);
 
   const tabs: TabsProps['items'] = useMemo(
-    () => [
-      {
-        key: 'users',
-        label: 'Users',
-        children: getUsersContent(),
-      },
-      {
-        key: 'network-permissions',
-        label: 'Network Permissions',
-        children: getNetworkPermissionsContent(),
-      },
-      {
-        key: 'groups',
-        label: 'Groups',
-        children: getGroupsContent(),
-      },
-    ],
-    [getUsersContent, getNetworkPermissionsContent, getGroupsContent]
+    () =>
+      [
+        {
+          key: 'users',
+          label: 'Users',
+          children: getUsersContent(),
+        },
+      ].concat(
+        isServerEE
+          ? [
+              {
+                key: 'network-permissions',
+                label: 'Network Permissions',
+                children: getNetworkPermissionsContent(),
+              },
+              {
+                key: 'groups',
+                label: 'Groups',
+                children: getGroupsContent(),
+              },
+            ]
+          : []
+      ),
+    [getUsersContent, isServerEE, getNetworkPermissionsContent, getGroupsContent]
   );
 
   useEffect(() => {
     loadUsers();
-    loadUserGroups();
-  }, [loadUsers, loadUserGroups]);
+    if (isServerEE) {
+      loadUserGroups();
+    }
+  }, [loadUsers, loadUserGroups, isServerEE]);
 
   return (
     <Layout.Content
