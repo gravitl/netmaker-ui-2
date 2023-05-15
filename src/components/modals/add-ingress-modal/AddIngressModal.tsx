@@ -33,7 +33,7 @@ interface AddIngressModalProps {
 
 interface AddIngressForm {
   node: Node;
-  extclientdns: Node['extclientdns'];
+  extclientdns: Node['ingressdns'];
 }
 
 export default function AddIngressModal({ isOpen, onCreateIngress, onCancel, networkId }: AddIngressModalProps) {
