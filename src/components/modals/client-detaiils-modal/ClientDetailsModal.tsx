@@ -49,6 +49,7 @@ export default function ClientDetailsModal({ client, isOpen, onCancel, onUpdateC
           try {
             const newClient = (
               await NodesService.updateExternalClient(client.clientid, client.network, {
+                ...client,
                 clientid: client.clientid,
                 enabled: newStatus,
               })
@@ -63,7 +64,7 @@ export default function ClientDetailsModal({ client, isOpen, onCancel, onUpdateC
         },
       });
     },
-    [client.clientid, client.network, notify, onUpdateClient]
+    [client, notify, onUpdateClient]
   );
 
   useEffect(() => {
@@ -102,7 +103,9 @@ export default function ClientDetailsModal({ client, isOpen, onCancel, onUpdateC
               mode="multiple"
               disabled
               placeholder="Allowed IPs"
-              defaultValue={[client.address, client.address6]}
+              defaultValue={[client.address, client.address6].concat(
+                client.extraallowedips ? client.extraallowedips : []
+              )}
             />
           </Col>
         </Row>
@@ -114,6 +117,16 @@ export default function ClientDetailsModal({ client, isOpen, onCancel, onUpdateC
           </Col>
           <Col xs={16}>
             <Typography.Text copyable>{client.publickey}</Typography.Text>
+          </Col>
+        </Row>
+        <Divider style={{ margin: '1rem 0px 1rem 0px' }} />
+
+        <Row>
+          <Col xs={8}>
+            <Typography.Text>Client DNS</Typography.Text>
+          </Col>
+          <Col xs={16}>
+            <Typography.Text copyable>{client.dns}</Typography.Text>
           </Col>
         </Row>
         <Divider style={{ margin: '1rem 0px 1rem 0px' }} />

@@ -3,6 +3,7 @@ import {
   Badge,
   Button,
   Col,
+  Collapse,
   Divider,
   Form,
   Input,
@@ -15,22 +16,21 @@ import {
   theme,
   Typography,
 } from 'antd';
-import { MouseEvent, useCallback, useMemo, useState } from 'react';
+import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useStore } from '@/store/store';
 import '../CustomModal.scss';
 import { Network } from '@/models/Network';
-import { Node } from '@/models/Node';
+import { ExtendedNode, Node } from '@/models/Node';
 import { CreateExternalClientReqDto } from '@/services/dtos/CreateExternalClientReqDto';
-import { HostCommonDetails } from '@/models/Host';
-import { getNodeConnectivityStatus } from '@/utils/NodeUtils';
+import { getExtendedNode, getNodeConnectivityStatus } from '@/utils/NodeUtils';
 import { CloseOutlined } from '@ant-design/icons';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
-import { AxiosError } from 'axios';
 import { NodesService } from '@/services/NodesService';
 
 interface AddClientModalProps {
   isOpen: boolean;
   networkId: Network['netid'];
+  preferredGateway?: Node;
   onCreateClient: () => any;
   closeModal?: () => void;
   onOk?: (e: MouseEvent<HTMLButtonElement>) => void;
@@ -39,9 +39,16 @@ interface AddClientModalProps {
 
 type AddClientFormFields = CreateExternalClientReqDto & {
   gatewayId: Node['id'];
+  extclientdns: string;
 };
 
-export default function AddClientModal({ isOpen, onCreateClient, onCancel, networkId }: AddClientModalProps) {
+export default function AddClientModal({
+  isOpen,
+  onCreateClient,
+  onCancel,
+  networkId,
+  preferredGateway,
+}: AddClientModalProps) {
   const [form] = Form.useForm<AddClientFormFields>();
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
@@ -49,7 +56,7 @@ export default function AddClientModal({ isOpen, onCreateClient, onCancel, netwo
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [gatewaySearch, setGatewaySearch] = useState('');
-  const [selectedGateway, setSelectedGateway] = useState<(Node & HostCommonDetails) | null>(null);
+  const [selectedGateway, setSelectedGateway] = useState<ExtendedNode | null>(null);
   const [isFailoverGateway, setIsFailoverGateway] = useState(false);
 
   const getNodeConnectivity = useCallback((node: Node) => {
@@ -59,12 +66,13 @@ export default function AddClientModal({ isOpen, onCreateClient, onCancel, netwo
     else return <Badge status="processing" text="Unknown" />;
   }, []);
 
-  const networkHosts = useMemo<(Node & HostCommonDetails)[]>(() => {
+  const networkHosts = useMemo<ExtendedNode[]>(() => {
     return store.nodes
       .filter((node) => node.network === networkId)
       .map((node) => ({ ...node, ...store.hostsCommonDetails[node.hostid] }));
   }, [networkId, store.hostsCommonDetails, store.nodes]);
-  const filteredNetworkHosts = useMemo<(Node & HostCommonDetails)[]>(
+
+  const filteredNetworkHosts = useMemo<ExtendedNode[]>(
     () =>
       networkHosts.filter(
         (node) =>
@@ -73,7 +81,8 @@ export default function AddClientModal({ isOpen, onCreateClient, onCancel, netwo
       ),
     [gatewaySearch, networkHosts]
   );
-  const gatewayTableCols = useMemo<TableColumnProps<Node & HostCommonDetails>[]>(() => {
+
+  const gatewayTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(() => {
     return [
       {
         title: 'Host name',
@@ -118,7 +127,10 @@ export default function AddClientModal({ isOpen, onCreateClient, onCancel, netwo
       if (!selectedGateway) return;
 
       if (!selectedGateway.isingressgateway) {
-        await NodesService.createIngressNode(selectedGateway.id, networkId, { failover: isFailoverGateway });
+        await NodesService.createIngressNode(selectedGateway.id, networkId, {
+          failover: isFailoverGateway,
+          extclientdns: formData.extclientdns,
+        });
       }
 
       await NodesService.createExternalClient(selectedGateway.id, networkId, formData);
@@ -126,16 +138,28 @@ export default function AddClientModal({ isOpen, onCreateClient, onCancel, netwo
       notify.success({ message: `External client created` });
       resetModal();
     } catch (err) {
-      if (err instanceof AxiosError) {
-        notify.error({
-          message: 'Failed to create client',
-          description: extractErrorMsg(err),
-        });
-      }
+      notify.error({
+        message: 'Failed to create client',
+        description: extractErrorMsg(err as any),
+      });
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  useEffect(() => {
+    // auto-select client gateway
+    if (preferredGateway) {
+      setSelectedGateway(getExtendedNode(preferredGateway, store.hostsCommonDetails));
+      form.setFieldValue('gatewayId', preferredGateway.id);
+      return;
+    }
+    const gateways = networkHosts.filter((node) => node.isingressgateway);
+    if (gateways.length) {
+      setSelectedGateway(gateways[0]);
+      form.setFieldValue('gatewayId', gateways[0].id);
+    }
+  }, [form, isOpen, networkHosts, preferredGateway, store.hostsCommonDetails]);
 
   // TODO: add autofill for fields
   return (
@@ -153,12 +177,7 @@ export default function AddClientModal({ isOpen, onCreateClient, onCancel, netwo
       <Divider style={{ margin: '0px 0px 2rem 0px' }} />
       <Form name="add-client-form" form={form} layout="vertical">
         <div className="CustomModalBody">
-          <Form.Item
-            label="Client Gateway"
-            name="gatewayId"
-            rules={[{ required: true }]}
-            style={{ marginBottom: '0px' }}
-          >
+          <Form.Item label="Client Gateway" name="gatewayId" rules={[{ required: true }]}>
             {!selectedGateway && (
               <Select
                 placeholder="Select a host as gateway"
@@ -228,6 +247,10 @@ export default function AddClientModal({ isOpen, onCreateClient, onCancel, netwo
               </>
             )}
           </Form.Item>
+
+          <Form.Item name="extclientdns" label="Default Client DNS">
+            <Input placeholder="Default DNS for associated clients" />
+          </Form.Item>
         </div>
 
         <Divider style={{ margin: '0px 0px 2rem 0px' }} />
@@ -236,13 +259,24 @@ export default function AddClientModal({ isOpen, onCreateClient, onCancel, netwo
             <Input placeholder="Unique name of client" />
           </Form.Item>
 
-          <Form.Item label="Public Key" name="publickey">
-            <Input placeholder="Public key" />
-          </Form.Item>
+          <Collapse ghost size="small">
+            <Collapse.Panel
+              key="details"
+              header={<Typography.Text style={{ marginTop: '0rem' }}>Advanced Settings</Typography.Text>}
+            >
+              <Form.Item label="Public Key" name="publickey">
+                <Input placeholder="Public key" />
+              </Form.Item>
 
-          <Form.Item label="Additional Addresses" name="address">
-            <Select mode="tags" placeholder="Additional IP Addresses" clearIcon disabled />
-          </Form.Item>
+              <Form.Item label="DNS" name="dns">
+                <Input placeholder="Client DNS" />
+              </Form.Item>
+
+              <Form.Item label="Additional Addresses" name="extraallowedips">
+                <Select mode="tags" placeholder="Additional IP Addresses" clearIcon />
+              </Form.Item>
+            </Collapse.Panel>
+          </Collapse>
         </div>
 
         <Divider style={{ margin: '0px 0px 2rem 0px' }} />

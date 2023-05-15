@@ -7,6 +7,7 @@ import { getNodeConnectivityStatus } from '@/utils/NodeUtils';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { ExclamationCircleFilled, SettingOutlined } from '@ant-design/icons';
 import {
+  Badge,
   Button,
   Card,
   Col,
@@ -36,6 +37,7 @@ import { NodeConnectivityStatus } from '@/models/NodeConnectivityStatus';
 import moment from 'moment';
 import { DATE_TIME_FORMAT } from '@/constants/AppConstants';
 import UpdateNodeModal from '@/components/modals/update-node-modal/UpdateNodeModal';
+import { NodesService } from '@/services/NodesService';
 
 export default function NetworkHostDetailsPage(props: PageProps) {
   const { hostId, networkId } = useParams<{ hostId: string; networkId: string }>();
@@ -46,6 +48,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
   const queryParams = useQuery();
 
   const storeUpdateHost = store.updateHost;
+  const storeDeleteNode = store.deleteNode;
   const [isLoading, setIsLoading] = useState(false);
   const [isEditingNode, setIsEditingNode] = useState(false);
   const [host, setHost] = useState<Host | null>(null);
@@ -140,29 +143,29 @@ export default function NetworkHostDetailsPage(props: PageProps) {
     setIsLoading(false);
   }, [networkId, hostId, store.hosts, store.nodes, navigate, notify]);
 
-  const onHostDelete = useCallback(async () => {
+  const onHostRemove = useCallback(async () => {
     try {
-      if (!hostId) {
-        throw new Error('Host not found');
+      if (!hostId || !node || !networkId) {
+        throw new Error('Host or network not found');
       }
-      await HostsService.deleteHost(hostId);
+      await NodesService.deleteNode(node?.id, networkId);
       notify.success({ message: `Host ${hostId} deleted` });
-      store.deleteNetwork(hostId);
-      navigate(AppRoutes.HOSTS_ROUTE);
+      storeDeleteNode(node.id);
+      navigate(getNetworkRoute(networkId));
     } catch (err) {
       notify.error({
-        message: 'Failed to delete host',
+        message: 'Failed to delete host from network',
         description: extractErrorMsg(err as any),
       });
     }
-  }, [hostId, notify, navigate, store]);
+  }, [hostId, node, networkId, notify, storeDeleteNode, navigate]);
 
-  const promptConfirmDelete = () => {
+  const promptConfirmRemove = () => {
     Modal.confirm({
-      title: `Do you want to delete host ${host?.name}?`,
+      title: `Do you want to remove host ${host?.name} from network ${networkId}?`,
       icon: <ExclamationCircleFilled />,
       onOk() {
-        onHostDelete();
+        onHostRemove();
       },
     });
   };
@@ -562,7 +565,12 @@ export default function NetworkHostDetailsPage(props: PageProps) {
               <Col xs={18}>
                 <Typography.Title level={2} style={{ marginTop: '.5rem', marginBottom: '2rem' }}>
                   {host?.name ?? '...'}
-                  <span style={{ marginLeft: '1rem' }}>{getHostHealth()}</span>
+                  {node?.pendingdelete === false && <span style={{ marginLeft: '1rem' }}>{getHostHealth()}</span>}
+                  {node?.pendingdelete !== false && (
+                    <span style={{ marginLeft: '1rem' }}>
+                      <Badge status="processing" color="red" text="Removing..." />
+                    </span>
+                  )}
                 </Typography.Title>
               </Col>
               <Col xs={6} style={{ textAlign: 'right' }}>
@@ -576,7 +584,9 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                     items: [
                       {
                         key: 'refresh-key',
-                        label: <Typography.Text>Refresh Key</Typography.Text>,
+                        label: 'Refresh Key',
+                        disabled: node?.pendingdelete !== false,
+                        title: node?.pendingdelete !== false ? 'Host is being removed from network' : '',
                         onClick: (ev) => {
                           ev.domEvent.stopPropagation();
                           refreshHostKeys();
@@ -584,18 +594,20 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                       },
                       {
                         key: 'edit',
-                        label: <Typography.Text>Edit</Typography.Text>,
+                        label: 'Edit',
+                        disabled: node?.pendingdelete !== false,
+                        title: node?.pendingdelete !== false ? 'Host is being removed from network' : '',
                         onClick: (ev) => {
                           ev.domEvent.stopPropagation();
                           setIsEditingNode(true);
                         },
                       },
                       {
-                        key: 'delete',
-                        label: <Typography.Text type="danger">Delete</Typography.Text>,
+                        key: 'remove',
+                        label: <Typography.Text type="danger">Remove from network</Typography.Text>,
                         onClick: (ev) => {
                           ev.domEvent.stopPropagation();
-                          promptConfirmDelete();
+                          promptConfirmRemove();
                         },
                       },
                     ],

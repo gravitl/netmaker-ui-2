@@ -29,7 +29,7 @@ export const en: LanguageResource = {
   },
   error: {
     servermalfunction: 'Error server malfunction',
-    contactyourserveradmin: 'Contact your server admin',
+    contactyourserveradmin: 'Contact your server admin or check your network settings',
   },
   info: {
     connectmultiplehosts: 'Connect multiple hosts',
