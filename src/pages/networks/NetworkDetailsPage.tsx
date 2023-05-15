@@ -1516,7 +1516,14 @@ export default function NetworkDetailsPage(props: PageProps) {
                   title: 'Host Name',
                   render: (_, node) => {
                     const hostName = store.hostsCommonDetails[node.hostid].name;
-                    return <Link to={getNetworkHostRoute(node.hostid, node.network)}>{hostName}</Link>;
+                    return (
+                      <>
+                        <Link to={getNetworkHostRoute(node.hostid, node.network)}>{hostName}</Link>
+                        {node.pendingdelete && (
+                          <Badge style={{ marginLeft: '1rem' }} status="processing" color="red" text="Removing..." />
+                        )}
+                      </>
+                    );
                   },
                   sorter: (a, b) => {
                     const hostNameA = store.hostsCommonDetails[a.hostid].name;
@@ -1562,6 +1569,8 @@ export default function NetworkDetailsPage(props: PageProps) {
                             {
                               key: 'disconnect',
                               label: 'Disconnect',
+                              disabled: node.pendingdelete !== false,
+                              title: node.pendingdelete !== false ? 'Host is being removed from network' : '',
                               onClick: () =>
                                 disconnectNodeFromNetwork(false, getExtendedNode(node, store.hostsCommonDetails)),
                             },

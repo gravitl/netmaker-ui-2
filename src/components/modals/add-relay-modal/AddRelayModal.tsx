@@ -25,7 +25,6 @@ import { Host } from '@/models/Host';
 import { getNodeConnectivityStatus } from '@/utils/NodeUtils';
 import { CloseOutlined } from '@ant-design/icons';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
-import { AxiosError } from 'axios';
 import { CreateHostRelayDto } from '@/services/dtos/CreateHostRelayDto';
 import { HostsService } from '@/services/HostsService';
 
