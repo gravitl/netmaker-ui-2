@@ -127,6 +127,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const { token: themeToken } = theme.useToken();
 
+  const isServerEE = store.serverConfig?.IsEE === 'yes';
   const [form] = Form.useForm<Network>();
   const isIpv4Watch = Form.useWatch('isipv4', form);
   const isIpv6Watch = Form.useWatch('isipv6', form);
@@ -2320,26 +2321,32 @@ export default function NetworkDetailsPage(props: PageProps) {
         label: `Graph`,
         children: network ? getGraphContent() : <Skeleton active />,
       },
-      {
-        key: 'metrics',
-        label: `Metrics`,
-        children: network ? getMetricsContent() : <Skeleton active />,
-      },
-    ];
+    ].concat(
+      isServerEE
+        ? [
+            {
+              key: 'metrics',
+              label: `Metrics`,
+              children: network ? getMetricsContent() : <Skeleton active />,
+            },
+          ]
+        : []
+    );
   }, [
     network,
-    networkHosts.length,
-    clients.length,
-    egresses.length,
-    relays.length,
     getOverviewContent,
+    networkHosts.length,
     getHostsContent,
+    clients.length,
     getClientsContent,
+    egresses.length,
     getEgressContent,
+    relays.length,
     getRelayContent,
     getDnsContent,
     getAclsContent,
     getGraphContent,
+    isServerEE,
     getMetricsContent,
   ]);
 
@@ -2407,10 +2414,13 @@ export default function NetworkDetailsPage(props: PageProps) {
     loadDnses();
     loadAcls();
     loadClients();
-    loadMetrics();
+
+    if (isServerEE) {
+      loadMetrics();
+    }
 
     setIsLoading(false);
-  }, [networkId, store.networks, loadDnses, loadAcls, loadClients, loadMetrics, navigate, notify]);
+  }, [networkId, store.networks, loadDnses, loadAcls, loadClients, isServerEE, navigate, notify, loadMetrics]);
 
   const onNetworkFormEdit = useCallback(async () => {
     try {
