@@ -23,7 +23,7 @@ export interface ServerConfig {
   Verbosity: number; // 0
   Version: string; // "v0.7.3"
   RCE: boolean; // "on"
-  IsEE: boolean; // yes or no
+  IsEE: 'yes' | 'no'; // yes or no
 }
 
 export interface TenantConfig {

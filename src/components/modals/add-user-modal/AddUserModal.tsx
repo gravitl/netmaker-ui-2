@@ -19,6 +19,7 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
 
+  const isServerEE = store.serverConfig?.IsEE === 'yes';
   const [users, setUsers] = useState<User[]>([]);
   const isAdminVal = Form.useWatch('isadmin', form);
   const passwordVal = Form.useWatch('password', form);
@@ -38,6 +39,9 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
       const formData = await form.validateFields();
       if (isAdminVal) {
         formData.networks = [];
+      }
+      if (!isServerEE) {
+        formData.groups = ['*'];
       }
       const newUser = (await UsersService.createUser(formData)).data;
       resetModal();
@@ -84,7 +88,7 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
     >
       <Divider style={{ margin: '0px 0px 2rem 0px' }} />
       <div className="CustomModalBody">
-        <Form name="add-user-form" form={form} layout="vertical">
+        <Form name="add-user-form" form={form} layout="vertical" initialValues={{ groups: ['*'] }}>
           <Form.Item label="Username" name="username" rules={[{ required: true }]}>
             <Input placeholder="Username" />
           </Form.Item>
@@ -123,28 +127,30 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
             />
           </Form.Item>
 
-          <Form.Item label="User groups">
-            <Row>
-              <Col xs={18}>
-                <Form.Item name="groups" noStyle>
-                  <Select
-                    mode="multiple"
-                    placeholder="Groups"
-                    options={userGroups.map((g) => ({ label: g, value: g }))}
-                  />
-                </Form.Item>
-              </Col>
-              <Col xs={6} style={{ textAlign: 'right' }}>
-                <Button
-                  onClick={() => {
-                    form.setFieldValue('groups', userGroups);
-                  }}
-                >
-                  Select All
-                </Button>
-              </Col>
-            </Row>
-          </Form.Item>
+          {isServerEE && (
+            <Form.Item label="User groups">
+              <Row>
+                <Col xs={18}>
+                  <Form.Item name="groups" noStyle>
+                    <Select
+                      mode="multiple"
+                      placeholder="Groups"
+                      options={userGroups.map((g) => ({ label: g, value: g }))}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col xs={6} style={{ textAlign: 'right' }}>
+                  <Button
+                    onClick={() => {
+                      form.setFieldValue('groups', userGroups);
+                    }}
+                  >
+                    Select All
+                  </Button>
+                </Col>
+              </Row>
+            </Form.Item>
+          )}
 
           <Form.Item label="Allowed Networks">
             <Row>

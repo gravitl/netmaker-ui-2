@@ -22,6 +22,7 @@ export default function DashboardPage(props: PageProps) {
   const navigate = useNavigate();
   const store = useStore();
 
+  const isServerEE = store.serverConfig?.IsEE === 'yes';
   const [isAddNetworkModalOpen, setIsAddNetworkModalOpen] = useState(false);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [isNewHostModalOpen, setIsNewHostModalOpen] = useState(false);
@@ -32,22 +33,24 @@ export default function DashboardPage(props: PageProps) {
         <Layout.Header style={{ width: '100%', padding: '0px', backgroundColor: 'transparent' }}>
           <Row>
             <Col xs={12}>
-              <Alert
-                message="You are on the free plan"
-                type="warning"
-                action={
-                  <Button
-                    type="link"
-                    onClick={() => {
-                      window.location = getAmuiUrl('upgrade') as any;
-                      // setIsUpgradeModalOpen(true);
-                    }}
-                  >
-                    <span style={{ textDecoration: 'underline', color: '#D4B106' }}>Upgrade now</span>
-                  </Button>
-                }
-                style={{ width: '75%' }}
-              />
+              {!isServerEE && (
+                <Alert
+                  message="You are on the free plan"
+                  type="warning"
+                  action={
+                    <Button
+                      type="link"
+                      onClick={() => {
+                        window.location = getAmuiUrl('upgrade') as any;
+                        // setIsUpgradeModalOpen(true);
+                      }}
+                    >
+                      <span style={{ textDecoration: 'underline', color: '#D4B106' }}>Upgrade now</span>
+                    </Button>
+                  }
+                  style={{ width: '75%' }}
+                />
+              )}
             </Col>
             {/* <Col xs={6}></Col> */}
             <Col xs={12} style={{ textAlign: 'right' }}>
