@@ -58,6 +58,7 @@ export default function AddClientModal({
   const [gatewaySearch, setGatewaySearch] = useState('');
   const [selectedGateway, setSelectedGateway] = useState<ExtendedNode | null>(null);
   const [isFailoverGateway, setIsFailoverGateway] = useState(false);
+  const [isAutoselectionComplete, setIsAutoselectionComplete] = useState(false);
 
   const getNodeConnectivity = useCallback((node: Node) => {
     if (getNodeConnectivityStatus(node) === 'error') return <Badge status="error" text="Error" />;
@@ -149,6 +150,7 @@ export default function AddClientModal({
 
   useEffect(() => {
     // auto-select client gateway
+    if (isAutoselectionComplete) return;
     if (preferredGateway) {
       setSelectedGateway(getExtendedNode(preferredGateway, store.hostsCommonDetails));
       form.setFieldValue('gatewayId', preferredGateway.id);
@@ -159,7 +161,8 @@ export default function AddClientModal({
       setSelectedGateway(gateways[0]);
       form.setFieldValue('gatewayId', gateways[0].id);
     }
-  }, [form, isOpen, networkHosts, preferredGateway, store.hostsCommonDetails]);
+    setIsAutoselectionComplete(true);
+  }, [form, isOpen, networkHosts, preferredGateway, store.hostsCommonDetails, isAutoselectionComplete]);
 
   // TODO: add autofill for fields
   return (
