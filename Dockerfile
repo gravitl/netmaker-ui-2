@@ -35,8 +35,8 @@ ENV VITE_TENANT_NAME=
 ENV VITE_NETCLIENT_BIN_URL_TEMPLATE=https://fileserver.netmaker.org/releases/download/:version/:fileName
 
 RUN npm ci
-RUN npm run build
 RUN npm audit fix
+RUN npm run build
 
 # final image
 FROM nginx:1.24.0-alpine3.17
