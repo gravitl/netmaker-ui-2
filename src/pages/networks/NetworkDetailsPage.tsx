@@ -2741,6 +2741,7 @@ export default function NetworkDetailsPage(props: PageProps) {
           onUpdateIngress={() => {
             setIsUpdateGatewayModalOpen(false);
           }}
+          onCancel={() => setIsUpdateGatewayModalOpen(false)}
         />
       )}
       {targetClient && (

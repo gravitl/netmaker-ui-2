@@ -12,7 +12,6 @@ interface UpdateIngressModalProps {
   networkId: Network['netid'];
   ingress: Node;
   onUpdateIngress: () => any;
-  closeModal?: () => void;
   onOk?: (e: MouseEvent<HTMLButtonElement>) => void;
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
 }
