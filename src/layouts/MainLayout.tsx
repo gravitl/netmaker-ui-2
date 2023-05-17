@@ -114,11 +114,6 @@ export default function MainLayout() {
         {
           type: 'divider',
         },
-        {
-          key: 'users',
-          icon: UserOutlined,
-          label: 'Users',
-        },
       ]
         .concat(
           isSaasBuild
@@ -137,6 +132,17 @@ export default function MainLayout() {
                 // },
               ]
         )
+        .concat(
+          store.user?.isadmin
+            ? [
+                {
+                  key: 'users',
+                  icon: UserOutlined,
+                  label: 'Users',
+                },
+              ]
+            : []
+        )
         .map((item) => ({
           key: item.key,
           type: item.type as any,
@@ -152,7 +158,7 @@ export default function MainLayout() {
             type: (child as any)?.type,
           })),
         })),
-    [recentHosts, recentNetworks]
+    [recentHosts, recentNetworks, store.user?.isadmin]
   );
 
   const sideNavBottomItems: MenuProps['items'] = useMemo(

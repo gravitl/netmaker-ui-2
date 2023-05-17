@@ -40,7 +40,7 @@ export default function UsersPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
 
-  const isServerEE = true || store.serverConfig?.IsEE === 'yes';
+  const isServerEE = store.serverConfig?.IsEE === 'yes';
   const [users, setUsers] = useState<User[]>([]);
   const [userGroups, setUserGroups] = useState<UserGroup[]>([]);
   const [isLoading, setIsLoading] = useState(true);
