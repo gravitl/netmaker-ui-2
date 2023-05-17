@@ -1,4 +1,5 @@
 import {
+  Alert,
   Badge,
   Button,
   Col,
@@ -22,7 +23,7 @@ import { getExtendedNode, getNodeConnectivityStatus } from '@/utils/NodeUtils';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { NodesService } from '@/services/NodesService';
-import { isValidIp } from '@/utils/NetworkUtils';
+import { isValidIpCidr } from '@/utils/NetworkUtils';
 import { CreateEgressNodeDto } from '@/services/dtos/CreateEgressNodeDto';
 
 interface UpdateEgressModalProps {
@@ -53,6 +54,7 @@ export default function UpdateEgressModal({
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const ranges = Form.useWatch('ranges', form);
+  const natEnabledVal = Form.useWatch('natEnabled', form);
 
   const extendedEgress = useMemo(
     () => getExtendedNode(egress, store.hostsCommonDetails),
@@ -138,6 +140,12 @@ export default function UpdateEgressModal({
             <Form.Item name="natEnabled" label="Enable NAT for egress traffic">
               <Switch defaultChecked={egress.egressgatewaynatenabled} />
             </Form.Item>
+            {!natEnabledVal && (
+              <Alert
+                type="warning"
+                message="Egress may not function properly without NAT. You must ensure the host is properly configured"
+              />
+            )}
 
             <Typography.Title level={4}>Select external ranges</Typography.Title>
 
@@ -158,7 +166,7 @@ export default function UpdateEgressModal({
                           {
                             required: true,
                             validator(_, value) {
-                              if (!isValidIp(value)) {
+                              if (!isValidIpCidr(value)) {
                                 return Promise.reject('Invalid CIDR');
                               } else {
                                 return Promise.resolve();
