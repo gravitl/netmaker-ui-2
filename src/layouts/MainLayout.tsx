@@ -133,7 +133,7 @@ export default function MainLayout() {
               ]
         )
         .concat(
-          store.user?.isadmin
+          isSaasBuild || store.user?.isadmin
             ? [
                 {
                   key: 'users',
