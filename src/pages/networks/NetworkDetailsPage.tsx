@@ -131,6 +131,8 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const { token: themeToken } = theme.useToken();
 
+  const storeFetchHosts = store.fetchHosts;
+  const storeFetchNodes = store.fetchNodes;
   const isServerEE = store.serverConfig?.IsEE === 'yes';
   const [form] = Form.useForm<Network>();
   const isIpv4Watch = Form.useWatch('isipv4', form);
@@ -580,13 +582,12 @@ export default function NetworkDetailsPage(props: PageProps) {
           try {
             await HostsService.deleteHostRelay(relay.id);
             store.fetchHosts();
+            notify.success({ message: 'Relay deleted' });
           } catch (err) {
-            if (err instanceof AxiosError) {
-              notify.error({
-                message: 'Error deleting relay',
-                description: extractErrorMsg(err),
-              });
-            }
+            notify.error({
+              message: 'Error deleting relay',
+              description: extractErrorMsg(err as any),
+            });
           }
         },
       });
@@ -595,26 +596,33 @@ export default function NetworkDetailsPage(props: PageProps) {
   );
 
   const confirmRemoveRelayed = useCallback(
-    (relayed: Host) => {
+    (relayed: Host, relay: Host) => {
       Modal.confirm({
-        title: `Stop ${relayed.name} from being relayed`,
+        title: `Stop ${relayed.name} from being relayed by ${relay.name}`,
         content: `Are you sure you want to stop this host from being relayed?`,
         onOk: async () => {
           try {
-            // await HostsService.updateHost(relay.id);
-            // store.fetchHosts();
-          } catch (err) {
-            if (err instanceof AxiosError) {
-              notify.error({
-                message: 'Error updating relay',
-                description: extractErrorMsg(err),
-              });
+            const relayIds = new Set([...relay.relay_hosts]);
+            relayIds.delete(relayed.id);
+
+            if (relayIds.size > 0) {
+              await HostsService.updateHost(relay.id, { ...relay, relay_hosts: [...relayIds] });
+            } else {
+              (await HostsService.deleteHostRelay(relay.id)).data;
             }
+
+            storeFetchHosts();
+            storeFetchNodes();
+          } catch (err) {
+            notify.error({
+              message: 'Error updating relay',
+              description: extractErrorMsg(err as any),
+            });
           }
         },
       });
     },
-    [notify]
+    [notify, storeFetchHosts, storeFetchNodes]
   );
 
   const gatewaysTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(
@@ -964,7 +972,11 @@ export default function NetworkDetailsPage(props: PageProps) {
                   {
                     key: 'delete',
                     label: (
-                      <Typography.Text onClick={() => confirmRemoveRelayed(relayed)}>
+                      <Typography.Text
+                        onClick={() =>
+                          confirmRemoveRelayed(relayed, networkHosts.find((h) => h.id === relayed.relayed_by)!)
+                        }
+                      >
                         <DeleteOutlined /> Stop being relayed
                       </Typography.Text>
                     ),

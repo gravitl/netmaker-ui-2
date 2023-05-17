@@ -154,7 +154,12 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
   useEffect(() => {
     if (isInternetGatewayVal) {
       form.setFieldsValue({
-        ranges: [...new Set([...rangesVal, internetRangeIpv4].concat(network?.isipv6 ? [internetRangeIpv6] : []))],
+        ranges: [
+          ...new Set(
+            [...rangesVal, internetRangeIpv4]
+            // .concat(network?.isipv6 ? [internetRangeIpv6] : [])
+          ),
+        ],
       });
     } else {
       form.setFieldsValue({

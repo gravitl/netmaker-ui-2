@@ -52,6 +52,7 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
   const [selectedRelay, setSelectedRelay] = useState<Host | null>(null);
   const [selectedRelayedIds, setSelectedRelayedIds] = useState<Host['id'][]>([]);
   const [relayedSearch, setRelayedSearch] = useState('');
+  const [isSelectOpen, setIsSelectOpen] = useState(false);
 
   const getNodeConnectivity = useCallback((node: Node) => {
     if (getNodeConnectivityStatus(node) === 'error') return <Badge status="error" text="Error" />;
@@ -243,6 +244,8 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
               <Form.Item label="Select hosts to relay" required>
                 <Select
                   placeholder="Select hosts to relay"
+                  open={isSelectOpen}
+                  onDropdownVisibleChange={(visible) => setIsSelectOpen(visible)}
                   dropdownRender={() => (
                     <div style={{ padding: '.5rem' }}>
                       <Row style={{ marginBottom: '1rem' }}>
@@ -260,10 +263,13 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
                             size="small"
                             columns={relayedTableCols}
                             rowKey="id"
-                            dataSource={[...filteredNetworkHosts.filter((h) => h.id !== selectedRelay.id)].sort(
-                              (a, b) =>
-                                // sort non-relayed hosts to the top
-                                a.isrelay === b.isrelay ? 0 : a.isrelay ? 1 : -1
+                            dataSource={[
+                              ...filteredNetworkHosts
+                                .filter((h) => h.name.toLocaleLowerCase().includes(relayedSearch.toLocaleLowerCase()))
+                                .filter((h) => h.id !== selectedRelay.id),
+                            ].sort((a, b) =>
+                              // sort non-relayed hosts to the top
+                              a.isrelay === b.isrelay ? 0 : a.isrelay ? 1 : -1
                             )}
                             onRow={(host) => {
                               return {
@@ -279,6 +285,7 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
                                     }
                                     return [...relayedHostIds];
                                   });
+                                  setIsSelectOpen(false);
                                 },
                               };
                             }}

@@ -20,23 +20,33 @@ COPY . /usr/app
 # Switch for SaaS or Standalone build
 ENV VITE_IS_SAAS_BUILD=true
 
+
 # Essential vars
 
+
 # Standalone build mandatory vars
+
 # This value is used if `BACKEND_URL` env var is unset.
 # BACKEND_URL is used for dynamic URL injection
-ENV VITE_BASE_URL=https://api.clustercat.com
+ENV VITE_BASE_URL=
+
+ENV VITE_LICENSE_DASHBOARD_URL=https://account.netmaker.io
+
 
 # EE customisations
+
 ENV VITE_TENANT_LOGO=
 ENV VITE_TENANT_NAME=
 
+
 # Other vars
+
 ENV VITE_NETCLIENT_BIN_URL_TEMPLATE=https://fileserver.netmaker.org/releases/download/:version/:fileName
 
 RUN npm ci
 RUN npm audit fix
 RUN npm run build
+
 
 # final image
 FROM nginx:1.24.0-alpine3.17

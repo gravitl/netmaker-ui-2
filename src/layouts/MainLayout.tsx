@@ -10,7 +10,7 @@ import {
 } from '@ant-design/icons';
 import { Alert, Col, MenuProps, Row, Select, Switch, Typography } from 'antd';
 import { Layout, Menu, theme } from 'antd';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { getAmuiUrl, getHostRoute, getNetworkRoute } from '../utils/RouteUtils';
 import { useStore } from '../store/store';
 import { AppRoutes } from '@/routes';
@@ -315,13 +315,16 @@ export default function MainLayout() {
         }}
       >
         {/* logo */}
-        <img src="/logo.png" alt="logo" style={{ width: '100%', padding: '.5rem 1rem 0rem 1rem' }} />
+        <Link to={AppRoutes.DASHBOARD_ROUTE}>
+          <img src="/logo.png" alt="logo" style={{ width: '100%', padding: '.5rem 1rem 0rem 1rem' }} />
+        </Link>
 
         <Menu
           theme="light"
           mode="inline"
           selectedKeys={getActiveSideNavKeys()}
           items={sideNavItems}
+          openKeys={['networks', 'hosts']}
           style={{ borderRight: 'none' }}
           onClick={(menu) => {
             switch (menu.key) {
