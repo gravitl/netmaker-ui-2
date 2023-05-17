@@ -15,8 +15,9 @@ import { useNavigate } from 'react-router-dom';
 import AddNetworkModal from '@/components/modals/add-network-modal/AddNetworkModal';
 import { useState } from 'react';
 import { useStore } from '@/store/store';
-import { getAmuiUrl } from '@/utils/RouteUtils';
+import { getAmuiUrl, getLicenseDashboardUrl } from '@/utils/RouteUtils';
 import NewHostModal from '@/components/modals/new-host-modal/NewHostModal';
+import { isSaasBuild } from '@/services/BaseService';
 
 export default function DashboardPage(props: PageProps) {
   const navigate = useNavigate();
@@ -41,7 +42,9 @@ export default function DashboardPage(props: PageProps) {
                     <Button
                       type="link"
                       onClick={() => {
-                        window.location = getAmuiUrl('upgrade') as any;
+                        window.location = isSaasBuild
+                          ? (getAmuiUrl('upgrade') as any)
+                          : (getLicenseDashboardUrl() as any);
                         // setIsUpgradeModalOpen(true);
                       }}
                     >

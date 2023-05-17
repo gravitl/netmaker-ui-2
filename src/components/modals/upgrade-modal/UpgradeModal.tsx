@@ -1,7 +1,8 @@
 import { Button, Divider, Modal } from 'antd';
 import { MouseEvent } from 'react';
 import '../CustomModal.scss';
-import { getAmuiUrl } from '@/utils/RouteUtils';
+import { getAmuiUrl, getLicenseDashboardUrl } from '@/utils/RouteUtils';
+import { isSaasBuild } from '@/services/BaseService';
 
 interface UpgradeModalProps {
   isOpen: boolean;
@@ -10,8 +11,8 @@ interface UpgradeModalProps {
 }
 
 export default function UpgradeModal({ isOpen, onUpgrade: onOk, onCancel }: UpgradeModalProps) {
-  const goToAmui = () => {
-    window.location = getAmuiUrl() as any;
+  const goToLicenceUpgradePage = () => {
+    window.location = isSaasBuild ? (getAmuiUrl('upgrade') as any) : (getLicenseDashboardUrl() as any);
   };
 
   return (
@@ -32,7 +33,7 @@ export default function UpgradeModal({ isOpen, onUpgrade: onOk, onCancel }: Upgr
         </div>
         <p>Unlock unlimited networks and so much more!</p>
         <div style={{ marginTop: '2rem' }}>
-          <Button type="primary" onClick={goToAmui}>
+          <Button type="primary" onClick={goToLicenceUpgradePage}>
             I&apos;m Ready to Upgrade
           </Button>
         </div>

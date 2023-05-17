@@ -57,6 +57,11 @@ export function getAmuiUrl(action: AmuiRouteAction = '') {
   }&action=${action}`;
 }
 
+// Function to get license dashboard route
+export function getLicenseDashboardUrl() {
+  return import.meta.env.VITE_LICENSE_DASHBOARD_URL;
+}
+
 // Function to get netclient download link and filename based on OS, arch and type
 export function getNetclientDownloadLink(
   os: AvailableOses,
