@@ -10,6 +10,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { AMUI_URL, isSaasBuild } from '../../services/BaseService';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { UsersService } from '@/services/UsersService';
+import { User } from '@/models/User';
 
 interface LoginPageProps {
   isFullScreen?: boolean;
@@ -25,12 +26,22 @@ export default function LoginPage(props: LoginPageProps) {
 
   const [shouldRemember, setShouldRemember] = useState(false);
 
+  const getUser = async (username: User['username']) => {
+    try {
+      const user = await (await UsersService.getUser(username)).data;
+      store.setStore({ user });
+    } catch (err) {
+      notify.error({ message: 'Failed to get user details', description: extractErrorMsg(err as any) });
+    }
+  };
+
   const onLogin = async () => {
     try {
       const formData = await form.validateFields();
       const data = await (await AuthService.login(formData)).data;
       store.setStore({ jwt: data.Response.AuthToken, username: data.Response.UserName });
-      navigate(AppRoutes.DASHBOARD_ROUTE);
+      await getUser(data.Response.UserName);
+      // navigate(AppRoutes.DASHBOARD_ROUTE);
     } catch (err) {
       notify.error({ message: 'Failed to login', description: extractErrorMsg(err as any) });
     }

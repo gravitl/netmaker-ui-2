@@ -1,5 +1,7 @@
 import { StateCreator } from 'zustand';
 import { TenantConfig } from '../models/ServerConfig';
+import { User } from '@/models/User';
+import { isSaasBuild } from '@/services/BaseService';
 
 export interface IAuthSlice {
   jwt: TenantConfig['jwt'];
@@ -9,10 +11,11 @@ export interface IAuthSlice {
   tenantName: TenantConfig['tenantName'];
   baseUrl: TenantConfig['baseUrl'];
   amuiAuthToken: TenantConfig['amuiAuthToken'];
+  user: User | null;
 
   // methods
   isLoggedIn: () => boolean;
-  setStore: (config: Partial<TenantConfig>) => void;
+  setStore: (config: Partial<TenantConfig & { user: User }>) => void;
   logout: () => void;
 }
 
@@ -24,9 +27,11 @@ const createAuthSlice: StateCreator<IAuthSlice, [], [], IAuthSlice> = (set, get)
   username: '',
   baseUrl: '',
   amuiAuthToken: '',
+  user: null,
 
   isLoggedIn() {
-    return !!get().jwt;
+    // TODO: fix username retrieval for SaaS
+    return !!get().jwt && (!isSaasBuild ? !!get().user : true);
   },
   setStore(config) {
     set(config);
@@ -40,6 +45,7 @@ const createAuthSlice: StateCreator<IAuthSlice, [], [], IAuthSlice> = (set, get)
       tenantName: '',
       baseUrl: '',
       amuiAuthToken: '',
+      user: null,
     });
   },
 });

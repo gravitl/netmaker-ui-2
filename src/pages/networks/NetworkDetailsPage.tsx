@@ -423,7 +423,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const loadClients = useCallback(async () => {
     try {
       if (!networkId) return;
-      const allClients = (await NodesService.getExternalClients()).data;
+      const allClients = (await NodesService.getExternalClients()).data ?? [];
       const networkClients = allClients.filter((client) => client.network === networkId);
       setClients(networkClients);
     } catch (err) {
@@ -2741,6 +2741,7 @@ export default function NetworkDetailsPage(props: PageProps) {
           onUpdateIngress={() => {
             setIsUpdateGatewayModalOpen(false);
           }}
+          onCancel={() => setIsUpdateGatewayModalOpen(false)}
         />
       )}
       {targetClient && (

@@ -159,16 +159,25 @@ export default function UsersPage(props: PageProps) {
       },
       {
         title: 'Role',
+        width: '10rem',
         render(_, user) {
           return <Tag color={user.isadmin ? 'warning' : 'default'}>{user.isadmin ? 'Admin' : 'User'}</Tag>;
         },
       },
       {
-        title: 'Groups',
+        title: 'Networks',
         render(_, user) {
-          return <Typography.Text>{user.groups?.join(', ')}</Typography.Text>;
+          return <Typography.Text>{user.isadmin ? 'n/a' : user.networks?.join(', ')}</Typography.Text>;
         },
       },
+      isServerEE
+        ? {
+            title: 'Groups',
+            render(_, user) {
+              return <Typography.Text>{user.groups?.join(', ')}</Typography.Text>;
+            },
+          }
+        : {},
       {
         width: '1rem',
         render(_, user) {
@@ -215,7 +224,7 @@ export default function UsersPage(props: PageProps) {
         },
       },
     ],
-    [confirmDeleteUser, onEditUser, store.username]
+    [confirmDeleteUser, isServerEE, onEditUser, store.username]
   );
 
   const networksTableColumns: TableColumnsType<Network> = useMemo(
