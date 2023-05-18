@@ -1468,10 +1468,6 @@ export default function NetworkDetailsPage(props: PageProps) {
                 </Row>
               </Col>
             </Row>
-
-            <Form.Item label="Default Client DNS" name="defaultDns">
-              <Input placeholder="Default Client DNS" />
-            </Form.Item>
           </Form>
         </Card>
       </div>
@@ -2732,7 +2728,6 @@ export default function NetworkDetailsPage(props: PageProps) {
       />
       <NewHostModal
         isOpen={isAddNewHostModalOpen}
-        preferredNetwork={network ?? undefined}
         onFinish={() => setIsAddNewHostModalOpen(false)}
         onCancel={() => setIsAddNewHostModalOpen(false)}
       />
