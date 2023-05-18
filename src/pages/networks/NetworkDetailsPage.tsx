@@ -1468,10 +1468,6 @@ export default function NetworkDetailsPage(props: PageProps) {
                 </Row>
               </Col>
             </Row>
-
-            <Form.Item label="Default Client DNS" name="defaultDns">
-              <Input placeholder="Default Client DNS" />
-            </Form.Item>
           </Form>
         </Card>
       </div>
