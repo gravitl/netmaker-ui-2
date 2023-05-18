@@ -324,7 +324,7 @@ export default function MainLayout() {
           mode="inline"
           selectedKeys={getActiveSideNavKeys()}
           items={sideNavItems}
-          openKeys={['networks', 'hosts']}
+          defaultOpenKeys={['networks', 'hosts']}
           style={{ borderRight: 'none' }}
           onClick={(menu) => {
             switch (menu.key) {
