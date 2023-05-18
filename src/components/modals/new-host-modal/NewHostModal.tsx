@@ -310,6 +310,11 @@ export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModa
                           Download
                         </Button>
                         <small>Requires Windows 7 SP1 or later</small>
+                        <div style={{ marginTop: '1rem' }}>
+                          <Typography.Text style={{ fontWeight: 'bold' }}>
+                            Note: Run the installer before proceeding
+                          </Typography.Text>
+                        </div>
                       </Col>
                     </Row>
                   </>
@@ -340,6 +345,11 @@ export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModa
                         </Button>
                         <br />
                         <small>Requires Mac OS High Sierra 10.13 or later</small>
+                        <div style={{ marginTop: '1rem' }}>
+                          <Typography.Text style={{ fontWeight: 'bold' }}>
+                            Note: Run the installer before proceeding
+                          </Typography.Text>
+                        </div>
                       </Col>
                     </Row>
                   </>
@@ -402,7 +412,7 @@ export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModa
                       <Col xs={24}>
                         <h4 style={{ marginBottom: '.5rem' }}>Install with this command</h4>
                         <Typography.Text code copyable>
-                          {`wget -O netclient ${
+                          {`fetch -o netclient ${
                             getNetclientDownloadLink('freebsd', 'amd64', 'cli')[0]
                           } && chmod +x ./netclient && sudo ./netclient install`}
                         </Typography.Text>
@@ -439,7 +449,7 @@ export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModa
                       </li>
                       <li>Click Submit and Get connected :)</li>
                     </ol>
-                    <small>NB: It might take a few minutes for the host to show up in the network(s)</small>
+                    <small>Note: It might take a few minutes for the host to show up in the network(s)</small>
                   </div>
                 )}
 
@@ -449,11 +459,11 @@ export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModa
                       <li>
                         <Typography.Text>Run</Typography.Text>
                         <Typography.Text code copyable>
-                          sudo netclient join -t {selectedEnrollmentKey?.token ?? <>&lt;token&gt;</>}
+                          {`sudo netclient join -t ${selectedEnrollmentKey?.token ?? <>&lt;token&gt;</>}`}
                         </Typography.Text>
                       </li>
                     </ol>
-                    <small>NB: It might take a few minutes for the host to show up in the network(s)</small>
+                    <small>Note: It might take a few minutes for the host to show up in the network(s)</small>
                   </div>
                 )}
 
@@ -465,13 +475,13 @@ export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModa
                         <Typography.Text code copyable>
                           {`sudo docker run -d --network host --privileged -e TOKEN=${
                             selectedEnrollmentKey?.token
-                          } -v /etc/netclient:/etc/netclient --name netclient gravitl/netclient: ${
+                          } -v /etc/netclient:/etc/netclient --name netclient gravitl/netclient:${
                             store.serverConfig?.Version ?? '<version>'
                           }`}
                         </Typography.Text>
                       </li>
                     </ol>
-                    <small>NB: It might take a few minutes for the host to show up in the network(s)</small>
+                    <small>Note: It might take a few minutes for the host to show up in the network(s)</small>
                   </div>
                 )}
               </Card>
