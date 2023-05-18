@@ -2728,7 +2728,6 @@ export default function NetworkDetailsPage(props: PageProps) {
       />
       <NewHostModal
         isOpen={isAddNewHostModalOpen}
-        preferredNetwork={network ?? undefined}
         onFinish={() => setIsAddNewHostModalOpen(false)}
         onCancel={() => setIsAddNewHostModalOpen(false)}
       />

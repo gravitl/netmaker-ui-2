@@ -1,4 +1,4 @@
-import { ArrowLeftOutlined, ArrowRightOutlined, PlusOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, ArrowRightOutlined } from '@ant-design/icons';
 import '../CustomModal.scss';
 import './NewHostModal.scss';
 import {
@@ -8,7 +8,6 @@ import {
   Divider,
   Form,
   Input,
-  List,
   Modal,
   Row,
   Select,
@@ -19,8 +18,6 @@ import {
 } from 'antd';
 import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useStore } from '@/store/store';
-import AddNetworkModal from '../add-network-modal/AddNetworkModal';
-import { Network } from '@/models/Network';
 import { AvailableArchs, AvailableOses } from '@/models/AvailableOses';
 import { getNetclientDownloadLink } from '@/utils/RouteUtils';
 import { EnrollmentKey } from '@/models/EnrollmentKey';
@@ -31,14 +28,13 @@ import AddEnrollmentKeyModal from '../add-enrollment-key-modal/AddEnrollmentKeyM
 
 interface NewHostModal {
   isOpen: boolean;
-  preferredNetwork?: Network;
   onFinish?: () => void;
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
 }
 
 const steps = [
   {
-    title: 'Select Network',
+    title: 'Select an Enrollment Key',
   },
   {
     title: 'Install Netclient',
@@ -48,15 +44,13 @@ const steps = [
   },
 ];
 
-export default function NewHostModal({ isOpen, preferredNetwork, onCancel, onFinish }: NewHostModal) {
+export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModal) {
   const store = useStore();
   const [notify, notifyCtx] = notification.useNotification();
 
   const theme = store.currentTheme;
   const [currentStep, setCurrentStep] = useState(0);
-  const [isAddNetworkModalOpen, setIsAddNetworkModalOpen] = useState(false);
-  const [selectedNetwork, setSelectedNetwork] = useState<Network | null>(null);
-  const [networkSearch, setNetworkSearch] = useState('');
+  const [keySearch, setKeySearch] = useState('');
   const [selectedOs, setSelectedOs] = useState<AvailableOses>('windows');
   const [selectedArch, setSelectedArch] = useState<AvailableArchs>('amd64');
   const [enrollmentKeys, setEnrollmentKeys] = useState<EnrollmentKey[]>([]);
@@ -64,15 +58,19 @@ export default function NewHostModal({ isOpen, preferredNetwork, onCancel, onFin
   const [isAddEnrollmentKeyModalOpen, setIsAddEnrollmentKeyModalOpen] = useState(false);
 
   const filteredEnrollmentKeys = useMemo(
-    () => enrollmentKeys.filter((key) => isEnrollmentKeyValid(key)),
-    [enrollmentKeys]
+    () =>
+      enrollmentKeys
+        .filter((key) => isEnrollmentKeyValid(key))
+        .filter((key) =>
+          `${key.tags.join('')}${key.networks.join('')}`.toLowerCase().includes(keySearch.toLocaleLowerCase())
+        ),
+    [enrollmentKeys, keySearch]
   );
 
   const isOnLastStep = useMemo(() => {
     if (currentStep >= 2) return true;
-    else if (currentStep === 1 && selectedOs === 'docker') return true;
     return false;
-  }, [currentStep, selectedOs]);
+  }, [currentStep]);
 
   const onStepChange = useCallback((newStep: number) => {
     // TODO: add step validation
@@ -105,23 +103,10 @@ export default function NewHostModal({ isOpen, preferredNetwork, onCancel, onFin
   const resetModal = () => {
     setCurrentStep(0);
     setIsAddEnrollmentKeyModalOpen(false);
-    setIsAddNetworkModalOpen(false);
     setSelectedEnrollmentKey(null);
-    setSelectedNetwork(null);
     setSelectedOs('windows');
     setSelectedArch('amd64');
   };
-
-  useEffect(() => {
-    // autoselect network
-    if (preferredNetwork) {
-      setSelectedNetwork(preferredNetwork);
-      onStepChange(1);
-    } else if (store.networks.length === 1) {
-      setSelectedNetwork(store.networks[0]);
-      onStepChange(1);
-    }
-  }, [onStepChange, preferredNetwork, store.networks]);
 
   useEffect(() => {
     // reset arch on OS change
@@ -189,48 +174,55 @@ export default function NewHostModal({ isOpen, preferredNetwork, onCancel, onFin
         </Row>
       </div>
 
-      {/* choose network */}
+      {/* choose a key */}
       {currentStep === 0 && (
         <div className="CustomModalBody">
           <Row justify="center">
             <Col xs={24}>
               <Card>
-                <p style={{ marginTop: '0' }}>Select a network to join</p>
-                <Input
-                  placeholder="Search network"
-                  value={networkSearch}
-                  onChange={(ev) => setNetworkSearch(ev.target.value)}
-                />
-                <List
+                <p style={{ marginTop: '0' }}>Select an enrollment key to register with</p>
+                <div className="" style={{ textAlign: 'right' }}>
+                  <Button size="small" type="link" onClick={() => setIsAddEnrollmentKeyModalOpen(true)}>
+                    Create new Key
+                  </Button>
+                </div>
+                <Input size="small" placeholder="Search keys" onChange={(ev) => setKeySearch(ev.target.value)} />
+                <Table
+                  style={{ marginTop: '1rem' }}
                   size="small"
-                  className="networks-list"
-                  style={{ maxHeight: '40vh', overflow: 'auto', marginTop: '.5rem' }}
-                >
-                  {store.networks
-                    .filter((network) => network.netid.includes(networkSearch.toLocaleLowerCase()))
-                    .sort((a, b) => a.netid.localeCompare(b.netid))
-                    .map((network) => (
-                      <List.Item
-                        key={network.netid}
-                        style={{ cursor: 'pointer' }}
-                        onClick={() => {
-                          setSelectedNetwork(network);
-                          onStepChange(1);
-                        }}
-                      >
-                        <List.Item.Meta
-                          style={{ cursor: 'pointer' }}
-                          title={network.netid}
-                          description={`IPv4 Range: ${network.addressrange}${
-                            network.isipv6 ? ', IPv6 Range: ' + network.addressrange6 : ''
-                          }`}
-                        />
-                      </List.Item>
-                    ))}
-                </List>
-                <Button type="link" style={{ marginTop: '1rem' }} onClick={() => setIsAddNetworkModalOpen(true)}>
-                  <PlusOutlined /> Add network
-                </Button>
+                  pagination={{
+                    pageSize: 5,
+                  }}
+                  columns={[
+                    {
+                      title: 'Name',
+                      render(_, key: EnrollmentKey) {
+                        return key.tags.join(', ');
+                      },
+                      sorter(a, b) {
+                        return a.tags.join(', ').localeCompare(b.tags.join(', '));
+                      },
+                      defaultSortOrder: 'ascend',
+                    },
+                    {
+                      title: 'Networks',
+                      render(_, key: EnrollmentKey) {
+                        return key.networks.join(', ');
+                      },
+                    },
+                  ]}
+                  dataSource={filteredEnrollmentKeys}
+                  rowKey="value"
+                  onRow={(key) => ({
+                    onClick: () => {
+                      setSelectedEnrollmentKey(key);
+                      onStepChange(1);
+                    },
+                  })}
+                  rowClassName={(key) => {
+                    return key.value === selectedEnrollmentKey?.value ? 'selected-row' : '';
+                  }}
+                />
               </Card>
             </Col>
           </Row>
@@ -244,10 +236,9 @@ export default function NewHostModal({ isOpen, preferredNetwork, onCancel, onFin
             <Col xs={24}>
               <Card>
                 <p>
-                  Connect host to{' '}
-                  <span style={{ fontWeight: 'bold' }}>
-                    {selectedNetwork?.netid} ({`${selectedNetwork?.addressrange}, ${selectedNetwork?.addressrange6}`})
-                  </span>{' '}
+                  Connect host to network(s){' '}
+                  <span style={{ fontWeight: 'bold' }}>{selectedEnrollmentKey?.networks.join(', ')}</span> via key{' '}
+                  <span style={{ fontWeight: 'bold' }}>&quot;{selectedEnrollmentKey?.tags.join(', ')}&quot;</span>{' '}
                   <Button type="link" size="small" onClick={() => setCurrentStep(0)}>
                     Change
                   </Button>
@@ -303,7 +294,6 @@ export default function NewHostModal({ isOpen, preferredNetwork, onCancel, onFin
                   </Col>
                 </Row>
 
-                {/* TODO: implement copy feature */}
                 {/* content */}
                 <Divider />
                 {selectedOs === 'windows' && (
@@ -348,6 +338,7 @@ export default function NewHostModal({ isOpen, preferredNetwork, onCancel, onFin
                         >
                           Download for {selectedArch}
                         </Button>
+                        <br />
                         <small>Requires Mac OS High Sierra 10.13 or later</small>
                       </Col>
                     </Row>
@@ -375,21 +366,12 @@ export default function NewHostModal({ isOpen, preferredNetwork, onCancel, onFin
                             ]}
                           ></Select>
                         </Form.Item>
-                        <Button
-                          block
-                          type="primary"
-                          href={getNetclientDownloadLink('linux', selectedArch, 'cli')[0]}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          Download CLI for {selectedArch}
-                        </Button>
-                        <h4>Install with this command</h4>
-                        <Typography.Text code copyable>{`sudo chmod +x ./${
-                          getNetclientDownloadLink('linux', selectedArch, 'cli')[1]
-                        } && sudo ./${
-                          getNetclientDownloadLink('linux', selectedArch, 'cli')[1]
-                        } install`}</Typography.Text>
+                        <h4 style={{ marginBottom: '.5rem' }}>Install with this command</h4>
+                        <Typography.Text code copyable>
+                          {`wget -O netclient ${
+                            getNetclientDownloadLink('linux', selectedArch, 'cli')[0]
+                          } && chmod +x ./netclient && sudo ./netclient install`}
+                        </Typography.Text>
                         <Divider />
                         <div className="" style={{ marginTop: '1rem', textAlign: 'center' }}>
                           <Button
@@ -418,84 +400,12 @@ export default function NewHostModal({ isOpen, preferredNetwork, onCancel, onFin
                   <>
                     <Row>
                       <Col xs={24}>
-                        <Button
-                          block
-                          type="primary"
-                          href={getNetclientDownloadLink('freebsd', 'amd64', 'cli')[0]}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          Download
-                        </Button>
-                        <h4>Install with this command</h4>
-                        <Typography.Text code copyable>{`sudo chmod +x ./${
-                          getNetclientDownloadLink('freebsd', 'amd64', 'cli')[1]
-                        } && sudo ./${
-                          getNetclientDownloadLink('freebsd', 'amd64', 'cli')[1]
-                        } install`}</Typography.Text>
-                      </Col>
-                    </Row>
-                  </>
-                )}
-
-                {selectedOs === 'docker' && (
-                  <>
-                    <Row>
-                      <Col xs={24}>
-                        <div className="" style={{ textAlign: 'right' }}>
-                          <Button size="small" type="link" onClick={() => setIsAddEnrollmentKeyModalOpen(true)}>
-                            Create new Key
-                          </Button>
-                        </div>
-                        <Table
-                          size="small"
-                          pagination={{
-                            pageSize: 5,
-                          }}
-                          columns={[
-                            {
-                              title: 'Name',
-                              render(_, key: EnrollmentKey) {
-                                return key.tags.join(', ');
-                              },
-                              sorter(a, b) {
-                                return a.tags.join(', ').localeCompare(b.tags.join(', '));
-                              },
-                              defaultSortOrder: 'ascend',
-                            },
-                            {
-                              title: 'Networks',
-                              render(_, key: EnrollmentKey) {
-                                return key.networks.join(', ');
-                              },
-                            },
-                          ]}
-                          dataSource={filteredEnrollmentKeys}
-                          rowKey="value"
-                          onRow={(key) => ({
-                            onClick: () => {
-                              setSelectedEnrollmentKey(key);
-                            },
-                          })}
-                          rowClassName={(key) => {
-                            return key.value === selectedEnrollmentKey?.value ? 'selected-row' : '';
-                          }}
-                        />
-
-                        {selectedEnrollmentKey && (
-                          <>
-                            <Typography.Title level={5} style={{ marginTop: '0rem' }}>
-                              Join network({selectedEnrollmentKey.networks.join(', ')}) with the below command:
-                            </Typography.Title>
-                            <Typography.Text code copyable>
-                              {`sudo docker run -d --network host --privileged -e TOKEN=${
-                                selectedEnrollmentKey.token
-                              } -v /etc/netclient:/etc/netclient --name netclient gravitl/netclient: ${
-                                store.serverConfig?.Version ?? '<version>'
-                              }`}
-                            </Typography.Text>
-                          </>
-                        )}
+                        <h4 style={{ marginBottom: '.5rem' }}>Install with this command</h4>
+                        <Typography.Text code copyable>
+                          {`wget -O netclient ${
+                            getNetclientDownloadLink('freebsd', 'amd64', 'cli')[0]
+                          } && chmod +x ./netclient && sudo ./netclient install`}
+                        </Typography.Text>
                       </Col>
                     </Row>
                   </>
@@ -519,21 +429,49 @@ export default function NewHostModal({ isOpen, preferredNetwork, onCancel, onFin
                     <ol>
                       <li>Open Netclient GUI</li>
                       <li>Select &quot;Add New Network&quot;</li>
-                      <li>Click Join via SSO</li>
-                      <li>Enter &quot;{store.serverConfig?.APIHost ?? '<server name>'}&quot; as server name</li>
-                      <li>Enter &quot;{selectedNetwork?.netid ?? '<network name>'}&quot; as network</li>
-                      <li>Login and get connected :)</li>
+                      <li>Click Join via Enrollemnt Key</li>
+                      <li>
+                        Enter{' '}
+                        <Typography.Text code copyable>
+                          {selectedEnrollmentKey?.token ?? <>&lt;token&gt;</>}
+                        </Typography.Text>{' '}
+                        as enrollment key
+                      </li>
+                      <li>Click Submit and Get connected :)</li>
                     </ol>
+                    <small>NB: It might take a few minutes for the host to show up in the network(s)</small>
                   </div>
                 )}
 
                 {(selectedOs === 'linux' || selectedOs === 'freebsd') && (
                   <div>
-                    <Typography.Text>Run</Typography.Text>
-                    <Typography.Text code copyable>
-                      netclient join -s {store.serverConfig?.APIHost ?? '<server name>'} -n{' '}
-                      {selectedNetwork?.netid ?? '<network name>'}
-                    </Typography.Text>
+                    <ol>
+                      <li>
+                        <Typography.Text>Run</Typography.Text>
+                        <Typography.Text code copyable>
+                          sudo netclient join -t {selectedEnrollmentKey?.token ?? <>&lt;token&gt;</>}
+                        </Typography.Text>
+                      </li>
+                    </ol>
+                    <small>NB: It might take a few minutes for the host to show up in the network(s)</small>
+                  </div>
+                )}
+
+                {selectedOs === 'docker' && (
+                  <div>
+                    <ol>
+                      <li>
+                        <Typography.Text>Run</Typography.Text>
+                        <Typography.Text code copyable>
+                          {`sudo docker run -d --network host --privileged -e TOKEN=${
+                            selectedEnrollmentKey?.token
+                          } -v /etc/netclient:/etc/netclient --name netclient gravitl/netclient: ${
+                            store.serverConfig?.Version ?? '<version>'
+                          }`}
+                        </Typography.Text>
+                      </li>
+                    </ol>
+                    <small>NB: It might take a few minutes for the host to show up in the network(s)</small>
                   </div>
                 )}
               </Card>
@@ -544,15 +482,6 @@ export default function NewHostModal({ isOpen, preferredNetwork, onCancel, onFin
 
       {/* misc */}
       {notifyCtx}
-      <AddNetworkModal
-        isOpen={isAddNetworkModalOpen}
-        onCreateNetwork={() => {
-          setIsAddNetworkModalOpen(false);
-        }}
-        onCancel={() => {
-          setIsAddNetworkModalOpen(false);
-        }}
-      />
       <AddEnrollmentKeyModal
         isOpen={isAddEnrollmentKeyModalOpen}
         onCreateKey={(key) => {
