@@ -469,14 +469,14 @@ export default function HostsPage(props: PageProps) {
         duration: 10,
         btn: (
           <>
-            <Button type="primary" size="small" onClick={() => navigate(AppRoutes.NEW_HOST_ROUTE)}>
+            <Button type="primary" size="small" onClick={() => setIsAddNewHostModalOpen(true)}>
               {t('hosts.connectahost')}
             </Button>
           </>
         ),
       });
     }
-  }, [hasAdvicedHosts, hosts.length, navigate, notify, t]);
+  }, [hasAdvicedHosts, hosts.length, notify, t]);
 
   return (
     <Layout.Content
