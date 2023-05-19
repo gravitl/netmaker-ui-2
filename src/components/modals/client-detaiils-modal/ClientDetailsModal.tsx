@@ -1,11 +1,11 @@
-import { Button, Col, Divider, Modal, notification, QRCode, Row, Select, Switch, Typography } from 'antd';
+import { Button, Col, Divider, Image, Modal, notification, Row, Select, Switch, Typography } from 'antd';
 import { MouseEvent, useCallback, useEffect, useState } from 'react';
 import '../CustomModal.scss';
 import { DownloadOutlined } from '@ant-design/icons';
 import { download, extractErrorMsg } from '@/utils/ServiceUtils';
-import { AxiosError } from 'axios';
 import { NodesService } from '@/services/NodesService';
 import { ExternalClient } from '@/models/ExternalClient';
+import { Buffer } from 'buffer';
 
 interface ClientDetailsModalProps {
   isOpen: boolean;
@@ -16,27 +16,39 @@ interface ClientDetailsModalProps {
   onUpdateClient: (newClient: ExternalClient) => void;
 }
 
+function convertQrCodeArrayBufferToImgString(qrData: ArrayBuffer): string {
+  return 'data:image/png;base64,' + Buffer.from(qrData).toString('base64');
+}
+
 export default function ClientDetailsModal({ client, isOpen, onCancel, onUpdateClient }: ClientDetailsModalProps) {
   const [notify, notifyCtx] = notification.useNotification();
 
   const [qrCode, setQrCode] = useState(' '); // hack to allow qr code display
 
   const downloadClientData = async () => {
-    const qrData = (await NodesService.getExternalClientConfig(client.clientid, client.network, 'file')).data;
-    download(`${client.clientid}-${client.network}-netmaker-client.conf`, qrData);
+    try {
+      notify.info({ message: 'Downloading...' });
+      const qrData = (await NodesService.getExternalClientConfig(client.clientid, client.network, 'file'))
+        .data as string;
+      download(`${client.clientid}.conf`, qrData);
+    } catch (err) {
+      notify.error({
+        message: 'Failed to download client config',
+        description: extractErrorMsg(err as any),
+      });
+    }
   };
 
   const loadQrCode = useCallback(async () => {
     try {
-      const qrData = (await NodesService.getExternalClientConfig(client.clientid, client.network, 'qr')).data;
-      setQrCode(qrData);
+      const qrData = (await NodesService.getExternalClientConfig(client.clientid, client.network, 'qr'))
+        .data as ArrayBuffer;
+      setQrCode(convertQrCodeArrayBufferToImgString(qrData));
     } catch (err) {
-      if (err instanceof AxiosError) {
-        notify.error({
-          message: 'Failed to dowloadable client config',
-          description: extractErrorMsg(err),
-        });
-      }
+      notify.error({
+        message: 'Failed to load client config',
+        description: extractErrorMsg(err as any),
+      });
     }
   }, [client, notify]);
 
@@ -143,10 +155,14 @@ export default function ClientDetailsModal({ client, isOpen, onCancel, onUpdateC
 
         <Row>
           <Col xs={24}>
-            <QRCode
-              status={qrCode === ' ' ? 'loading' : 'active'}
-              value={qrCode}
-              icon="https://github.com/gravitl/netmaker/blob/netmaker_logos/img/logos/N_Teal.png?raw=true"
+            <Image
+              loading="eager"
+              className="qr-code-container"
+              preview={{ width: 600, height: 600 }}
+              alt={`qr code for client ${client.clientid}`}
+              src={qrCode}
+              style={{ borderRadius: '8px' }}
+              width={256}
             />
           </Col>
         </Row>
