@@ -12,7 +12,7 @@ import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { UsersService } from '@/services/UsersService';
 import { User } from '@/models/User';
 import { ApiRoutes } from '@/constants/ApiRoutes';
-import { useQuery } from '@/utils/RouteUtils';
+import { truncateQueryParamsFromCurrentUrl, useQuery } from '@/utils/RouteUtils';
 
 interface LoginPageProps {
   isFullScreen?: boolean;
@@ -81,6 +81,7 @@ export default function LoginPage(props: LoginPageProps) {
       return null;
     }
     store.setStore({ jwt: token, baseUrl: backend });
+    truncateQueryParamsFromCurrentUrl();
     // TODO: load username
     navigate(AppRoutes.DASHBOARD_ROUTE);
     return null;
@@ -90,6 +91,7 @@ export default function LoginPage(props: LoginPageProps) {
       if (oauthUser) {
         getUserAndUpdateInStore(oauthUser);
       }
+      truncateQueryParamsFromCurrentUrl();
       navigate(AppRoutes.DASHBOARD_ROUTE);
       return null;
     }

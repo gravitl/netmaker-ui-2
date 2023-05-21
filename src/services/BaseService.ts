@@ -1,4 +1,5 @@
 import { useStore } from '@/store/store';
+import { truncateQueryParamsFromCurrentUrl } from '@/utils/RouteUtils';
 import axios from 'axios';
 
 export const isSaasBuild = import.meta.env.VITE_IS_SAAS_BUILD?.toLocaleLowerCase() === 'true';
@@ -32,6 +33,8 @@ export function setupTenantConfig(): void {
       : `https://${baseUrl}/api`
     : useStore.getState().baseUrl;
   baseService.defaults.baseURL = resolvedBaseUrl;
+
+  truncateQueryParamsFromCurrentUrl();
 
   useStore.getState().setStore({
     baseUrl: resolvedBaseUrl,
