@@ -67,7 +67,7 @@ export default function UpdateClientModal({
       <Divider style={{ margin: '0px 0px 2rem 0px' }} />
       <Form name="update-client-form" form={form} layout="vertical" initialValues={client}>
         <div className="CustomModalBody">
-          <Form.Item label="Client ID" name="clientid">
+          <Form.Item label="Client ID (Optional)" name="clientid">
             <Input placeholder="Unique name of client" />
           </Form.Item>
 
@@ -76,15 +76,15 @@ export default function UpdateClientModal({
               key="details"
               header={<Typography.Text style={{ marginTop: '0rem' }}>Advanced Settings</Typography.Text>}
             >
-              <Form.Item label="Public Key" name="publickey">
+              <Form.Item label="Public Key (Optional)" name="publickey">
                 <Input placeholder="Public key" />
               </Form.Item>
 
-              <Form.Item label="DNS" name="dns">
+              <Form.Item label="DNS (Optional)" name="dns">
                 <Input placeholder="Client DNS" />
               </Form.Item>
 
-              <Form.Item label="Additional Addresses" name="extraallowedips">
+              <Form.Item label="Additional Addresses (Optional)" name="extraallowedips">
                 <Select mode="tags" placeholder="Additional IP Addresses" clearIcon />
               </Form.Item>
             </Collapse.Panel>
