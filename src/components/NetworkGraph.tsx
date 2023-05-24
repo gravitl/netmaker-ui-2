@@ -5,11 +5,13 @@ import { useLoadGraph, useSigma } from '@react-sigma/core';
 import Graph from 'graphology';
 import { useCallback, useEffect } from 'react';
 import circular from 'graphology-layout/circular';
-import forceAtlas from 'graphology-layout-force';
+// import forceAtlas from 'graphology-layout-force';
 import forceAtlas2 from 'graphology-layout-forceatlas2';
 import ForceSupervisor from 'graphology-layout-force/worker';
 import { NodeAclContainer } from '@/models/Acl';
 import { ExternalClient } from '@/models/ExternalClient';
+import { theme } from 'antd';
+import { useStore } from '@/store/store';
 
 interface NetworkGraphProps {
   network: Network;
@@ -44,9 +46,16 @@ let forceAtlasWorkerRef: ForceSupervisor | null = null;
 export default function NetworkGraph({ hosts, nodes, acl, clients }: NetworkGraphProps) {
   const loadGraph = useLoadGraph();
   const sigma = useSigma();
+  const { token: themeToken } = theme.useToken();
+  const store = useStore();
 
   // use this for zoom level
   // sigma.getCamera().getState().ratio
+
+  // node label color
+  sigma.setSetting('labelColor', {
+    color: store.currentTheme === 'dark' ? themeToken.colorPrimary : themeToken.colorText,
+  });
 
   const renderNodes = useCallback(
     (graph: Graph, nodes: Node[], nodeToHostMap: Record<Node['id'], Host>, clients: ExternalClient[]) => {
