@@ -2670,6 +2670,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       />
       {targetClient && (
         <ClientDetailsModal
+          key={`read-${targetClient.clientid}`}
           isOpen={isClientDetailsModalOpen}
           client={targetClient}
           // onDeleteClient={() => {
@@ -2753,7 +2754,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       )}
       {targetClient && (
         <UpdateClientModal
-          key={targetClient.clientid}
+          key={`update-${targetClient.clientid}`}
           isOpen={isUpdateClientModalOpen}
           client={targetClient}
           networkId={networkId}
