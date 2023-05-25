@@ -1526,7 +1526,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                 {
                   title: 'Host Name',
                   render: (_, node) => {
-                    const hostName = store.hostsCommonDetails[node.hostid].name;
+                    const hostName = getExtendedNode(node, store.hostsCommonDetails).name;
                     return (
                       <>
                         <Link to={getNetworkHostRoute(node.hostid, node.network)}>{hostName}</Link>
@@ -1537,9 +1537,9 @@ export default function NetworkDetailsPage(props: PageProps) {
                     );
                   },
                   sorter: (a, b) => {
-                    const hostNameA = store.hostsCommonDetails[a.hostid].name;
-                    const hostNameB = store.hostsCommonDetails[b.hostid].name;
-                    return hostNameA.localeCompare(hostNameB);
+                    const hostNameA = getExtendedNode(a, store.hostsCommonDetails).name;
+                    const hostNameB = getExtendedNode(b, store.hostsCommonDetails).name;
+                    return hostNameA?.localeCompare(hostNameB ?? '') ?? 0;
                   },
                   defaultSortOrder: 'ascend',
                 },
