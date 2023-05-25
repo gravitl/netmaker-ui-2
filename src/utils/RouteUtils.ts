@@ -99,3 +99,17 @@ export function getNetclientDownloadLink(
     effectiveFileName,
   ];
 }
+
+// Function that returns the current URL without query params
+export function deriveUrlWithoutQueryParams(url?: string): string {
+  if (!url) {
+    return window.location.href.split('?')[0];
+  }
+  return url.split('?')[0];
+}
+
+// Function that truncates query params from the current URL
+export function truncateQueryParamsFromCurrentUrl() {
+  const nonSensitiveUrl = deriveUrlWithoutQueryParams();
+  window.history.replaceState({}, '', nonSensitiveUrl);
+}
