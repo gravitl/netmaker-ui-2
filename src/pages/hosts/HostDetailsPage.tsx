@@ -18,7 +18,6 @@ import {
   notification,
   Row,
   Skeleton,
-  Switch,
   Table,
   TableColumnsType,
   Tabs,
@@ -43,7 +42,7 @@ export default function HostDetailsPage(props: PageProps) {
   const { token: themeToken } = theme.useToken();
   const queryParams = useQuery();
 
-  const storeUpdateHost = store.updateHost;
+  // const storeUpdateHost = store.updateHost;
   const [isLoading, setIsLoading] = useState(false);
   const [isEditingHost, setIsEditingHost] = useState(false);
   const [host, setHost] = useState<Host | null>(null);
@@ -74,27 +73,27 @@ export default function HostDetailsPage(props: PageProps) {
     setIsEditingHost(false);
   }, []);
 
-  const toggleProxyStatus = useCallback(
-    (newStatus: boolean) => {
-      Modal.confirm({
-        title: 'Toggle proxy status',
-        content: `Are you sure you want to turn ${newStatus ? 'on' : 'off'} proxy for this host?`,
-        onOk: async () => {
-          try {
-            if (!hostId || !host) return;
-            const newHost = (await HostsService.updateHost(hostId, { ...host, proxy_enabled: newStatus })).data;
-            storeUpdateHost(hostId, newHost);
-          } catch (err) {
-            notify.error({
-              message: 'Failed to update host',
-              description: extractErrorMsg(err as any),
-            });
-          }
-        },
-      });
-    },
-    [hostId, host, storeUpdateHost, notify]
-  );
+  // const toggleProxyStatus = useCallback(
+  //   (newStatus: boolean) => {
+  //     Modal.confirm({
+  //       title: 'Toggle proxy status',
+  //       content: `Are you sure you want to turn ${newStatus ? 'on' : 'off'} proxy for this host?`,
+  //       onOk: async () => {
+  //         try {
+  //           if (!hostId || !host) return;
+  //           const newHost = (await HostsService.updateHost(hostId, { ...host, proxy_enabled: newStatus })).data;
+  //           storeUpdateHost(hostId, newHost);
+  //         } catch (err) {
+  //           notify.error({
+  //             message: 'Failed to update host',
+  //             description: extractErrorMsg(err as any),
+  //           });
+  //         }
+  //       },
+  //     });
+  //   },
+  //   [hostId, host, storeUpdateHost, notify]
+  // );
 
   const getHostHealth = useCallback(() => {
     const nodeHealths = store.nodes

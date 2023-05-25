@@ -15,9 +15,9 @@ import { HostsService } from '@/services/HostsService';
 import { NetworksService } from '@/services/NetworksService';
 import { NodesService } from '@/services/NodesService';
 import { useStore } from '@/store/store';
-import { convertNetworkPayloadToUiNetwork, convertUiNetworkToNetworkPayload } from '@/utils/NetworkUtils';
+// import { convertNetworkPayloadToUiNetwork, convertUiNetworkToNetworkPayload } from '@/utils/NetworkUtils';
 import { getExtendedNode } from '@/utils/NodeUtils';
-import { getHostRoute, getNetworkHostRoute, getNetworkRoute, getNewHostRoute } from '@/utils/RouteUtils';
+import { getNetworkHostRoute } from '@/utils/RouteUtils';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import {
   CheckOutlined,
@@ -80,6 +80,7 @@ import NewHostModal from '@/components/modals/new-host-modal/NewHostModal';
 import AddIngressModal from '@/components/modals/add-ingress-modal/AddIngressModal';
 import UpdateIngressModal from '@/components/modals/update-ingress-modal/UpdateIngressModal';
 import UpdateClientModal from '@/components/modals/update-client-modal/UpdateClientModal';
+import { NULL_HOST } from '@/constants/Types';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -237,7 +238,9 @@ export default function NetworkDetailsPage(props: PageProps) {
     store.hosts.forEach((host) => {
       hostsMap.set(host.id, host);
     });
-    return store.nodes.filter((node) => node.network === networkId).map((node) => hostsMap.get(node.hostid)!);
+    return store.nodes
+      .filter((node) => node.network === networkId)
+      .map((node) => hostsMap.get(node.hostid) ?? NULL_HOST);
   }, [networkId, store.hosts, store.nodes]);
 
   const relays = useMemo<Host[]>(() => {
@@ -415,10 +418,6 @@ export default function NetworkDetailsPage(props: PageProps) {
       }
     }
   }, [networkId, notify]);
-
-  const goToNewHostPage = useCallback(() => {
-    navigate(getNewHostRoute(networkId && getNetworkRoute(networkId)));
-  }, [navigate, networkId]);
 
   const downloadMetrics = useCallback(() => {}, []);
 
@@ -974,7 +973,10 @@ export default function NetworkDetailsPage(props: PageProps) {
                     label: (
                       <Typography.Text
                         onClick={() =>
-                          confirmRemoveRelayed(relayed, networkHosts.find((h) => h.id === relayed.relayed_by)!)
+                          confirmRemoveRelayed(
+                            relayed,
+                            networkHosts.find((h) => h.id === relayed.relayed_by) ?? NULL_HOST
+                          )
                         }
                       >
                         <DeleteOutlined /> Stop being relayed
@@ -2496,32 +2498,32 @@ export default function NetworkDetailsPage(props: PageProps) {
     setIsLoading(false);
   }, [networkId, store.networks, loadDnses, loadAcls, loadClients, isServerEE, navigate, notify, loadMetrics]);
 
-  const onNetworkFormEdit = useCallback(async () => {
-    try {
-      const formData = await form.validateFields();
-      const network = store.networks.find((network) => network.netid === networkId);
-      if (!networkId || !network) {
-        throw new Error('Network not found');
-      }
-      const newNetwork = (
-        await NetworksService.updateNetwork(networkId, convertUiNetworkToNetworkPayload({ ...network, ...formData }))
-      ).data;
-      store.updateNetwork(networkId, convertNetworkPayloadToUiNetwork(newNetwork));
-      notify.success({ message: `Network ${networkId} updated` });
-      setIsEditingNetwork(false);
-    } catch (err) {
-      if (err instanceof AxiosError) {
-        notify.error({
-          message: 'Failed to save changes',
-          description: extractErrorMsg(err),
-        });
-      } else {
-        notify.error({
-          message: err instanceof Error ? err.message : 'Failed to save changes',
-        });
-      }
-    }
-  }, [form, networkId, notify, store]);
+  // const onNetworkFormEdit = useCallback(async () => {
+  //   try {
+  //     const formData = await form.validateFields();
+  //     const network = store.networks.find((network) => network.netid === networkId);
+  //     if (!networkId || !network) {
+  //       throw new Error('Network not found');
+  //     }
+  //     const newNetwork = (
+  //       await NetworksService.updateNetwork(networkId, convertUiNetworkToNetworkPayload({ ...network, ...formData }))
+  //     ).data;
+  //     store.updateNetwork(networkId, convertNetworkPayloadToUiNetwork(newNetwork));
+  //     notify.success({ message: `Network ${networkId} updated` });
+  //     setIsEditingNetwork(false);
+  //   } catch (err) {
+  //     if (err instanceof AxiosError) {
+  //       notify.error({
+  //         message: 'Failed to save changes',
+  //         description: extractErrorMsg(err),
+  //       });
+  //     } else {
+  //       notify.error({
+  //         message: err instanceof Error ? err.message : 'Failed to save changes',
+  //       });
+  //     }
+  //   }
+  // }, [form, networkId, notify, store]);
 
   const onNetworkDelete = useCallback(async () => {
     try {
