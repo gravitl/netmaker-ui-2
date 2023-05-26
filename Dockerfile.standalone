@@ -41,7 +41,7 @@ ENV VITE_TENANT_NAME=
 
 # Other vars
 
-ENV VITE_NETCLIENT_BIN_URL_TEMPLATE=https://fileserver.netmaker.org/releases/download/:version/:fileName
+ENV VITE_NETCLIENT_BIN_URL_TEMPLATE=https://fileserver.netmaker.io/releases/download/:version/:fileName
 
 RUN npm ci
 RUN npm audit fix

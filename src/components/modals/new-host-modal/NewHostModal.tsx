@@ -394,7 +394,7 @@ export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModa
                           </Button>
                           <Button
                             type="link"
-                            href="https://docs.netmaker.org/netclient.html#linux"
+                            href="https://docs.netmaker.io/netclient.html#linux"
                             target="_blank"
                             rel="noreferrer"
                           >
