@@ -42,7 +42,7 @@ export default function NetworksPage(props: PageProps) {
     {
       title: 'Hosts Count',
       render(_, network) {
-        const nodeCount = store.nodes.filter((node) => node.network === network.netid).length;
+        const nodeCount = store.nodes?.filter((node) => node.network === network.netid).length ?? 0;
         return <Typography.Text>{nodeCount}</Typography.Text>;
       },
     },
