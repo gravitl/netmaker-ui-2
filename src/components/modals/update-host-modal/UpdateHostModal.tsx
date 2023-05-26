@@ -66,7 +66,7 @@ export default function UpdateHostModal({ isOpen, host, onUpdateHost, onCancel }
             </Form.Item>
 
             <Form.Item label="Maximum Transmission Unit (MTU)" name="mtu" rules={[{ required: true }]}>
-              <InputNumber placeholder="MTU" />
+              <InputNumber placeholder="MTU" style={{ width: '100%' }} />
             </Form.Item>
 
             <Form.Item label="Listen Port" name="listenport" rules={[{ required: true }]}>
