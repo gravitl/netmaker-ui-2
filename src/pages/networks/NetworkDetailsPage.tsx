@@ -99,7 +99,7 @@ interface UptimeNodeMetrics {
   uptime: number;
   fractionalUptime: number;
   totalFractionalUptime: number;
-  uptimePercent: number;
+  uptimePercent: number | string;
 }
 
 interface NodeMetricsTableData {
@@ -395,7 +395,7 @@ export default function NetworkDetailsPage(props: PageProps) {
           fractionalUptime: nodeConnectivityMap?.[key].uptime ?? 0,
           totalFractionalUptime: nodeConnectivityMap?.[key].totaltime ?? 0,
           uptime: nodeConnectivityMap?.[key].actualuptime ?? 0,
-          uptimePercent: nodeConnectivityMap?.[key].percentup ?? 0,
+          uptimePercent: nodeConnectivityMap?.[key].percentup.toFixed(2) ?? 0,
         };
         return acc;
       }, res);
