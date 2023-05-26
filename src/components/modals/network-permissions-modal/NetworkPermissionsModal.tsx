@@ -22,6 +22,7 @@ import { UserGroup } from '@/models/UserGroup';
 import { NetworksService } from '@/services/NetworksService';
 import { convertNetworkPayloadToUiNetwork, convertUiNetworkToNetworkPayload } from '@/utils/NetworkUtils';
 import { ProSettings } from '@/models/ProSettings';
+import { NULL_NETWORK_PROSETTINGS } from '@/constants/Types';
 
 interface NetworkPermissionsModalProps {
   isOpen: boolean;
@@ -65,7 +66,7 @@ export default function NetworkPermissionsModal({ isOpen, network, onUpdate, onC
         const newNetwork = (
           await NetworksService.updateNetwork(network.netid, {
             ...networkPayload,
-            prosettings: { ...network.prosettings!, allowedgroups: [...newUserGroups] },
+            prosettings: { ...(network.prosettings ?? NULL_NETWORK_PROSETTINGS), allowedgroups: [...newUserGroups] },
           })
         ).data;
         onUpdate(convertNetworkPayloadToUiNetwork(newNetwork));
@@ -101,7 +102,10 @@ export default function NetworkPermissionsModal({ isOpen, network, onUpdate, onC
         const newNetwork = (
           await NetworksService.updateNetwork(network.netid, {
             ...networkPayload,
-            prosettings: { ...networkPayload.prosettings!, allowedusers: [...newUserNetworks] },
+            prosettings: {
+              ...(networkPayload.prosettings ?? NULL_NETWORK_PROSETTINGS),
+              allowedusers: [...newUserNetworks],
+            },
           })
         ).data;
         onUpdate(convertNetworkPayloadToUiNetwork(newNetwork));
@@ -253,7 +257,7 @@ export default function NetworkPermissionsModal({ isOpen, network, onUpdate, onC
         const newNetwork = (
           await NetworksService.updateNetwork(network.netid, {
             ...networkPayload,
-            prosettings: { ...networkPayload.prosettings!, defaultaccesslevel: newVal },
+            prosettings: { ...(networkPayload.prosettings ?? NULL_NETWORK_PROSETTINGS), defaultaccesslevel: newVal },
           })
         ).data;
         notify.success({ message: `Updated default access level to ${newVal}` });

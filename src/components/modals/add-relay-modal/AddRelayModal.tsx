@@ -27,6 +27,7 @@ import { CloseOutlined } from '@ant-design/icons';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { CreateHostRelayDto } from '@/services/dtos/CreateHostRelayDto';
 import { HostsService } from '@/services/HostsService';
+import { NULL_HOST } from '@/constants/Types';
 
 interface AddRelayModalProps {
   isOpen: boolean;
@@ -80,7 +81,9 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
     store.hosts.forEach((host) => {
       hostsMap.set(host.id, host);
     });
-    return store.nodes.filter((node) => node.network === networkId).map((node) => hostsMap.get(node.hostid)!);
+    return store.nodes
+      .filter((node) => node.network === networkId)
+      .map((node) => hostsMap.get(node.hostid) ?? NULL_HOST);
   }, [networkId, store.hosts, store.nodes]);
 
   const filteredNetworkHosts = useMemo<Host[]>(

@@ -12,6 +12,7 @@ import { NodeAclContainer } from '@/models/Acl';
 import { ExternalClient } from '@/models/ExternalClient';
 import { theme } from 'antd';
 import { useStore } from '@/store/store';
+import { NULL_HOST } from '@/constants/Types';
 
 interface NetworkGraphProps {
   network: Network;
@@ -164,7 +165,7 @@ export default function NetworkGraph({ hosts, nodes, acl, clients }: NetworkGrap
     const graph = new Graph();
 
     const nodeToHostMap = nodes.reduce((acc, node) => {
-      acc[node.id] = hosts.find((host) => host.id === node.hostid)!;
+      acc[node.id] = hosts.find((host) => host.id === node.hostid) ?? NULL_HOST;
       return acc;
     }, {} as Record<Node['id'], Host>);
 
