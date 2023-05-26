@@ -1197,7 +1197,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                 showInfo={false}
                 type="line"
                 percent={100}
-                success={{ percent: (value as UptimeNodeMetrics).uptimePercent }}
+                success={{ percent: Number((value as UptimeNodeMetrics).uptimePercent) }}
               />{' '}
               {(value as UptimeNodeMetrics).uptimePercent}%
             </Tooltip>
