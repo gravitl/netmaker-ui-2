@@ -72,7 +72,9 @@ export default function UpdateNodeModal({ isOpen, node, onUpdateNode, onCancel }
     <Modal
       title={
         <Typography.Title style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>
-          Update host (ID: {node.id})
+          Update host&apos;s Network Settings
+          <br />
+          <small>(ID: {node.id})</small>
         </Typography.Title>
       }
       open={isOpen}
@@ -89,7 +91,7 @@ export default function UpdateNodeModal({ isOpen, node, onUpdateNode, onCancel }
         name="update-node-form"
         form={form}
         layout="vertical"
-        initialValues={{ ...node, expdatetime: moment(node.expdatetime * 1000) }}
+        initialValues={{ ...node, expdatetime: moment(node.expdatetime * 1000), endpoint: host?.endpointip ?? '' }}
       >
         <div className="scrollable-modal-body">
           <div className="CustomModalBody">
@@ -127,7 +129,7 @@ export default function UpdateNodeModal({ isOpen, node, onUpdateNode, onCancel }
               <Input placeholder="Endpoint IP" disabled={!isStaticVal} />
             </Form.Item>
 
-            <Form.Item label="ACL Rule" name="defaultacl" rules={[{ required: true }]}>
+            <Form.Item label="Default ACL Rule" name="defaultacl" rules={[{ required: true }]}>
               <Select
                 placeholder="ACL Rule"
                 options={[
@@ -153,7 +155,9 @@ export default function UpdateNodeModal({ isOpen, node, onUpdateNode, onCancel }
           <Row>
             <Col xs={12}>
               <Form.Item noStyle>
-                <Button onClick={() => navigate(getHostRoute(node.hostid, { edit: 'true' }))}>Edit Host Details</Button>
+                <Button onClick={() => navigate(getHostRoute(node.hostid, { edit: 'true' }))}>
+                  Go to Global Host Settings
+                </Button>
               </Form.Item>
             </Col>
             <Col xs={12} style={{ textAlign: 'right' }}>
