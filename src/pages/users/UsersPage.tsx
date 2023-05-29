@@ -704,8 +704,9 @@ export default function UsersPage(props: PageProps) {
           isOpen={isUpdateUserModalOpen}
           key={selectedUser.username}
           user={selectedUser}
-          onUpdateUser={() => {
+          onUpdateUser={(newUser) => {
             // loadUsers();
+            setUsers(users.map((u) => (u.username === newUser.username ? newUser : u)));
             setIsUpdateUserModalOpen(false);
           }}
           onCancel={() => {
