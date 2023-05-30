@@ -1693,9 +1693,11 @@ export default function NetworkDetailsPage(props: PageProps) {
   }, [confirmDeleteDns, dnses, isDefaultDns, searchDns]);
 
   const getClientsContent = useCallback(() => {
+    const isEmpty = clients.length === 0 && clientGateways.length === 0;
+
     return (
       <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-        {clients.length === 0 && (
+        {isEmpty && (
           <Row
             className="page-padding"
             style={{
@@ -1751,7 +1753,7 @@ export default function NetworkDetailsPage(props: PageProps) {
           </Row>
         )}
 
-        {clients.length > 0 && (
+        {!isEmpty && (
           <Row style={{ width: '100%' }}>
             <Col xs={12} style={{ marginBottom: '2rem' }}>
               <Input
