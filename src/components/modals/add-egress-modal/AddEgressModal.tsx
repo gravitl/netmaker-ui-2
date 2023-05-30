@@ -22,7 +22,6 @@ import { useStore } from '@/store/store';
 import '../CustomModal.scss';
 import { Network } from '@/models/Network';
 import { ExtendedNode, Node } from '@/models/Node';
-import { HostCommonDetails } from '@/models/Host';
 import { getExtendedNode, getNodeConnectivityStatus } from '@/utils/NodeUtils';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
@@ -56,7 +55,7 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [egressSearch, setEgressSearch] = useState('');
-  const [selectedEgress, setSelectedEgress] = useState<(Node & HostCommonDetails) | null>(null);
+  const [selectedEgress, setSelectedEgress] = useState<ExtendedNode | null>(null);
   const idFormField = 'nodeId';
 
   const natEnabledVal = Form.useWatch('natEnabled', form);
