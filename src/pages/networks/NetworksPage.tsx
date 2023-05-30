@@ -33,30 +33,52 @@ export default function NetworksPage(props: PageProps) {
       title: 'Address Range (IPv4)',
       dataIndex: 'addressrange',
       key: 'addressrange',
+      render: (addressRange) => (
+        <div onClick={(ev) => ev.stopPropagation()}>
+          <Typography.Text>{addressRange}</Typography.Text>
+        </div>
+      ),
     },
     {
       title: 'Address Range (IPv6)',
       dataIndex: 'addressrange6',
       key: 'addressrange6',
+      render: (addressRange6) => (
+        <div onClick={(ev) => ev.stopPropagation()}>
+          <Typography.Text>{addressRange6}</Typography.Text>
+        </div>
+      ),
     },
     {
       title: 'Hosts Count',
       render(_, network) {
         const nodeCount = store.nodes?.filter((node) => node.network === network.netid).length ?? 0;
-        return <Typography.Text>{nodeCount}</Typography.Text>;
+        return (
+          <div onClick={(ev) => ev.stopPropagation()}>
+            <Typography.Text>{nodeCount}</Typography.Text>
+          </div>
+        );
       },
     },
     {
       title: 'Network Last Modified',
       dataIndex: 'networklastmodified',
       key: 'networklastmodified',
-      render: (date) => new Date(date).toLocaleString(),
+      render: (date) => (
+        <div onClick={(ev) => ev.stopPropagation()}>
+          <Typography.Text>{new Date(date).toLocaleString()}</Typography.Text>
+        </div>
+      ),
     },
     {
       title: 'Hosts Last Modified',
       dataIndex: 'nodeslastmodified',
       key: 'nodeslastmodified',
-      render: (date) => new Date(date).toLocaleString(),
+      render: (date) => (
+        <div onClick={(ev) => ev.stopPropagation()}>
+          <Typography.Text>{new Date(date).toLocaleString()}</Typography.Text>
+        </div>
+      ),
     },
   ];
 

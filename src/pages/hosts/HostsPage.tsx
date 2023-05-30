@@ -121,7 +121,7 @@ export default function HostsPage(props: PageProps) {
       {
         title: 'Name',
         dataIndex: 'name',
-        render: (value, host) => <Link to={getHostRoute(host)}>{host.name}</Link>,
+        render: (_, host) => <Link to={getHostRoute(host)}>{host.name}</Link>,
         sorter(a, b) {
           return a.name.localeCompare(b.name);
         },
@@ -130,14 +130,29 @@ export default function HostsPage(props: PageProps) {
       {
         title: 'Endpoint',
         dataIndex: 'endpointip',
+        render: (endpointip) => (
+          <div onClick={(ev) => ev.stopPropagation()}>
+            <Typography.Text>{endpointip}</Typography.Text>
+          </div>
+        ),
       },
       {
         title: 'Public Port',
         dataIndex: 'listenport',
+        render: (listenport) => (
+          <div onClick={(ev) => ev.stopPropagation()}>
+            <Typography.Text>{listenport}</Typography.Text>
+          </div>
+        ),
       },
       {
         title: 'Version',
         dataIndex: 'version',
+        render: (version) => (
+          <div onClick={(ev) => ev.stopPropagation()}>
+            <Typography.Text>{version}</Typography.Text>
+          </div>
+        ),
       },
       {
         title: 'Proxy Status',
@@ -146,7 +161,8 @@ export default function HostsPage(props: PageProps) {
           return (
             <Switch
               checked={value}
-              onChange={(newStatus: boolean) => {
+              onChange={(newStatus: boolean, ev) => {
+                ev.stopPropagation();
                 Modal.confirm({
                   title: 'Toggle proxy status',
                   content: `Are you sure you want to turn ${newStatus ? 'on' : 'off'} proxy for host ${host.name}?`,
@@ -178,7 +194,7 @@ export default function HostsPage(props: PageProps) {
       //     }
 
       //     return (
-      //       <Space direction="horizontal">
+      //       <Space direction="horizontal" onClick={(ev) => ev.stopPropagation()}>
       //         <Tag color={host.isrelay ? 'success' : 'default'}>Relay</Tag>
       //         <Tag
       //           color={host.isrelayed ? 'blue' : 'default'}
@@ -231,7 +247,7 @@ export default function HostsPage(props: PageProps) {
     [notify, store.nodes, storeUpdateHost]
   );
 
-  const hostsTableCols2: TableColumnsType<Host> = useMemo(
+  const namHostsTableCols: TableColumnsType<Host> = useMemo(
     () => [
       {
         title: 'Name',
@@ -368,12 +384,21 @@ export default function HostsPage(props: PageProps) {
       <Skeleton loading={!hasLoaded && store.isFetchingHosts} active title={true} className="page-padding">
         <Row className="">
           <Col xs={24}>
-            <Table columns={hostsTableColumns} dataSource={filteredHosts} rowKey="id" />
+            <Table
+              columns={hostsTableColumns}
+              dataSource={filteredHosts}
+              rowKey="id"
+              onRow={(host) => ({
+                onClick: () => {
+                  navigate(getHostRoute(host));
+                },
+              })}
+            />
           </Col>
         </Row>
       </Skeleton>
     );
-  }, [filteredHosts, hasLoaded, store.isFetchingHosts, hostsTableColumns]);
+  }, [filteredHosts, hasLoaded, store.isFetchingHosts, hostsTableColumns, navigate]);
 
   const getNetworkAccessContent = useCallback(() => {
     return (
@@ -391,7 +416,7 @@ export default function HostsPage(props: PageProps) {
               <Row style={{ marginTop: '1rem' }}>
                 <Col xs={23}>
                   <Table
-                    columns={hostsTableCols2}
+                    columns={namHostsTableCols}
                     dataSource={filteredHosts}
                     rowKey="id"
                     size="small"
@@ -431,7 +456,7 @@ export default function HostsPage(props: PageProps) {
   }, [
     hasLoaded,
     store.isFetchingHosts,
-    hostsTableCols2,
+    namHostsTableCols,
     filteredHosts,
     selectedHost,
     networksTableCols,
