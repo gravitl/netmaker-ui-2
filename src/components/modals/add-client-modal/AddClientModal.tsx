@@ -70,7 +70,7 @@ export default function AddClientModal({
   const networkHosts = useMemo<ExtendedNode[]>(() => {
     return store.nodes
       .filter((node) => node.network === networkId)
-      .map((node) => ({ ...node, ...store.hostsCommonDetails[node.hostid] }));
+      .map((node) => ({ ...node, ...getExtendedNode(node, store.hostsCommonDetails) }));
   }, [networkId, store.hostsCommonDetails, store.nodes]);
 
   const filteredNetworkHosts = useMemo<ExtendedNode[]>(

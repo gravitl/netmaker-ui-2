@@ -22,7 +22,7 @@ import './UpdateRelayModal.styles.scss';
 import { Network } from '@/models/Network';
 import { Node } from '@/models/Node';
 import { Host } from '@/models/Host';
-import { getNodeConnectivityStatus } from '@/utils/NodeUtils';
+import { getExtendedNode, getNodeConnectivityStatus } from '@/utils/NodeUtils';
 import { CloseOutlined } from '@ant-design/icons';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { CreateHostRelayDto } from '@/services/dtos/CreateHostRelayDto';
@@ -60,7 +60,7 @@ export default function UpdateRelayModal({ relay, isOpen, onUpdateRelay, onCance
   const networkNodes = useMemo<Node[]>(() => {
     return store.nodes
       .filter((node) => node.network === networkId)
-      .map((node) => ({ ...node, ...store.hostsCommonDetails[node.hostid] }));
+      .map((node) => ({ ...node, ...getExtendedNode(node, store.hostsCommonDetails) }));
   }, [networkId, store.hostsCommonDetails, store.nodes]);
 
   const networkHostToNodesMap = useMemo(() => {
