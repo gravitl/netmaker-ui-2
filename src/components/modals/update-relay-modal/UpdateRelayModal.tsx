@@ -25,7 +25,7 @@ import { Host } from '@/models/Host';
 import { getExtendedNode, getNodeConnectivityStatus } from '@/utils/NodeUtils';
 import { CloseOutlined } from '@ant-design/icons';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
-import { CreateHostRelayDto } from '@/services/dtos/CreateHostRelayDto';
+import { CreateNodeRelayDto } from '@/services/dtos/CreateNodeRelayDto';
 import { HostsService } from '@/services/HostsService';
 import { NULL_HOST, NULL_NODE } from '@/constants/Types';
 
@@ -38,7 +38,7 @@ interface UpdateRelayModalProps {
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
 }
 
-type UpdateRelayFormFields = CreateHostRelayDto;
+type UpdateRelayFormFields = CreateNodeRelayDto;
 
 export default function UpdateRelayModal({ relay, isOpen, onUpdateRelay, onCancel, networkId }: UpdateRelayModalProps) {
   const [notify, notifyCtx] = notification.useNotification();
