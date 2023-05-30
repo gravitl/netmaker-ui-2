@@ -1644,10 +1644,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   title: 'IP Addresses',
                   render(_, dns) {
                     return (
-                      <Typography.Text copyable>
-                        {dns.address}
-                        {dns.address6 && `, ${dns.address6}`}
-                      </Typography.Text>
+                      <Typography.Text copyable>{[dns.address].concat(dns.address6 || []).join(', ')}</Typography.Text>
                     );
                   },
                 },
