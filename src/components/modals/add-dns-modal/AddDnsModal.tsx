@@ -8,6 +8,7 @@ import { Network } from '@/models/Network';
 import { DNS } from '@/models/Dns';
 import { Node } from '@/models/Node';
 import { isValidIpv4OrCidr, isValidIpv6OrCidr, truncateCidrFromIp } from '@/utils/NetworkUtils';
+import { getExtendedNode } from '@/utils/NodeUtils';
 
 interface AddDnsModalProps {
   isOpen: boolean;
@@ -29,7 +30,7 @@ export default function AddDnsModal({ isOpen, onCreateDns, onCancel, networkId }
       store.nodes
         .filter((node) => node.network === networkId)
         .map((node) => ({
-          label: `${node.address}, ${node.address6} (${store.hostsCommonDetails[node.hostid]?.name ?? ''})`,
+          label: `${node.address}, ${node.address6} (${getExtendedNode(node, store.hostsCommonDetails)?.name ?? ''})`,
           value: node.address ?? node.address6 ?? '',
         })),
     [networkId, store.hostsCommonDetails, store.nodes]
