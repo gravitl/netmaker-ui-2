@@ -20,7 +20,7 @@ export interface Network {
   defaultnatenabled: boolean;
   defaultextclientdns: string;
   defaultmtu: number;
-  defaultacl: boolean;
+  defaultacl: 'yes' | 'no';
   prosettings: ProSettings | undefined;
 }
 
@@ -30,6 +30,5 @@ export type NetworkPayload = Modify<
     isipv4: 'no' | 'yes';
     isipv6: 'no' | 'yes';
     defaultudpholepunch: 'no' | 'yes';
-    defaultacl: 'no' | 'yes';
   }
 >;

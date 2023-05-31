@@ -25,7 +25,6 @@ export function convertUiNetworkToNetworkPayload(network: Network): NetworkPaylo
     isipv4: network.isipv4 ? 'yes' : 'no',
     isipv6: network.isipv6 ? 'yes' : 'no',
     defaultudpholepunch: network.defaultudpholepunch ? 'yes' : 'no',
-    defaultacl: network.defaultacl ? 'yes' : 'no',
     prosettings: network.prosettings
       ? {
           defaultaccesslevel: Number(network.prosettings.defaultaccesslevel),
@@ -47,7 +46,6 @@ export function convertNetworkPayloadToUiNetwork(network: NetworkPayload): Netwo
     isipv4: network.isipv4 === 'yes',
     isipv6: network.isipv6 === 'yes',
     defaultudpholepunch: network.defaultudpholepunch === 'yes',
-    defaultacl: network.defaultacl === 'yes',
     prosettings: network.prosettings
       ? {
           defaultaccesslevel: Number(network.prosettings.defaultaccesslevel),
