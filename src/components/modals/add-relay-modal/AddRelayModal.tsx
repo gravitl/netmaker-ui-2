@@ -21,12 +21,13 @@ import '../CustomModal.scss';
 import './AddRelayModal.styles.scss';
 import { Network } from '@/models/Network';
 import { ExtendedNode, Node } from '@/models/Node';
-import { Host } from '@/models/Host';
-import { getExtendedNode, getNodeConnectivityStatus } from '@/utils/NodeUtils';
+// import { Host } from '@/models/Host';
+import { getExtendedNode, getNodeConnectivityStatus, isNodeRelay } from '@/utils/NodeUtils';
 import { CloseOutlined } from '@ant-design/icons';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { CreateNodeRelayDto } from '@/services/dtos/CreateNodeRelayDto';
 import { NodesService } from '@/services/NodesService';
+import { NULL_NODE } from '@/constants/Types';
 
 interface AddRelayModalProps {
   isOpen: boolean;
@@ -67,16 +68,16 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
       .map((node) => ({ ...node, ...getExtendedNode(node, store.hostsCommonDetails) }));
   }, [networkId, store.hostsCommonDetails, store.nodes]);
 
-  const networkHostToNodesMap = useMemo(() => {
-    const nodesMap = new Map<Host['id'], Node>();
-    networkNodes.forEach((node) => {
-      nodesMap.set(node.hostid, node);
-    });
-    return nodesMap;
-  }, [networkNodes]);
+  // const networkHostToNodesMap = useMemo(() => {
+  //   const nodesMap = new Map<Host['id'], Node>();
+  //   networkNodes.forEach((node) => {
+  //     nodesMap.set(node.hostid, node);
+  //   });
+  //   return nodesMap;
+  // }, [networkNodes]);
 
-  const canNodeBeSelected = (node: Node) => {
-    return !node.relaynodes.length && !node.relayedby;
+  const isNodeSelectable = (node: Node) => {
+    return !isNodeRelay(node) && !node.relayedby;
   };
 
   // const networkHosts = useMemo(() => {
@@ -206,14 +207,14 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
                           onRow={(node) => {
                             return {
                               onClick: () => {
-                                if (!canNodeBeSelected(node)) return;
+                                if (!isNodeSelectable(node)) return;
                                 form.setFieldValue(nodeIdFormName, node.id);
                                 setSelectedRelay(node);
                               },
                             };
                           }}
                           rowClassName={(node) => {
-                            return canNodeBeSelected(node) ? '' : 'unavailable-row';
+                            return isNodeSelectable(node) ? '' : 'unavailable-row';
                           }}
                         />
                       </Col>
@@ -285,12 +286,12 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
                                 .filter((h) => h.id !== selectedRelay.id),
                             ].sort((a, b) =>
                               // sort non-relayed hosts to the top
-                              a.relaynodes.length === b.relaynodes.length ? 0 : a.relaynodes.length ? 1 : -1
+                              isNodeRelay(a) === isNodeRelay(b) ? 0 : isNodeRelay(a) ? 1 : -1
                             )}
                             onRow={(node) => {
                               return {
                                 onClick: () => {
-                                  if (!canNodeBeSelected(node)) return;
+                                  if (!isNodeSelectable(node)) return;
                                   setSelectedRelayedIds((prev) => {
                                     const relayedNodesIds = new Set(prev);
                                     if (relayedNodesIds.has(node.id)) {
@@ -305,7 +306,7 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
                               };
                             }}
                             rowClassName={(node) => {
-                              if (!canNodeBeSelected(node)) return 'unavailable-row';
+                              if (!isNodeSelectable(node)) return 'unavailable-row';
                               return selectedRelayedIds.includes(node.id) ? 'selected-row' : '';
                             }}
                           />
@@ -327,11 +328,9 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
                   }}
                 >
                   <Col span={6}>{networkNodes.find((n) => n.id === id)?.name ?? ''}</Col>
-                  <Col span={6}>{networkHostToNodesMap.get(id)?.address ?? ''}</Col>
+                  <Col span={6}>{networkNodes.find((n) => n.id === id)?.address ?? ''}</Col>
                   <Col span={6}>{networkNodes.find((n) => n.id === id)?.endpointip ?? ''}</Col>
-                  <Col span={5}>
-                    {networkHostToNodesMap.get(id) && getNodeConnectivity(networkHostToNodesMap.get(id)!)}
-                  </Col>
+                  <Col span={5}>{getNodeConnectivity(networkNodes.find((n) => n.id === id) ?? NULL_NODE)}</Col>
                   <Col span={1} style={{ textAlign: 'right' }}>
                     <Button
                       danger

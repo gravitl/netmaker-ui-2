@@ -31,7 +31,7 @@ export interface Node {
   connected: boolean;
   failover: boolean;
   relayedby: Node['id'];
-  relaynodes: Node['id'][];
+  relaynodes?: Node['id'][];
 }
 
 export type ExtendedNode = Node & Partial<HostCommonDetails>;
