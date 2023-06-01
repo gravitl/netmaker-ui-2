@@ -11,10 +11,10 @@ export interface INodeSlice {
   fetchNodes: () => Promise<void>;
 }
 
-const createNodeSlice: StateCreator<INodeSlice, [], [], INodeSlice> = (set, get) => ({
+const createNodeSlice: StateCreator<INodeSlice, [], [], INodeSlice> = (set) => ({
   nodes: [],
   isFetchingNodes: false,
-  setNodes: (nodes: Node[]) => set((state) => ({ nodes })),
+  setNodes: (nodes: Node[]) => set(() => ({ nodes })),
   updateNode(nodeId, newNode) {
     set((state) => ({
       nodes: state.nodes.map((node) => {
@@ -30,9 +30,9 @@ const createNodeSlice: StateCreator<INodeSlice, [], [], INodeSlice> = (set, get)
   },
   async fetchNodes() {
     try {
-      set((state) => ({ isFetchingNodes: true }));
+      set(() => ({ isFetchingNodes: true }));
       const nodes = (await NodesService.getNodes()).data ?? [];
-      set((state) => ({ nodes, isFetchingNodes: false }));
+      set(() => ({ nodes, isFetchingNodes: false }));
     } catch (err) {
       console.error(err);
     }

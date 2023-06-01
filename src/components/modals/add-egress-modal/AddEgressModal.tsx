@@ -21,9 +21,8 @@ import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useStore } from '@/store/store';
 import '../CustomModal.scss';
 import { Network } from '@/models/Network';
-import { Node } from '@/models/Node';
-import { HostCommonDetails } from '@/models/Host';
-import { getNodeConnectivityStatus } from '@/utils/NodeUtils';
+import { ExtendedNode, Node } from '@/models/Node';
+import { getExtendedNode, getNodeConnectivityStatus } from '@/utils/NodeUtils';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { AxiosError } from 'axios';
@@ -56,7 +55,7 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [egressSearch, setEgressSearch] = useState('');
-  const [selectedEgress, setSelectedEgress] = useState<(Node & HostCommonDetails) | null>(null);
+  const [selectedEgress, setSelectedEgress] = useState<ExtendedNode | null>(null);
   const idFormField = 'nodeId';
 
   const natEnabledVal = Form.useWatch('natEnabled', form);
@@ -75,13 +74,13 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
     [networkId, store.networks]
   );
 
-  const networkHosts = useMemo<(Node & HostCommonDetails)[]>(() => {
+  const networkHosts = useMemo<ExtendedNode[]>(() => {
     return store.nodes
       .filter((node) => node.network === networkId)
-      .map((node) => ({ ...node, ...store.hostsCommonDetails[node.hostid] }));
+      .map((node) => ({ ...node, ...getExtendedNode(node, store.hostsCommonDetails) }));
   }, [networkId, store.hostsCommonDetails, store.nodes]);
 
-  const filteredNetworkHosts = useMemo<(Node & HostCommonDetails)[]>(
+  const filteredNetworkHosts = useMemo<ExtendedNode[]>(
     () =>
       networkHosts.filter(
         (node) =>
@@ -91,7 +90,7 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
     [egressSearch, networkHosts]
   );
 
-  const egressTableCols = useMemo<TableColumnProps<Node & HostCommonDetails>[]>(() => {
+  const egressTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(() => {
     return [
       {
         title: 'Host name',

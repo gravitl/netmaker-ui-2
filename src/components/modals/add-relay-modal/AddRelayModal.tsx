@@ -22,11 +22,12 @@ import './AddRelayModal.styles.scss';
 import { Network } from '@/models/Network';
 import { Node } from '@/models/Node';
 import { Host } from '@/models/Host';
-import { getNodeConnectivityStatus } from '@/utils/NodeUtils';
+import { getExtendedNode, getNodeConnectivityStatus } from '@/utils/NodeUtils';
 import { CloseOutlined } from '@ant-design/icons';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { CreateHostRelayDto } from '@/services/dtos/CreateHostRelayDto';
 import { HostsService } from '@/services/HostsService';
+import { NULL_HOST } from '@/constants/Types';
 
 interface AddRelayModalProps {
   isOpen: boolean;
@@ -64,7 +65,7 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
   const networkNodes = useMemo<Node[]>(() => {
     return store.nodes
       .filter((node) => node.network === networkId)
-      .map((node) => ({ ...node, ...store.hostsCommonDetails[node.hostid] }));
+      .map((node) => ({ ...node, ...getExtendedNode(node, store.hostsCommonDetails) }));
   }, [networkId, store.hostsCommonDetails, store.nodes]);
 
   const networkHostToNodesMap = useMemo(() => {
@@ -80,7 +81,9 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
     store.hosts.forEach((host) => {
       hostsMap.set(host.id, host);
     });
-    return store.nodes.filter((node) => node.network === networkId).map((node) => hostsMap.get(node.hostid)!);
+    return store.nodes
+      .filter((node) => node.network === networkId)
+      .map((node) => hostsMap.get(node.hostid) ?? NULL_HOST);
   }, [networkId, store.hosts, store.nodes]);
 
   const filteredNetworkHosts = useMemo<Host[]>(

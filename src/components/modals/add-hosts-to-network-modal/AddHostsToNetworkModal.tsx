@@ -1,4 +1,4 @@
-import { Button, Col, Divider, Form, Input, Modal, notification, Row, Switch, Table } from 'antd';
+import { Button, Col, Divider, Form, Input, Modal, notification, Row, Table } from 'antd';
 import { MouseEvent, useCallback, useMemo, useState } from 'react';
 import { useStore } from '@/store/store';
 import '../CustomModal.scss';

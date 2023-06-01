@@ -3,7 +3,7 @@ import { AuthService } from '@/services/AuthService';
 import { LoginDto } from '@/services/dtos/LoginDto';
 import { useStore } from '@/store/store';
 import { LockOutlined, MailOutlined } from '@ant-design/icons';
-import { Button, Checkbox, Col, Form, Input, Layout, notification, Row, Typography } from 'antd';
+import { Button, Checkbox, Col, Divider, Form, Input, Layout, notification, Row, Typography } from 'antd';
 import { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -11,6 +11,8 @@ import { AMUI_URL, isSaasBuild } from '../../services/BaseService';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { UsersService } from '@/services/UsersService';
 import { User } from '@/models/User';
+import { ApiRoutes } from '@/constants/ApiRoutes';
+import { truncateQueryParamsFromCurrentUrl, useQuery } from '@/utils/RouteUtils';
 
 interface LoginPageProps {
   isFullScreen?: boolean;
@@ -23,10 +25,14 @@ export default function LoginPage(props: LoginPageProps) {
   const navigate = useNavigate();
   const { backend, token } = useParams();
   const { t } = useTranslation();
+  const query = useQuery();
 
+  const oauthToken = query.get('login');
+  const oauthUser = query.get('user');
   const [shouldRemember, setShouldRemember] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const getUser = async (username: User['username']) => {
+  const getUserAndUpdateInStore = async (username: User['username']) => {
     try {
       const user = await (await UsersService.getUser(username)).data;
       store.setStore({ user });
@@ -38,12 +44,15 @@ export default function LoginPage(props: LoginPageProps) {
   const onLogin = async () => {
     try {
       const formData = await form.validateFields();
+      setIsLoading(true);
       const data = await (await AuthService.login(formData)).data;
       store.setStore({ jwt: data.Response.AuthToken, username: data.Response.UserName });
-      await getUser(data.Response.UserName);
+      await getUserAndUpdateInStore(data.Response.UserName);
       // navigate(AppRoutes.DASHBOARD_ROUTE);
     } catch (err) {
       notify.error({ message: 'Failed to login', description: extractErrorMsg(err as any) });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -52,7 +61,15 @@ export default function LoginPage(props: LoginPageProps) {
     if (!hasAdmin) navigate(AppRoutes.SIGNUP_ROUTE);
   }, [navigate]);
 
-  // const onSSOLogin = useCallback(() => {}, []);
+  const onSSOLogin = useCallback(() => {
+    setIsLoading(true);
+    if (!store.baseUrl) {
+      notify.error({ message: 'Failed to login', description: 'Misconfigured Server URL' });
+      setIsLoading(false);
+      return;
+    }
+    window.location.href = `${store.baseUrl}${ApiRoutes.LOGIN_OAUTH}`;
+  }, [notify, store.baseUrl]);
 
   useEffect(() => {
     checkIfServerHasAdminAndRedirect();
@@ -64,8 +81,20 @@ export default function LoginPage(props: LoginPageProps) {
       return null;
     }
     store.setStore({ jwt: token, baseUrl: backend });
+    truncateQueryParamsFromCurrentUrl();
     // TODO: load username
     navigate(AppRoutes.DASHBOARD_ROUTE);
+    return null;
+  } else {
+    if (oauthToken) {
+      store.setStore({ jwt: oauthToken, username: oauthUser ?? undefined });
+      if (oauthUser) {
+        getUserAndUpdateInStore(oauthUser);
+      }
+      truncateQueryParamsFromCurrentUrl();
+      navigate(AppRoutes.DASHBOARD_ROUTE);
+      return null;
+    }
   }
 
   if (store.isLoggedIn()) {
@@ -127,18 +156,18 @@ export default function LoginPage(props: LoginPageProps) {
           </Typography.Text>
 
           <Form.Item style={{ marginTop: '1.5rem' }}>
-            <Button type="primary" block onClick={onLogin}>
+            <Button type="primary" block onClick={onLogin} loading={isLoading}>
               {t('signin.signin')}
             </Button>
           </Form.Item>
-          {/* <Divider>
+          <Divider>
             <Typography.Text>{t('signin.or')}</Typography.Text>
           </Divider>
           <Form.Item style={{ marginTop: '1.5rem' }}>
-            <Button type="default" block onClick={onSSOLogin}>
+            <Button type="default" block onClick={onSSOLogin} loading={isLoading}>
               {t('signin.sso')}
             </Button>
-          </Form.Item> */}
+          </Form.Item>
         </Form>
       </Layout.Content>
 

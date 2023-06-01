@@ -5,6 +5,7 @@ export class ApiRoutes {
   static NETWORKS = '/networks';
   static DNS = '/dns';
   static LOGIN = '/users/adm/authenticate';
+  static LOGIN_OAUTH = '/oauth/login';
   static SERVER_STATUS = '/server/status';
   static SERVER_CONFIG = '/server/getconfig';
   static ENROLLMENT_KEYS = '/v1/enrollment-keys';

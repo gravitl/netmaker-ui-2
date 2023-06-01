@@ -1,4 +1,5 @@
 import { useStore } from '@/store/store';
+import { truncateQueryParamsFromCurrentUrl } from '@/utils/RouteUtils';
 import axios from 'axios';
 
 export const isSaasBuild = import.meta.env.VITE_IS_SAAS_BUILD?.toLocaleLowerCase() === 'true';
@@ -11,7 +12,11 @@ export const AMUI_URL = isSaasBuild ? (window as any).NMUI_AMUI_URL : '';
 export function setupTenantConfig(): void {
   if (!isSaasBuild) {
     const dynamicBaseUrl = (window as any).NMUI_BACKEND_URL;
-    baseService.defaults.baseURL = dynamicBaseUrl ? `${dynamicBaseUrl}/api` : `${import.meta.env.VITE_BASE_URL}/api`;
+    const resolvedBaseUrl = dynamicBaseUrl ? `${dynamicBaseUrl}/api` : `${import.meta.env.VITE_BASE_URL}/api`;
+    useStore.getState().setStore({
+      baseUrl: resolvedBaseUrl,
+    });
+    baseService.defaults.baseURL = resolvedBaseUrl;
     return;
   }
 
@@ -28,6 +33,8 @@ export function setupTenantConfig(): void {
       : `https://${baseUrl}/api`
     : useStore.getState().baseUrl;
   baseService.defaults.baseURL = resolvedBaseUrl;
+
+  truncateQueryParamsFromCurrentUrl();
 
   useStore.getState().setStore({
     baseUrl: resolvedBaseUrl,

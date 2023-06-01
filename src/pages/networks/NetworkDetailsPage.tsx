@@ -15,9 +15,9 @@ import { HostsService } from '@/services/HostsService';
 import { NetworksService } from '@/services/NetworksService';
 import { NodesService } from '@/services/NodesService';
 import { useStore } from '@/store/store';
-import { convertNetworkPayloadToUiNetwork, convertUiNetworkToNetworkPayload } from '@/utils/NetworkUtils';
+// import { convertNetworkPayloadToUiNetwork, convertUiNetworkToNetworkPayload } from '@/utils/NetworkUtils';
 import { getExtendedNode } from '@/utils/NodeUtils';
-import { getHostRoute, getNetworkHostRoute, getNetworkRoute, getNewHostRoute } from '@/utils/RouteUtils';
+import { getNetworkHostRoute } from '@/utils/RouteUtils';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import {
   CheckOutlined,
@@ -80,6 +80,7 @@ import NewHostModal from '@/components/modals/new-host-modal/NewHostModal';
 import AddIngressModal from '@/components/modals/add-ingress-modal/AddIngressModal';
 import UpdateIngressModal from '@/components/modals/update-ingress-modal/UpdateIngressModal';
 import UpdateClientModal from '@/components/modals/update-client-modal/UpdateClientModal';
+import { NULL_HOST } from '@/constants/Types';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -98,7 +99,7 @@ interface UptimeNodeMetrics {
   uptime: number;
   fractionalUptime: number;
   totalFractionalUptime: number;
-  uptimePercent: number;
+  uptimePercent: number | string;
 }
 
 interface NodeMetricsTableData {
@@ -237,7 +238,9 @@ export default function NetworkDetailsPage(props: PageProps) {
     store.hosts.forEach((host) => {
       hostsMap.set(host.id, host);
     });
-    return store.nodes.filter((node) => node.network === networkId).map((node) => hostsMap.get(node.hostid)!);
+    return store.nodes
+      .filter((node) => node.network === networkId)
+      .map((node) => hostsMap.get(node.hostid) ?? NULL_HOST);
   }, [networkId, store.hosts, store.nodes]);
 
   const relays = useMemo<Host[]>(() => {
@@ -392,7 +395,7 @@ export default function NetworkDetailsPage(props: PageProps) {
           fractionalUptime: nodeConnectivityMap?.[key].uptime ?? 0,
           totalFractionalUptime: nodeConnectivityMap?.[key].totaltime ?? 0,
           uptime: nodeConnectivityMap?.[key].actualuptime ?? 0,
-          uptimePercent: nodeConnectivityMap?.[key].percentup ?? 0,
+          uptimePercent: nodeConnectivityMap?.[key].percentup.toFixed(2) ?? 0,
         };
         return acc;
       }, res);
@@ -415,10 +418,6 @@ export default function NetworkDetailsPage(props: PageProps) {
       }
     }
   }, [networkId, notify]);
-
-  const goToNewHostPage = useCallback(() => {
-    navigate(getNewHostRoute(networkId && getNetworkRoute(networkId)));
-  }, [navigate, networkId]);
 
   const downloadMetrics = useCallback(() => {}, []);
 
@@ -974,7 +973,10 @@ export default function NetworkDetailsPage(props: PageProps) {
                     label: (
                       <Typography.Text
                         onClick={() =>
-                          confirmRemoveRelayed(relayed, networkHosts.find((h) => h.id === relayed.relayed_by)!)
+                          confirmRemoveRelayed(
+                            relayed,
+                            networkHosts.find((h) => h.id === relayed.relayed_by) ?? NULL_HOST
+                          )
                         }
                       >
                         <DeleteOutlined /> Stop being relayed
@@ -1195,7 +1197,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                 showInfo={false}
                 type="line"
                 percent={100}
-                success={{ percent: (value as UptimeNodeMetrics).uptimePercent }}
+                success={{ percent: Number((value as UptimeNodeMetrics).uptimePercent) }}
               />{' '}
               {(value as UptimeNodeMetrics).uptimePercent}%
             </Tooltip>
@@ -1524,7 +1526,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                 {
                   title: 'Host Name',
                   render: (_, node) => {
-                    const hostName = store.hostsCommonDetails[node.hostid].name;
+                    const hostName = getExtendedNode(node, store.hostsCommonDetails).name;
                     return (
                       <>
                         <Link to={getNetworkHostRoute(node.hostid, node.network)}>{hostName}</Link>
@@ -1535,9 +1537,9 @@ export default function NetworkDetailsPage(props: PageProps) {
                     );
                   },
                   sorter: (a, b) => {
-                    const hostNameA = store.hostsCommonDetails[a.hostid].name;
-                    const hostNameB = store.hostsCommonDetails[b.hostid].name;
-                    return hostNameA.localeCompare(hostNameB);
+                    const hostNameA = getExtendedNode(a, store.hostsCommonDetails).name;
+                    const hostNameB = getExtendedNode(b, store.hostsCommonDetails).name;
+                    return hostNameA?.localeCompare(hostNameB ?? '') ?? 0;
                   },
                   defaultSortOrder: 'ascend',
                 },
@@ -1642,10 +1644,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   title: 'IP Addresses',
                   render(_, dns) {
                     return (
-                      <Typography.Text copyable>
-                        {dns.address}
-                        {dns.address6 && `, ${dns.address6}`}
-                      </Typography.Text>
+                      <Typography.Text copyable>{[dns.address].concat(dns.address6 || []).join(', ')}</Typography.Text>
                     );
                   },
                 },
@@ -1691,9 +1690,11 @@ export default function NetworkDetailsPage(props: PageProps) {
   }, [confirmDeleteDns, dnses, isDefaultDns, searchDns]);
 
   const getClientsContent = useCallback(() => {
+    const isEmpty = clients.length === 0 && clientGateways.length === 0;
+
     return (
       <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-        {clients.length === 0 && (
+        {isEmpty && (
           <Row
             className="page-padding"
             style={{
@@ -1749,7 +1750,7 @@ export default function NetworkDetailsPage(props: PageProps) {
           </Row>
         )}
 
-        {clients.length > 0 && (
+        {!isEmpty && (
           <Row style={{ width: '100%' }}>
             <Col xs={12} style={{ marginBottom: '2rem' }}>
               <Input
@@ -2496,32 +2497,32 @@ export default function NetworkDetailsPage(props: PageProps) {
     setIsLoading(false);
   }, [networkId, store.networks, loadDnses, loadAcls, loadClients, isServerEE, navigate, notify, loadMetrics]);
 
-  const onNetworkFormEdit = useCallback(async () => {
-    try {
-      const formData = await form.validateFields();
-      const network = store.networks.find((network) => network.netid === networkId);
-      if (!networkId || !network) {
-        throw new Error('Network not found');
-      }
-      const newNetwork = (
-        await NetworksService.updateNetwork(networkId, convertUiNetworkToNetworkPayload({ ...network, ...formData }))
-      ).data;
-      store.updateNetwork(networkId, convertNetworkPayloadToUiNetwork(newNetwork));
-      notify.success({ message: `Network ${networkId} updated` });
-      setIsEditingNetwork(false);
-    } catch (err) {
-      if (err instanceof AxiosError) {
-        notify.error({
-          message: 'Failed to save changes',
-          description: extractErrorMsg(err),
-        });
-      } else {
-        notify.error({
-          message: err instanceof Error ? err.message : 'Failed to save changes',
-        });
-      }
-    }
-  }, [form, networkId, notify, store]);
+  // const onNetworkFormEdit = useCallback(async () => {
+  //   try {
+  //     const formData = await form.validateFields();
+  //     const network = store.networks.find((network) => network.netid === networkId);
+  //     if (!networkId || !network) {
+  //       throw new Error('Network not found');
+  //     }
+  //     const newNetwork = (
+  //       await NetworksService.updateNetwork(networkId, convertUiNetworkToNetworkPayload({ ...network, ...formData }))
+  //     ).data;
+  //     store.updateNetwork(networkId, convertNetworkPayloadToUiNetwork(newNetwork));
+  //     notify.success({ message: `Network ${networkId} updated` });
+  //     setIsEditingNetwork(false);
+  //   } catch (err) {
+  //     if (err instanceof AxiosError) {
+  //       notify.error({
+  //         message: 'Failed to save changes',
+  //         description: extractErrorMsg(err),
+  //       });
+  //     } else {
+  //       notify.error({
+  //         message: err instanceof Error ? err.message : 'Failed to save changes',
+  //       });
+  //     }
+  //   }
+  // }, [form, networkId, notify, store]);
 
   const onNetworkDelete = useCallback(async () => {
     try {
@@ -2670,6 +2671,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       />
       {targetClient && (
         <ClientDetailsModal
+          key={`read-${targetClient.clientid}`}
           isOpen={isClientDetailsModalOpen}
           client={targetClient}
           // onDeleteClient={() => {
@@ -2753,7 +2755,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       )}
       {targetClient && (
         <UpdateClientModal
-          key={targetClient.clientid}
+          key={`update-${targetClient.clientid}`}
           isOpen={isUpdateClientModalOpen}
           client={targetClient}
           networkId={networkId}

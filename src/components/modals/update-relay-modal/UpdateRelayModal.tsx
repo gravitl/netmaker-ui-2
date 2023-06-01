@@ -22,11 +22,12 @@ import './UpdateRelayModal.styles.scss';
 import { Network } from '@/models/Network';
 import { Node } from '@/models/Node';
 import { Host } from '@/models/Host';
-import { getNodeConnectivityStatus } from '@/utils/NodeUtils';
+import { getExtendedNode, getNodeConnectivityStatus } from '@/utils/NodeUtils';
 import { CloseOutlined } from '@ant-design/icons';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { CreateHostRelayDto } from '@/services/dtos/CreateHostRelayDto';
 import { HostsService } from '@/services/HostsService';
+import { NULL_HOST, NULL_NODE } from '@/constants/Types';
 
 interface UpdateRelayModalProps {
   isOpen: boolean;
@@ -59,7 +60,7 @@ export default function UpdateRelayModal({ relay, isOpen, onUpdateRelay, onCance
   const networkNodes = useMemo<Node[]>(() => {
     return store.nodes
       .filter((node) => node.network === networkId)
-      .map((node) => ({ ...node, ...store.hostsCommonDetails[node.hostid] }));
+      .map((node) => ({ ...node, ...getExtendedNode(node, store.hostsCommonDetails) }));
   }, [networkId, store.hostsCommonDetails, store.nodes]);
 
   const networkHostToNodesMap = useMemo(() => {
@@ -75,7 +76,9 @@ export default function UpdateRelayModal({ relay, isOpen, onUpdateRelay, onCance
     store.hosts.forEach((host) => {
       hostsMap.set(host.id, host);
     });
-    return store.nodes.filter((node) => node.network === networkId).map((node) => hostsMap.get(node.hostid)!);
+    return store.nodes
+      .filter((node) => node.network === networkId)
+      .map((node) => hostsMap.get(node.hostid) ?? NULL_HOST);
   }, [networkId, store.hosts, store.nodes]);
 
   const filteredNetworkHosts = useMemo<Host[]>(
@@ -252,7 +255,9 @@ export default function UpdateRelayModal({ relay, isOpen, onUpdateRelay, onCance
               <Col span={6}>{networkHosts.find((h) => h.id === id)?.name ?? ''}</Col>
               <Col span={6}>{networkHostToNodesMap.get(id)?.address ?? ''}</Col>
               <Col span={6}>{networkHosts.find((h) => h.id === id)?.endpointip ?? ''}</Col>
-              <Col span={5}>{networkHostToNodesMap.get(id) && getNodeConnectivity(networkHostToNodesMap.get(id)!)}</Col>
+              <Col span={5}>
+                {networkHostToNodesMap.get(id) && getNodeConnectivity(networkHostToNodesMap.get(id) ?? NULL_NODE)}
+              </Col>
               <Col span={1} style={{ textAlign: 'right' }}>
                 <Button
                   danger

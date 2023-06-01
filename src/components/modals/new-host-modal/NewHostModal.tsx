@@ -394,7 +394,7 @@ export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModa
                           </Button>
                           <Button
                             type="link"
-                            href="https://docs.netmaker.org/netclient.html#linux"
+                            href="https://docs.netmaker.io/netclient.html#linux"
                             target="_blank"
                             rel="noreferrer"
                           >
@@ -443,7 +443,7 @@ export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModa
                       <li>
                         Enter{' '}
                         <Typography.Text code copyable>
-                          {selectedEnrollmentKey?.token ?? <>&lt;token&gt;</>}
+                          {`${selectedEnrollmentKey?.token ?? '<token>'}`}
                         </Typography.Text>{' '}
                         as enrollment key
                       </li>
@@ -459,7 +459,7 @@ export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModa
                       <li>
                         <Typography.Text>Run</Typography.Text>
                         <Typography.Text code copyable>
-                          {`sudo netclient join -t ${selectedEnrollmentKey?.token ?? <>&lt;token&gt;</>}`}
+                          {`sudo netclient join -t ${`${selectedEnrollmentKey?.token ?? '<token>'}`}`}
                         </Typography.Text>
                       </li>
                     </ol>
