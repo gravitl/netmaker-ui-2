@@ -1,0 +1,15 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "new version number"
+        required: true
+
+jobs:
+  release:
+    uses: gravitl/devops/.github/workflows/UIRelease.yml@master
+    with:
+      version: ${{ inputs.version }}
+    secrets: inherit
