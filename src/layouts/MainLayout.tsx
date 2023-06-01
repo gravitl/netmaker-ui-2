@@ -238,7 +238,7 @@ export default function MainLayout() {
                       ),
                       value: 'en',
                     },
-                    { label: 'French', value: 'fr' },
+                    // { label: 'French', value: 'fr' },
                   ]}
                   onChange={(value) => {
                     i18n.changeLanguage(value);

@@ -1579,7 +1579,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                           items: [
                             {
                               key: 'disconnect',
-                              label: 'Disconnect',
+                              label: 'Remove from network',
                               disabled: node.pendingdelete !== false,
                               title: node.pendingdelete !== false ? 'Host is being removed from network' : '',
                               onClick: () =>
