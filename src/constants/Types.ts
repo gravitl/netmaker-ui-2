@@ -25,10 +25,6 @@ export const NULL_HOST: Host = {
   nodes: [],
   proxy_enabled: false,
   isdefault: false,
-  isrelayed: false,
-  relayed_by: '',
-  isrelay: false,
-  relay_hosts: [],
 };
 
 export const NULL_NODE: Node = {
@@ -61,6 +57,8 @@ export const NULL_NODE: Node = {
   defaultacl: '',
   connected: false,
   failover: false,
+  relayedby: '',
+  relaynodes: [],
 };
 
 export const NULL_NETWORK_PROSETTINGS: ProSettings = {
