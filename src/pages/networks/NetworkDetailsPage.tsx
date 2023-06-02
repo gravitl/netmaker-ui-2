@@ -246,8 +246,11 @@ export default function NetworkDetailsPage(props: PageProps) {
   }, [networkId, store.hosts, store.nodes]);
 
   const relays = useMemo<ExtendedNode[]>(() => {
+    if (!isServerEE) {
+      return [];
+    }
     return networkNodes.filter((node) => isNodeRelay(node));
-  }, [networkNodes]);
+  }, [networkNodes, isServerEE]);
 
   const filteredRelays = useMemo<ExtendedNode[]>(
     () => relays.filter((relay) => relay.name?.toLowerCase().includes(searchRelay.toLowerCase()) ?? false),
@@ -2409,7 +2412,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   ]);
 
   const networkTabs: TabsProps['items'] = useMemo(() => {
-    return [
+    const tabs = [
       {
         key: 'overview',
         label: `Overview`,
@@ -2429,11 +2432,6 @@ export default function NetworkDetailsPage(props: PageProps) {
         key: 'egress',
         label: `Egress (${egresses.length})`,
         children: network ? getEgressContent() : <Skeleton active />,
-      },
-      {
-        key: 'relays',
-        label: `Relays (${relays.length})`,
-        children: network ? getRelayContent() : <Skeleton active />,
       },
       {
         key: 'dns',
@@ -2461,6 +2459,16 @@ export default function NetworkDetailsPage(props: PageProps) {
           ]
         : []
     );
+
+    if (isServerEE) {
+      tabs.splice(3, 0, {
+        key: 'relays',
+        label: `Relays (${relays.length})`,
+        children: network ? getRelayContent() : <Skeleton active />,
+      });
+    }
+
+    return tabs;
   }, [
     network,
     getOverviewContent,

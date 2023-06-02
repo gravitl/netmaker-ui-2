@@ -45,6 +45,7 @@ export default function UpdateRelayModal({ relay, isOpen, onUpdateRelay, onCance
   const store = useStore();
   const { token: themeToken } = theme.useToken();
 
+  const isServerEE = store.serverConfig?.IsEE === 'yes';
   const [form] = Form.useForm<UpdateRelayFormFields>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedRelayedIds, setSelectedRelayedIds] = useState<Host['id'][]>(relay.relaynodes ?? []);
@@ -163,7 +164,7 @@ export default function UpdateRelayModal({ relay, isOpen, onUpdateRelay, onCance
   return (
     <Modal
       title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Update Relay</span>}
-      open={isOpen}
+      open={isServerEE && isOpen}
       onCancel={(ev) => {
         resetModal();
         onCancel?.(ev);

@@ -47,6 +47,7 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
   const store = useStore();
   const { token: themeToken } = theme.useToken();
 
+  const isServerEE = store.serverConfig?.IsEE === 'yes';
   const [form] = Form.useForm<AddRelayFormFields>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [relaySearch, setRelaySearch] = useState('');
@@ -170,7 +171,7 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
   return (
     <Modal
       title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Create a Relay</span>}
-      open={isOpen}
+      open={isServerEE && isOpen}
       onCancel={(ev) => {
         resetModal();
         onCancel?.(ev);
