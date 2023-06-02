@@ -15,7 +15,6 @@ import { HostsService } from '@/services/HostsService';
 import { NetworksService } from '@/services/NetworksService';
 import { NodesService } from '@/services/NodesService';
 import { useStore } from '@/store/store';
-// import { convertNetworkPayloadToUiNetwork, convertUiNetworkToNetworkPayload } from '@/utils/NetworkUtils';
 import { getExtendedNode, isNodeRelay } from '@/utils/NodeUtils';
 import { getNetworkHostRoute } from '@/utils/RouteUtils';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
@@ -925,10 +924,6 @@ export default function NetworkDetailsPage(props: PageProps) {
           return <Tooltip title={addrs}>{addrs}</Tooltip>;
         },
       },
-      // {
-      //   title: 'Endpoint',
-      //   dataIndex: 'endpointip',
-      // },
       {
         width: '1rem',
         render(_, relay) {
@@ -996,10 +991,6 @@ export default function NetworkDetailsPage(props: PageProps) {
           return <Tooltip title={addrs}>{addrs}</Tooltip>;
         },
       },
-      // {
-      //   title: 'Endpoint',
-      //   dataIndex: 'endpointip',
-      // },
       {
         width: '1rem',
         render(_, relayed) {
@@ -1548,16 +1539,6 @@ export default function NetworkDetailsPage(props: PageProps) {
             >
               <PlusOutlined /> Add Existing Host
             </Dropdown.Button>
-            {/* <Button
-              type="primary"
-              size="large"
-              onClick={() => {
-                // goToNewHostPage()
-                setIsAddHostsToNetworkModalOpen(true);
-              }}
-            >
-              <PlusOutlined /> Add Host
-            </Button> */}
           </Col>
 
           <Col xs={24} style={{ paddingTop: '1rem' }}>

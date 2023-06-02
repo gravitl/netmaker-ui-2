@@ -21,7 +21,6 @@ import '../CustomModal.scss';
 import './AddRelayModal.styles.scss';
 import { Network } from '@/models/Network';
 import { ExtendedNode, Node } from '@/models/Node';
-// import { Host } from '@/models/Host';
 import { getExtendedNode, getNodeConnectivityStatus, isNodeRelay } from '@/utils/NodeUtils';
 import { CloseOutlined } from '@ant-design/icons';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
@@ -69,42 +68,14 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
       .map((node) => ({ ...node, ...getExtendedNode(node, store.hostsCommonDetails) }));
   }, [networkId, store.hostsCommonDetails, store.nodes]);
 
-  // const networkHostToNodesMap = useMemo(() => {
-  //   const nodesMap = new Map<Host['id'], Node>();
-  //   networkNodes.forEach((node) => {
-  //     nodesMap.set(node.hostid, node);
-  //   });
-  //   return nodesMap;
-  // }, [networkNodes]);
-
   const isNodeSelectable = (node: Node) => {
     return !isNodeRelay(node) && !node.relayedby;
   };
-
-  // const networkHosts = useMemo(() => {
-  //   const hostsMap = new Map<Host['id'], Host>();
-  //   store.hosts.forEach((host) => {
-  //     hostsMap.set(host.id, host);
-  //   });
-  //   return store.nodes
-  //     .filter((node) => node.network === networkId)
-  //     .map((node) => hostsMap.get(node.hostid) ?? NULL_HOST);
-  // }, [networkId, store.hosts, store.nodes]);
-
-  // const filteredNetworkHosts = useMemo<Host[]>(
-  //   () => networkHosts.filter((host) => host.name?.toLowerCase().includes(relaySearch.toLowerCase())),
-  //   [networkHosts, relaySearch]
-  // );
 
   const filteredNetworkNodes = useMemo(
     () => networkNodes.filter((node) => node.name?.toLowerCase().includes(relaySearch.toLowerCase())),
     [networkNodes, relaySearch]
   );
-
-  // const selectedRelayAssocNode = useMemo<Node | null>(() => {
-  //   if (!selectedRelay) return null;
-  //   return networkNodes.find((node) => node.hostid === selectedRelay.id) ?? null;
-  // }, [selectedRelay, networkNodes]);
 
   const relayTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(() => {
     return [
@@ -119,15 +90,10 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
         title: 'Address',
         dataIndex: 'address',
         render(_, node) {
-          // const assocNode = networkHostToNodesMap.get(node.id);
           const addrs = `${node?.address ?? ''} ${node.address6 ? `, ${node.address6}` : ''}`;
           return <Tooltip title={addrs}>{addrs}</Tooltip>;
         },
       },
-      // {
-      //   title: 'Endpoint',
-      //   dataIndex: 'endpointip',
-      // },
     ];
   }, []);
 
