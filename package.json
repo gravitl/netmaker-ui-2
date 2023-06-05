@@ -25,7 +25,7 @@
     "graphology-layout-forceatlas2": "^0.10.1",
     "graphology-types": "^0.24.7",
     "i18next": "^22.5.0",
-    "immer": "^9.0.19",
+    "immer": "^10.0.2",
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
     "rc-virtual-list": "^3.4.13",
