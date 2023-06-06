@@ -42,7 +42,7 @@ export default function HostDetailsPage(props: PageProps) {
   const { token: themeToken } = theme.useToken();
   const queryParams = useQuery();
 
-  // const storeUpdateHost = store.updateHost;
+  const storeUpdateHost = store.updateHost;
   const [isLoading, setIsLoading] = useState(false);
   const [isEditingHost, setIsEditingHost] = useState(false);
   const [host, setHost] = useState<Host | null>(null);
@@ -179,6 +179,26 @@ export default function HostDetailsPage(props: PageProps) {
       },
     });
   };
+
+  const confirmToggleHostDefaultness = useCallback(async () => {
+    if (!host) return;
+    Modal.confirm({
+      title: 'Toggle defaultness',
+      content: `Are you sure you want to turn ${!host.isdefault ? 'on' : 'off'} defaultness for this host?`,
+      onOk: async () => {
+        try {
+          const newHost = (await HostsService.updateHost(host.id, { ...host, isdefault: !host.isdefault })).data;
+          notify.success({ message: `Host ${host.id} updated` });
+          storeUpdateHost(host.id, newHost);
+        } catch (err) {
+          notify.error({
+            message: 'Failed to update host',
+            description: extractErrorMsg(err as any),
+          });
+        }
+      },
+    });
+  }, [host, notify, storeUpdateHost]);
 
   const refreshHostKeys = useCallback(() => {
     if (!hostId) return;
@@ -439,6 +459,19 @@ export default function HostDetailsPage(props: PageProps) {
                   placement="bottomRight"
                   menu={{
                     items: [
+                      {
+                        key: 'default',
+                        label: (
+                          <Typography.Text
+                            onClick={(ev) => {
+                              ev.stopPropagation();
+                              confirmToggleHostDefaultness();
+                            }}
+                          >
+                            {host?.isdefault ? 'Unmake default' : 'Make default'}
+                          </Typography.Text>
+                        ),
+                      },
                       {
                         key: 'refresh-key',
                         label: <Typography.Text>Refresh Key</Typography.Text>,
