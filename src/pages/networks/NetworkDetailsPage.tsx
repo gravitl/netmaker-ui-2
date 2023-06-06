@@ -81,6 +81,7 @@ import AddIngressModal from '@/components/modals/add-ingress-modal/AddIngressMod
 import UpdateIngressModal from '@/components/modals/update-ingress-modal/UpdateIngressModal';
 import UpdateClientModal from '@/components/modals/update-client-modal/UpdateClientModal';
 import { NULL_HOST } from '@/constants/Types';
+import UpdateNodeModal from '@/components/modals/update-node-modal/UpdateNodeModal';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -172,6 +173,8 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [isAddClientGatewayModalOpen, setIsAddClientGatewayModalOpen] = useState(false);
   const [isUpdateGatewayModalOpen, setIsUpdateGatewayModalOpen] = useState(false);
   const [isUpdateClientModalOpen, setIsUpdateClientModalOpen] = useState(false);
+  const [isUpdateNodeModalOpen, setIsUpdateNodeModalOpen] = useState(false);
+  const [targetNode, setTargetNode] = useState<Node | null>(null);
 
   const networkNodes = useMemo(
     () =>
@@ -419,7 +422,12 @@ export default function NetworkDetailsPage(props: PageProps) {
     }
   }, [networkId, notify]);
 
-  const downloadMetrics = useCallback(() => {}, []);
+  const editNode = useCallback((node: Node) => {
+    setTargetNode(node);
+    setIsUpdateNodeModalOpen(true);
+  }, []);
+
+  // const downloadMetrics = useCallback(() => {}, []);
 
   const loadClients = useCallback(async () => {
     try {
@@ -446,7 +454,7 @@ export default function NetworkDetailsPage(props: PageProps) {
           try {
             await NodesService.deleteExternalClient(client.clientid, client.network);
             setClients((prev) => prev.filter((c) => c.clientid !== client.clientid));
-            store.fetchNodes();
+            storeFetchNodes();
           } catch (err) {
             if (err instanceof AxiosError) {
               notify.error({
@@ -458,8 +466,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       });
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [notify]
+    [notify, storeFetchNodes]
   );
 
   const openClientDetails = useCallback((client: ExternalClient) => {
@@ -475,7 +482,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         onOk: async () => {
           try {
             await NodesService.deleteIngressNode(gateway.id, gateway.network);
-            store.fetchNodes();
+            storeFetchNodes();
             loadClients();
           } catch (err) {
             if (err instanceof AxiosError) {
@@ -488,8 +495,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       });
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [loadClients, notify, store.hostsCommonDetails]
+    [loadClients, notify, store.hostsCommonDetails, storeFetchNodes]
   );
 
   const confirmDeleteEgress = useCallback(
@@ -500,7 +506,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         onOk: async () => {
           try {
             await NodesService.deleteEgressNode(egress.id, egress.network);
-            store.fetchNodes();
+            storeFetchNodes();
           } catch (err) {
             if (err instanceof AxiosError) {
               notify.error({
@@ -512,8 +518,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       });
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [notify]
+    [notify, store.hostsCommonDetails, storeFetchNodes]
   );
 
   const confirmDeleteRange = useCallback(
@@ -731,6 +736,22 @@ export default function NetworkDetailsPage(props: PageProps) {
               menu={{
                 items: [
                   {
+                    key: 'update',
+                    label: (
+                      <Typography.Text
+                        onClick={() => {
+                          setFilteredEgress(egress);
+                          setIsUpdateEgressModalOpen(true);
+                        }}
+                      >
+                        <EditOutlined /> Update
+                      </Typography.Text>
+                    ),
+                    onClick: (info) => {
+                      info.domEvent.stopPropagation();
+                    },
+                  },
+                  {
                     key: 'delete',
                     label: (
                       <Typography.Text onClick={() => confirmDeleteEgress(egress)}>
@@ -912,6 +933,22 @@ export default function NetworkDetailsPage(props: PageProps) {
               placement="bottomRight"
               menu={{
                 items: [
+                  {
+                    key: 'update',
+                    label: (
+                      <Typography.Text
+                        onClick={() => {
+                          setSelectedRelay(relay);
+                          setIsUpdateRelayModalOpen(true);
+                        }}
+                      >
+                        <EditOutlined /> Update
+                      </Typography.Text>
+                    ),
+                    onClick: (info) => {
+                      info.domEvent.stopPropagation();
+                    },
+                  },
                   {
                     key: 'delete',
                     label: (
@@ -1578,6 +1615,13 @@ export default function NetworkDetailsPage(props: PageProps) {
                         menu={{
                           items: [
                             {
+                              key: 'edit',
+                              label: 'Edit',
+                              disabled: node.pendingdelete !== false,
+                              title: node.pendingdelete !== false ? 'Host is being removed from network' : '',
+                              onClick: () => editNode(node),
+                            },
+                            {
                               key: 'disconnect',
                               label: 'Remove from network',
                               disabled: node.pendingdelete !== false,
@@ -1602,14 +1646,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         </Row>
       </div>
     );
-  }, [
-    searchHost,
-    // goToNewHostPage,
-    network?.isipv6,
-    networkNodes,
-    store.hostsCommonDetails,
-    disconnectNodeFromNetwork,
-  ]);
+  }, [searchHost, network?.isipv6, networkNodes, store.hostsCommonDetails, editNode, disconnectNodeFromNetwork]);
 
   const getDnsContent = useCallback(() => {
     return (
@@ -2131,6 +2168,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         <Row style={{ width: '100%' }}>
           <Col xs={12}>
             <Input
+              allowClear
               placeholder="Search host"
               value={searchAclHost}
               onChange={(ev) => setSearchAclHost(ev.target.value)}
@@ -2764,6 +2802,17 @@ export default function NetworkDetailsPage(props: PageProps) {
             setIsUpdateClientModalOpen(false);
           }}
           onCancel={() => setIsUpdateClientModalOpen(false)}
+        />
+      )}
+      {targetNode && (
+        <UpdateNodeModal
+          isOpen={isUpdateNodeModalOpen}
+          node={targetNode}
+          onUpdateNode={() => {
+            store.fetchNodes();
+            setIsUpdateNodeModalOpen(false);
+          }}
+          onCancel={() => setIsUpdateNodeModalOpen(false)}
         />
       )}
     </Layout.Content>

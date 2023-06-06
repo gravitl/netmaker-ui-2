@@ -63,6 +63,30 @@ export default function HostsPage(props: PageProps) {
     [hosts, searchText]
   );
 
+  const refreshHostKeys = useCallback(
+    (host: Host) => {
+      Modal.confirm({
+        title: 'Refresh host keys',
+        content: `Are you sure you want to refresh this host's (${host.name}) keys?`,
+        onOk: async () => {
+          try {
+            await HostsService.refreshHostKeys(host.id);
+            notify.success({
+              message: 'Host keys refreshing...',
+              description: 'Host key pairs are refreshing. This may take a while.',
+            });
+          } catch (err) {
+            notify.error({
+              message: 'Failed to refresh host keys',
+              description: extractErrorMsg(err as any),
+            });
+          }
+        },
+      });
+    },
+    [notify]
+  );
+
   const confirmToggleHostDefaultness = useCallback(
     async (host: Host) => {
       Modal.confirm({
@@ -243,8 +267,63 @@ export default function HostsPage(props: PageProps) {
           }
         },
       },
+      {
+        width: '1rem',
+        render(_, host) {
+          return (
+            <Dropdown
+              placement="bottomRight"
+              menu={{
+                items: [
+                  {
+                    key: 'default',
+                    label: (
+                      <Typography.Text
+                        onClick={(ev) => {
+                          ev.stopPropagation();
+                          confirmToggleHostDefaultness(host);
+                        }}
+                      >
+                        {host.isdefault ? 'Unmake default' : 'Make default'}
+                      </Typography.Text>
+                    ),
+                  },
+                  {
+                    key: 'refresh',
+                    label: (
+                      <Typography.Text
+                        onClick={(ev) => {
+                          ev.stopPropagation();
+                          refreshHostKeys(host);
+                        }}
+                      >
+                        Refresh Host Keys
+                      </Typography.Text>
+                    ),
+                  },
+                  {
+                    key: 'edit',
+                    label: (
+                      <Typography.Text
+                        onClick={(ev) => {
+                          ev.stopPropagation();
+                          onEditHost(host);
+                        }}
+                      >
+                        Edit Host
+                      </Typography.Text>
+                    ),
+                  },
+                ] as MenuProps['items'],
+              }}
+            >
+              <Button type="text" icon={<MoreOutlined />} />
+            </Dropdown>
+          );
+        },
+      },
     ],
-    [notify, store.nodes, storeUpdateHost]
+    [confirmToggleHostDefaultness, notify, onEditHost, refreshHostKeys, store.nodes, storeUpdateHost]
   );
 
   const namHostsTableCols: TableColumnsType<Host> = useMemo(
@@ -252,7 +331,6 @@ export default function HostsPage(props: PageProps) {
       {
         title: 'Name',
         dataIndex: 'name',
-        render: (value, host) => <Link to={getHostRoute(host)}>{host.name}</Link>,
         sorter(a, b) {
           return a.name.localeCompare(b.name);
         },
