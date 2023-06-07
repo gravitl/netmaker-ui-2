@@ -47,7 +47,6 @@ export default function NetworkHostDetailsPage(props: PageProps) {
   const { token: themeToken } = theme.useToken();
   const queryParams = useQuery();
 
-  // const storeUpdateHost = store.updateHost;
   const storeDeleteNode = store.deleteNode;
   const [isLoading, setIsLoading] = useState(false);
   const [isEditingNode, setIsEditingNode] = useState(false);
@@ -81,28 +80,6 @@ export default function NetworkHostDetailsPage(props: PageProps) {
   const onUpdateNode = useCallback(() => {
     setIsEditingNode(false);
   }, []);
-
-  // const toggleProxyStatus = useCallback(
-  //   (newStatus: boolean) => {
-  //     Modal.confirm({
-  //       title: 'Toggle proxy status',
-  //       content: `Are you sure you want to turn ${newStatus ? 'on' : 'off'} proxy for this host?`,
-  //       onOk: async () => {
-  //         try {
-  //           if (!hostId || !host) return;
-  //           const newHost = (await HostsService.updateHost(hostId, { ...host, proxy_enabled: newStatus })).data;
-  //           storeUpdateHost(hostId, newHost);
-  //         } catch (err) {
-  //           notify.error({
-  //             message: 'Failed to update host',
-  //             description: extractErrorMsg(err as any),
-  //           });
-  //         }
-  //       },
-  //     });
-  //   },
-  //   [hostId, host, storeUpdateHost, notify]
-  // );
 
   const getHostHealth = useCallback(() => {
     const nodeHealth: NodeConnectivityStatus = node ? getNodeConnectivityStatus(node) : 'unknown';
@@ -452,24 +429,6 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                   <Typography.Text>{host.internetgateway}</Typography.Text>
                 </Col>
               </Row>
-
-              <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
-                <Col xs={12}>
-                  <Typography.Text disabled>Proxy Enabled</Typography.Text>
-                </Col>
-                <Col xs={12}>
-                  <Typography.Text>{host.proxy_enabled ? 'Yes' : 'No'}</Typography.Text>
-                </Col>
-              </Row>
-
-              <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
-                <Col xs={12}>
-                  <Typography.Text disabled>Proxy Listen Port</Typography.Text>
-                </Col>
-                <Col xs={12}>
-                  <Typography.Text>{host.listenport}</Typography.Text>
-                </Col>
-              </Row>
             </Collapse.Panel>
           </Collapse>
         </Card>
@@ -560,10 +519,6 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                 </Typography.Title>
               </Col>
               <Col xs={6} style={{ textAlign: 'right' }}>
-                {/* <span style={{ marginRight: '2rem' }}>
-                  <Typography.Text style={{ marginRight: '1rem' }}>Proxy Status</Typography.Text>
-                  <Switch checked={host?.proxy_enabled} onChange={toggleProxyStatus} />
-                </span> */}
                 <Dropdown
                   placement="bottomRight"
                   menu={{
