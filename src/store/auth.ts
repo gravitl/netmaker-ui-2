@@ -43,7 +43,6 @@ const createAuthSlice: StateCreator<IAuthSlice, [], [], IAuthSlice> = (set, get)
       username: '',
       tenantId: '',
       tenantName: '',
-      baseUrl: '',
       amuiAuthToken: '',
       user: null,
     });
