@@ -179,58 +179,6 @@ export default function HostsPage(props: PageProps) {
         ),
       },
       {
-        title: 'Proxy Status',
-        dataIndex: 'proxy_enabled',
-        render(value, host) {
-          return (
-            <Switch
-              checked={value}
-              onChange={(newStatus: boolean, ev) => {
-                ev.stopPropagation();
-                Modal.confirm({
-                  title: 'Toggle proxy status',
-                  content: `Are you sure you want to turn ${newStatus ? 'on' : 'off'} proxy for host ${host.name}?`,
-                  onOk: async () => {
-                    try {
-                      const newHost = (await HostsService.updateHost(host.id, { ...host, proxy_enabled: newStatus }))
-                        .data;
-                      storeUpdateHost(host.id, newHost);
-                    } catch (err) {
-                      notify.error({
-                        message: 'Failed to update host',
-                        description: extractErrorMsg(err as any),
-                      });
-                    }
-                  },
-                });
-              }}
-            />
-          );
-        },
-      },
-      // {
-      //   title: 'Relay status',
-      //   render(_, host) {
-      //     let relayer: Host | undefined;
-
-      //     if (host.isrelayed) {
-      //       relayer = hosts.find((h) => h.id === host.relayed_by);
-      //     }
-
-      //     return (
-      //       <Space direction="horizontal" onClick={(ev) => ev.stopPropagation()}>
-      //         <Tag color={host.isrelay ? 'success' : 'default'}>Relay</Tag>
-      //         <Tag
-      //           color={host.isrelayed ? 'blue' : 'default'}
-      //           title={host.isrelayed ? `Relayed by "${relayer?.name}"` : ''}
-      //         >
-      //           Relayed
-      //         </Tag>
-      //       </Space>
-      //     );
-      //   },
-      // },
-      {
         title: 'Health Status',
         render(_, host) {
           const nodeHealths = store.nodes
@@ -323,7 +271,7 @@ export default function HostsPage(props: PageProps) {
         },
       },
     ],
-    [confirmToggleHostDefaultness, notify, onEditHost, refreshHostKeys, store.nodes, storeUpdateHost]
+    [confirmToggleHostDefaultness, onEditHost, refreshHostKeys, store.nodes]
   );
 
   const namHostsTableCols: TableColumnsType<Host> = useMemo(
