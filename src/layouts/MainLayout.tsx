@@ -317,7 +317,11 @@ export default function MainLayout() {
       >
         {/* logo */}
         <Link to={AppRoutes.DASHBOARD_ROUTE}>
-          <img src="/logo.png" alt="logo" style={{ width: '100%', padding: '.5rem 1rem 0rem 1rem' }} />
+          <img
+            src={isSidebarCollapsed ? `/logo-small-${store.currentTheme}.png` : `/logo-${store.currentTheme}.png`}
+            alt="logo"
+            style={{ width: '100%', padding: '1rem 2rem 1rem 2rem' }}
+          />
         </Link>
 
         <Menu
