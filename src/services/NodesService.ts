@@ -55,8 +55,12 @@ function getExternalClientConfig(
   });
 }
 
-function getExternalClients() {
+function getAllExternalClients() {
   return axiosService.get<ExternalClient[]>(`${ApiRoutes.EXTERNAL_CLIENTS}`);
+}
+
+function getNetworkExternalClients(network: Network['netid']) {
+  return axiosService.get<ExternalClient[]>(`${ApiRoutes.EXTERNAL_CLIENTS}/${network}`);
 }
 
 function updateExternalClient(
@@ -90,7 +94,8 @@ export const NodesService = {
   deleteIngressNode,
   deleteNode,
   getExternalClientConfig,
-  getExternalClients,
+  getAllExternalClients,
+  getNetworkExternalClients,
   updateExternalClient,
   updateNode,
   createRelay,

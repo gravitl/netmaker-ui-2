@@ -438,8 +438,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const loadClients = useCallback(async () => {
     try {
       if (!networkId) return;
-      const allClients = (await NodesService.getExternalClients()).data ?? [];
-      const networkClients = allClients.filter((client) => client.network === networkId);
+      const networkClients = (await NodesService.getNetworkExternalClients(networkId)).data ?? [];
       setClients(networkClients);
     } catch (err) {
       if (err instanceof AxiosError) {
