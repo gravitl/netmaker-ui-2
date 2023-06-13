@@ -39,18 +39,18 @@ export async function setupTenantConfig(): Promise<void> {
 
   truncateQueryParamsFromCurrentUrl();
 
-  let user: User | undefined;
-  try {
-    user = (
-      await baseService.get(`${ApiRoutes.USERS}/${encodeURIComponent(username)}`, {
-        headers: { Authorization: `Bearer ${accessToken || useStore.getState().jwt}`, user: username },
-      })
-    ).data;
-  } catch (err) {
-    console.error(err);
-    alert('Failed to fetch user details: ' + String(err));
-    return;
-  }
+  // let user: User | undefined;
+  // try {
+  //   user = (
+  //     await baseService.get(`${ApiRoutes.USERS}/${encodeURIComponent(username)}`, {
+  //       headers: { Authorization: `Bearer ${accessToken || useStore.getState().jwt}`, user: username },
+  //     })
+  //   ).data;
+  // } catch (err) {
+  //   console.error(err);
+  //   alert('Failed to fetch user details: ' + String(err));
+  //   return;
+  // }
 
   useStore.getState().setStore({
     baseUrl: resolvedBaseUrl,
@@ -59,7 +59,7 @@ export async function setupTenantConfig(): Promise<void> {
     tenantName,
     amuiAuthToken,
     username,
-    user,
+    // user,
   });
 }
 
