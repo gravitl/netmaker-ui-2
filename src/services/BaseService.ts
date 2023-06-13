@@ -42,7 +42,9 @@ export async function setupTenantConfig(): Promise<void> {
   let user: User | undefined;
   try {
     user = (
-      await baseService.get(`${ApiRoutes.USERS}/${username}`, { headers: { Authorization: `Bearer ${accessToken}` } })
+      await baseService.get(`${ApiRoutes.USERS}/${username}`, {
+        headers: { Authorization: `Bearer ${accessToken || useStore.getState().jwt}` },
+      })
     ).data;
   } catch (err) {
     console.error(err);
@@ -52,7 +54,7 @@ export async function setupTenantConfig(): Promise<void> {
 
   useStore.getState().setStore({
     baseUrl: resolvedBaseUrl,
-    jwt: accessToken ?? useStore.getState().jwt,
+    jwt: accessToken || useStore.getState().jwt,
     tenantId,
     tenantName,
     amuiAuthToken,
