@@ -42,7 +42,7 @@ export async function setupTenantConfig(): Promise<void> {
   let user: User | undefined;
   try {
     user = (
-      await baseService.get(`${ApiRoutes.USERS}/${username}`, {
+      await baseService.get(`${ApiRoutes.USERS}/${encodeURIComponent(username)}`, {
         headers: { Authorization: `Bearer ${accessToken || useStore.getState().jwt}` },
       })
     ).data;
