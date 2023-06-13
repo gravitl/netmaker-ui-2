@@ -41,7 +41,9 @@ export async function setupTenantConfig(): Promise<void> {
 
   let user: User | undefined;
   try {
-    user = (await baseService.get(ApiRoutes.USERS, { headers: { Authorization: `Bearer ${accessToken}` } })).data;
+    user = (
+      await baseService.get(`${ApiRoutes.USERS}/${username}`, { headers: { Authorization: `Bearer ${accessToken}` } })
+    ).data;
   } catch (err) {
     console.error(err);
     alert('Failed to fetch user details: ' + String(err));
