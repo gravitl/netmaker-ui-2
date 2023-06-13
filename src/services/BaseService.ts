@@ -43,7 +43,7 @@ export async function setupTenantConfig(): Promise<void> {
   try {
     user = (
       await baseService.get(`${ApiRoutes.USERS}/${encodeURIComponent(username)}`, {
-        headers: { Authorization: `Bearer ${accessToken || useStore.getState().jwt}` },
+        headers: { Authorization: `Bearer ${accessToken || useStore.getState().jwt}`, user: username },
       })
     ).data;
   } catch (err) {
