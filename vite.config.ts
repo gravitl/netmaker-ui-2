@@ -9,6 +9,7 @@ export default defineConfig({
   plugins: [react()],
   build: {
     sourcemap: process.env.NODE_ENV !== 'production',
+    target: 'esnext',
   },
   resolve: {
     alias: {

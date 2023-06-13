@@ -188,19 +188,17 @@ export default function UsersPage(props: PageProps) {
                 items: [
                   {
                     key: 'edit',
-                    label:
-                      !user.isadmin || (user.isadmin && user.username === store.username) ? (
-                        <Typography.Text
-                          onClick={(ev) => {
-                            ev.stopPropagation();
-                            onEditUser(user);
-                          }}
-                        >
-                          Edit
-                        </Typography.Text>
-                      ) : (
-                        <></>
-                      ),
+                    label: 'Edit',
+                    disabled: !(!user.isadmin || (user.isadmin && user.username === store.username)),
+                    title: !(!user.isadmin || (user.isadmin && user.username === store.username))
+                      ? 'You cannot edit another admin user'
+                      : null,
+                    onClick: (ev) => {
+                      ev.domEvent.stopPropagation();
+                      const userClone = structuredClone(user);
+                      userClone.networks ??= [];
+                      onEditUser(userClone);
+                    },
                   },
                   {
                     key: 'default',
@@ -323,16 +321,11 @@ export default function UsersPage(props: PageProps) {
                 items: [
                   {
                     key: 'edit',
-                    label: (
-                      <Typography.Text
-                        onClick={(ev) => {
-                          ev.stopPropagation();
-                          onEditGroup(group.name);
-                        }}
-                      >
-                        Edit
-                      </Typography.Text>
-                    ),
+                    label: 'Edit',
+                    onClick: (ev) => {
+                      ev.domEvent.stopPropagation();
+                      onEditGroup(group.name);
+                    },
                   },
                   {
                     key: 'delete',
@@ -580,8 +573,8 @@ export default function UsersPage(props: PageProps) {
                   Users
                 </Typography.Title>
                 <Typography.Text style={{ color: 'white ' }}>
-                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque amet modi cum aut doloremque dicta
-                  reiciendis odit molestias nam animi enim et molestiae consequatur quas quo facere magni, maiores rem.
+                  Netmaker allows you to perform Identity and Access Management (IAM) with users. You can create
+                  multiple profiles and restrict access to networks.
                 </Typography.Text>
               </Col>
               <Col xs={(24 * 1) / 3} style={{ position: 'relative' }}>
@@ -610,33 +603,34 @@ export default function UsersPage(props: PageProps) {
                     Manage access to Netmaker
                   </Typography.Title>
                   <Typography.Text>
-                    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deleniti, beatae quis. Possimus commodi
-                    quas eveniet, nostrum iure eaque unde illo deleniti obcaecati aut aliquid ab sapiente ipsum soluta
-                    ex quis.
+                    Netmaker allows you to perform Identity and Access Management (IAM) with users. You can create
+                    multiple profiles and restrict access to networks.
                   </Typography.Text>
                 </Card>
               </Col>
               <Col xs={7} style={{ marginRight: '1rem' }}>
                 <Card>
                   <Typography.Title level={4} style={{ marginTop: '0px' }}>
-                    Manage access to Netmaker
+                    User Groups
                   </Typography.Title>
                   <Typography.Text>
-                    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deleniti, beatae quis. Possimus commodi
-                    quas eveniet, nostrum iure eaque unde illo deleniti obcaecati aut aliquid ab sapiente ipsum soluta
-                    ex quis.
+                    Easily manage access to a Netmaker resources by creating user groups. You can create multiple groups
+                    and assign users to them, then control access to the groups. This is a{' '}
+                    <a href={getAmuiUrl('upgrade')} referrerPolicy="no-referrer">
+                      Pro
+                    </a>{' '}
+                    feature
                   </Typography.Text>
                 </Card>
               </Col>
               <Col xs={7}>
                 <Card>
                   <Typography.Title level={4} style={{ marginTop: '0px' }}>
-                    Manage access to Netmaker
+                    OAuth users on Netmaker
                   </Typography.Title>
                   <Typography.Text>
-                    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deleniti, beatae quis. Possimus commodi
-                    quas eveniet, nostrum iure eaque unde illo deleniti obcaecati aut aliquid ab sapiente ipsum soluta
-                    ex quis.
+                    Netmaker supports OAuth (Social Sign-On) for user authentication. You can configure your OAuth
+                    provider to allow users to login to Netmaker.
                   </Typography.Text>
                 </Card>
               </Col>
