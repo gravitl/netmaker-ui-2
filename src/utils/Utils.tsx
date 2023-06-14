@@ -80,3 +80,19 @@ export function confirmDirtyModalClose(forms: FormInstance[], msg = DEFAULT_CONF
   }
   return true;
 }
+
+/**
+ * Checks if a jwt is valid.
+ *
+ * @param jwt
+ * @returns whether the jwt is valid or not
+ */
+export function isValidJwt(jwt: string): boolean {
+  try {
+    const data = atob(jwt);
+    const json = JSON.parse(data);
+    return json && json.exp && json.exp > Date.now() / 1000;
+  } catch (err) {
+    return false;
+  }
+}
