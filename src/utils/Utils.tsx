@@ -1,7 +1,7 @@
 import { Host } from '@/models/Host';
 import { Node } from '@/models/Node';
 import { NodeConnectivityStatus } from '@/models/NodeConnectivityStatus';
-import { Tag } from 'antd';
+import { FormInstance, Tag } from 'antd';
 import { getNodeConnectivityStatus } from './NodeUtils';
 
 export function renderNodeHealth(health: NodeConnectivityStatus) {
@@ -63,4 +63,20 @@ export function getHostHealth(
     case 3:
       return shouldRender ? <Tag color="success">Healthy</Tag> : 'healthy';
   }
+}
+
+const DEFAULT_CONFIRM_DIRTY_MODAL_CLOSE_MSG =
+  'Closing the modal will lose any unsaved changes. Do you want to proceed?';
+/**
+ * Confirm whether to proceed with closing a modal if any of the forms are dirty.
+ *
+ * @param forms array of forms to verify
+ * @param msg prompt to display
+ * @returns whether to proceed or not
+ */
+export function confirmDirtyModalClose(forms: FormInstance[], msg = DEFAULT_CONFIRM_DIRTY_MODAL_CLOSE_MSG): boolean {
+  if (forms.some((f) => f.isFieldsTouched())) {
+    return confirm(msg);
+  }
+  return true;
 }
