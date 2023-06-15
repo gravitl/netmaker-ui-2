@@ -69,22 +69,22 @@ describe('EnrollmentKeysUtils', () => {
       uses_remaining: 0,
       value: '',
     };
-    const validKeyDeprecated: EnrollmentKey = {
+    const validKeyDeprecated: Partial<EnrollmentKey> = {
       tags: ['test'],
       networks: [],
       expiration: 0,
       token: '',
-      type: UndefinedEnrollmentKey,
+      type: undefined,
       unlimited: false,
       uses_remaining: 1,
       value: '',
     };
-    const invalidKeyDeprecated: EnrollmentKey = {
+    const invalidKeyDeprecated: Partial<EnrollmentKey> = {
       tags: ['test'],
       networks: [],
       expiration: 0,
       token: '',
-      type: UndefinedEnrollmentKey,
+      type: undefined,
       unlimited: false,
       uses_remaining: 0,
       value: '',
@@ -93,17 +93,17 @@ describe('EnrollmentKeysUtils', () => {
     expect(isEnrollmentKeyValid(validKeyUnlimited)).toEqual(true);
     expect(isEnrollmentKeyValid(validKeyTime)).toEqual(true);
     expect(isEnrollmentKeyValid(validKeyUses)).toEqual(true);
-    expect(isEnrollmentKeyValid(validKeyDeprecated)).toEqual(true);
+    expect(isEnrollmentKeyValid(validKeyDeprecated as any)).toEqual(true);
     expect(isEnrollmentKeyValid(invalidKeyUnlimited)).toEqual(true);
-    expect(isEnrollmentKeyValid(invalidKeyTime)).toEqual(true);
-    expect(isEnrollmentKeyValid(invalidKeyUses)).toEqual(true);
-    expect(isEnrollmentKeyValid(invalidKeyDeprecated)).toEqual(true);
+    expect(isEnrollmentKeyValid(invalidKeyTime)).toEqual(false);
+    expect(isEnrollmentKeyValid(invalidKeyUses)).toEqual(false);
+    expect(isEnrollmentKeyValid(invalidKeyDeprecated as any)).toEqual(false);
   });
 
   it('correctly renders an enrollment key type', () => {
-    expect(renderEnrollmentKeyType(0)).toBe('Undefined');
-    expect(renderEnrollmentKeyType(1)).toBe('Time-Bound');
-    expect(renderEnrollmentKeyType(2)).toBe('Uses-based');
-    expect(renderEnrollmentKeyType(3)).toBe('Unlimited');
+    expect(renderEnrollmentKeyType(0)).toEqual('Undefined');
+    expect(renderEnrollmentKeyType(1)).toEqual('Time-bound');
+    expect(renderEnrollmentKeyType(2)).toEqual('Uses-based');
+    expect(renderEnrollmentKeyType(3)).toEqual('Unlimited');
   });
 });

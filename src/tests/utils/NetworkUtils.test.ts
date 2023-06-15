@@ -78,6 +78,7 @@ describe('NetworkUtils', () => {
     expect(isValidIp(invalidIpv4)).toEqual(false);
     expect(isValidIp(invalidIpv4Cidr)).toEqual(false);
     expect(isValidIp(validIpv4)).toEqual(true);
+    // TODO: fix test cases
     // expect(isValidIp(invalidIpv6)).toEqual(false);
     // expect(isValidIp(invalidIpv6Cidr)).toEqual(false);
     expect(isValidIp(validIpv6)).toEqual(true);
