@@ -80,3 +80,34 @@ export function confirmDirtyModalClose(forms: FormInstance[], msg = DEFAULT_CONF
   }
   return true;
 }
+
+function parseJwt(token: string) {
+  const base64Url = token.split('.')[1];
+  const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+  const jsonPayload = decodeURIComponent(
+    window
+      .atob(base64)
+      .split('')
+      .map(function (c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      })
+      .join('')
+  );
+
+  return JSON.parse(jsonPayload);
+}
+
+/**
+ * Checks if a jwt is valid.
+ *
+ * @param jwt
+ * @returns whether the jwt is valid or not
+ */
+export function isValidJwt(jwt: string): boolean {
+  try {
+    const json = parseJwt(jwt);
+    return (json?.exp ?? 0) > Date.now() / 1000;
+  } catch (err) {
+    return false;
+  }
+}
