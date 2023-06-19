@@ -19,7 +19,7 @@ export function renderNodeHealth(health: NodeConnectivityStatus) {
 
 export function getTimeMinHrs(duration: number) {
   // TODO: review this calc
-  const minutes = duration / 60000000000;
+  const minutes = duration / 60_000_000_000;
   const hours = Math.floor(minutes / 60);
   const remainingMinutes = Math.ceil(((minutes / 60) % 1) * 60);
   return { hours, min: remainingMinutes };

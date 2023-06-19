@@ -9,7 +9,7 @@ import { NodeConnectivityStatus } from '@/models/NodeConnectivityStatus';
  *
  * @param {number} lastCheckInTime node's last check-in time
  */
-export const getConnectivityStatus = (lastCheckInTime: number): NodeConnectivityStatus => {
+export function getConnectivityStatus(lastCheckInTime: number): NodeConnectivityStatus {
   const ERROR_THRESHOLD = 1800;
   const WARNING_THRESHOLD = 300;
 
@@ -19,16 +19,16 @@ export const getConnectivityStatus = (lastCheckInTime: number): NodeConnectivity
   else if (currentTime - lastCheckInTime >= ERROR_THRESHOLD) return 'error';
   else if (currentTime - lastCheckInTime >= WARNING_THRESHOLD) return 'warning';
   else return 'healthy';
-};
+}
 
 /**
  * Calculates node connectivity using last check-in time.
  *
  * @param {Node} node the node whose connectivity is to be checked
  */
-export const getNodeConnectivityStatus = (node: Node | ExternalClient): NodeConnectivityStatus => {
+export function getNodeConnectivityStatus(node: Node | ExternalClient): NodeConnectivityStatus {
   return getConnectivityStatus((node as Node).lastcheckin);
-};
+}
 
 /**
  * Derives the extended node for a given node.
