@@ -32,6 +32,8 @@ const testNode1: Node = {
   defaultacl: '',
   connected: false,
   failover: false,
+  relayedby: '',
+  relaynodes: [],
 };
 
 const testNode2 = { ...testNode1, lastcheckin: testNode1.lastcheckin - 400 };

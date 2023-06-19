@@ -32,14 +32,14 @@ const testNode: Node = {
   defaultacl: '',
   connected: false,
   failover: false,
+  relayedby: '',
+  relaynodes: [],
 };
 
 const hostRegistry: Record<Host['id'], HostCommonDetails> = {
   'test-host': {
     endpointip: '1.2.3.4',
     interfaces: [],
-    isrelay: false,
-    isrelayed: false,
     isstatic: false,
     listenport: 0,
     macaddress: '',
@@ -47,7 +47,6 @@ const hostRegistry: Record<Host['id'], HostCommonDetails> = {
     name: 'test-host',
     os: '',
     publickey: '',
-    relay_hosts: [],
     version: '',
   },
 };
