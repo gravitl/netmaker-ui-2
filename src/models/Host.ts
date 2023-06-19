@@ -1,4 +1,5 @@
 import { Interface } from './Interface';
+import { Node } from './Node';
 
 export interface Host {
   id: string;
@@ -20,13 +21,9 @@ export interface Host {
   publickey: string;
   macaddress: string;
   internetgateway: string;
-  nodes: string[]; // node ids
+  nodes: Node['id'][];
   proxy_enabled: boolean;
   isdefault: boolean;
-  isrelayed: boolean;
-  relayed_by: string; // host id
-  isrelay: boolean;
-  relay_hosts: string[]; // host ids
 }
 
 export interface HostCommonDetails {
@@ -39,8 +36,5 @@ export interface HostCommonDetails {
   isstatic: Host['isstatic'];
   mtu: Host['mtu'];
   interfaces: Host['interfaces'];
-  isrelay: Host['isrelay'];
-  relay_hosts: Host['relay_hosts'];
-  isrelayed: Host['isrelayed'];
   macaddress: Host['macaddress'];
 }

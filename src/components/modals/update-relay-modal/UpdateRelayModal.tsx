@@ -20,34 +20,35 @@ import { useStore } from '@/store/store';
 import '../CustomModal.scss';
 import './UpdateRelayModal.styles.scss';
 import { Network } from '@/models/Network';
-import { Node } from '@/models/Node';
+import { ExtendedNode, Node } from '@/models/Node';
 import { Host } from '@/models/Host';
-import { getExtendedNode, getNodeConnectivityStatus } from '@/utils/NodeUtils';
+import { getExtendedNode, getNodeConnectivityStatus, isNodeRelay } from '@/utils/NodeUtils';
 import { CloseOutlined } from '@ant-design/icons';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
-import { CreateHostRelayDto } from '@/services/dtos/CreateHostRelayDto';
-import { HostsService } from '@/services/HostsService';
-import { NULL_HOST, NULL_NODE } from '@/constants/Types';
+import { CreateNodeRelayDto } from '@/services/dtos/CreateNodeRelayDto';
+import { NodesService } from '@/services/NodesService';
+import { NULL_NODE } from '@/constants/Types';
 
 interface UpdateRelayModalProps {
   isOpen: boolean;
   networkId: Network['netid'];
-  relay: Host;
-  onUpdateRelay: (relay: Host) => any;
+  relay: Node;
+  onUpdateRelay: (relay: Node) => any;
   onOk?: (e: MouseEvent<HTMLButtonElement>) => void;
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
 }
 
-type UpdateRelayFormFields = CreateHostRelayDto;
+type UpdateRelayFormFields = CreateNodeRelayDto;
 
 export default function UpdateRelayModal({ relay, isOpen, onUpdateRelay, onCancel, networkId }: UpdateRelayModalProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
   const { token: themeToken } = theme.useToken();
 
+  const isServerEE = store.serverConfig?.IsEE === 'yes';
   const [form] = Form.useForm<UpdateRelayFormFields>();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedRelayedIds, setSelectedRelayedIds] = useState<Host['id'][]>(relay.relay_hosts ?? []);
+  const [selectedRelayedIds, setSelectedRelayedIds] = useState<Host['id'][]>(relay.relaynodes ?? []);
   const [relayedSearch, setRelayedSearch] = useState('');
 
   const getNodeConnectivity = useCallback((node: Node) => {
@@ -57,41 +58,22 @@ export default function UpdateRelayModal({ relay, isOpen, onUpdateRelay, onCance
     else return <Badge status="processing" text="Unknown" />;
   }, []);
 
-  const networkNodes = useMemo<Node[]>(() => {
+  const networkNodes = useMemo<ExtendedNode[]>(() => {
     return store.nodes
       .filter((node) => node.network === networkId)
-      .map((node) => ({ ...node, ...getExtendedNode(node, store.hostsCommonDetails) }));
+      .map((node) => getExtendedNode(node, store.hostsCommonDetails));
   }, [networkId, store.hostsCommonDetails, store.nodes]);
 
-  const networkHostToNodesMap = useMemo(() => {
-    const nodesMap = new Map<Host['id'], Node>();
-    networkNodes.forEach((node) => {
-      nodesMap.set(node.hostid, node);
-    });
-    return nodesMap;
-  }, [networkNodes]);
+  const extendedRelay = useMemo<ExtendedNode>(() => {
+    return getExtendedNode(relay, store.hostsCommonDetails);
+  }, [relay, store.hostsCommonDetails]);
 
-  const networkHosts = useMemo(() => {
-    const hostsMap = new Map<Host['id'], Host>();
-    store.hosts.forEach((host) => {
-      hostsMap.set(host.id, host);
-    });
-    return store.nodes
-      .filter((node) => node.network === networkId)
-      .map((node) => hostsMap.get(node.hostid) ?? NULL_HOST);
-  }, [networkId, store.hosts, store.nodes]);
-
-  const filteredNetworkHosts = useMemo<Host[]>(
-    () => networkHosts.filter((host) => host.name?.toLowerCase().includes(relayedSearch.toLowerCase())),
-    [networkHosts, relayedSearch]
+  const filteredNetworkNodes = useMemo<ExtendedNode[]>(
+    () => networkNodes.filter((node) => node.name?.toLowerCase().includes(relayedSearch.toLowerCase())),
+    [networkNodes, relayedSearch]
   );
 
-  const selectedRelayAssocNode = useMemo<Node | null>(() => {
-    if (!relay) return null;
-    return networkNodes.find((node) => node.hostid === relay.id) ?? null;
-  }, [relay, networkNodes]);
-
-  const relayTableCols = useMemo<TableColumnProps<Host>[]>(() => {
+  const relayTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(() => {
     return [
       {
         title: 'Select host',
@@ -103,25 +85,28 @@ export default function UpdateRelayModal({ relay, isOpen, onUpdateRelay, onCance
       {
         title: 'Address',
         dataIndex: 'address',
-        render(_, host) {
-          const assocNode = networkHostToNodesMap.get(host.id);
-          const addrs = `${assocNode?.address ?? ''}, ${assocNode?.address6 ?? ''}`;
+        render(_, node) {
+          const addrs = `${node.address ?? ''}, ${node.address6 ?? ''}`;
           return <Tooltip title={addrs}>{addrs}</Tooltip>;
         },
       },
-      {
-        title: 'Endpoint',
-        dataIndex: 'endpointip',
-      },
     ];
-  }, [networkHostToNodesMap]);
+  }, []);
 
-  const relayedTableCols = useMemo<TableColumnProps<Host>[]>(() => relayTableCols, [relayTableCols]);
+  const relayedTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(() => relayTableCols, [relayTableCols]);
+
+  const isNodeSelectable = (node: Node): boolean => {
+    if (isNodeRelay(node)) return false;
+    if (node.relayedby) {
+      return node.relayedby === relay.id;
+    }
+    return true;
+  };
 
   const resetModal = () => {
     form.resetFields();
     setRelayedSearch('');
-    setSelectedRelayedIds(relay.relay_hosts ?? []);
+    setSelectedRelayedIds(relay.relaynodes ?? []);
   };
 
   const updateRelay = async () => {
@@ -129,15 +114,16 @@ export default function UpdateRelayModal({ relay, isOpen, onUpdateRelay, onCance
       await form.validateFields();
       setIsSubmitting(true);
       const uniqueRelayedIds = [...new Set(selectedRelayedIds)];
-      let newRelay: Host;
+      let newRelay: Node;
       if (uniqueRelayedIds.length > 0) {
-        newRelay = (await HostsService.updateHost(relay.id, { ...relay, relay_hosts: selectedRelayedIds })).data;
+        newRelay = (await NodesService.updateNode(relay.id, networkId, { ...relay, relaynodes: selectedRelayedIds }))
+          .data;
       } else {
-        newRelay = (await HostsService.deleteHostRelay(relay.id)).data;
+        newRelay = (await NodesService.deleteRelay(relay.id, networkId)).data;
       }
-      store.updateHost(relay.id, newRelay);
+      store.updateNode(relay.id, newRelay);
       onUpdateRelay(newRelay);
-      notify.success({ message: `Relay updated` });
+      notify.success({ message: 'Relay updated' });
     } catch (err) {
       notify.error({
         message: 'Failed to update relay',
@@ -151,7 +137,7 @@ export default function UpdateRelayModal({ relay, isOpen, onUpdateRelay, onCance
   return (
     <Modal
       title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Update Relay</span>}
-      open={isOpen}
+      open={isServerEE && isOpen}
       onCancel={(ev) => {
         resetModal();
         onCancel?.(ev);
@@ -170,10 +156,10 @@ export default function UpdateRelayModal({ relay, isOpen, onUpdateRelay, onCance
               borderRadius: '8px',
             }}
           >
-            <Col span={6}>{relay?.name ?? ''}</Col>
-            <Col span={6}>{selectedRelayAssocNode?.address ?? ''}</Col>
-            <Col span={6}>{relay?.endpointip ?? ''}</Col>
-            <Col span={6}>{selectedRelayAssocNode && getNodeConnectivity(selectedRelayAssocNode)}</Col>
+            <Col span={6}>{extendedRelay?.name ?? ''}</Col>
+            <Col span={6}>{extendedRelay?.address ?? ''}</Col>
+            <Col span={6}>{extendedRelay?.endpointip ?? ''}</Col>
+            <Col span={6}>{extendedRelay && getNodeConnectivity(extendedRelay)}</Col>
           </Row>
 
           <Form.Item label="Select hosts to relay" required style={{ marginTop: '1rem' }}>
@@ -196,43 +182,29 @@ export default function UpdateRelayModal({ relay, isOpen, onUpdateRelay, onCance
                         size="small"
                         columns={relayedTableCols}
                         rowKey="id"
-                        dataSource={[...filteredNetworkHosts.filter((h) => h.id !== relay.id)].sort((a, b) =>
+                        dataSource={[...filteredNetworkNodes.filter((h) => h.id !== relay.id)].sort((a, b) =>
                           // sort non-relayed hosts to the top
-                          a.isrelay === b.isrelay ? 0 : a.isrelay ? 1 : -1
+                          isNodeRelay(a) === isNodeRelay(b) ? 0 : isNodeRelay(a) ? 1 : -1
                         )}
-                        onRow={(host) => {
+                        onRow={(node) => {
                           return {
                             onClick: () => {
-                              const canSelect = (() => {
-                                if (host.isrelay) return false;
-                                if (host.isrelayed) {
-                                  return host.relayed_by === relay.id;
-                                }
-                                return true;
-                              })();
-                              if (!canSelect) return;
+                              if (!isNodeSelectable(node)) return;
                               setSelectedRelayedIds((prev) => {
                                 const relayedHostIds = new Set(prev);
-                                if (relayedHostIds.has(host.id)) {
-                                  relayedHostIds.delete(host.id);
+                                if (relayedHostIds.has(node.id)) {
+                                  relayedHostIds.delete(node.id);
                                 } else {
-                                  relayedHostIds.add(host.id);
+                                  relayedHostIds.add(node.id);
                                 }
                                 return [...relayedHostIds];
                               });
                             },
                           };
                         }}
-                        rowClassName={(host) => {
-                          const canSelect = (() => {
-                            if (host.isrelay) return false;
-                            if (host.isrelayed) {
-                              return host.relayed_by === relay.id;
-                            }
-                            return true;
-                          })();
-                          if (!canSelect) return 'unavailable-row';
-                          return selectedRelayedIds.includes(host.id) ? 'selected-row' : '';
+                        rowClassName={(node) => {
+                          if (!isNodeSelectable(node)) return 'unavailable-row';
+                          return selectedRelayedIds.includes(node.id) ? 'selected-row' : '';
                         }}
                       />
                     </Col>
@@ -252,12 +224,10 @@ export default function UpdateRelayModal({ relay, isOpen, onUpdateRelay, onCance
                 marginBottom: '.5rem',
               }}
             >
-              <Col span={6}>{networkHosts.find((h) => h.id === id)?.name ?? ''}</Col>
-              <Col span={6}>{networkHostToNodesMap.get(id)?.address ?? ''}</Col>
-              <Col span={6}>{networkHosts.find((h) => h.id === id)?.endpointip ?? ''}</Col>
-              <Col span={5}>
-                {networkHostToNodesMap.get(id) && getNodeConnectivity(networkHostToNodesMap.get(id) ?? NULL_NODE)}
-              </Col>
+              <Col span={6}>{networkNodes.find((h) => h.id === id)?.name ?? ''}</Col>
+              <Col span={6}>{networkNodes.find((h) => h.id === id)?.address ?? ''}</Col>
+              <Col span={6}>{networkNodes.find((h) => h.id === id)?.endpointip ?? ''}</Col>
+              <Col span={5}>{getNodeConnectivity(networkNodes.find((n) => n.id === id) ?? NULL_NODE)}</Col>
               <Col span={1} style={{ textAlign: 'right' }}>
                 <Button
                   danger

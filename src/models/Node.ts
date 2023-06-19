@@ -30,6 +30,8 @@ export interface Node {
   defaultacl: string;
   connected: boolean;
   failover: boolean;
+  relayedby: Node['id'];
+  relaynodes?: Node['id'][];
 }
 
 export type ExtendedNode = Node & Partial<HostCommonDetails>;

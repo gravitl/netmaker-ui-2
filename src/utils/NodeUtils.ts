@@ -42,3 +42,14 @@ export function getExtendedNode(node: Node, hostCommonDetails: Record<string, Ho
   const hostDetails = hostCommonDetails[node.hostid];
   return { ...node, ...(hostDetails ? hostDetails : NULL_HOST) };
 }
+
+/**
+ * Detemine whether the passed node is a relay or not.
+ *
+ * @param node Node to determine if is a relay or not
+ * @returns whether node is a relay or not
+ */
+export function isNodeRelay(node: Node): boolean {
+  if (node.relaynodes) return node.relaynodes.length > 0;
+  return false;
+}

@@ -32,10 +32,6 @@ const testHost: Host = {
   nodes: [],
   proxy_enabled: false,
   isdefault: false,
-  isrelayed: false,
-  relayed_by: '',
-  isrelay: false,
-  relay_hosts: [],
 };
 
 const testNetwork: Network = {
