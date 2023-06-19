@@ -24,7 +24,7 @@
     "graphology-layout-force": "^0.2.4",
     "graphology-layout-forceatlas2": "^0.10.1",
     "graphology-types": "^0.24.7",
-    "i18next": "^22.5.0",
+    "i18next": "^23.1.0",
     "immer": "^10.0.2",
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
