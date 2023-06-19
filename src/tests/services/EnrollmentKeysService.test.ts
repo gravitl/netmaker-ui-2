@@ -78,6 +78,8 @@ describe('EnrollmentKeysService', () => {
       mock.onDelete(`${ApiRoutes.ENROLLMENT_KEYS}/${expectedId}`).reply(204);
 
       await EnrollmentKeysService.deleteEnrollmentKey(expectedId);
+
+      expect(mock.history.delete.length).toBe(1);
     });
   });
 });
