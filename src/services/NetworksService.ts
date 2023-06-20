@@ -61,7 +61,7 @@ function getNodeMetrics(networkId: Network['netid']) {
 }
 
 function getClientMetrics(networkId: Network['netid']) {
-  // return baseService.get<NetworkMetrics>(`${ApiRoutes.METRICS_EXTERNAL_CLIENT}/${networkId}`);
+  return baseService.get<NetworkMetrics>(`${ApiRoutes.METRICS_EXTERNAL_CLIENT}/${networkId}`);
 }
 
 export const NetworksService = {
