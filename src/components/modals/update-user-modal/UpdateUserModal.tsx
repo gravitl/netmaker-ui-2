@@ -5,6 +5,7 @@ import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { User } from '@/models/User';
 import { UsersService } from '@/services/UsersService';
 import { useStore } from '@/store/store';
+import { confirmDirtyModalClose } from '@/utils/Utils';
 
 interface UpdateUserModalProps {
   isOpen: boolean;
@@ -68,7 +69,13 @@ export default function UpdateUserModal({ isOpen, user, onUpdateUser, onCancel }
     <Modal
       title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Update user {user.username || ''}</span>}
       open={isOpen}
-      onCancel={onCancel}
+      destroyOnClose
+      onCancel={(ev) => {
+        const shouldProceed = confirmDirtyModalClose([form, authForm]);
+        if (shouldProceed) {
+          onCancel?.(ev);
+        }
+      }}
       footer={null}
       centered
       className="CustomModal"

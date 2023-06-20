@@ -7,7 +7,7 @@ import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { Network } from '@/models/Network';
 import { DNS } from '@/models/Dns';
 import { Node } from '@/models/Node';
-import { isValidIpv4OrCidr, isValidIpv6OrCidr, truncateCidrFromIp } from '@/utils/NetworkUtils';
+import { isValidIpv4OrCidr, isValidIpv6OrCidr, truncateIpFromCidr } from '@/utils/NetworkUtils';
 import { getExtendedNode } from '@/utils/NodeUtils';
 
 interface AddDnsModalProps {
@@ -52,8 +52,8 @@ export default function AddDnsModal({ isOpen, onCreateDns, onCancel, networkId }
       const dns = (
         await NetworksService.createDns(networkId, {
           ...formData,
-          address: truncateCidrFromIp(isIpv4 ? formData.ip : ''),
-          address6: truncateCidrFromIp(isIpv6 ? formData.ip : ''),
+          address: truncateIpFromCidr(isIpv4 ? formData.ip : ''),
+          address6: truncateIpFromCidr(isIpv6 ? formData.ip : ''),
         })
       ).data;
       resetModal();

@@ -1,6 +1,6 @@
-import { act, render, screen } from '@testing-library/react';
-import { beforeEach, describe } from 'vitest';
-import App from '../App';
+import { act } from '@testing-library/react';
+import { describe } from 'vitest';
+// import App from '../App';
 
 describe('App', () => {
   // TODO: mocking

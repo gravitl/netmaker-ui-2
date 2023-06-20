@@ -6,6 +6,7 @@ import { baseService } from './BaseService';
 import { CreateEgressNodeDto } from './dtos/CreateEgressNodeDto';
 import { CreateExternalClientReqDto } from './dtos/CreateExternalClientReqDto';
 import { CreateIngressNodeDto } from './dtos/CreateIngressNodeDto';
+import { CreateNodeRelayDto } from './dtos/CreateNodeRelayDto';
 import { UpdateExternalClientDto } from './dtos/UpdateExternalClientDto';
 
 function getNodes() {
@@ -70,6 +71,14 @@ function updateNode(nodeId: ExternalClient['clientid'], networkId: Network['neti
   return baseService.put<Node>(`${ApiRoutes.NODES}/${networkId}/${nodeId}`, payload);
 }
 
+function createRelay(nodeId: Node['id'], networkId: Network['netid'], payload: CreateNodeRelayDto) {
+  return baseService.post<Node>(`${ApiRoutes.NODES}/${networkId}/${nodeId}/createrelay`, payload);
+}
+
+function deleteRelay(nodeId: Node['id'], networkId: Network['netid']) {
+  return baseService.delete<Node>(`${ApiRoutes.NODES}/${networkId}/${nodeId}/deleterelay`);
+}
+
 export const NodesService = {
   getNodes,
   approveNode,
@@ -84,4 +93,6 @@ export const NodesService = {
   getExternalClients,
   updateExternalClient,
   updateNode,
+  createRelay,
+  deleteRelay,
 };

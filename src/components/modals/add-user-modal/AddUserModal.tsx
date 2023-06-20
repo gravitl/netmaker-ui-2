@@ -1,5 +1,5 @@
-import { Button, Col, Divider, Form, Input, Modal, notification, Row, Select, Switch } from 'antd';
-import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { Button, Col, Divider, Form, Input, Modal, notification, Row, Switch } from 'antd';
+import { MouseEvent, useCallback, useEffect, useState } from 'react';
 import { useStore } from '@/store/store';
 import '../CustomModal.scss';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
@@ -23,12 +23,6 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
   const [users, setUsers] = useState<User[]>([]);
   const isAdminVal = Form.useWatch('isadmin', form);
   const passwordVal = Form.useWatch('password', form);
-
-  const userGroups = useMemo(() => {
-    const groups = new Set<string>();
-    users.forEach((u) => u.groups?.forEach((g) => groups.add(g)));
-    return Array.from(groups);
-  }, [users]);
 
   const resetModal = () => {
     form.resetFields();
@@ -88,7 +82,7 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
     >
       <Divider style={{ margin: '0px 0px 2rem 0px' }} />
       <div className="CustomModalBody">
-        <Form name="add-user-form" form={form} layout="vertical" initialValues={{ groups: ['*'] }}>
+        <Form name="add-user-form" form={form} layout="vertical" initialValues={{ groups: ['*'], isadmin: true }}>
           <Form.Item label="Username" name="username" rules={[{ required: true }]}>
             <Input placeholder="Username" />
           </Form.Item>
@@ -119,65 +113,13 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
 
           <Form.Item label="Is admin" name="isadmin" valuePropName="checked">
             <Switch
+              disabled
               onChange={(newVal) => {
                 if (newVal) {
                   form.setFieldValue('networks', []);
                 }
               }}
             />
-          </Form.Item>
-
-          {isServerEE && (
-            <Form.Item label="User groups">
-              <Row>
-                <Col xs={18}>
-                  <Form.Item name="groups" noStyle>
-                    <Select
-                      mode="multiple"
-                      placeholder="Groups"
-                      options={userGroups.map((g) => ({ label: g, value: g }))}
-                    />
-                  </Form.Item>
-                </Col>
-                <Col xs={6} style={{ textAlign: 'right' }}>
-                  <Button
-                    onClick={() => {
-                      form.setFieldValue('groups', userGroups);
-                    }}
-                  >
-                    Select All
-                  </Button>
-                </Col>
-              </Row>
-            </Form.Item>
-          )}
-
-          <Form.Item label="Allowed Networks">
-            <Row>
-              <Col xs={18}>
-                <Form.Item name="networks" noStyle>
-                  <Select
-                    disabled={isAdminVal}
-                    mode="multiple"
-                    placeholder="Networks"
-                    options={store.networks.map((n) => ({ label: n.netid, value: n.netid }))}
-                  />
-                </Form.Item>
-              </Col>
-              <Col xs={6} style={{ textAlign: 'right' }}>
-                <Button
-                  disabled={isAdminVal}
-                  onClick={() => {
-                    form.setFieldValue(
-                      'networks',
-                      store.networks.map((n) => n.netid)
-                    );
-                  }}
-                >
-                  Select All
-                </Button>
-              </Col>
-            </Row>
           </Form.Item>
 
           <Row>

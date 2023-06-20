@@ -58,7 +58,7 @@ export function convertNetworkPayloadToUiNetwork(network: NetworkPayload): Netwo
   };
 }
 
-export function truncateCidrFromIp(ip: string): string {
+export function truncateIpFromCidr(ip: string): string {
   return ip.split('/')[0];
 }
 

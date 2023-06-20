@@ -15,8 +15,7 @@ import { HostsService } from '@/services/HostsService';
 import { NetworksService } from '@/services/NetworksService';
 import { NodesService } from '@/services/NodesService';
 import { useStore } from '@/store/store';
-// import { convertNetworkPayloadToUiNetwork, convertUiNetworkToNetworkPayload } from '@/utils/NetworkUtils';
-import { getExtendedNode } from '@/utils/NodeUtils';
+import { getExtendedNode, isNodeRelay } from '@/utils/NodeUtils';
 import { getNetworkHostRoute } from '@/utils/RouteUtils';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import {
@@ -80,7 +79,8 @@ import NewHostModal from '@/components/modals/new-host-modal/NewHostModal';
 import AddIngressModal from '@/components/modals/add-ingress-modal/AddIngressModal';
 import UpdateIngressModal from '@/components/modals/update-ingress-modal/UpdateIngressModal';
 import UpdateClientModal from '@/components/modals/update-client-modal/UpdateClientModal';
-import { NULL_HOST } from '@/constants/Types';
+import { NULL_HOST, NULL_NODE } from '@/constants/Types';
+import UpdateNodeModal from '@/components/modals/update-node-modal/UpdateNodeModal';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -132,7 +132,6 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const { token: themeToken } = theme.useToken();
 
-  const storeFetchHosts = store.fetchHosts;
   const storeFetchNodes = store.fetchNodes;
   const isServerEE = store.serverConfig?.IsEE === 'yes';
   const [form] = Form.useForm<Network>();
@@ -158,7 +157,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [isAddEgressModalOpen, setIsAddEgressModalOpen] = useState(false);
   const [searchEgress, setSearchEgress] = useState('');
   const [isUpdateEgressModalOpen, setIsUpdateEgressModalOpen] = useState(false);
-  const [selectedRelay, setSelectedRelay] = useState<Host | null>(null);
+  const [selectedRelay, setSelectedRelay] = useState<ExtendedNode | null>(null);
   const [isAddRelayModalOpen, setIsAddRelayModalOpen] = useState(false);
   const [searchRelay, setSearchRelay] = useState('');
   const [isUpdateRelayModalOpen, setIsUpdateRelayModalOpen] = useState(false);
@@ -172,6 +171,8 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [isAddClientGatewayModalOpen, setIsAddClientGatewayModalOpen] = useState(false);
   const [isUpdateGatewayModalOpen, setIsUpdateGatewayModalOpen] = useState(false);
   const [isUpdateClientModalOpen, setIsUpdateClientModalOpen] = useState(false);
+  const [isUpdateNodeModalOpen, setIsUpdateNodeModalOpen] = useState(false);
+  const [targetNode, setTargetNode] = useState<Node | null>(null);
 
   const networkNodes = useMemo(
     () =>
@@ -243,14 +244,25 @@ export default function NetworkDetailsPage(props: PageProps) {
       .map((node) => hostsMap.get(node.hostid) ?? NULL_HOST);
   }, [networkId, store.hosts, store.nodes]);
 
-  const relays = useMemo<Host[]>(() => {
-    return networkHosts.filter((host) => host?.isrelay);
-  }, [networkHosts]);
+  const relays = useMemo<ExtendedNode[]>(() => {
+    if (!isServerEE) {
+      return [];
+    }
+    return networkNodes.filter((node) => isNodeRelay(node));
+  }, [networkNodes, isServerEE]);
 
-  const filteredRelays = useMemo<Host[]>(
+  const filteredRelays = useMemo<ExtendedNode[]>(
     () => relays.filter((relay) => relay.name?.toLowerCase().includes(searchRelay.toLowerCase()) ?? false),
     [relays, searchRelay]
   );
+
+  const filteredRelayedNodes = useMemo<ExtendedNode[]>(() => {
+    if (selectedRelay) {
+      return networkNodes.filter((node) => node.relayedby === selectedRelay.id);
+    } else {
+      return networkNodes.filter((node) => node.relayedby).sort((a, b) => a.relayedby.localeCompare(b.relayedby));
+    }
+  }, [networkNodes, selectedRelay]);
 
   const toggleClientStatus = useCallback(
     async (client: ExternalClient, newStatus: boolean) => {
@@ -309,14 +321,6 @@ export default function NetworkDetailsPage(props: PageProps) {
   const filteredAclData = useMemo<AclTableData[]>(() => {
     return aclTableData.filter((node) => node.name.toLowerCase().includes(searchAclHost.toLowerCase()));
   }, [aclTableData, searchAclHost]);
-
-  const filteredRelayedHosts = useMemo<Host[]>(() => {
-    if (selectedRelay) {
-      return networkHosts.filter((host) => host?.isrelayed && host?.relayed_by === selectedRelay.id);
-    } else {
-      return networkHosts.filter((host) => host?.isrelayed).sort((a, b) => a.relayed_by.localeCompare(b.relayed_by));
-    }
-  }, [networkHosts, selectedRelay]);
 
   const connectivityStatusMetricsData = useMemo<NodeMetricsTableData[]>(() => {
     return Object.keys(networkNodeMetrics?.nodes ?? {}).map((nodeId) => {
@@ -419,7 +423,12 @@ export default function NetworkDetailsPage(props: PageProps) {
     }
   }, [networkId, notify]);
 
-  const downloadMetrics = useCallback(() => {}, []);
+  const editNode = useCallback((node: Node) => {
+    setTargetNode(node);
+    setIsUpdateNodeModalOpen(true);
+  }, []);
+
+  // const downloadMetrics = useCallback(() => {}, []);
 
   const loadClients = useCallback(async () => {
     try {
@@ -446,7 +455,7 @@ export default function NetworkDetailsPage(props: PageProps) {
           try {
             await NodesService.deleteExternalClient(client.clientid, client.network);
             setClients((prev) => prev.filter((c) => c.clientid !== client.clientid));
-            store.fetchNodes();
+            storeFetchNodes();
           } catch (err) {
             if (err instanceof AxiosError) {
               notify.error({
@@ -458,8 +467,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       });
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [notify]
+    [notify, storeFetchNodes]
   );
 
   const openClientDetails = useCallback((client: ExternalClient) => {
@@ -475,7 +483,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         onOk: async () => {
           try {
             await NodesService.deleteIngressNode(gateway.id, gateway.network);
-            store.fetchNodes();
+            storeFetchNodes();
             loadClients();
           } catch (err) {
             if (err instanceof AxiosError) {
@@ -488,8 +496,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       });
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [loadClients, notify, store.hostsCommonDetails]
+    [loadClients, notify, store.hostsCommonDetails, storeFetchNodes]
   );
 
   const confirmDeleteEgress = useCallback(
@@ -500,7 +507,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         onOk: async () => {
           try {
             await NodesService.deleteEgressNode(egress.id, egress.network);
-            store.fetchNodes();
+            storeFetchNodes();
           } catch (err) {
             if (err instanceof AxiosError) {
               notify.error({
@@ -512,8 +519,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       });
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [notify]
+    [notify, store.hostsCommonDetails, storeFetchNodes]
   );
 
   const confirmDeleteRange = useCallback(
@@ -573,14 +579,16 @@ export default function NetworkDetailsPage(props: PageProps) {
   );
 
   const confirmDeleteRelay = useCallback(
-    (relay: Host) => {
+    (relay: ExtendedNode) => {
+      if (!networkId) return;
+
       Modal.confirm({
         title: `Delete relay ${relay.name}`,
         content: `Are you sure you want to delete this relay?`,
         onOk: async () => {
           try {
-            await HostsService.deleteHostRelay(relay.id);
-            store.fetchHosts();
+            await NodesService.deleteRelay(relay.id, networkId);
+            store.fetchNodes();
             notify.success({ message: 'Relay deleted' });
           } catch (err) {
             notify.error({
@@ -591,26 +599,27 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       });
     },
-    [notify, store]
+    [notify, store, networkId]
   );
 
   const confirmRemoveRelayed = useCallback(
-    (relayed: Host, relay: Host) => {
+    (relayed: ExtendedNode, relay: ExtendedNode) => {
+      if (!networkId) return;
+
       Modal.confirm({
         title: `Stop ${relayed.name} from being relayed by ${relay.name}`,
         content: `Are you sure you want to stop this host from being relayed?`,
         onOk: async () => {
           try {
-            const relayIds = new Set([...relay.relay_hosts]);
-            relayIds.delete(relayed.id);
+            const relayedIds = new Set([...(relay.relaynodes ?? [])]);
+            relayedIds.delete(relayed.id);
 
-            if (relayIds.size > 0) {
-              await HostsService.updateHost(relay.id, { ...relay, relay_hosts: [...relayIds] });
+            if (relayedIds.size > 0) {
+              await NodesService.updateNode(relay.id, networkId, { ...relay, relaynodes: [...relayedIds] });
             } else {
-              (await HostsService.deleteHostRelay(relay.id)).data;
+              (await NodesService.deleteRelay(relay.id, networkId)).data;
             }
 
-            storeFetchHosts();
             storeFetchNodes();
           } catch (err) {
             notify.error({
@@ -621,7 +630,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       });
     },
-    [notify, storeFetchHosts, storeFetchNodes]
+    [networkId, notify, storeFetchNodes]
   );
 
   const gatewaysTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(
@@ -730,6 +739,22 @@ export default function NetworkDetailsPage(props: PageProps) {
               placement="bottomRight"
               menu={{
                 items: [
+                  {
+                    key: 'update',
+                    label: (
+                      <Typography.Text
+                        onClick={() => {
+                          setFilteredEgress(egress);
+                          setIsUpdateEgressModalOpen(true);
+                        }}
+                      >
+                        <EditOutlined /> Update
+                      </Typography.Text>
+                    ),
+                    onClick: (info) => {
+                      info.domEvent.stopPropagation();
+                    },
+                  },
                   {
                     key: 'delete',
                     label: (
@@ -883,7 +908,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     [confirmDeleteClient, networkNodes, openClientDetails, store.hostsCommonDetails, toggleClientStatus]
   );
 
-  const relayTableCols = useMemo<TableColumnProps<Host>[]>(
+  const relayTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(
     () => [
       {
         title: 'Host name',
@@ -894,15 +919,10 @@ export default function NetworkDetailsPage(props: PageProps) {
       {
         title: 'Addresses',
         dataIndex: 'address',
-        render(_, host) {
-          const assocNode = networkNodes.find((node) => node.hostid === host.id);
-          const addrs = `${assocNode?.address ?? ''}, ${assocNode?.address6 ?? ''}`;
+        render(_, node) {
+          const addrs = `${node.address ?? ''}, ${node.address6 ?? ''}`;
           return <Tooltip title={addrs}>{addrs}</Tooltip>;
         },
-      },
-      {
-        title: 'Endpoint',
-        dataIndex: 'endpointip',
       },
       {
         width: '1rem',
@@ -912,6 +932,22 @@ export default function NetworkDetailsPage(props: PageProps) {
               placement="bottomRight"
               menu={{
                 items: [
+                  {
+                    key: 'update',
+                    label: (
+                      <Typography.Text
+                        onClick={() => {
+                          setSelectedRelay(relay);
+                          setIsUpdateRelayModalOpen(true);
+                        }}
+                      >
+                        <EditOutlined /> Update
+                      </Typography.Text>
+                    ),
+                    onClick: (info) => {
+                      info.domEvent.stopPropagation();
+                    },
+                  },
                   {
                     key: 'delete',
                     label: (
@@ -932,10 +968,10 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       },
     ],
-    [confirmDeleteRelay, networkNodes]
+    [confirmDeleteRelay]
   );
 
-  const relayedTableCols = useMemo<TableColumnProps<Host>[]>(
+  const relayedTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(
     () => [
       {
         title: 'Host name',
@@ -943,22 +979,17 @@ export default function NetworkDetailsPage(props: PageProps) {
       },
       {
         title: 'Relayed by',
-        render(_, host) {
-          return `${networkHosts.find((h) => h.id === host.relayed_by)?.name ?? ''}`;
+        render(_, node) {
+          return `${networkNodes.find((n) => n.id === node.relayedby)?.name ?? ''}`;
         },
       },
       {
         title: 'Addresses',
         dataIndex: 'address',
-        render(_, host) {
-          const assocNode = networkNodes.find((node) => node.hostid === host.id);
-          const addrs = `${assocNode?.address ?? ''}, ${assocNode?.address6 ?? ''}`;
+        render(_, node) {
+          const addrs = `${node.address ?? ''}, ${node.address6 ?? ''}`;
           return <Tooltip title={addrs}>{addrs}</Tooltip>;
         },
-      },
-      {
-        title: 'Endpoint',
-        dataIndex: 'endpointip',
       },
       {
         width: '1rem',
@@ -975,7 +1006,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                         onClick={() =>
                           confirmRemoveRelayed(
                             relayed,
-                            networkHosts.find((h) => h.id === relayed.relayed_by) ?? NULL_HOST
+                            networkNodes.find((node) => node.id === relayed.relayedby) ?? NULL_NODE
                           )
                         }
                       >
@@ -995,7 +1026,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       },
     ],
-    [confirmRemoveRelayed, networkHosts, networkNodes]
+    [confirmRemoveRelayed, networkNodes]
   );
 
   const aclTableCols = useMemo<TableColumnProps<AclTableData>[]>(() => {
@@ -1508,16 +1539,6 @@ export default function NetworkDetailsPage(props: PageProps) {
             >
               <PlusOutlined /> Add Existing Host
             </Dropdown.Button>
-            {/* <Button
-              type="primary"
-              size="large"
-              onClick={() => {
-                // goToNewHostPage()
-                setIsAddHostsToNetworkModalOpen(true);
-              }}
-            >
-              <PlusOutlined /> Add Host
-            </Button> */}
           </Col>
 
           <Col xs={24} style={{ paddingTop: '1rem' }}>
@@ -1578,6 +1599,13 @@ export default function NetworkDetailsPage(props: PageProps) {
                         menu={{
                           items: [
                             {
+                              key: 'edit',
+                              label: 'Edit',
+                              disabled: node.pendingdelete !== false,
+                              title: node.pendingdelete !== false ? 'Host is being removed from network' : '',
+                              onClick: () => editNode(node),
+                            },
+                            {
                               key: 'disconnect',
                               label: 'Remove from network',
                               disabled: node.pendingdelete !== false,
@@ -1602,14 +1630,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         </Row>
       </div>
     );
-  }, [
-    searchHost,
-    // goToNewHostPage,
-    network?.isipv6,
-    networkNodes,
-    store.hostsCommonDetails,
-    disconnectNodeFromNetwork,
-  ]);
+  }, [searchHost, network?.isipv6, networkNodes, store.hostsCommonDetails, editNode, disconnectNodeFromNetwork]);
 
   const getDnsContent = useCallback(() => {
     return (
@@ -2115,7 +2136,7 @@ export default function NetworkDetailsPage(props: PageProps) {
               </Row>
               <Row style={{ marginTop: '1rem' }}>
                 <Col xs={24}>
-                  <Table columns={relayedTableCols} dataSource={filteredRelayedHosts} rowKey="id" size="small" />
+                  <Table columns={relayedTableCols} dataSource={filteredRelayedNodes} rowKey="id" size="small" />
                 </Col>
               </Row>
             </Col>
@@ -2123,7 +2144,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         )}
       </div>
     );
-  }, [filteredRelayedHosts, filteredRelays, relayTableCols, relayedTableCols, relays, searchRelay, selectedRelay]);
+  }, [filteredRelayedNodes, filteredRelays, relayTableCols, relayedTableCols, relays, searchRelay, selectedRelay]);
 
   const getAclsContent = useCallback(() => {
     return (
@@ -2131,6 +2152,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         <Row style={{ width: '100%' }}>
           <Col xs={12}>
             <Input
+              allowClear
               placeholder="Search host"
               value={searchAclHost}
               onChange={(ev) => setSearchAclHost(ev.target.value)}
@@ -2371,7 +2393,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   ]);
 
   const networkTabs: TabsProps['items'] = useMemo(() => {
-    return [
+    const tabs = [
       {
         key: 'overview',
         label: `Overview`,
@@ -2391,11 +2413,6 @@ export default function NetworkDetailsPage(props: PageProps) {
         key: 'egress',
         label: `Egress (${egresses.length})`,
         children: network ? getEgressContent() : <Skeleton active />,
-      },
-      {
-        key: 'relays',
-        label: `Relays (${relays.length})`,
-        children: network ? getRelayContent() : <Skeleton active />,
       },
       {
         key: 'dns',
@@ -2423,6 +2440,16 @@ export default function NetworkDetailsPage(props: PageProps) {
           ]
         : []
     );
+
+    if (isServerEE) {
+      tabs.splice(3, 0, {
+        key: 'relays',
+        label: `Relays (${relays.length})`,
+        children: network ? getRelayContent() : <Skeleton active />,
+      });
+    }
+
+    return tabs;
   }, [
     network,
     getOverviewContent,
@@ -2764,6 +2791,17 @@ export default function NetworkDetailsPage(props: PageProps) {
             setIsUpdateClientModalOpen(false);
           }}
           onCancel={() => setIsUpdateClientModalOpen(false)}
+        />
+      )}
+      {targetNode && (
+        <UpdateNodeModal
+          isOpen={isUpdateNodeModalOpen}
+          node={targetNode}
+          onUpdateNode={() => {
+            store.fetchNodes();
+            setIsUpdateNodeModalOpen(false);
+          }}
+          onCancel={() => setIsUpdateNodeModalOpen(false)}
         />
       )}
     </Layout.Content>

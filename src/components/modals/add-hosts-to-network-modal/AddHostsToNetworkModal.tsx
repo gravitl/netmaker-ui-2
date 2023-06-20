@@ -5,7 +5,6 @@ import '../CustomModal.scss';
 import { Network } from '@/models/Network';
 import { Host } from '@/models/Host';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
-import { CreateHostRelayDto } from '@/services/dtos/CreateHostRelayDto';
 import { HostsService } from '@/services/HostsService';
 
 interface AddHostsToNetworkModalProps {
@@ -14,8 +13,6 @@ interface AddHostsToNetworkModalProps {
   onNetworkUpdated: () => any;
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
 }
-
-type AddRelayFormFields = CreateHostRelayDto;
 
 export default function AddHostsToNetworkModal({
   isOpen,
@@ -26,7 +23,6 @@ export default function AddHostsToNetworkModal({
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
 
-  const [form] = Form.useForm<AddRelayFormFields>();
   const [hostSearch, setHostSearch] = useState('');
 
   const network = useMemo(() => {
@@ -48,9 +44,7 @@ export default function AddHostsToNetworkModal({
     return nonNetworkHosts.filter((host) => host.name.toLocaleLowerCase().includes(hostSearch.toLocaleLowerCase()));
   }, [hostSearch, nonNetworkHosts]);
 
-  const resetModal = () => {
-    form.resetFields();
-  };
+  const resetModal = () => {};
 
   const connectHostToNetwork = useCallback(
     (host: Host) => {
@@ -93,7 +87,7 @@ export default function AddHostsToNetworkModal({
       style={{ minWidth: '50vw' }}
     >
       <Divider style={{ margin: '0px 0px 2rem 0px' }} />
-      <Form name="add-hosts-to-networks-form" form={form} layout="vertical">
+      <Form name="add-hosts-to-networks-form" layout="vertical">
         <div className="CustomModalBody">
           <Row>
             <Col xs={24}>

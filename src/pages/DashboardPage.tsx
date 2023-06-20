@@ -122,7 +122,7 @@ export default function DashboardPage(props: PageProps) {
                 complete control of your network.
               </p>
               <div>
-                <Button type="link" href="https://netmaker.io" target="_blank" rel="noreferrer">
+                <Button type="link" href="https://netmaker.io/demo-page" target="_blank" rel="noreferrer">
                   <ArrowRightOutlined />
                   Take the tutorial
                 </Button>

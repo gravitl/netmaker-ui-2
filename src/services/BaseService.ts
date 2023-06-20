@@ -1,3 +1,5 @@
+import { ApiRoutes } from '@/constants/ApiRoutes';
+import { User } from '@/models/User';
 import { useStore } from '@/store/store';
 import { truncateQueryParamsFromCurrentUrl } from '@/utils/RouteUtils';
 import axios from 'axios';
@@ -9,7 +11,7 @@ export const baseService = axios.create();
 export const AMUI_URL = isSaasBuild ? (window as any).NMUI_AMUI_URL : '';
 
 // function to resolve the particular SaaS tenant's backend URL, ...
-export function setupTenantConfig(): void {
+export async function setupTenantConfig(): Promise<void> {
   if (!isSaasBuild) {
     const dynamicBaseUrl = (window as any).NMUI_BACKEND_URL;
     const resolvedBaseUrl = dynamicBaseUrl ? `${dynamicBaseUrl}/api` : `${import.meta.env.VITE_BASE_URL}/api`;
@@ -26,6 +28,7 @@ export function setupTenantConfig(): void {
   const amuiAuthToken = url.searchParams.get('sToken') ?? '';
   const tenantId = url.searchParams.get('tenantId') ?? '';
   const tenantName = url.searchParams.get('tenantName') ?? '';
+  const username = url.searchParams.get('username') ?? '';
 
   const resolvedBaseUrl = baseUrl
     ? baseUrl?.startsWith('https')
@@ -36,12 +39,27 @@ export function setupTenantConfig(): void {
 
   truncateQueryParamsFromCurrentUrl();
 
+  // let user: User | undefined;
+  // try {
+  //   user = (
+  //     await baseService.get(`${ApiRoutes.USERS}/${encodeURIComponent(username)}`, {
+  //       headers: { Authorization: `Bearer ${accessToken || useStore.getState().jwt}`, user: username },
+  //     })
+  //   ).data;
+  // } catch (err) {
+  //   console.error(err);
+  //   alert('Failed to fetch user details: ' + String(err));
+  //   return;
+  // }
+
   useStore.getState().setStore({
     baseUrl: resolvedBaseUrl,
-    jwt: accessToken ?? useStore.getState().jwt,
+    jwt: accessToken || useStore.getState().jwt,
     tenantId,
     tenantName,
     amuiAuthToken,
+    username,
+    // user,
   });
 }
 

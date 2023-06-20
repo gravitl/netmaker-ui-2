@@ -2,6 +2,7 @@ import { StateCreator } from 'zustand';
 import { TenantConfig } from '../models/ServerConfig';
 import { User } from '@/models/User';
 import { isSaasBuild } from '@/services/BaseService';
+import { isValidJwt } from '@/utils/Utils';
 
 export interface IAuthSlice {
   jwt: TenantConfig['jwt'];
@@ -31,7 +32,7 @@ const createAuthSlice: StateCreator<IAuthSlice, [], [], IAuthSlice> = (set, get)
 
   isLoggedIn() {
     // TODO: fix username retrieval for SaaS
-    return !!get().jwt && (!isSaasBuild ? !!get().user : true);
+    return !!get().jwt && isValidJwt(get().jwt || '') && (!isSaasBuild ? !!get().user : true);
   },
   setStore(config) {
     set(config);
@@ -43,7 +44,6 @@ const createAuthSlice: StateCreator<IAuthSlice, [], [], IAuthSlice> = (set, get)
       username: '',
       tenantId: '',
       tenantName: '',
-      baseUrl: '',
       amuiAuthToken: '',
       user: null,
     });

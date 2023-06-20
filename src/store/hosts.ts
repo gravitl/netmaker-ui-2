@@ -46,9 +46,6 @@ const createHostSlice: StateCreator<IHostSlice, [], [], IHostSlice> = (set) => (
           isstatic: host.isstatic,
           mtu: host.mtu,
           interfaces: host.interfaces,
-          isrelay: host.isrelay,
-          relay_hosts: host.relay_hosts,
-          isrelayed: host.isrelayed,
           macaddress: host.macaddress,
         };
       });

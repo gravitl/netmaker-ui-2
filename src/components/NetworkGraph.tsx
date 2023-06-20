@@ -24,6 +24,7 @@ interface NetworkGraphProps {
 
 type GraphPositioningStrategy = 'circular' | 'forceatlas' | 'forceatlas2';
 
+const DISCONNECTED_EDGE_COLOR = '#F00';
 const HOST_COLOR = '#6E44CB';
 const HOST_EDGE_COLOR = '#888';
 const CLIENT_COLOR = '#6B81CA';
@@ -57,6 +58,16 @@ export default function NetworkGraph({ hosts, nodes, acl, clients }: NetworkGrap
   sigma.setSetting('labelColor', {
     color: store.currentTheme === 'dark' ? themeToken.colorPrimary : themeToken.colorText,
   });
+
+  const canNodesCommunitcate = useCallback(
+    (a: Node, b: Node): boolean => {
+      if (acl?.[a.id]?.[b.id] === 2 && acl?.[b.id]?.[a.id] === 2) {
+        return true;
+      }
+      return false;
+    },
+    [acl]
+  );
 
   const renderNodes = useCallback(
     (graph: Graph, nodes: Node[], nodeToHostMap: Record<Node['id'], Host>, clients: ExternalClient[]) => {
@@ -106,7 +117,7 @@ export default function NetworkGraph({ hosts, nodes, acl, clients }: NetworkGrap
       for (let i = 0; i < nodes.length; i++) {
         for (let j = 0; j < nodes.length; j++) {
           graph.addEdge(nodes[i].id, nodes[j].id, {
-            color: HOST_EDGE_COLOR,
+            color: canNodesCommunitcate(nodes[i], nodes[j]) ? HOST_EDGE_COLOR : DISCONNECTED_EDGE_COLOR,
             size: HOST_EDGE_SIZE,
             type: 'arrow',
           });
@@ -134,7 +145,7 @@ export default function NetworkGraph({ hosts, nodes, acl, clients }: NetworkGrap
         }
       });
     },
-    []
+    [canNodesCommunitcate]
   );
 
   const autoPositionGraphNodes = useCallback((graph: Graph, strategy: GraphPositioningStrategy) => {
