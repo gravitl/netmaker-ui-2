@@ -66,7 +66,7 @@ export default function NetworksPage(props: PageProps) {
       key: 'networklastmodified',
       render: (date) => (
         <div onClick={(ev) => ev.stopPropagation()}>
-          <Typography.Text>{new Date(date).toLocaleString()}</Typography.Text>
+          <Typography.Text>{new Date(date * 1000).toLocaleString()}</Typography.Text>
         </div>
       ),
     },
@@ -76,7 +76,7 @@ export default function NetworksPage(props: PageProps) {
       key: 'nodeslastmodified',
       render: (date) => (
         <div onClick={(ev) => ev.stopPropagation()}>
-          <Typography.Text>{new Date(date).toLocaleString()}</Typography.Text>
+          <Typography.Text>{new Date(date * 1000).toLocaleString()}</Typography.Text>
         </div>
       ),
     },
