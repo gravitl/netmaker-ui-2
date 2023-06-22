@@ -1,0 +1,53 @@
+import { Host } from '@/models/Host';
+
+export const stubHost1: Host = {
+  id: 'host-1',
+  verbosity: 0,
+  firewallinuse: '',
+  version: '',
+  name: 'host 1',
+  os: 'linux',
+  debug: false,
+  isstatic: false,
+  listenport: 0,
+  localrange: '',
+  locallistenport: 0,
+  proxy_listen_port: 0,
+  mtu: 0,
+  interfaces: [],
+  defaultinterface: '',
+  endpointip: '',
+  publickey: '',
+  macaddress: '',
+  internetgateway: '',
+  nodes: [],
+  proxy_enabled: false,
+  isdefault: false,
+};
+
+export const stubHost2: Host = {
+  id: 'host-2',
+  verbosity: 0,
+  firewallinuse: '',
+  version: 'darwin',
+  name: 'host 2',
+  os: '',
+  debug: false,
+  isstatic: false,
+  listenport: 0,
+  localrange: '',
+  locallistenport: 0,
+  proxy_listen_port: 0,
+  mtu: 0,
+  interfaces: [],
+  defaultinterface: '',
+  endpointip: '',
+  publickey: '',
+  macaddress: '',
+  internetgateway: '',
+  nodes: [],
+  proxy_enabled: false,
+  isdefault: false,
+};
+
+export const stubHosts: Host[] = [stubHost1, stubHost2];
