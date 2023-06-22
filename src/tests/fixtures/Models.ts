@@ -1,4 +1,5 @@
 import { Host } from '@/models/Host';
+import { Network } from '@/models/Network';
 
 export const stubHost1: Host = {
   id: 'host-1',
@@ -51,3 +52,51 @@ export const stubHost2: Host = {
 };
 
 export const stubHosts: Host[] = [stubHost1, stubHost2];
+
+export const stubNetwork1: Network = {
+  addressrange: '',
+  addressrange6: '',
+  netid: 'net-1',
+  nodeslastmodified: 0,
+  networklastmodified: 0,
+  defaultinterface: '',
+  defaultlistenport: 0,
+  nodelimit: 0,
+  defaultpostup: '',
+  defaultpostdown: '',
+  defaultkeepalive: 0,
+  isipv4: false,
+  isipv6: false,
+  localrange: '',
+  defaultudpholepunch: false,
+  defaultnatenabled: false,
+  defaultextclientdns: '',
+  defaultmtu: 0,
+  defaultacl: 'yes',
+  prosettings: undefined,
+};
+
+export const stubNetwork2: Network = {
+  addressrange: '',
+  addressrange6: '',
+  netid: 'net-1',
+  nodeslastmodified: 0,
+  networklastmodified: 0,
+  defaultinterface: '',
+  defaultlistenport: 0,
+  nodelimit: 0,
+  defaultpostup: '',
+  defaultpostdown: '',
+  defaultkeepalive: 0,
+  isipv4: false,
+  isipv6: false,
+  localrange: '',
+  defaultudpholepunch: false,
+  defaultnatenabled: false,
+  defaultextclientdns: '',
+  defaultmtu: 0,
+  defaultacl: 'yes',
+  prosettings: undefined,
+};
+
+export const stubNetworks: Network[] = [stubNetwork1, stubNetwork2];
