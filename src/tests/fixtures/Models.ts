@@ -1,5 +1,6 @@
 import { Host } from '@/models/Host';
 import { Network } from '@/models/Network';
+import { Node } from '@/models/Node';
 
 export const stubHost1: Host = {
   id: 'host-1',
@@ -79,7 +80,7 @@ export const stubNetwork1: Network = {
 export const stubNetwork2: Network = {
   addressrange: '',
   addressrange6: '',
-  netid: 'net-1',
+  netid: 'net-2',
   nodeslastmodified: 0,
   networklastmodified: 0,
   defaultinterface: '',
@@ -100,3 +101,71 @@ export const stubNetwork2: Network = {
 };
 
 export const stubNetworks: Network[] = [stubNetwork1, stubNetwork2];
+
+export const stubNode1: Node = {
+  id: 'node-1',
+  hostid: 'host-1',
+  address: '',
+  address6: '',
+  localaddress: '',
+  persistentkeepalive: 0,
+  interface: '',
+  macaddress: '',
+  lastmodified: 0,
+  expdatetime: 0,
+  lastcheckin: 0,
+  lastpeerupdate: 0,
+  network: 'net-1',
+  networkrange: '',
+  networkrange6: '',
+  pendingdelete: false,
+  isegressgateway: false,
+  isingressgateway: false,
+  ingressdns: '',
+  egressgatewayranges: [],
+  egressgatewaynatenabled: false,
+  failovernode: '',
+  dnson: false,
+  islocal: false,
+  server: '',
+  internetgateway: '',
+  defaultacl: '',
+  connected: false,
+  failover: false,
+  relayedby: '',
+};
+
+export const stubNode2: Node = {
+  id: 'node-2',
+  hostid: 'host-2',
+  address: '',
+  address6: '',
+  localaddress: '',
+  persistentkeepalive: 0,
+  interface: '',
+  macaddress: '',
+  lastmodified: 0,
+  expdatetime: 0,
+  lastcheckin: 0,
+  lastpeerupdate: 0,
+  network: 'net-1',
+  networkrange: '',
+  networkrange6: '',
+  pendingdelete: false,
+  isegressgateway: false,
+  isingressgateway: false,
+  ingressdns: '',
+  egressgatewayranges: [],
+  egressgatewaynatenabled: false,
+  failovernode: '',
+  dnson: false,
+  islocal: false,
+  server: '',
+  internetgateway: '',
+  defaultacl: '',
+  connected: false,
+  failover: false,
+  relayedby: '',
+};
+
+export const stubNodes: Node[] = [stubNode1, stubNode2];

@@ -5,7 +5,7 @@ import { baseService } from '@/services/BaseService';
 import { Host } from '@/models/Host';
 import { stubHost1, stubHosts } from '../fixtures/Models';
 
-describe('AuthService', () => {
+describe('HostsService', () => {
   const mock = new MockAdapter(baseService);
 
   afterEach(() => {
