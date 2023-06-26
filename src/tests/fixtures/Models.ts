@@ -1,6 +1,7 @@
 import { Host } from '@/models/Host';
 import { Network } from '@/models/Network';
 import { Node } from '@/models/Node';
+import { User } from '@/models/User';
 
 export const stubHost1: Host = {
   id: 'host-1',
@@ -169,3 +170,19 @@ export const stubNode2: Node = {
 };
 
 export const stubNodes: Node[] = [stubNode1, stubNode2];
+
+export const stubUser1: User = {
+  username: 'user-1',
+  isadmin: true,
+  networks: [],
+  groups: ['*'],
+};
+
+export const stubUser2: User = {
+  username: 'user-2',
+  isadmin: false,
+  networks: null,
+  groups: null,
+};
+
+export const stubUsers: User[] = [stubUser1, stubUser2];
