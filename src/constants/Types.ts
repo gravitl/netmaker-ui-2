@@ -25,6 +25,7 @@ export const NULL_HOST: Host = {
   nodes: [],
   proxy_enabled: false,
   isdefault: false,
+  nat_type: 'public',
 };
 
 export const NULL_NODE: Node = {
