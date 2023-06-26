@@ -22,10 +22,11 @@ import '../CustomModal.scss';
 import { Network } from '@/models/Network';
 import { ExtendedNode, Node } from '@/models/Node';
 import { CreateExternalClientReqDto } from '@/services/dtos/CreateExternalClientReqDto';
-import { getExtendedNode, getNodeConnectivityStatus } from '@/utils/NodeUtils';
+import { getExtendedNode, getNodeConnectivityStatus, isHostNatted } from '@/utils/NodeUtils';
 import { CloseOutlined } from '@ant-design/icons';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { NodesService } from '@/services/NodesService';
+import { Host } from '@/models/Host';
 
 interface AddClientModalProps {
   isOpen: boolean;
@@ -82,6 +83,11 @@ export default function AddClientModal({
       ),
     [gatewaySearch, networkHosts]
   );
+
+  const selectedGatewayHost = useMemo<Host | null>(() => {
+    if (!selectedGateway) return null;
+    return store.hosts.find((h) => h.id === selectedGateway.hostid) || null;
+  }, [selectedGateway, store.hosts]);
 
   const gatewayTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(() => {
     return [
@@ -244,6 +250,17 @@ export default function AddClientModal({
                   <Row style={{ padding: '.5rem', borderRadius: '8px' }}>
                     <Col span={24}>
                       <Alert type="info" message="Proceeding will turn this host into a gateway." showIcon />
+                    </Col>
+                  </Row>
+                )}
+                {!!selectedGatewayHost && isHostNatted(selectedGatewayHost) && (
+                  <Row style={{ padding: '.5rem', borderRadius: '8px' }}>
+                    <Col span={24}>
+                      <Alert
+                        type="warning"
+                        message="The selected host is behind a NAT gateway, which may affect reachability."
+                        showIcon
+                      />
                     </Col>
                   </Row>
                 )}

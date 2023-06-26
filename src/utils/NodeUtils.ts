@@ -1,6 +1,6 @@
 import { NULL_HOST } from '@/constants/Types';
 import { ExternalClient } from '@/models/ExternalClient';
-import { HostCommonDetails } from '@/models/Host';
+import { Host, HostCommonDetails } from '@/models/Host';
 import { ExtendedNode, Node } from '@/models/Node';
 import { NodeConnectivityStatus } from '@/models/NodeConnectivityStatus';
 
@@ -52,4 +52,14 @@ export function getExtendedNode(node: Node, hostCommonDetails: Record<string, Ho
 export function isNodeRelay(node: Node): boolean {
   if (node.relaynodes) return node.relaynodes.length > 0;
   return false;
+}
+
+/**
+ * Util to determine if a host is behind a NAT or not.
+ *
+ * @param host host to check if is natted
+ * @returns whether host is behind a NAT or not
+ */
+export function isHostNatted(host: Host): boolean {
+  return host.nat_type !== undefined && host.nat_type !== null && host.nat_type !== '' && host.nat_type !== 'public';
 }

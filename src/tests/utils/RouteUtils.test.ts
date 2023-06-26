@@ -32,6 +32,7 @@ const testHost: Host = {
   nodes: [],
   proxy_enabled: false,
   isdefault: false,
+  nat_type: '',
 };
 
 const testNetwork: Network = {
