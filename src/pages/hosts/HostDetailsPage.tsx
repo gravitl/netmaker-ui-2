@@ -171,9 +171,28 @@ export default function HostDetailsPage(props: PageProps) {
   }, [hostId, notify, navigate, store]);
 
   const promptConfirmDelete = () => {
+    if (!host) return;
+    const assocNodes = store.nodes.filter((node) => node.hostid === host.id);
+
     Modal.confirm({
       title: `Do you want to delete host ${host?.name}?`,
       icon: <ExclamationCircleFilled />,
+      content: (
+        <>
+          <Row>
+            {assocNodes.length > 0 && (
+              <Col xs={24}>
+                <Typography.Text color="warning">Host will be removed from the following networks:</Typography.Text>
+                <ul>
+                  {assocNodes.map((node) => (
+                    <li key={node.id}>{node.network}</li>
+                  ))}
+                </ul>
+              </Col>
+            )}
+          </Row>
+        </>
+      ),
       onOk() {
         onHostDelete();
       },

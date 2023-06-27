@@ -116,6 +116,48 @@ export default function HostsPage(props: PageProps) {
     [navigate]
   );
 
+  const confirmDeleteHost = useCallback(
+    async (host: Host) => {
+      const assocNodes = store.nodes.filter((node) => node.hostid === host.id);
+
+      Modal.confirm({
+        title: 'Delete host',
+        content: (
+          <>
+            <Row>
+              <Col xs={24}>
+                <Typography.Text>Are you sure you want to delete this host {host.name}?</Typography.Text>
+              </Col>
+              {assocNodes.length > 0 && (
+                <Col xs={24}>
+                  <Typography.Text color="warning">Host will be removed from the following networks:</Typography.Text>
+                  <ul>
+                    {assocNodes.map((node) => (
+                      <li key={node.id}>{node.network}</li>
+                    ))}
+                  </ul>
+                </Col>
+              )}
+            </Row>
+          </>
+        ),
+        onOk: async () => {
+          try {
+            const newHost = (await HostsService.updateHost(host.id, { ...host, isdefault: !host.isdefault })).data;
+            notify.success({ message: `Host ${host.id} updated` });
+            storeUpdateHost(host.id, newHost);
+          } catch (err) {
+            notify.error({
+              message: 'Failed to update host',
+              description: extractErrorMsg(err as any),
+            });
+          }
+        },
+      });
+    },
+    [notify, store.nodes, storeUpdateHost]
+  );
+
   const refreshAllHostKeys = useCallback(() => {
     Modal.confirm({
       title: 'Refresh all hosts keys',
@@ -277,42 +319,36 @@ export default function HostsPage(props: PageProps) {
                 items: [
                   {
                     key: 'default',
-                    label: (
-                      <Typography.Text
-                        onClick={(ev) => {
-                          ev.stopPropagation();
-                          confirmToggleHostDefaultness(host);
-                        }}
-                      >
-                        {host.isdefault ? 'Unmake default' : 'Make default'}
-                      </Typography.Text>
-                    ),
+                    label: host.isdefault ? 'Unmake default' : 'Make default',
+                    onClick: (ev) => {
+                      ev.domEvent.stopPropagation();
+                      confirmToggleHostDefaultness(host);
+                    },
                   },
                   {
                     key: 'refresh',
-                    label: (
-                      <Typography.Text
-                        onClick={(ev) => {
-                          ev.stopPropagation();
-                          refreshHostKeys(host);
-                        }}
-                      >
-                        Refresh Host Keys
-                      </Typography.Text>
-                    ),
+                    label: 'Refresh Host Keys',
+                    onClick: (ev) => {
+                      ev.domEvent.stopPropagation();
+                      refreshHostKeys(host);
+                    },
                   },
                   {
                     key: 'edit',
-                    label: (
-                      <Typography.Text
-                        onClick={(ev) => {
-                          ev.stopPropagation();
-                          onEditHost(host);
-                        }}
-                      >
-                        Edit Host
-                      </Typography.Text>
-                    ),
+                    label: 'Edit Host',
+                    onClick: (ev) => {
+                      ev.domEvent.stopPropagation();
+                      onEditHost(host);
+                    },
+                  },
+                  {
+                    key: 'delete',
+                    label: 'Delete Host',
+                    danger: true,
+                    onClick: (ev) => {
+                      ev.domEvent.stopPropagation();
+                      confirmDeleteHost(host);
+                    },
                   },
                 ] as MenuProps['items'],
               }}
@@ -323,7 +359,7 @@ export default function HostsPage(props: PageProps) {
         },
       },
     ],
-    [confirmToggleHostDefaultness, notify, onEditHost, refreshHostKeys, store.nodes, storeUpdateHost]
+    [confirmToggleHostDefaultness, notify, confirmDeleteHost, onEditHost, refreshHostKeys, store.nodes, storeUpdateHost]
   );
 
   const namHostsTableCols: TableColumnsType<Host> = useMemo(
