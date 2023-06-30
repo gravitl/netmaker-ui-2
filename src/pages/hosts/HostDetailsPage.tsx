@@ -152,7 +152,7 @@ export default function HostDetailsPage(props: PageProps) {
       if (!hostId) {
         throw new Error('Host not found');
       }
-      await HostsService.deleteHost(hostId);
+      await HostsService.deleteHost(hostId, true);
       notify.success({ message: `Host ${hostId} deleted` });
       store.deleteNetwork(hostId);
       navigate(AppRoutes.HOSTS_ROUTE);
