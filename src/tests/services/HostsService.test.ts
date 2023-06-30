@@ -30,18 +30,21 @@ describe('HostsService', () => {
   });
 
   it('should delete host successfully and throw if error', async () => {
-    const testRoute = `${ApiRoutes.HOSTS}/${stubHost1.id}`;
+    const testRoute1 = `${ApiRoutes.HOSTS}/${stubHost1.id}?force=false`;
+    const testRoute2 = `${ApiRoutes.HOSTS}/${stubHost1.id}?force=true`;
 
-    mock.onDelete(testRoute).replyOnce(200, stubHost1);
-
-    const res = (await HostsService.deleteHost(stubHost1.id)).data;
-
+    mock.onDelete(testRoute1).replyOnce(200, stubHost1);
+    let res = (await HostsService.deleteHost(stubHost1.id)).data;
     expect(res).toEqual(stubHost1);
 
-    mock.onDelete(testRoute).replyOnce(500);
+    mock.onDelete(testRoute2).replyOnce(200, stubHost1);
+    res = (await HostsService.deleteHost(stubHost1.id, true)).data;
+    expect(res).toEqual(stubHost1);
+
+    mock.onDelete(testRoute1).replyOnce(500);
     await expect(HostsService.deleteHost(stubHost1.id)).rejects.toThrow();
 
-    mock.onDelete(testRoute).networkError();
+    mock.onDelete(testRoute1).networkError();
     await expect(HostsService.deleteHost(stubHost1.id)).rejects.toThrow();
   });
 
