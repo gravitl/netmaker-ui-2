@@ -1,4 +1,5 @@
 import {
+  Alert,
   Badge,
   Button,
   Col,
@@ -18,10 +19,11 @@ import { useStore } from '@/store/store';
 import '../CustomModal.scss';
 import { Network } from '@/models/Network';
 import { ExtendedNode, Node } from '@/models/Node';
-import { getExtendedNode, getNodeConnectivityStatus } from '@/utils/NodeUtils';
+import { getExtendedNode, getNodeConnectivityStatus, isHostNatted } from '@/utils/NodeUtils';
 import { CloseOutlined } from '@ant-design/icons';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { NodesService } from '@/services/NodesService';
+import { Host } from '@/models/Host';
 
 interface AddIngressModalProps {
   isOpen: boolean;
@@ -62,6 +64,11 @@ export default function AddIngressModal({ isOpen, onCreateIngress, onCancel, net
       ),
     [gatewaySearch, networkHosts]
   );
+
+  const selectedGatewayHost = useMemo<Host | null>(() => {
+    if (!selectedNode) return null;
+    return store.hosts.find((h) => h.id === selectedNode.hostid) || null;
+  }, [selectedNode, store.hosts]);
 
   const getNodeConnectivity = useCallback((node: Node) => {
     if (getNodeConnectivityStatus(node) === 'error') return <Badge status="error" text="Error" />;
@@ -189,37 +196,50 @@ export default function AddIngressModal({ isOpen, onCreateIngress, onCancel, net
               />
             </Form.Item>
             {!!selectedNode && (
-              <Row
-                style={{
-                  padding: '.5rem',
-                  borderRadius: '8px',
-                  marginTop: '1rem',
-                }}
-              >
-                <Col span={24} style={{ marginBottom: '.5rem' }}>
-                  <Typography.Text>
-                    <small>Selected host details</small>
-                  </Typography.Text>
-                </Col>
-                <Col span={6}>{selectedNode.name ?? ''}</Col>
-                <Col span={6}>
-                  {selectedNode.address ?? ''}, {selectedNode.address6 ?? ''}
-                </Col>
-                <Col span={6}>{selectedNode.os ?? ''}</Col>
-                <Col span={5}>{getNodeConnectivity(selectedNode)}</Col>
-                <Col span={1} style={{ textAlign: 'right' }}>
-                  <Button
-                    danger
-                    size="small"
-                    type="text"
-                    icon={<CloseOutlined />}
-                    onClick={() => {
-                      form.setFieldValue('gatewayId', '');
-                      setSelectedNode(null);
-                    }}
-                  />
-                </Col>
-              </Row>
+              <>
+                <Row
+                  style={{
+                    padding: '.5rem',
+                    borderRadius: '8px',
+                    marginTop: '1rem',
+                  }}
+                >
+                  <Col span={24} style={{ marginBottom: '.5rem' }}>
+                    <Typography.Text>
+                      <small>Selected host details</small>
+                    </Typography.Text>
+                  </Col>
+                  <Col span={6}>{selectedNode.name ?? ''}</Col>
+                  <Col span={6}>
+                    {selectedNode.address ?? ''}, {selectedNode.address6 ?? ''}
+                  </Col>
+                  <Col span={6}>{selectedNode.os ?? ''}</Col>
+                  <Col span={5}>{getNodeConnectivity(selectedNode)}</Col>
+                  <Col span={1} style={{ textAlign: 'right' }}>
+                    <Button
+                      danger
+                      size="small"
+                      type="text"
+                      icon={<CloseOutlined />}
+                      onClick={() => {
+                        form.setFieldValue('gatewayId', '');
+                        setSelectedNode(null);
+                      }}
+                    />
+                  </Col>
+                </Row>
+                {!!selectedGatewayHost && isHostNatted(selectedGatewayHost) && (
+                  <Row style={{ padding: '.5rem', borderRadius: '8px' }}>
+                    <Col span={24}>
+                      <Alert
+                        type="warning"
+                        message="The selected host is behind a NAT gateway, which may affect reachability."
+                        showIcon
+                      />
+                    </Col>
+                  </Row>
+                )}
+              </>
             )}
 
             <Form.Item label="Default client DNS" name="extclientdns" style={{ marginTop: '1rem' }}>

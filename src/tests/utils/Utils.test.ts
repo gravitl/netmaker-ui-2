@@ -1,4 +1,6 @@
+import { Host } from '@/models/Host';
 import { Node } from '@/models/Node';
+import { isHostNatted } from '@/utils/NodeUtils';
 import { getHostHealth, getTimeMinHrs, renderNodeHealth } from '@/utils/Utils';
 import { cleanup, render, screen } from '@testing-library/react';
 
@@ -38,6 +40,36 @@ const testNode1: Node = {
 
 const testNode2 = { ...testNode1, lastcheckin: testNode1.lastcheckin - 400 };
 
+const testHost1: Host = {
+  id: '',
+  verbosity: 0,
+  firewallinuse: '',
+  version: '',
+  name: '',
+  os: '',
+  debug: false,
+  isstatic: false,
+  listenport: 0,
+  localrange: '',
+  locallistenport: 0,
+  proxy_listen_port: 0,
+  mtu: 0,
+  interfaces: [],
+  defaultinterface: '',
+  endpointip: '',
+  publickey: '',
+  macaddress: '',
+  internetgateway: '',
+  nodes: [],
+  proxy_enabled: false,
+  isdefault: false,
+  nat_type: '',
+};
+
+const testHost2: Host = { ...testHost1, nat_type: 'public' };
+
+const testHost3: Host = { ...testHost1, nat_type: 'asymmetric' };
+
 describe('Utils', () => {
   it('renders node health', () => {
     render(renderNodeHealth('unknown'));
@@ -57,7 +89,7 @@ describe('Utils', () => {
     cleanup();
   });
 
-  it('breaksdown a duration in secs to hours and minutes', () => {
+  it('breaks down a duration in secs to hours and minutes', () => {
     const SEC_1 = 1_000_000_000;
     const MIN_2 = 120_000_000_000;
     const HOUR_1 = 3600_000_000_000;
@@ -75,5 +107,11 @@ describe('Utils', () => {
     render(getHostHealth(testNode1.hostid, [testNode1, testNode2], true) as JSX.Element);
     expect(screen.getByText('Warning')).toBeInTheDocument();
     cleanup();
+  });
+
+  it("deduces a host's NAT status", () => {
+    expect(isHostNatted(testHost1)).toEqual(false);
+    expect(isHostNatted(testHost2)).toEqual(false);
+    expect(isHostNatted(testHost3)).toEqual(true);
   });
 });
