@@ -26,6 +26,7 @@ export const stubHost1: Host = {
   nodes: [],
   proxy_enabled: false,
   isdefault: false,
+  nat_type: 'public',
 };
 
 export const stubHost2: Host = {
@@ -51,6 +52,7 @@ export const stubHost2: Host = {
   nodes: [],
   proxy_enabled: false,
   isdefault: false,
+  nat_type: 'asymmetric',
 };
 
 export const stubHosts: Host[] = [stubHost1, stubHost2];
