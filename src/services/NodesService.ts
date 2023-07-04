@@ -41,8 +41,8 @@ function deleteIngressNode(nodeId: Node['id'], networkId: Network['netid']) {
   return baseService.delete<Node>(`${ApiRoutes.NODES}/${networkId}/${nodeId}/deleteingress`);
 }
 
-function deleteNode(nodeId: Node['id'], networkId: Network['netid']) {
-  return baseService.delete<Node>(`${ApiRoutes.NODES}/${networkId}/${nodeId}`);
+function deleteNode(nodeId: Node['id'], networkId: Network['netid'], forceDelete = false) {
+  return baseService.delete<Node>(`${ApiRoutes.NODES}/${networkId}/${nodeId}?force=${forceDelete}`);
 }
 
 function getExternalClientConfig(
