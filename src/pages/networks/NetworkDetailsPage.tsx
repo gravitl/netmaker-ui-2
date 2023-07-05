@@ -1527,17 +1527,17 @@ export default function NetworkDetailsPage(props: PageProps) {
               menu={{
                 items: [
                   {
-                    key: 'new-host',
-                    label: 'Add New Host',
+                    key: 'existing-host',
+                    label: 'Add Existing Host',
                     onClick() {
-                      setIsAddNewHostModalOpen(true);
+                      setIsAddHostsToNetworkModalOpen(true);
                     },
                   },
                 ],
               }}
-              onClick={() => setIsAddHostsToNetworkModalOpen(true)}
+              onClick={() => setIsAddNewHostModalOpen(true)}
             >
-              <PlusOutlined /> Add Existing Host
+              <PlusOutlined /> Add New Host
             </Dropdown.Button>
           </Col>
 

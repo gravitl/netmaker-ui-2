@@ -24,6 +24,7 @@ export interface Host {
   nodes: Node['id'][];
   proxy_enabled: boolean;
   isdefault: boolean;
+  nat_type: 'public' | 'symmetric' | 'asymmetric' | 'double' | '';
 }
 
 export interface HostCommonDetails {

@@ -44,7 +44,7 @@ ENV VITE_TENANT_NAME=
 ENV VITE_NETCLIENT_BIN_URL_TEMPLATE=https://fileserver.netmaker.io/releases/download/:version/:fileName
 
 RUN npm ci
-RUN npm audit fix
+RUN npm audit fix || echo "ATTENTION!!! Failed to automatically patch vulnerabilities" >&2
 RUN npm run build
 
 

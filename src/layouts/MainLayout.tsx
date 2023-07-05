@@ -47,15 +47,6 @@ export default function MainLayout() {
     [store.networks]
   );
 
-  const recentHosts = useMemo(
-    // TODO: implement most recent ranking
-    () =>
-      structuredClone(store.hosts)
-        .sort((a, b) => a.name.localeCompare(b.name))
-        .slice(0, 5),
-    [store.hosts]
-  );
-
   const sideNavItems: MenuProps['items'] = useMemo(
     () =>
       [
@@ -72,7 +63,6 @@ export default function MainLayout() {
             ...recentNetworks.map((net) => ({
               key: `networks/${net.netid}`,
               label: net.netid,
-              // onClick: () => navigate(getNetworkRoute(net.netid)),
             })),
             {
               type: 'divider',
@@ -87,19 +77,6 @@ export default function MainLayout() {
           key: 'hosts',
           icon: LaptopOutlined,
           label: 'Hosts',
-          children: [
-            ...recentHosts.map((host) => ({
-              key: `hosts/${host.id}`,
-              label: host.name,
-            })),
-            {
-              type: 'divider',
-            },
-            {
-              key: 'all-hosts',
-              label: 'All Hosts',
-            },
-          ],
         },
         // {
         //   key: 'clients',
@@ -158,7 +135,7 @@ export default function MainLayout() {
             type: (child as any)?.type,
           })),
         })),
-    [recentHosts, recentNetworks, store.user?.isadmin]
+    [recentNetworks, store.user?.isadmin]
   );
 
   const sideNavBottomItems: MenuProps['items'] = useMemo(
@@ -339,7 +316,7 @@ export default function MainLayout() {
               case 'all-networks':
                 navigate(AppRoutes.NETWORKS_ROUTE);
                 break;
-              case 'all-hosts':
+              case 'hosts':
                 navigate(AppRoutes.HOSTS_ROUTE);
                 break;
               case 'clients':
