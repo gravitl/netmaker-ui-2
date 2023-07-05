@@ -134,6 +134,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const { token: themeToken } = theme.useToken();
 
   const storeFetchNodes = store.fetchNodes;
+  const storeDeleteNode = store.deleteNode;
   const isServerEE = store.serverConfig?.IsEE === 'yes';
   const [form] = Form.useForm<Network>();
   const isIpv4Watch = Form.useWatch('isipv4', form);
@@ -1414,6 +1415,9 @@ export default function NetworkDetailsPage(props: PageProps) {
           try {
             if (!networkId) return;
             await HostsService.updateHostsNetworks(node.hostid, networkId, newStatus ? 'join' : 'leave', forceDelete);
+            if (forceDelete) {
+              storeDeleteNode(node.id);
+            }
             notify.success({
               message: `Successfully ${newStatus ? 'connected' : 'disconnected'}`,
               description: `${node?.name ?? 'Host'} is now ${
@@ -1429,7 +1433,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       });
     },
-    [networkId, notify]
+    [networkId, notify, storeDeleteNode]
   );
 
   // ui components

@@ -152,8 +152,10 @@ export default function NetworkHostDetailsPage(props: PageProps) {
           throw new Error('Host or network not found');
         }
         await NodesService.deleteNode(node?.id, networkId, forceDelete);
+        if (forceDelete) {
+          storeDeleteNode(node.id);
+        }
         notify.success({ message: `Host ${hostId} deleted` });
-        storeDeleteNode(node.id);
         navigate(getNetworkRoute(networkId));
       } catch (err) {
         notify.error({
