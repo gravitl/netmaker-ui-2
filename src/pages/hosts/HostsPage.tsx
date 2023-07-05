@@ -42,6 +42,7 @@ export default function HostsPage(props: PageProps) {
 
   const hosts = store.hosts;
   const storeUpdateHost = store.updateHost;
+  const storeDeleteHost = store.deleteHost;
   const storeFetchHosts = useStore((state) => state.fetchHosts);
   const storeFetchNetworks = useStore((state) => state.fetchNetworks);
   const [searchText, setSearchText] = useState('');
@@ -143,19 +144,19 @@ export default function HostsPage(props: PageProps) {
         ),
         onOk: async () => {
           try {
-            const newHost = (await HostsService.updateHost(host.id, { ...host, isdefault: !host.isdefault })).data;
-            notify.success({ message: `Host ${host.id} updated` });
-            storeUpdateHost(host.id, newHost);
+            await HostsService.deleteHost(host.id, true);
+            storeDeleteHost(host.id);
+            notify.success({ message: `Host ${host.name} deleted` });
           } catch (err) {
             notify.error({
-              message: 'Failed to update host',
+              message: 'Failed to delete host',
               description: extractErrorMsg(err as any),
             });
           }
         },
       });
     },
-    [notify, store.nodes, storeUpdateHost]
+    [notify, store.nodes, storeDeleteHost]
   );
 
   const refreshAllHostKeys = useCallback(() => {

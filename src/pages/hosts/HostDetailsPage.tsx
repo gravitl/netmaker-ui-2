@@ -43,6 +43,7 @@ export default function HostDetailsPage(props: PageProps) {
   const queryParams = useQuery();
 
   const storeUpdateHost = store.updateHost;
+  const storeDeleteHost = store.deleteHost;
   const [isLoading, setIsLoading] = useState(false);
   const [isEditingHost, setIsEditingHost] = useState(false);
   const [host, setHost] = useState<Host | null>(null);
@@ -153,8 +154,8 @@ export default function HostDetailsPage(props: PageProps) {
         throw new Error('Host not found');
       }
       await HostsService.deleteHost(hostId, true);
-      notify.success({ message: `Host ${hostId} deleted` });
-      store.deleteNetwork(hostId);
+      notify.success({ message: `Host ${host?.name} deleted` });
+      storeDeleteHost(hostId);
       navigate(AppRoutes.HOSTS_ROUTE);
     } catch (err) {
       if (err instanceof AxiosError) {
@@ -168,7 +169,7 @@ export default function HostDetailsPage(props: PageProps) {
         });
       }
     }
-  }, [hostId, notify, navigate, store]);
+  }, [hostId, notify, host?.name, storeDeleteHost, navigate]);
 
   const promptConfirmDelete = () => {
     if (!host) return;
