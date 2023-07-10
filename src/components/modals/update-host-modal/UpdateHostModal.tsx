@@ -81,7 +81,7 @@ export default function UpdateHostModal({ isOpen, host, onUpdateHost, onCancel }
               <Switch />
             </Form.Item>
 
-            <Form.Item label="Endpoint IP" name="endpoint" rules={[{ required: isStaticVal }]}>
+            <Form.Item label="Endpoint IP" name="endpointip" rules={[{ required: isStaticVal }]}>
               <Input placeholder="Endpoint IP" disabled={!isStaticVal} />
             </Form.Item>
 
