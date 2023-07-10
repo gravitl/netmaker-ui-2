@@ -109,7 +109,7 @@ export default function UpdateNodeModal({ isOpen, node, onUpdateNode, onCancel }
               <Select
                 placeholder="Local address"
                 options={
-                  host?.interfaces.map((iface) => ({
+                  host?.interfaces?.map((iface) => ({
                     label: `${iface.name} (${iface.addressString})`,
                     value: iface.addressString,
                   })) ?? []

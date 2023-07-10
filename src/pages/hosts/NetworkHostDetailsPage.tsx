@@ -525,7 +525,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
             <Table
               columns={interfacesTableCols}
               dataSource={
-                host?.interfaces.filter((iface) =>
+                host?.interfaces?.filter((iface) =>
                   `${iface.name}${iface.addressString}`
                     .toLocaleLowerCase()
                     .includes(searchText.toLocaleLowerCase().trim())
