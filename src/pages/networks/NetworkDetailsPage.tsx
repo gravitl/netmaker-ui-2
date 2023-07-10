@@ -40,6 +40,7 @@ import {
   Badge,
   Button,
   Card,
+  Checkbox,
   Col,
   Dropdown,
   Form,
@@ -133,6 +134,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const { token: themeToken } = theme.useToken();
 
   const storeFetchNodes = store.fetchNodes;
+  const storeDeleteNode = store.deleteNode;
   const isServerEE = store.serverConfig?.IsEE === 'yes';
   const [form] = Form.useForm<Network>();
   const isIpv4Watch = Form.useWatch('isipv4', form);
@@ -1379,13 +1381,43 @@ export default function NetworkDetailsPage(props: PageProps) {
 
   const disconnectNodeFromNetwork = useCallback(
     (newStatus: boolean, node: ExtendedNode) => {
+      let forceDelete = false;
+
       Modal.confirm({
-        title: 'Disconnect host connectivity from network',
-        content: `Are you sure you want to ${newStatus ? 'connect' : 'disconnect'} ${node?.name ?? ''}?`,
+        title: 'Disconnect host from network',
+        content: (
+          <>
+            <Row>
+              <Col xs={24}>
+                <Typography.Text>
+                  Are you sure you want {node?.name ?? ''} to {newStatus ? 'join' : 'leave'} the network?
+                </Typography.Text>
+              </Col>
+              <Col xs={24}>
+                <Form.Item
+                  htmlFor="force-delete"
+                  label="Force delete"
+                  valuePropName="checked"
+                  style={{ marginBottom: '0px' }}
+                >
+                  <Checkbox
+                    id="force-delete"
+                    onChange={(e) => {
+                      forceDelete = e.target.checked;
+                    }}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+          </>
+        ),
         async onOk() {
           try {
             if (!networkId) return;
-            await HostsService.updateHostsNetworks(node.hostid, networkId, newStatus ? 'join' : 'leave');
+            await HostsService.updateHostsNetworks(node.hostid, networkId, newStatus ? 'join' : 'leave', forceDelete);
+            if (forceDelete) {
+              storeDeleteNode(node.id);
+            }
             notify.success({
               message: `Successfully ${newStatus ? 'connected' : 'disconnected'}`,
               description: `${node?.name ?? 'Host'} is now ${
@@ -1401,7 +1433,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       });
     },
-    [networkId, notify]
+    [networkId, notify, storeDeleteNode]
   );
 
   // ui components
@@ -1608,6 +1640,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                             {
                               key: 'disconnect',
                               label: 'Remove from network',
+                              danger: true,
                               disabled: node.pendingdelete !== false,
                               title: node.pendingdelete !== false ? 'Host is being removed from network' : '',
                               onClick: () =>

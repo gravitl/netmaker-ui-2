@@ -10,9 +10,11 @@ import {
   Badge,
   Button,
   Card,
+  Checkbox,
   Col,
   Collapse,
   Dropdown,
+  Form,
   Input,
   Layout,
   Modal,
@@ -143,29 +145,57 @@ export default function NetworkHostDetailsPage(props: PageProps) {
     setIsLoading(false);
   }, [networkId, hostId, store.hosts, store.nodes, navigate, notify]);
 
-  const onHostRemove = useCallback(async () => {
-    try {
-      if (!hostId || !node || !networkId) {
-        throw new Error('Host or network not found');
+  const onHostRemove = useCallback(
+    async (forceDelete: boolean) => {
+      try {
+        if (!hostId || !node || !networkId) {
+          throw new Error('Host or network not found');
+        }
+        await NodesService.deleteNode(node?.id, networkId, forceDelete);
+        if (forceDelete) {
+          storeDeleteNode(node.id);
+        }
+        notify.success({ message: `Host ${hostId} deleted` });
+        navigate(getNetworkRoute(networkId));
+      } catch (err) {
+        notify.error({
+          message: 'Failed to delete host from network',
+          description: extractErrorMsg(err as any),
+        });
       }
-      await NodesService.deleteNode(node?.id, networkId);
-      notify.success({ message: `Host ${hostId} deleted` });
-      storeDeleteNode(node.id);
-      navigate(getNetworkRoute(networkId));
-    } catch (err) {
-      notify.error({
-        message: 'Failed to delete host from network',
-        description: extractErrorMsg(err as any),
-      });
-    }
-  }, [hostId, node, networkId, notify, storeDeleteNode, navigate]);
+    },
+    [hostId, node, networkId, notify, storeDeleteNode, navigate]
+  );
 
   const promptConfirmRemove = () => {
+    let forceDelete = false;
+
     Modal.confirm({
       title: `Do you want to remove host ${host?.name} from network ${networkId}?`,
+      content: (
+        <>
+          <Row>
+            <Col xs={24}>
+              <Form.Item
+                htmlFor="force-delete"
+                label="Force delete"
+                valuePropName="checked"
+                style={{ marginBottom: '0px' }}
+              >
+                <Checkbox
+                  id="force-delete"
+                  onChange={(e) => {
+                    forceDelete = e.target.checked;
+                  }}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+        </>
+      ),
       icon: <ExclamationCircleFilled />,
       onOk() {
-        onHostRemove();
+        onHostRemove(forceDelete);
       },
     });
   };

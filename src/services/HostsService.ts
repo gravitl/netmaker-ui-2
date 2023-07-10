@@ -10,10 +10,15 @@ function getHosts() {
 function deleteHost(hostId: Host['id']) {
   return baseService.delete<Host>(`${ApiRoutes.HOSTS}/${hostId}`);
 }
-function updateHostsNetworks(hostId: Host['id'], networkId: Network['netid'], action: 'join' | 'leave') {
+function updateHostsNetworks(
+  hostId: Host['id'],
+  networkId: Network['netid'],
+  action: 'join' | 'leave',
+  forceLeave = false
+) {
   return action === 'join'
     ? baseService.post<void>(`${ApiRoutes.HOSTS}/${hostId}/networks/${networkId}`)
-    : baseService.delete<void>(`${ApiRoutes.HOSTS}/${hostId}/networks/${networkId}`);
+    : baseService.delete<void>(`${ApiRoutes.HOSTS}/${hostId}/networks/${networkId}?force=${forceLeave}`);
 }
 
 function updateHost(hostId: Host['id'], payload: Host) {
