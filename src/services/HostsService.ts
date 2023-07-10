@@ -7,8 +7,8 @@ function getHosts() {
   return baseService.get<Host[]>(ApiRoutes.HOSTS);
 }
 
-function deleteHost(hostId: Host['id']) {
-  return baseService.delete<Host>(`${ApiRoutes.HOSTS}/${hostId}`);
+function deleteHost(hostId: Host['id'], force = false) {
+  return baseService.delete<Host>(`${ApiRoutes.HOSTS}/${hostId}?force=${force}`);
 }
 function updateHostsNetworks(
   hostId: Host['id'],

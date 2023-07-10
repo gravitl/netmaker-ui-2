@@ -33,7 +33,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { PageProps } from '../../models/Page';
 import './NetworkHostDetailsPage.scss';
-import { getNetworkRoute, useQuery } from '@/utils/RouteUtils';
+import { getHostRoute, getNetworkRoute, useQuery } from '@/utils/RouteUtils';
 import { Node } from '@/models/Node';
 import { NodeConnectivityStatus } from '@/models/NodeConnectivityStatus';
 import moment from 'moment';
@@ -616,6 +616,14 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                         onClick: (ev) => {
                           ev.domEvent.stopPropagation();
                           setIsEditingNode(true);
+                        },
+                      },
+                      {
+                        key: 'global-hpst',
+                        label: 'View Global Host',
+                        onClick: (ev) => {
+                          ev.domEvent.stopPropagation();
+                          navigate(getHostRoute(hostId ?? ''));
                         },
                       },
                       {
