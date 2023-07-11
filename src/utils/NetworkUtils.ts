@@ -122,7 +122,6 @@ const validNetworkNames = [
   'inet',
   'vnet',
   'mesh',
-  getBrandingConfig().productName || 'netmaker',
   'site',
   'lan-party',
   'skynet',
