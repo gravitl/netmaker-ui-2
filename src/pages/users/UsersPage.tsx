@@ -32,7 +32,7 @@ import AddUserGroupModal from '@/components/modals/add-user-group-modal/AddUserG
 import UpdateUserGroupModal from '@/components/modals/update-user-group-modal/UpdateUserGroupModal';
 import UpdateUserModal from '@/components/modals/update-user-modal/UpdateUserModal';
 import NetworkPermissionsModal from '@/components/modals/network-permissions-modal/NetworkPermissionsModal';
-import { isSaasBuild } from '@/services/BaseService';
+import { getBrandingConfig, isSaasBuild } from '@/services/BaseService';
 import { getAmuiUrl } from '@/utils/RouteUtils';
 
 export default function UsersPage(props: PageProps) {
@@ -251,14 +251,16 @@ export default function UsersPage(props: PageProps) {
                   Users
                 </Typography.Title>
                 <Typography.Text style={{ color: 'white ' }}>
-                  Netmaker allows you to perform Identity and Access Management (IAM) with users. You can create
-                  multiple profiles and restrict access to networks.
+                  {getBrandingConfig().productName} allows you to perform Identity and Access Management (IAM) with
+                  users. You can create multiple profiles and restrict access to networks.
                 </Typography.Text>
               </Col>
               <Col xs={(24 * 1) / 3} style={{ position: 'relative' }}>
                 <Card className="header-card" style={{ height: '20rem', position: 'absolute', width: '100%' }}>
                   <Typography.Title level={3}>Add a User</Typography.Title>
-                  <Typography.Text>Users access the Netmaker UI to configure their networks.</Typography.Text>
+                  <Typography.Text>
+                    Users access the {getBrandingConfig().productName} UI to configure their networks.
+                  </Typography.Text>
                   <Row style={{ marginTop: 'auto' }}>
                     <Col>
                       <Button type="primary" size="large" onClick={onAddUser}>
@@ -278,11 +280,11 @@ export default function UsersPage(props: PageProps) {
               <Col xs={7} style={{ marginRight: '1rem' }}>
                 <Card>
                   <Typography.Title level={4} style={{ marginTop: '0px' }}>
-                    Manage access to Netmaker
+                    Manage access to {getBrandingConfig().productName}
                   </Typography.Title>
                   <Typography.Text>
-                    Netmaker allows you to perform Identity and Access Management (IAM) with users. You can create
-                    multiple profiles and restrict access to networks.
+                    {getBrandingConfig().productName} allows you to perform Identity and Access Management (IAM) with
+                    users. You can create multiple profiles and restrict access to networks.
                   </Typography.Text>
                 </Card>
               </Col>
@@ -292,8 +294,8 @@ export default function UsersPage(props: PageProps) {
                     User Groups
                   </Typography.Title>
                   <Typography.Text>
-                    Easily manage access to a Netmaker resources by creating user groups. You can create multiple groups
-                    and assign users to them, then control access to the groups. This is a{' '}
+                    Easily manage access to a {getBrandingConfig().productName} resources by creating user groups. You
+                    can create multiple groups and assign users to them, then control access to the groups. This is a{' '}
                     <a href={getAmuiUrl('upgrade')} referrerPolicy="no-referrer">
                       Pro
                     </a>{' '}
@@ -304,11 +306,11 @@ export default function UsersPage(props: PageProps) {
               <Col xs={7}>
                 <Card>
                   <Typography.Title level={4} style={{ marginTop: '0px' }}>
-                    OAuth users on Netmaker
+                    OAuth users on {getBrandingConfig().productName}
                   </Typography.Title>
                   <Typography.Text>
-                    Netmaker supports OAuth (Social Sign-On) for user authentication. You can configure your OAuth
-                    provider to allow users to login to Netmaker.
+                    {getBrandingConfig().productName} supports OAuth (Social Sign-On) for user authentication. You can
+                    configure your OAuth provider to allow users to login to {getBrandingConfig().productName}.
                   </Typography.Text>
                 </Card>
               </Col>
