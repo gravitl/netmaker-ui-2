@@ -3,10 +3,10 @@ import { ApiRoutes } from '@/constants/ApiRoutes';
 import { EnrollmentKey, TimeBoundEnrollmentKey, UnlimitedEnrollmentKey } from '@/models/EnrollmentKey';
 import { EnrollmentKeysService } from '@/services/EnrollmentKeysService';
 import { CreateEnrollmentKeyReqDto } from '@/services/dtos/CreateEnrollmentKeyReqDto';
-import { baseService } from '@/services/BaseService';
+import { axiosService } from '@/services/BaseService';
 
 describe('EnrollmentKeysService', () => {
-  const mock = new MockAdapter(baseService);
+  const mock = new MockAdapter(axiosService);
 
   afterEach(() => {
     mock.reset();

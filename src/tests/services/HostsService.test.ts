@@ -1,12 +1,12 @@
 import MockAdapter from 'axios-mock-adapter';
 import { ApiRoutes } from '@/constants/ApiRoutes';
 import { HostsService } from '@/services/HostsService';
-import { baseService } from '@/services/BaseService';
+import { axiosService } from '@/services/BaseService';
 import { Host } from '@/models/Host';
 import { stubHost1, stubHosts } from '../fixtures/Models';
 
 describe('HostsService', () => {
-  const mock = new MockAdapter(baseService);
+  const mock = new MockAdapter(axiosService);
 
   afterEach(() => {
     mock.reset();
