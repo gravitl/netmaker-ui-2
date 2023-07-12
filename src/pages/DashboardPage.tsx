@@ -17,7 +17,7 @@ import { useState } from 'react';
 import { useStore } from '@/store/store';
 import { getAmuiUrl, getLicenseDashboardUrl } from '@/utils/RouteUtils';
 import NewHostModal from '@/components/modals/new-host-modal/NewHostModal';
-import { isSaasBuild } from '@/services/BaseService';
+import { getBrandingConfig, isSaasBuild } from '@/services/BaseService';
 
 export default function DashboardPage(props: PageProps) {
   const navigate = useNavigate();
@@ -113,13 +113,13 @@ export default function DashboardPage(props: PageProps) {
         <Col>
           <Space direction="vertical" size="middle">
             <Card>
-              <h3>Start using Netmaker</h3>
+              <h3>Start using {getBrandingConfig().productName}</h3>
               <p>
-                Netmaker automates a secure superhighway between devices, clouds, virtual machines, and servers using
-                WireGuard®. It blows past any NAT’s, firewalls, or subnets that stand between them to create a flat,
-                simple network. The result is a secure overlay network that spans all your devices, wherever they are.
-                Of course, Netmaker does a lot more than that. With ACL’s, Ingress, Egress, and Relays, you have
-                complete control of your network.
+                {getBrandingConfig().productName} automates a secure superhighway between devices, clouds, virtual
+                machines, and servers using WireGuard®. It blows past any NAT’s, firewalls, or subnets that stand
+                between them to create a flat, simple network. The result is a secure overlay network that spans all
+                your devices, wherever they are. Of course, {getBrandingConfig().productName} does a lot more than that.
+                With ACL’s, Ingress, Egress, and Relays, you have complete control of your network.
               </p>
               <div>
                 <Button type="link" href="https://netmaker.io/demo-page" target="_blank" rel="noreferrer">

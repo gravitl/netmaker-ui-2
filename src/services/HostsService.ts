@@ -1,14 +1,14 @@
 import { ApiRoutes } from '../constants/ApiRoutes';
 import { Host } from '../models/Host';
 import { Network } from '../models/Network';
-import { baseService } from './BaseService';
+import { axiosService } from './BaseService';
 
 function getHosts() {
-  return baseService.get<Host[]>(ApiRoutes.HOSTS);
+  return axiosService.get<Host[]>(ApiRoutes.HOSTS);
 }
 
 function deleteHost(hostId: Host['id'], force = false) {
-  return baseService.delete<Host>(`${ApiRoutes.HOSTS}/${hostId}?force=${force}`);
+  return axiosService.delete<Host>(`${ApiRoutes.HOSTS}/${hostId}?force=${force}`);
 }
 function updateHostsNetworks(
   hostId: Host['id'],
@@ -17,20 +17,20 @@ function updateHostsNetworks(
   forceLeave = false
 ) {
   return action === 'join'
-    ? baseService.post<void>(`${ApiRoutes.HOSTS}/${hostId}/networks/${networkId}`)
-    : baseService.delete<void>(`${ApiRoutes.HOSTS}/${hostId}/networks/${networkId}?force=${forceLeave}`);
+    ? axiosService.post<void>(`${ApiRoutes.HOSTS}/${hostId}/networks/${networkId}`)
+    : axiosService.delete<void>(`${ApiRoutes.HOSTS}/${hostId}/networks/${networkId}?force=${forceLeave}`);
 }
 
 function updateHost(hostId: Host['id'], payload: Host) {
-  return baseService.put<Host>(`${ApiRoutes.HOSTS}/${hostId}`, payload);
+  return axiosService.put<Host>(`${ApiRoutes.HOSTS}/${hostId}`, payload);
 }
 
 function refreshAllHostsKeys() {
-  return baseService.put<void>(`${ApiRoutes.HOSTS}/keys`);
+  return axiosService.put<void>(`${ApiRoutes.HOSTS}/keys`);
 }
 
 function refreshHostKeys(hostId: Host['id']) {
-  return baseService.put<void>(`${ApiRoutes.HOSTS}/${hostId}/keys`);
+  return axiosService.put<void>(`${ApiRoutes.HOSTS}/${hostId}/keys`);
 }
 
 export const HostsService = {

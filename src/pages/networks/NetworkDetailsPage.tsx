@@ -82,6 +82,7 @@ import UpdateIngressModal from '@/components/modals/update-ingress-modal/UpdateI
 import UpdateClientModal from '@/components/modals/update-client-modal/UpdateClientModal';
 import { NULL_HOST, NULL_NODE } from '@/constants/Types';
 import UpdateNodeModal from '@/components/modals/update-node-modal/UpdateNodeModal';
+import { getBrandingConfig } from '@/services/BaseService';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -2066,9 +2067,9 @@ export default function NetworkDetailsPage(props: PageProps) {
                 Relays
               </Typography.Title>
               <Typography.Text style={{ color: 'white ' }}>
-                Enable devices in your network to communicate with othererwise unreachable devices with relays. Netmaker
-                uses Turn servers to automatically route traffic in these scenarios, but sometimes, you’d rather specify
-                which device should be routing the traffic
+                Enable devices in your network to communicate with othererwise unreachable devices with relays.{' '}
+                {getBrandingConfig().productName} uses Turn servers to automatically route traffic in these scenarios,
+                but sometimes, you’d rather specify which device should be routing the traffic
                 <a href="https://www.netmaker.io/features/relay" target="_blank" rel="noreferrer">
                   (Learn More)
                 </a>

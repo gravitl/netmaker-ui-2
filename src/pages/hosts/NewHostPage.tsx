@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { PageProps } from '../../models/Page';
 
 import './NewHostPage.scss';
+import { getBrandingConfig } from '@/services/BaseService';
 
 type AvailableOses = 'windows' | 'macos' | 'linux' | 'freebsd' | 'docker';
 
@@ -194,9 +195,9 @@ export default function NewHostPage(props: PageProps) {
                         <Input
                           disabled
                           style={{ width: 'calc(100% - 32px)' }}
-                          defaultValue={
-                            '. { iwr -useb  https://raw.githubusercontent.com/gravitl/netmaker/master/scripts/netclient-install.ps1 } | iex; Netclient-Install -version "<your netmaker version>"'
-                          }
+                          defaultValue={`. { iwr -useb  https://raw.githubusercontent.com/gravitl/netmaker/master/scripts/netclient-install.ps1 } | iex; Netclient-Install -version "<your ${
+                            getBrandingConfig().productName
+                          } version>"`}
                         />
                         <Button icon={<CopyOutlined />} />
                       </Input.Group>
@@ -242,9 +243,9 @@ export default function NewHostPage(props: PageProps) {
                         <Input
                           disabled
                           style={{ width: 'calc(100% - 32px)' }}
-                          defaultValue={
-                            'curl -sfL https://raw.githubusercontent.com/gravitl/netmaker/master/scripts/netclient-install.sh | VERSION="<your netmaker version>" sh -'
-                          }
+                          defaultValue={`curl -sfL https://raw.githubusercontent.com/gravitl/netmaker/master/scripts/netclient-install.sh | VERSION="<your ${
+                            getBrandingConfig().productName
+                          } version>" sh -`}
                         />
                         <Button icon={<CopyOutlined />} />
                       </Input.Group>

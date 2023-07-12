@@ -15,7 +15,7 @@ import { getAmuiUrl, getHostRoute, getNetworkRoute } from '../utils/RouteUtils';
 import { useStore } from '../store/store';
 import { AppRoutes } from '@/routes';
 import { useTranslation } from 'react-i18next';
-import { isSaasBuild } from '@/services/BaseService';
+import { getBrandingConfig, isSaasBuild } from '@/services/BaseService';
 import { ServerConfigService } from '@/services/ServerConfigService';
 
 const { Content, Sider } = Layout;
@@ -46,6 +46,26 @@ export default function MainLayout() {
         .slice(0, 5),
     [store.networks]
   );
+
+  const sidebarLogo = useMemo(() => {
+    const { logoDarkUrl, logoLightUrl, logoDarkSmallUrl, logoLightSmallUrl } = getBrandingConfig();
+
+    if (currentTheme === 'dark') {
+      if (isSidebarCollapsed) {
+        return logoDarkSmallUrl;
+      } else {
+        return logoDarkUrl;
+      }
+    } else if (currentTheme === 'light') {
+      if (isSidebarCollapsed) {
+        return logoLightSmallUrl;
+      } else {
+        return logoLightUrl;
+      }
+    }
+
+    return '';
+  }, [currentTheme, isSidebarCollapsed]);
 
   const sideNavItems: MenuProps['items'] = useMemo(
     () =>
@@ -295,8 +315,8 @@ export default function MainLayout() {
         {/* logo */}
         <Link to={AppRoutes.DASHBOARD_ROUTE}>
           <img
-            src={isSidebarCollapsed ? `/logo-small-${store.currentTheme}.png` : `/logo-${store.currentTheme}.png`}
-            alt="logo"
+            src={sidebarLogo}
+            alt={getBrandingConfig().logoAltText}
             style={{ width: '100%', padding: '1rem 2rem 1rem 2rem' }}
           />
         </Link>
@@ -381,8 +401,10 @@ export default function MainLayout() {
                   style={{ border: 'none', height: '4rem', fontSize: '1rem', color: '#D4B106' }}
                   message={
                     !store.serverStatus.status?.healthyNetwork
-                      ? 'Unable to react Netmaker server. Check you internet connection.'
-                      : 'Your Netmaker server is not running properly. This may impact network performance. Contact your administrator.'
+                      ? `Unable to reach ${getBrandingConfig().productName} server. Check you internet connection.`
+                      : `Your ${
+                          getBrandingConfig().productName
+                        } server is not running properly. This may impact network performance. Contact your administrator.`
                   }
                 />
               </Col>
