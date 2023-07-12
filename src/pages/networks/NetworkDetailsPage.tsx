@@ -1086,13 +1086,25 @@ export default function NetworkDetailsPage(props: PageProps) {
 
     return [
       {
-        title: '',
+        width: '5rem',
+        fixed: 'left',
         render(_, entry) {
-          return <Typography.Text onClick={() => setSearchAclHost(entry.name)}>{entry.name}</Typography.Text>;
+          return (
+            <Typography.Text
+              style={{
+                width: '5rem',
+                wordBreak: 'keep-all',
+              }}
+              onClick={() => setSearchAclHost(entry.name)}
+            >
+              {entry.name}
+            </Typography.Text>
+          );
         },
       },
       ...aclTableData.map((aclData) => ({
         title: aclData.name,
+        width: '5rem',
         render(_: unknown, aclEntry: (typeof aclTableData)[0]) {
           return renderAclValue(
             originalAcls?.[aclEntry.nodeId]?.[aclData.nodeId] ?? 0,
@@ -2280,6 +2292,9 @@ export default function NetworkDetailsPage(props: PageProps) {
                 rowKey="nodeId"
                 size="small"
                 pagination={false}
+                scroll={{
+                  x: '100%',
+                }}
               />
             </div>
           </Col>
