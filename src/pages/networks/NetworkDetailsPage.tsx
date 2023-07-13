@@ -83,6 +83,7 @@ import UpdateClientModal from '@/components/modals/update-client-modal/UpdateCli
 import { NULL_HOST, NULL_NODE } from '@/constants/Types';
 import UpdateNodeModal from '@/components/modals/update-node-modal/UpdateNodeModal';
 import { getBrandingConfig } from '@/services/BaseService';
+import VirtualisedTable from '@/components/VirtualisedTable';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -1086,13 +1087,25 @@ export default function NetworkDetailsPage(props: PageProps) {
 
     return [
       {
-        title: '',
+        width: '5rem',
+        fixed: 'left',
         render(_, entry) {
-          return <Typography.Text onClick={() => setSearchAclHost(entry.name)}>{entry.name}</Typography.Text>;
+          return (
+            <Typography.Text
+              style={{
+                width: '5rem',
+                wordBreak: 'keep-all',
+              }}
+              onClick={() => setSearchAclHost(entry.name)}
+            >
+              {entry.name}
+            </Typography.Text>
+          );
         },
       },
       ...aclTableData.map((aclData) => ({
         title: aclData.name,
+        width: '5rem',
         render(_: unknown, aclEntry: (typeof aclTableData)[0]) {
           return renderAclValue(
             originalAcls?.[aclEntry.nodeId]?.[aclData.nodeId] ?? 0,
@@ -2273,13 +2286,16 @@ export default function NetworkDetailsPage(props: PageProps) {
 
           <Col xs={24} style={{ paddingTop: '1rem' }}>
             <div className="" style={{ width: '100%', overflow: 'auto' }}>
-              <Table
+              <VirtualisedTable
                 columns={aclTableCols}
                 dataSource={filteredAclData}
                 className="acl-table"
                 rowKey="nodeId"
                 size="small"
                 pagination={false}
+                scroll={{
+                  x: '100%',
+                }}
               />
             </div>
           </Col>

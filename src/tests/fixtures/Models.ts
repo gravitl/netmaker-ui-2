@@ -1,3 +1,4 @@
+import { NodeAcl, NodeAclContainer } from '@/models/Acl';
 import { Host } from '@/models/Host';
 import { Network } from '@/models/Network';
 import { Node } from '@/models/Node';
@@ -188,3 +189,12 @@ export const stubUser2: User = {
 };
 
 export const stubUsers: User[] = [stubUser1, stubUser2];
+
+export const stubAclData: NodeAclContainer = {};
+for (let i = 1; i <= 50; i++) {
+  const nodeAcl: NodeAcl = {};
+  for (let j = 1; j <= 50; j++) {
+    nodeAcl[`node-${j}`] = 2;
+  }
+  stubAclData[`node-${i}`] = nodeAcl;
+}
