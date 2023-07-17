@@ -30,7 +30,7 @@
     "immer": "^10.0.2",
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
-    "rc-virtual-list": "^3.5.2",
+    "rc-virtual-list": "^3.5.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-i18next": "^12.3.1",
