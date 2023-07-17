@@ -10,4 +10,5 @@ export const DEFAULT_BRANDING_CONFIG: BrandingConfig = {
   logoLightSmallUrl: '/logo-small-light.png',
   logoAltText: 'Netmaker logo',
   favicon: '/favicon.ico',
+  primaryColor: '#624AF4',
 };

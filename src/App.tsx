@@ -7,7 +7,6 @@ import { useCallback, useEffect, useState } from 'react';
 import { AxiosError } from 'axios';
 import { ServerConfigService } from './services/ServerConfigService';
 import ServerMalfunctionModal from './components/modals/server-malfunction-modal/ServerMalfunctionModal';
-import { THEME_PRIMARY_COLOR } from './utils/ThemeUtils';
 import { getBrandingConfig } from './services/BaseService';
 
 const POLL_INTERVAL = 10_000;
@@ -78,8 +77,8 @@ function App() {
         theme={{
           algorithm: store.currentTheme === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm,
           token: {
-            colorPrimary: THEME_PRIMARY_COLOR,
-            colorLink: THEME_PRIMARY_COLOR,
+            colorPrimary: getBrandingConfig().primaryColor,
+            colorLink: getBrandingConfig().primaryColor,
             fontFamily: 'SFPro, Inter, system-ui, Avenir, Helvetica, Arial, sans-serif',
             fontSize: 16,
             // colorBgContainer: 'black',

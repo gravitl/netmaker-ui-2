@@ -84,6 +84,7 @@ export function getBrandingConfig(): BrandingConfig {
       import.meta.env.VITE_TENANT_LOGO_LIGHT_SMALL_URL ||
       import.meta.env.VITE_TENANT_LOGO_LIGHT_URL ||
       DEFAULT_BRANDING_CONFIG.favicon,
+    primaryColor: import.meta.env.VITE_TENANT_PRIMARY_COLOR || DEFAULT_BRANDING_CONFIG.primaryColor,
   };
 
   return branding;
