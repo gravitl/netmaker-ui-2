@@ -79,6 +79,11 @@ export function getBrandingConfig(): BrandingConfig {
       import.meta.env.VITE_TENANT_LOGO_LIGHT_SMALL_URL ||
       import.meta.env.VITE_TENANT_LOGO_LIGHT_URL ||
       DEFAULT_BRANDING_CONFIG.logoLightSmallUrl,
+    favicon:
+      import.meta.env.VITE_TENANT_FAVICON_URL ||
+      import.meta.env.VITE_TENANT_LOGO_LIGHT_SMALL_URL ||
+      import.meta.env.VITE_TENANT_LOGO_LIGHT_URL ||
+      DEFAULT_BRANDING_CONFIG.favicon,
   };
 
   return branding;
