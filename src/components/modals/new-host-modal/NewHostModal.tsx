@@ -276,8 +276,10 @@ export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModa
                   </Col>
                   <Col xs={4} style={{ textAlign: 'center' }}>
                     <div
-                      className={`os-button ${selectedOs === 'freebsd' ? 'active' : ''}`}
-                      onClick={(ev) => onShowInstallGuide(ev, 'freebsd')}
+                      className={`os-button ${
+                        selectedOs === 'freebsd13' || selectedOs === 'freebsd14' ? 'active' : ''
+                      }`}
+                      onClick={(ev) => onShowInstallGuide(ev, 'freebsd13')}
                     >
                       <img src={`/icons/freebsd-${theme}.jpg`} alt="freebsd icon" className="logo" />
                       <p>FreeBSD</p>
@@ -406,15 +408,23 @@ export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModa
                   </>
                 )}
 
-                {selectedOs === 'freebsd' && (
+                {(selectedOs === 'freebsd13' || selectedOs === 'freebsd14') && (
                   <>
                     <Row>
                       <Col xs={24}>
                         <h4 style={{ marginBottom: '.5rem' }}>Install with this command</h4>
+                        <Typography.Title level={5}>FreeBSD 13</Typography.Title>
                         <Typography.Text code copyable>
-                          {`fetch -o netclient ${
-                            getNetclientDownloadLink('freebsd', 'amd64', 'cli')[0]
-                          } && chmod +x ./netclient && sudo ./netclient install`}
+                          {`fetch -o /tmp/netclient ${
+                            getNetclientDownloadLink('freebsd13', 'amd64', 'cli')[0]
+                          } && chmod +x /tmp/netclient && sudo /tmp/netclient install`}
+                        </Typography.Text>
+                        <br />
+                        <Typography.Title level={5}>FreeBSD 14</Typography.Title>
+                        <Typography.Text code copyable>
+                          {`fetch -o /tmp/netclient ${
+                            getNetclientDownloadLink('freebsd14', 'amd64', 'cli')[0]
+                          } && chmod +x /tmp/netclient && sudo /tmp/netclient install`}
                         </Typography.Text>
                       </Col>
                     </Row>
@@ -433,7 +443,6 @@ export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModa
             <Col xs={24}>
               <Card>
                 <Typography.Text>Steps to join a network:</Typography.Text>
-
                 {(selectedOs === 'windows' || selectedOs === 'macos') && (
                   <div>
                     <ol>
@@ -452,14 +461,26 @@ export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModa
                     <small>Note: It might take a few minutes for the host to show up in the network(s)</small>
                   </div>
                 )}
-
-                {(selectedOs === 'linux' || selectedOs === 'freebsd') && (
+                {selectedOs === 'linux' && (
                   <div>
                     <ol>
                       <li>
                         <Typography.Text>Run</Typography.Text>
                         <Typography.Text code copyable>
                           {`sudo netclient join -t ${`${selectedEnrollmentKey?.token ?? '<token>'}`}`}
+                        </Typography.Text>
+                      </li>
+                    </ol>
+                    <small>Note: It might take a few minutes for the host to show up in the network(s)</small>
+                  </div>
+                )}
+                {(selectedOs === 'freebsd13' || selectedOs === 'freebsd14') && (
+                  <div>
+                    <ol>
+                      <li>
+                        <Typography.Text>Run</Typography.Text>
+                        <Typography.Text code copyable>
+                          {`sudo /tmp/netclient join -t ${`${selectedEnrollmentKey?.token ?? '<token>'}`}`}
                         </Typography.Text>
                       </li>
                     </ol>
