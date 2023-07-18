@@ -474,20 +474,19 @@ export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModa
                     <small>Note: It might take a few minutes for the host to show up in the network(s)</small>
                   </div>
                 )}
-                {selectedOs === 'freebsd13' ||
-                  (selectedOs === 'freebsd14' && (
-                    <div>
-                      <ol>
-                        <li>
-                          <Typography.Text>Run</Typography.Text>
-                          <Typography.Text code copyable>
-                            {`sudo /tmp/netclient join -t ${`${selectedEnrollmentKey?.token ?? '<token>'}`}`}
-                          </Typography.Text>
-                        </li>
-                      </ol>
-                      <small>Note: It might take a few minutes for the host to show up in the network(s)</small>
-                    </div>
-                  ))}
+                {(selectedOs === 'freebsd13' || selectedOs === 'freebsd14') && (
+                  <div>
+                    <ol>
+                      <li>
+                        <Typography.Text>Run</Typography.Text>
+                        <Typography.Text code copyable>
+                          {`sudo /tmp/netclient join -t ${`${selectedEnrollmentKey?.token ?? '<token>'}`}`}
+                        </Typography.Text>
+                      </li>
+                    </ol>
+                    <small>Note: It might take a few minutes for the host to show up in the network(s)</small>
+                  </div>
+                )}
 
                 {selectedOs === 'docker' && (
                   <div>
