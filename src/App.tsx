@@ -8,6 +8,7 @@ import { AxiosError } from 'axios';
 import { ServerConfigService } from './services/ServerConfigService';
 import ServerMalfunctionModal from './components/modals/server-malfunction-modal/ServerMalfunctionModal';
 import { THEME_PRIMARY_COLOR } from './utils/ThemeUtils';
+import { getBrandingConfig } from './services/BaseService';
 
 const POLL_INTERVAL = 10_000;
 
@@ -62,6 +63,14 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
+
+  useEffect(() => {
+    // one-time effect to load favicon
+    const favicon = getBrandingConfig().favicon;
+    if (favicon) {
+      (document.getElementById('favicon') as HTMLLinkElement)?.setAttribute('href', favicon);
+    }
+  }, []);
 
   return (
     <div className="App">
