@@ -9,4 +9,4 @@
 
 #### LICENSE
 
-Netmaker UI's source code and all artifacts in this repository are freely available. All versions are published under the Server Side Public License (SSPL), version 1, which can be found under the "licensing" directory: [LICENSE.txt](LICENSE.txt).
+Netmaker UI's source code and all artifacts in this repository are freely available. All versions are published under the Server Side Public License (SSPL), version 1, which can be found under in [LICENSE.txt](LICENSE.txt).
