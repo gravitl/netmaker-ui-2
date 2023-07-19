@@ -27,6 +27,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { PageProps } from '../../models/Page';
 
 import './EnrollmentKeysPage.scss';
+import { getBrandingConfig } from '@/services/BaseService';
 
 export default function EnrollmentKeysPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
@@ -184,8 +185,8 @@ export default function EnrollmentKeysPage(props: PageProps) {
                 <Card className="header-card" style={{ height: '20rem', position: 'absolute', width: '100%' }}>
                   <Typography.Title level={3}>Add a Key</Typography.Title>
                   <Typography.Text>
-                    Use enrollment keys to connect hosts (netclients) to your Netmaker networks or register them to your
-                    Netmaker server.
+                    Use enrollment keys to connect hosts (netclients) to your {getBrandingConfig().productName} networks
+                    or register them to your {getBrandingConfig().productName} server.
                   </Typography.Text>
                   <Row style={{ marginTop: 'auto' }}>
                     <Col>

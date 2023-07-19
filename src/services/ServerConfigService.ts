@@ -1,14 +1,14 @@
 import { ApiRoutes } from '@/constants/ApiRoutes';
 import { ServerConfig, ServerStatus } from '@/models/ServerConfig';
-import { baseService } from './BaseService';
+import { axiosService } from './BaseService';
 import { version as uiVersion } from '../../package.json';
 
 function getServerConfig() {
-  return baseService.get<ServerConfig>(ApiRoutes.SERVER_CONFIG);
+  return axiosService.get<ServerConfig>(ApiRoutes.SERVER_CONFIG);
 }
 
 function getServerStatus() {
-  return baseService.get<ServerStatus>(ApiRoutes.SERVER_STATUS);
+  return axiosService.get<ServerStatus>(ApiRoutes.SERVER_STATUS);
 }
 
 function getUiVersion(): string {

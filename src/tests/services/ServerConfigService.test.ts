@@ -1,12 +1,12 @@
 import { ApiRoutes } from '@/constants/ApiRoutes';
 import { ServerConfig, ServerStatus } from '@/models/ServerConfig';
-import { baseService } from '@/services/BaseService';
+import { axiosService } from '@/services/BaseService';
 import { ServerConfigService } from '@/services/ServerConfigService';
 import MockAdapter from 'axios-mock-adapter';
 import { version } from '../../../package.json';
 
 describe('ServerConfigService', () => {
-  const mock = new MockAdapter(baseService);
+  const mock = new MockAdapter(axiosService);
 
   afterEach(() => {
     mock.reset();

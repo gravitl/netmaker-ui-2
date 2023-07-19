@@ -1,12 +1,14 @@
-import { ApiRoutes } from '@/constants/ApiRoutes';
-import { User } from '@/models/User';
+// import { ApiRoutes } from '@/constants/ApiRoutes';
+// import { User } from '@/models/User';
+import { DEFAULT_BRANDING_CONFIG } from '@/constants/AppConstants';
+import { BrandingConfig } from '@/models/BrandingConfig';
 import { useStore } from '@/store/store';
 import { truncateQueryParamsFromCurrentUrl } from '@/utils/RouteUtils';
 import axios from 'axios';
 
 export const isSaasBuild = import.meta.env.VITE_IS_SAAS_BUILD?.toLocaleLowerCase() === 'true';
 
-export const baseService = axios.create();
+export const axiosService = axios.create();
 
 export const AMUI_URL = isSaasBuild ? (window as any).NMUI_AMUI_URL : '';
 
@@ -18,7 +20,7 @@ export async function setupTenantConfig(): Promise<void> {
     useStore.getState().setStore({
       baseUrl: resolvedBaseUrl,
     });
-    baseService.defaults.baseURL = resolvedBaseUrl;
+    axiosService.defaults.baseURL = resolvedBaseUrl;
     return;
   }
 
@@ -35,7 +37,7 @@ export async function setupTenantConfig(): Promise<void> {
       ? `${baseUrl}/api`
       : `https://${baseUrl}/api`
     : useStore.getState().baseUrl;
-  baseService.defaults.baseURL = resolvedBaseUrl;
+  axiosService.defaults.baseURL = resolvedBaseUrl;
 
   truncateQueryParamsFromCurrentUrl();
 
@@ -63,8 +65,32 @@ export async function setupTenantConfig(): Promise<void> {
   });
 }
 
+export function getBrandingConfig(): BrandingConfig {
+  const branding: BrandingConfig = {
+    productName: import.meta.env.VITE_PRODUCT_NAME || DEFAULT_BRANDING_CONFIG.productName,
+    logoDarkUrl: import.meta.env.VITE_TENANT_LOGO_DARK_URL || DEFAULT_BRANDING_CONFIG.logoDarkUrl,
+    logoLightUrl: import.meta.env.VITE_TENANT_LOGO_LIGHT_URL || DEFAULT_BRANDING_CONFIG.logoLightUrl,
+    logoAltText: import.meta.env.VITE_TENANT_LOGO_ALT_TEXT || DEFAULT_BRANDING_CONFIG.logoAltText,
+    logoDarkSmallUrl:
+      import.meta.env.VITE_TENANT_LOGO_DARK_SMALL_URL ||
+      import.meta.env.VITE_TENANT_LOGO_DARK_URL ||
+      DEFAULT_BRANDING_CONFIG.logoDarkSmallUrl,
+    logoLightSmallUrl:
+      import.meta.env.VITE_TENANT_LOGO_LIGHT_SMALL_URL ||
+      import.meta.env.VITE_TENANT_LOGO_LIGHT_URL ||
+      DEFAULT_BRANDING_CONFIG.logoLightSmallUrl,
+    favicon:
+      import.meta.env.VITE_TENANT_FAVICON_URL ||
+      import.meta.env.VITE_TENANT_LOGO_LIGHT_SMALL_URL ||
+      import.meta.env.VITE_TENANT_LOGO_LIGHT_URL ||
+      DEFAULT_BRANDING_CONFIG.favicon,
+  };
+
+  return branding;
+}
+
 // token interceptor for axios
-baseService.interceptors.request.use((config) => {
+axiosService.interceptors.request.use((config) => {
   const token = useStore.getState().jwt;
 
   if (token) {
@@ -74,7 +100,7 @@ baseService.interceptors.request.use((config) => {
   return config;
 });
 
-baseService.interceptors.response.use(
+axiosService.interceptors.response.use(
   (res) => {
     return res;
   },
@@ -89,3 +115,12 @@ baseService.interceptors.response.use(
     return Promise.reject(err);
   }
 );
+
+// branding
+window.document.title = `${getBrandingConfig().productName} Dashboard`;
+window.document
+  .querySelector('meta[name="description"]')
+  ?.setAttribute(
+    'content',
+    `The management UI for ${getBrandingConfig().productName}. ${getBrandingConfig().productName} makes networks :)`
+  );

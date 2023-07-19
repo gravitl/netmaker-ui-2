@@ -1,11 +1,11 @@
 import { ApiRoutes } from '@/constants/ApiRoutes';
 import { AuthService } from '@/services/AuthService';
-import { baseService } from '@/services/BaseService';
+import { axiosService } from '@/services/BaseService';
 import { LoginResDto } from '@/services/dtos/LoginResDto';
 import MockAdapter from 'axios-mock-adapter';
 
 describe('AuthService', () => {
-  const mock = new MockAdapter(baseService);
+  const mock = new MockAdapter(axiosService);
 
   afterEach(() => {
     mock.reset();

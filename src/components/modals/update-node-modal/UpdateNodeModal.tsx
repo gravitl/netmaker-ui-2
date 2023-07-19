@@ -91,7 +91,7 @@ export default function UpdateNodeModal({ isOpen, node, onUpdateNode, onCancel }
         name="update-node-form"
         form={form}
         layout="vertical"
-        initialValues={{ ...node, expdatetime: moment(node.expdatetime * 1000), endpoint: host?.endpointip ?? '' }}
+        initialValues={{ ...node, expdatetime: moment(node.expdatetime * 1000), endpointip: host?.endpointip ?? '' }}
       >
         <div className="scrollable-modal-body">
           <div className="CustomModalBody">
@@ -109,7 +109,7 @@ export default function UpdateNodeModal({ isOpen, node, onUpdateNode, onCancel }
               <Select
                 placeholder="Local address"
                 options={
-                  host?.interfaces.map((iface) => ({
+                  host?.interfaces?.map((iface) => ({
                     label: `${iface.name} (${iface.addressString})`,
                     value: iface.addressString,
                   })) ?? []
@@ -125,7 +125,7 @@ export default function UpdateNodeModal({ isOpen, node, onUpdateNode, onCancel }
               <DatePicker showTime style={{ width: '100%' }} clearIcon={false} />
             </Form.Item>
 
-            <Form.Item label="Endpoint IP" name="endpoint" rules={[{ required: isStaticVal }]}>
+            <Form.Item label="Endpoint IP" name="endpointip" rules={[{ required: isStaticVal }]}>
               <Input placeholder="Endpoint IP" disabled={!isStaticVal} />
             </Form.Item>
 

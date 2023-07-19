@@ -40,6 +40,7 @@ import {
   Badge,
   Button,
   Card,
+  Checkbox,
   Col,
   Dropdown,
   Form,
@@ -81,6 +82,8 @@ import UpdateIngressModal from '@/components/modals/update-ingress-modal/UpdateI
 import UpdateClientModal from '@/components/modals/update-client-modal/UpdateClientModal';
 import { NULL_HOST, NULL_NODE } from '@/constants/Types';
 import UpdateNodeModal from '@/components/modals/update-node-modal/UpdateNodeModal';
+import { getBrandingConfig } from '@/services/BaseService';
+import VirtualisedTable from '@/components/VirtualisedTable';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -133,6 +136,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const { token: themeToken } = theme.useToken();
 
   const storeFetchNodes = store.fetchNodes;
+  const storeDeleteNode = store.deleteNode;
   const isServerEE = store.serverConfig?.IsEE === 'yes';
   const [form] = Form.useForm<Network>();
   const isIpv4Watch = Form.useWatch('isipv4', form);
@@ -1083,13 +1087,25 @@ export default function NetworkDetailsPage(props: PageProps) {
 
     return [
       {
-        title: '',
+        width: '5rem',
+        fixed: 'left',
         render(_, entry) {
-          return <Typography.Text onClick={() => setSearchAclHost(entry.name)}>{entry.name}</Typography.Text>;
+          return (
+            <Typography.Text
+              style={{
+                width: '5rem',
+                wordBreak: 'keep-all',
+              }}
+              onClick={() => setSearchAclHost(entry.name)}
+            >
+              {entry.name}
+            </Typography.Text>
+          );
         },
       },
       ...aclTableData.map((aclData) => ({
         title: aclData.name,
+        width: '5rem',
         render(_: unknown, aclEntry: (typeof aclTableData)[0]) {
           return renderAclValue(
             originalAcls?.[aclEntry.nodeId]?.[aclData.nodeId] ?? 0,
@@ -1379,13 +1395,43 @@ export default function NetworkDetailsPage(props: PageProps) {
 
   const disconnectNodeFromNetwork = useCallback(
     (newStatus: boolean, node: ExtendedNode) => {
+      let forceDelete = false;
+
       Modal.confirm({
-        title: 'Disconnect host connectivity from network',
-        content: `Are you sure you want to ${newStatus ? 'connect' : 'disconnect'} ${node?.name ?? ''}?`,
+        title: 'Disconnect host from network',
+        content: (
+          <>
+            <Row>
+              <Col xs={24}>
+                <Typography.Text>
+                  Are you sure you want {node?.name ?? ''} to {newStatus ? 'join' : 'leave'} the network?
+                </Typography.Text>
+              </Col>
+              <Col xs={24}>
+                <Form.Item
+                  htmlFor="force-delete"
+                  label="Force delete"
+                  valuePropName="checked"
+                  style={{ marginBottom: '0px' }}
+                >
+                  <Checkbox
+                    id="force-delete"
+                    onChange={(e) => {
+                      forceDelete = e.target.checked;
+                    }}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+          </>
+        ),
         async onOk() {
           try {
             if (!networkId) return;
-            await HostsService.updateHostsNetworks(node.hostid, networkId, newStatus ? 'join' : 'leave');
+            await HostsService.updateHostsNetworks(node.hostid, networkId, newStatus ? 'join' : 'leave', forceDelete);
+            if (forceDelete) {
+              storeDeleteNode(node.id);
+            }
             notify.success({
               message: `Successfully ${newStatus ? 'connected' : 'disconnected'}`,
               description: `${node?.name ?? 'Host'} is now ${
@@ -1401,7 +1447,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       });
     },
-    [networkId, notify]
+    [networkId, notify, storeDeleteNode]
   );
 
   // ui components
@@ -1608,6 +1654,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                             {
                               key: 'disconnect',
                               label: 'Remove from network',
+                              danger: true,
                               disabled: node.pendingdelete !== false,
                               title: node.pendingdelete !== false ? 'Host is being removed from network' : '',
                               onClick: () =>
@@ -2033,9 +2080,9 @@ export default function NetworkDetailsPage(props: PageProps) {
                 Relays
               </Typography.Title>
               <Typography.Text style={{ color: 'white ' }}>
-                Enable devices in your network to communicate with othererwise unreachable devices with relays. Netmaker
-                uses Turn servers to automatically route traffic in these scenarios, but sometimes, you’d rather specify
-                which device should be routing the traffic
+                Enable devices in your network to communicate with othererwise unreachable devices with relays.{' '}
+                {getBrandingConfig().productName} uses Turn servers to automatically route traffic in these scenarios,
+                but sometimes, you’d rather specify which device should be routing the traffic
                 <a href="https://www.netmaker.io/features/relay" target="_blank" rel="noreferrer">
                   (Learn More)
                 </a>
@@ -2239,13 +2286,16 @@ export default function NetworkDetailsPage(props: PageProps) {
 
           <Col xs={24} style={{ paddingTop: '1rem' }}>
             <div className="" style={{ width: '100%', overflow: 'auto' }}>
-              <Table
+              <VirtualisedTable
                 columns={aclTableCols}
                 dataSource={filteredAclData}
                 className="acl-table"
                 rowKey="nodeId"
                 size="small"
                 pagination={false}
+                scroll={{
+                  x: '100%',
+                }}
               />
             </div>
           </Col>

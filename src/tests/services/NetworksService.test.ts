@@ -1,13 +1,13 @@
 import { ApiRoutes } from '@/constants/ApiRoutes';
 import { Network } from '@/models/Network';
-import { baseService } from '@/services/BaseService';
+import { axiosService } from '@/services/BaseService';
 import MockAdapter from 'axios-mock-adapter';
 import { stubNetwork1, stubNetworks } from '../fixtures/Models';
 import { NetworksService } from '@/services/NetworksService';
 import { convertUiNetworkToNetworkPayload } from '@/utils/NetworkUtils';
 
 describe('NetworksService', () => {
-  const mock = new MockAdapter(baseService);
+  const mock = new MockAdapter(axiosService);
 
   afterEach(() => {
     mock.reset();

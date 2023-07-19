@@ -43,6 +43,7 @@ export default function HostDetailsPage(props: PageProps) {
   const queryParams = useQuery();
 
   const storeUpdateHost = store.updateHost;
+  const storeDeleteHost = store.deleteHost;
   const [isLoading, setIsLoading] = useState(false);
   const [isEditingHost, setIsEditingHost] = useState(false);
   const [host, setHost] = useState<Host | null>(null);
@@ -152,9 +153,9 @@ export default function HostDetailsPage(props: PageProps) {
       if (!hostId) {
         throw new Error('Host not found');
       }
-      await HostsService.deleteHost(hostId);
-      notify.success({ message: `Host ${hostId} deleted` });
-      store.deleteNetwork(hostId);
+      await HostsService.deleteHost(hostId, true);
+      notify.success({ message: `Host ${host?.name} deleted` });
+      storeDeleteHost(hostId);
       navigate(AppRoutes.HOSTS_ROUTE);
     } catch (err) {
       if (err instanceof AxiosError) {
@@ -168,12 +169,31 @@ export default function HostDetailsPage(props: PageProps) {
         });
       }
     }
-  }, [hostId, notify, navigate, store]);
+  }, [hostId, notify, host?.name, storeDeleteHost, navigate]);
 
   const promptConfirmDelete = () => {
+    if (!host) return;
+    const assocNodes = store.nodes.filter((node) => node.hostid === host.id);
+
     Modal.confirm({
       title: `Do you want to delete host ${host?.name}?`,
       icon: <ExclamationCircleFilled />,
+      content: (
+        <>
+          <Row>
+            {assocNodes.length > 0 && (
+              <Col xs={24}>
+                <Typography.Text color="warning">Host will be removed from the following networks:</Typography.Text>
+                <ul>
+                  {assocNodes.map((node) => (
+                    <li key={node.id}>{node.network}</li>
+                  ))}
+                </ul>
+              </Col>
+            )}
+          </Row>
+        </>
+      ),
       onOk() {
         onHostDelete();
       },
@@ -391,7 +411,7 @@ export default function HostDetailsPage(props: PageProps) {
             <Table
               columns={interfacesTableCols}
               dataSource={
-                host?.interfaces.filter((iface) =>
+                host?.interfaces?.filter((iface) =>
                   `${iface.name}${iface.addressString}`
                     .toLocaleLowerCase()
                     .includes(searchText.toLocaleLowerCase().trim())

@@ -8,7 +8,7 @@ describe('BaseService', () => {
     import.meta.env.VITE_IS_SAAS_BUILD = 'false';
     import.meta.env.VITE_BASE_URL = mockBaseUrl;
 
-    const { setupTenantConfig, baseService, isSaasBuild } = await import('@/services/BaseService');
+    const { setupTenantConfig, axiosService: baseService, isSaasBuild } = await import('@/services/BaseService');
 
     setupTenantConfig();
 

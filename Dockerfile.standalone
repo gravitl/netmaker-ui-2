@@ -21,9 +21,6 @@ COPY . /usr/app
 ENV VITE_IS_SAAS_BUILD=false
 
 
-# Essential vars
-
-
 # Standalone build mandatory vars
 
 # This value is used if `BACKEND_URL` env var is unset.
@@ -33,10 +30,14 @@ ENV VITE_BASE_URL=
 ENV VITE_LICENSE_DASHBOARD_URL=https://account.netmaker.io
 
 
-# EE customisations
-
-ENV VITE_TENANT_LOGO=
-ENV VITE_TENANT_NAME=
+# EE customisations and branding
+ENV VITE_PRODUCT_NAME=
+ENV VITE_TENANT_LOGO_DARK_URL=
+ENV VITE_TENANT_LOGO_LIGHT_URL=
+ENV VITE_TENANT_LOGO_DARK_SMALL_URL=
+ENV VITE_TENANT_LOGO_LIGHT_SMALL_URL=
+ENV VITE_TENANT_LOGO_ALT_TEXT=
+ENV VITE_TENANT_FAVICON_LOGO=
 
 
 # Other vars
