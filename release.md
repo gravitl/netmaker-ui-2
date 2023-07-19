@@ -1,5 +1,6 @@
+# Netmaker UI release notes
 
-# Netmaker UI v0.20.4
+## Netmaker UI v0.20.4
 
 ## Whats New
 - FreeBSD 13/14 specific binaries
