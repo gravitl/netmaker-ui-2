@@ -19,7 +19,7 @@ We welcome contributions to Netmaker UI. Please see our [contributing guidelines
 
 #### Prerequisites
 
-- [Node.js](https://nodejs.org/)
+- [Node.js](https://nodejs.org/en/)
 
 #### Getting Started
 
