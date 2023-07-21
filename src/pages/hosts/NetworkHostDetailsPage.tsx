@@ -167,6 +167,40 @@ export default function NetworkHostDetailsPage(props: PageProps) {
     [hostId, node, networkId, notify, storeDeleteNode, navigate]
   );
 
+  const onHostToggleConnectivity = useCallback(
+    async (newStatus: boolean) => {
+      try {
+        if (!hostId || !node || !networkId) {
+          throw new Error('Host or network not found');
+        }
+        const updatedNode = (await NodesService.updateNode(node.id, networkId, { ...node, connected: newStatus })).data;
+        store.updateNode(node.id, updatedNode);
+        notify.success({
+          message: `Successfully ${newStatus ? 'connected' : 'disconnected'}`,
+          description: `Host is now ${newStatus ? 'connected to' : 'disconnected from'} network ${networkId}.`,
+        });
+      } catch (err) {
+        notify.error({
+          message: `Failed to ${newStatus ? 'connect' : 'disconnect'} host ${newStatus ? 'to' : 'from'} network`,
+          description: extractErrorMsg(err as any),
+        });
+      }
+    },
+    [hostId, node, networkId, notify, store]
+  );
+
+  const promptConfirmDisconnect = () => {
+    Modal.confirm({
+      title: `Do you want to ${node?.connected ? 'disconnect' : 'connect'} host ${host?.name} ${
+        node?.connected ? 'from' : 'to'
+      } network ${networkId}?`,
+      icon: <ExclamationCircleFilled />,
+      onOk() {
+        onHostToggleConnectivity(!node?.connected);
+      },
+    });
+  };
+
   const promptConfirmRemove = () => {
     let forceDelete = false;
 
@@ -624,6 +658,18 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                         onClick: (ev) => {
                           ev.domEvent.stopPropagation();
                           navigate(getHostRoute(hostId ?? ''));
+                        },
+                      },
+                      {
+                        key: 'disconnect',
+                        label: (
+                          <Typography.Text type="warning">
+                            {node?.connected ? 'Disconnect from' : 'Connect to'} network
+                          </Typography.Text>
+                        ),
+                        onClick: (ev) => {
+                          ev.domEvent.stopPropagation();
+                          promptConfirmDisconnect();
                         },
                       },
                       {

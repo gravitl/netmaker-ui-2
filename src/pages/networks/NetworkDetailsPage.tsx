@@ -60,6 +60,7 @@ import {
   TableColumnProps,
   Tabs,
   TabsProps,
+  Tag,
   theme,
   Tooltip,
   Typography,
@@ -1393,12 +1394,12 @@ export default function NetworkDetailsPage(props: PageProps) {
     [networkNodes, store.hostsCommonDetails]
   );
 
-  const disconnectNodeFromNetwork = useCallback(
+  const removeNodeFromNetwork = useCallback(
     (newStatus: boolean, node: ExtendedNode) => {
       let forceDelete = false;
 
       Modal.confirm({
-        title: 'Disconnect host from network',
+        title: 'Remove host from network',
         content: (
           <>
             <Row>
@@ -1448,6 +1449,46 @@ export default function NetworkDetailsPage(props: PageProps) {
       });
     },
     [networkId, notify, storeDeleteNode]
+  );
+
+  const disconnectNodeFromNetwork = useCallback(
+    (newStatus: boolean, node: ExtendedNode) => {
+      Modal.confirm({
+        title: newStatus ? 'Connect host to network' : 'Disconnect host from network',
+        content: (
+          <>
+            <Row>
+              <Col xs={24}>
+                <Typography.Text>
+                  Are you sure you want {node?.name ?? ''} to {newStatus ? 'connect to' : 'disconnect from'} the
+                  network?
+                </Typography.Text>
+              </Col>
+            </Row>
+          </>
+        ),
+        async onOk() {
+          try {
+            if (!networkId) return;
+            const updatedNode = (await NodesService.updateNode(node.id, networkId, { ...node, connected: newStatus }))
+              .data;
+            store.updateNode(node.id, updatedNode);
+            notify.success({
+              message: `Successfully ${newStatus ? 'connected' : 'disconnected'}`,
+              description: `${node?.name ?? 'Host'} is now ${
+                newStatus ? 'connected to' : 'disconnected from'
+              } network ${networkId}.`,
+            });
+          } catch (err) {
+            notify.error({
+              message: 'Failed to update host',
+              description: extractErrorMsg(err as any),
+            });
+          }
+        },
+      });
+    },
+    [networkId, notify, store]
   );
 
   // ui components
@@ -1631,6 +1672,12 @@ export default function NetworkDetailsPage(props: PageProps) {
                 //   dataIndex: 'name',
                 // },
                 {
+                  title: 'Connectivity',
+                  render: (_, node) => (
+                    <Tag color={node.connected ? 'green' : 'red'}>{node.connected ? 'Connected' : 'Disconnected'}</Tag>
+                  ),
+                },
+                {
                   title: 'Health Status',
                   render(_, node) {
                     return getHostHealth(node.hostid, [node]);
@@ -1653,12 +1700,23 @@ export default function NetworkDetailsPage(props: PageProps) {
                             },
                             {
                               key: 'disconnect',
+                              label: node.connected ? 'Disconnect host' : 'Connect host',
+                              disabled: node.pendingdelete !== false,
+                              title: node.pendingdelete !== false ? 'Host is being disconnected from network' : '',
+                              onClick: () =>
+                                disconnectNodeFromNetwork(
+                                  !node.connected,
+                                  getExtendedNode(node, store.hostsCommonDetails)
+                                ),
+                            },
+                            {
+                              key: 'remove',
                               label: 'Remove from network',
                               danger: true,
                               disabled: node.pendingdelete !== false,
                               title: node.pendingdelete !== false ? 'Host is being removed from network' : '',
                               onClick: () =>
-                                disconnectNodeFromNetwork(false, getExtendedNode(node, store.hostsCommonDetails)),
+                                removeNodeFromNetwork(false, getExtendedNode(node, store.hostsCommonDetails)),
                             },
                           ],
                         }}
