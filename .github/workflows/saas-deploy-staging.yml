@@ -1,41 +1,18 @@
-name: SaaS Deployment
+name: NMUI SaaS Deployment to Staging
 
 on:
-  workflow_dispatch:
-    inputs:
-      env:
-        type: choice
-        required: true
-        description: 'Environment to deploy to'
-        options:
-          - 'dev'
-          - 'staging'
-          # - 'prod'
-        default: 'dev'
-      ref:
-        type: string
-        required: true
-        description: 'Branch, tag or commit to deploy'
+  push:
+    branches:
+      - staging
 
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: "Checkout to ref: ${{ github.event.inputs.ref }}"
+      - name: "Checkout to staging"
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.inputs.ref }}
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-
-      - name: Clean Install
-        run: npm ci
-
-      - name: Build
-        run: npm run build
+          ref: staging
 
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -60,17 +37,8 @@ jobs:
         with:
           token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
 
-      - name: Prepare DO KUBECONFIG for dev
-        if: ${{ github.event.inputs.env == 'dev' }}
-        run: doctl kubernetes cluster kubeconfig save --expiry-seconds 600 saas-dev-cluster-europe-1
-
       - name: Prepare DO KUBECONFIG for staging
-        if: ${{ github.event.inputs.env == 'staging' }}
         run: doctl kubernetes cluster kubeconfig save --expiry-seconds 600 saas-staging-cluster-us-west
-      
-      - name: Prepare DO KUBECONFIG for prod
-        if: ${{ github.event.inputs.env == 'prod' }}
-        run: doctl kubernetes cluster kubeconfig save --expiry-seconds 600 saas-prod-cluster-us-west
 
       - name: Deploy to DigitalOcean Kubernetes
         uses: WyriHaximus/github-action-helm3@v3
@@ -81,6 +49,7 @@ jobs:
             --namespace accounts \
             --create-namespace \
             --set env=staging \
+            --set image.accountsbackend.pullPolicy=Always \
             --set image.accountsbackend.pullPolicy=Always \
             --set image.accountsbackend.tag=$(echo $GITHUB_SHA | head -c7)
 
