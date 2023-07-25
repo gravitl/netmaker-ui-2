@@ -2,8 +2,7 @@ name: NMUI SaaS Deployment to Dev
 
 on:
   push:
-    branches:
-      - develop
+    branches: [develop]
 
 jobs:
   build-deploy:
@@ -51,4 +50,3 @@ jobs:
 
       - name: Verify deployment
         run: kubectl rollout status deployment/netmaker-ui -n accounts
-  

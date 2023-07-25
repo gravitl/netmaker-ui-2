@@ -2,8 +2,7 @@ name: NMUI SaaS Deployment to Prod
 
 on:
   push:
-    branches:
-      - saas-prod
+    branches: [saas-prod]
 
 jobs:
   build-deploy:
