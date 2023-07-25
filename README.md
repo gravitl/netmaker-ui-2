@@ -36,3 +36,4 @@ We welcome contributions to Netmaker UI. Please see our [contributing guidelines
 #### Testing
 
 1. Run the test script: `npm run test`
+
