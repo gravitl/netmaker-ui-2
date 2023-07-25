@@ -40,7 +40,7 @@ jobs:
       - name: Set up kubectl
         uses: matootie/dokube@v1.4.0
         with:
-          personalAccessToken: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+          personalAccessToken: ${{ secrets.DIGITALOCEAN_TOKEN }}
           clusterName: saas-prod-cluster-us-west
 
       - name: Set k8s deployment image
