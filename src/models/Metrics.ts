@@ -7,7 +7,6 @@ export interface NodeMetric {
   actualuptime: number;
   uptime: number;
   percentup: number;
-  collected_by_proxy: boolean;
   latency: number;
   totalreceived: number;
   totalsent: number;
