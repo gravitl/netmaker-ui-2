@@ -2,8 +2,7 @@ name: NMUI SaaS Deployment to Dev
 
 on:
   push:
-    branches:
-      - develop
+    branches: [develop]
 
 jobs:
   build-deploy:
@@ -40,7 +39,7 @@ jobs:
       - name: Set up kubectl
         uses: matootie/dokube@v1.4.0
         with:
-          personalAccessToken: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+          personalAccessToken: ${{ secrets.DIGITALOCEAN_TOKEN }}
           clusterName: saas-dev-cluster-europe-1
 
       - name: Set k8s deployment image
@@ -51,4 +50,3 @@ jobs:
 
       - name: Verify deployment
         run: kubectl rollout status deployment/netmaker-ui -n accounts
-  

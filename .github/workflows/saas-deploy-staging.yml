@@ -1,18 +1,17 @@
-name: NMUI SaaS Deployment to Staging
+name: NMUI SaaS Deployment to SaaS Staging
 
 on:
   push:
-    branches:
-      - staging
+    branches: [saas-staging]
 
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: "Checkout to staging"
+      - name: "Checkout to saas-staging"
         uses: actions/checkout@v3
         with:
-          ref: staging
+          ref: saas-staging
 
       - name: Set release tag
         run: |
@@ -40,7 +39,7 @@ jobs:
       - name: Set up kubectl
         uses: matootie/dokube@v1.4.0
         with:
-          personalAccessToken: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+          personalAccessToken: ${{ secrets.DIGITALOCEAN_TOKEN }}
           clusterName: saas-staging-cluster-us-west
 
       - name: Set k8s deployment image

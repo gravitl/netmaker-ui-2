@@ -2,9 +2,9 @@ name: CI workflow
 
 on:
   push:
-    branches: [master, main, develop, staging]
+    branches: [master, main, develop, saas-staging, saas-prod]
   pull_request:
-    branches: [master, main, develop, staging]
+    branches: [master, main, develop, saas-staging, saas-prod]
 
 jobs:
   lint:
