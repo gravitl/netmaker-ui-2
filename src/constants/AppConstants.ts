@@ -12,3 +12,7 @@ export const DEFAULT_BRANDING_CONFIG: BrandingConfig = {
   favicon: '/favicon.ico',
   primaryColor: '#624AF4',
 };
+
+export const BUG_REPORT_URL = `https://github.com/gravitl/netmaker-ui-2/issues/new?title=${encodeURIComponent(
+  'UI Bug Report'
+)}&body=:body`;

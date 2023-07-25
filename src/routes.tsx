@@ -39,7 +39,6 @@ const routes: RouteObject[] = [
   {
     id: 'dashboard',
     path: AppRoutes.DASHBOARD_ROUTE,
-    // element: <DashboardLayout />,
     element: <MainLayout />,
     children: [
       {
