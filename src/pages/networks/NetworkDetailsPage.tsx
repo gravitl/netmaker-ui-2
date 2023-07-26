@@ -6,7 +6,7 @@ import ClientDetailsModal from '@/components/modals/client-detaiils-modal/Client
 import UpdateEgressModal from '@/components/modals/update-egress-modal/UpdateEgressModal';
 import { NodeAcl, NodeAclContainer } from '@/models/Acl';
 import { DNS } from '@/models/Dns';
-import { ExternalClient } from '@/models/ExternalClient';
+import { ExtClientAcls, ExternalClient } from '@/models/ExternalClient';
 import { Host } from '@/models/Host';
 import { Network } from '@/models/Network';
 import { ExtendedNode, Node } from '@/models/Node';
@@ -178,6 +178,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [isUpdateClientModalOpen, setIsUpdateClientModalOpen] = useState(false);
   const [isUpdateNodeModalOpen, setIsUpdateNodeModalOpen] = useState(false);
   const [targetNode, setTargetNode] = useState<Node | null>(null);
+  const [showClientAcls, setShowClientAcls] = useState(false);
 
   const networkNodes = useMemo(
     () =>
@@ -214,6 +215,14 @@ export default function NetworkDetailsPage(props: PageProps) {
         .sort((a, b) => a.ingressgatewayid.localeCompare(b.ingressgatewayid)),
     [clients, filteredClientGateways, searchClients, selectedGateway]
   );
+
+  const clientAcls = useMemo<Record<ExternalClient['clientid'], ExtClientAcls>>(() => {
+    const acls: Record<ExternalClient['clientid'], ExtClientAcls> = {};
+    clients.forEach((client) => {
+      acls[client.clientid] = client.deniednodeacls ?? {};
+    });
+    return acls;
+  }, [clients]);
 
   const egresses = useMemo<ExtendedNode[]>(() => {
     return networkNodes
@@ -1734,7 +1743,15 @@ export default function NetworkDetailsPage(props: PageProps) {
         </Row>
       </div>
     );
-  }, [searchHost, network?.isipv6, networkNodes, store.hostsCommonDetails, editNode, disconnectNodeFromNetwork]);
+  }, [
+    searchHost,
+    network?.isipv6,
+    networkNodes,
+    store.hostsCommonDetails,
+    editNode,
+    disconnectNodeFromNetwork,
+    removeNodeFromNetwork,
+  ]);
 
   const getDnsContent = useCallback(() => {
     return (
@@ -2263,6 +2280,18 @@ export default function NetworkDetailsPage(props: PageProps) {
               prefix={<SearchOutlined />}
               style={{ width: '60%' }}
             />
+            {/* {isServerEE && ( */}
+            <span style={{ marginLeft: '2rem' }}>
+              <label style={{ marginRight: '1rem' }} htmlFor="show-clients-acl-switch">
+                Show Clients
+              </label>
+              <Switch
+                id="show-clients-acl-switch"
+                checked={showClientAcls}
+                onChange={(newVal) => setShowClientAcls(newVal)}
+              />
+            </span>
+            {/* )} */}
           </Col>
           <Col xs={12} style={{ textAlign: 'right' }}>
             <Button
@@ -2359,7 +2388,17 @@ export default function NetworkDetailsPage(props: PageProps) {
         </Row>
       </div>
     );
-  }, [aclTableCols, acls, filteredAclData, hasAclsBeenEdited, networkId, notify, originalAcls, searchAclHost]);
+  }, [
+    aclTableCols,
+    acls,
+    filteredAclData,
+    hasAclsBeenEdited,
+    networkId,
+    notify,
+    originalAcls,
+    searchAclHost,
+    showClientAcls,
+  ]);
 
   const getGraphContent = useCallback(() => {
     const containerHeight = '78vh';
