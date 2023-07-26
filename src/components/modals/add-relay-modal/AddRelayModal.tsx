@@ -22,7 +22,7 @@ import './AddRelayModal.styles.scss';
 import { Network } from '@/models/Network';
 import { ExtendedNode, Node } from '@/models/Node';
 import { getExtendedNode, getNodeConnectivityStatus, isNodeRelay } from '@/utils/NodeUtils';
-import { CloseOutlined } from '@ant-design/icons';
+import { CloseOutlined, SearchOutlined } from '@ant-design/icons';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { CreateNodeRelayDto } from '@/services/dtos/CreateNodeRelayDto';
 import { NodesService } from '@/services/NodesService';
@@ -161,6 +161,7 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
                           placeholder="Search host..."
                           value={relaySearch}
                           onChange={(e) => setRelaySearch(e.target.value)}
+                          prefix={<SearchOutlined />}
                         />
                       </Col>
                     </Row>

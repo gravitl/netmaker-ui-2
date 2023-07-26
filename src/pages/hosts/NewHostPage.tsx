@@ -3,7 +3,7 @@ import { Network } from '@/models/Network';
 import { AppRoutes } from '@/routes';
 import { useStore } from '@/store/store';
 import { getNetclientDownloadLink, useQuery } from '@/utils/RouteUtils';
-import { CopyOutlined, PlusOutlined } from '@ant-design/icons';
+import { CopyOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons';
 import { Button, Card, Col, Divider, Input, Layout, List, Row, Steps } from 'antd';
 import { MouseEvent, useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -11,6 +11,7 @@ import { PageProps } from '../../models/Page';
 
 import './NewHostPage.scss';
 import { getBrandingConfig } from '@/services/BaseService';
+import Search from 'antd/es/input/Search';
 
 type AvailableOses = 'windows' | 'macos' | 'linux' | 'freebsd' | 'docker';
 
@@ -87,7 +88,7 @@ export default function NewHostPage(props: PageProps) {
           <Col xs={24} lg={12}>
             <Card>
               <p style={{ marginTop: '0' }}>Select a network</p>
-              <Input placeholder="Search network..." />
+              <Input placeholder="Search network..." prefix={<SearchOutlined />} />
               <List
                 size="small"
                 className="networks-list"

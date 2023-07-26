@@ -60,7 +60,7 @@ export default function DashboardPage(props: PageProps) {
               <Space direction="horizontal" size="large" align="end">
                 <Input
                   placeholder="Search..."
-                  suffix={<SearchOutlined />}
+                  prefix={<SearchOutlined />}
                   style={{ borderRadius: '24px', width: '20rem' }}
                 />
                 <Dropdown.Button

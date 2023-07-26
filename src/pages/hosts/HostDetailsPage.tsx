@@ -6,7 +6,7 @@ import { HostsService } from '@/services/HostsService';
 import { useStore } from '@/store/store';
 import { getNodeConnectivityStatus } from '@/utils/NodeUtils';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
-import { ExclamationCircleFilled, SettingOutlined } from '@ant-design/icons';
+import { ExclamationCircleFilled, SearchOutlined, SettingOutlined } from '@ant-design/icons';
 import {
   Button,
   Card,
@@ -372,6 +372,7 @@ export default function HostDetailsPage(props: PageProps) {
               placeholder="Search interfaces"
               value={searchText}
               onChange={(ev) => setSearchText(ev.target.value)}
+              prefix={<SearchOutlined />}
             />
           </Col>
         </Row>

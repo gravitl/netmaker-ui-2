@@ -23,7 +23,7 @@ import { Network } from '@/models/Network';
 import { ExtendedNode, Node } from '@/models/Node';
 import { Host } from '@/models/Host';
 import { getExtendedNode, getNodeConnectivityStatus, isNodeRelay } from '@/utils/NodeUtils';
-import { CloseOutlined } from '@ant-design/icons';
+import { CloseOutlined, SearchOutlined } from '@ant-design/icons';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { CreateNodeRelayDto } from '@/services/dtos/CreateNodeRelayDto';
 import { NodesService } from '@/services/NodesService';
@@ -173,6 +173,7 @@ export default function UpdateRelayModal({ relay, isOpen, onUpdateRelay, onCance
                         placeholder="Search host..."
                         value={relayedSearch}
                         onChange={(e) => setRelayedSearch(e.target.value)}
+                        prefix={<SearchOutlined />}
                       />
                     </Col>
                   </Row>
