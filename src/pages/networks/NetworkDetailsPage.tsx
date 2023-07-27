@@ -2415,18 +2415,18 @@ export default function NetworkDetailsPage(props: PageProps) {
               prefix={<SearchOutlined />}
               style={{ width: '60%' }}
             />
-            {/* {isServerEE && ( */}
-            <span style={{ marginLeft: '2rem' }}>
-              <label style={{ marginRight: '1rem' }} htmlFor="show-clients-acl-switch">
-                Show Clients
-              </label>
-              <Switch
-                id="show-clients-acl-switch"
-                checked={showClientAcls}
-                onChange={(newVal) => setShowClientAcls(newVal)}
-              />
-            </span>
-            {/* )} */}
+            {isServerEE && (
+              <span style={{ marginLeft: '2rem' }}>
+                <label style={{ marginRight: '1rem' }} htmlFor="show-clients-acl-switch">
+                  Show Clients
+                </label>
+                <Switch
+                  id="show-clients-acl-switch"
+                  checked={showClientAcls}
+                  onChange={(newVal) => setShowClientAcls(newVal)}
+                />
+              </span>
+            )}
           </Col>
           <Col xs={12} style={{ textAlign: 'right' }}>
             <Button
