@@ -317,14 +317,6 @@ export default function NetworkDetailsPage(props: PageProps) {
     return networkAcls;
   }, [nodeAcls, networkNodes]);
 
-  // const clientAclsMap = useMemo<Record<ExternalClient['clientid'], ExtClientAcls>>(() => {
-  //   const acls: Record<ExternalClient['clientid'], ExtClientAcls> = {};
-  //   clients.forEach((client) => {
-  //     acls[client.clientid] = client.deniednodeacls ?? {};
-  //   });
-  //   return acls;
-  // }, [clients]);
-
   const aclTableData = useMemo<AclTableData[]>(() => {
     // node acls
     const aclDataPerNode: AclTableData[] = networkNodes
@@ -1121,6 +1113,27 @@ export default function NetworkDetailsPage(props: PageProps) {
         if (rowColTypeTuple[1] === 'node') {
           return <DashOutlined />;
         }
+        // TODO: optimise this bit of logic to prevent O^2. maybe refactor
+        const assocClient = clients.find((c) => c.clientid === nodeOrClientIdCol);
+        const assocIngress = networkNodes.find((n) => n.id === assocClient?.ingressgatewayid);
+        const assocIngressDenyList = Object.keys(nodeAcls[assocIngress?.id ?? ''] ?? {}).filter(
+          (targetNodeId) => nodeAcls[assocIngress?.id ?? ''][targetNodeId] === ACL_DENIED
+        );
+        if (assocIngressDenyList.includes(nodeOrClientIdRow)) {
+          return (
+            <Badge size="small" dot={originalAclLevel !== newAclLevel}>
+              <Button
+                danger
+                disabled
+                title={`The associated ingress gateway (${
+                  assocIngress?.name ?? ''
+                }) has denied this client access to this node.`}
+                size="small"
+                icon={<StopOutlined />}
+              />
+            </Badge>
+          );
+        }
         switch (newAclLevel) {
           case ACL_DENIED:
             return (
@@ -1242,7 +1255,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       })),
     ];
-  }, [aclTableData, originalClientAcls, originalNodeAcls]);
+  }, [aclTableData, clients, networkNodes, nodeAcls, originalClientAcls, originalNodeAcls]);
 
   const hasAclsBeenEdited = useMemo(
     () =>
