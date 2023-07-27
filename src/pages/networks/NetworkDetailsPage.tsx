@@ -1125,9 +1125,7 @@ export default function NetworkDetailsPage(props: PageProps) {
               <Button
                 danger
                 disabled
-                title={`The associated ingress gateway (${
-                  assocIngress?.name ?? ''
-                }) has denied this client access to this node.`}
+                title={`The associated gateway (${assocIngress?.name ?? ''}) has denied client access to this node.`}
                 size="small"
                 icon={<StopOutlined />}
               />
