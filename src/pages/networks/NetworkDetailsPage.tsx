@@ -75,7 +75,7 @@ import { ControlsContainer, FullScreenControl, SearchControl, SigmaContainer, Zo
 import NetworkGraph from '@/components/NetworkGraph';
 import UpdateRelayModal from '@/components/modals/update-relay-modal/UpdateRelayModal';
 import { NetworkMetrics } from '@/models/Metrics';
-import { getHostHealth, getTimeMinHrs } from '@/utils/Utils';
+import { getExtClientAclStatus, getHostHealth, getTimeMinHrs } from '@/utils/Utils';
 import AddHostsToNetworkModal from '@/components/modals/add-hosts-to-network-modal/AddHostsToNetworkModal';
 import NewHostModal from '@/components/modals/new-host-modal/NewHostModal';
 import AddIngressModal from '@/components/modals/add-ingress-modal/AddIngressModal';
@@ -92,9 +92,11 @@ interface ExternalRoutesTableData {
 }
 
 interface AclTableData {
-  nodeId: Node['id'];
-  name: Host['name'];
-  acls: NodeAcl;
+  type: 'node' | 'client';
+  nodeOrClientId: Node['id'] | ExternalClient['clientid'];
+  name: Host['name'] | ExternalClient['clientid'];
+  acls?: NodeAcl;
+  clientAcls?: ExtClientAcls;
 }
 
 type MetricCategories = 'connectivity-status' | 'latency' | 'bytes-sent' | 'bytes-received' | 'uptime';
@@ -150,7 +152,8 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [dnses, setDnses] = useState<DNS[]>([]);
   const [isAddDnsModalOpen, setIsAddDnsModalOpen] = useState(false);
   const [acls, setAcls] = useState<NodeAclContainer>({});
-  const [originalAcls, setOriginalAcls] = useState<NodeAclContainer>({});
+  const [originalNodeAcls, setOriginalNodeAcls] = useState<NodeAclContainer>({});
+  const [originalClientAcls, setOriginalClientAcls] = useState<Record<ExternalClient['clientid'], ExtClientAcls>>({});
   const [isAddClientModalOpen, setIsAddClientModalOpen] = useState(false);
   const [clients, setClients] = useState<ExternalClient[]>([]);
   const [isClientDetailsModalOpen, setIsClientDetailsModalOpen] = useState(false);
@@ -216,7 +219,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     [clients, filteredClientGateways, searchClients, selectedGateway]
   );
 
-  const clientAcls = useMemo<Record<ExternalClient['clientid'], ExtClientAcls>>(() => {
+  const clientAclsMap = useMemo<Record<ExternalClient['clientid'], ExtClientAcls>>(() => {
     const acls: Record<ExternalClient['clientid'], ExtClientAcls> = {};
     clients.forEach((client) => {
       acls[client.clientid] = client.deniednodeacls ?? {};
@@ -321,16 +324,31 @@ export default function NetworkDetailsPage(props: PageProps) {
   }, [acls, networkNodes]);
 
   const aclTableData = useMemo<AclTableData[]>(() => {
-    const aclDataPerNode = networkNodes
+    // node acls
+    const aclDataPerNode: AclTableData[] = networkNodes
       .map((node) => getExtendedNode(node, store.hostsCommonDetails))
       .map((node) => ({
-        nodeId: node.id,
+        type: 'node',
+        nodeOrClientId: node.id,
         name: node?.name ?? '',
         acls: networkAcls[node.id],
-      }))
-      .sort((a, b) => a?.name?.localeCompare(b?.name ?? '') ?? 0);
+      }));
+
+    // client acls
+    if (showClientAcls) {
+      clients.forEach((client) => {
+        aclDataPerNode.push({
+          type: 'client',
+          nodeOrClientId: client.clientid,
+          name: client.clientid,
+          clientAcls: clientAclsMap[client.clientid],
+        });
+      });
+    }
+
+    aclDataPerNode.sort((a, b) => a?.name?.localeCompare(b?.name ?? '') ?? 0);
     return aclDataPerNode;
-  }, [networkAcls, networkNodes, store.hostsCommonDetails]);
+  }, [clientAclsMap, clients, networkAcls, networkNodes, showClientAcls, store.hostsCommonDetails]);
 
   const filteredAclData = useMemo<AclTableData[]>(() => {
     return aclTableData.filter((node) => node.name.toLowerCase().includes(searchAclHost.toLowerCase()));
@@ -426,7 +444,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       if (!networkId) return;
       const acls = (await NetworksService.getAcls(networkId)).data;
       setAcls(acls);
-      setOriginalAcls(acls);
+      setOriginalNodeAcls(acls);
     } catch (err) {
       if (err instanceof AxiosError) {
         notify.error({
@@ -449,13 +467,16 @@ export default function NetworkDetailsPage(props: PageProps) {
       if (!networkId) return;
       const networkClients = (await NodesService.getNetworkExternalClients(networkId)).data ?? [];
       setClients(networkClients);
+      const clientAclsContainer = {} as Record<ExternalClient['clientid'], ExtClientAcls>;
+      networkClients.forEach((client) => {
+        clientAclsContainer[client.clientid] = client.deniednodeacls ?? {};
+      });
+      setOriginalClientAcls(clientAclsContainer);
     } catch (err) {
-      if (err instanceof AxiosError) {
-        notify.error({
-          message: 'Error loading clients',
-          description: extractErrorMsg(err),
-        });
-      }
+      notify.error({
+        message: 'Error loading clients',
+        description: extractErrorMsg(err as any),
+      });
     }
   }, [networkId, notify]);
 
@@ -470,12 +491,10 @@ export default function NetworkDetailsPage(props: PageProps) {
             setClients((prev) => prev.filter((c) => c.clientid !== client.clientid));
             storeFetchNodes();
           } catch (err) {
-            if (err instanceof AxiosError) {
-              notify.error({
-                message: 'Error deleting Client',
-                description: extractErrorMsg(err),
-              });
-            }
+            notify.error({
+              message: 'Error deleting Client',
+              description: extractErrorMsg(err as any),
+            });
           }
         },
       });
@@ -1043,54 +1062,57 @@ export default function NetworkDetailsPage(props: PageProps) {
   );
 
   const aclTableCols = useMemo<TableColumnProps<AclTableData>[]>(() => {
-    const aclTableDataMap = new Map<Node['id'], AclTableData>();
-    aclTableData.forEach((aclData) => aclTableDataMap.set(aclData.nodeId, aclData));
+    const aclTableDataMap = new Map<Node['id'] | ExternalClient['clientid'], AclTableData>();
+    aclTableData.forEach((aclData) => aclTableDataMap.set(aclData.nodeOrClientId, aclData));
 
     const renderAclValue = (
+      type: 'node' | 'client',
       originalAclLevel: number,
       newAclLevel: number,
-      nodeId1: Node['id'],
-      nodeId2: Node['id']
+      nodeOrClientId1: Node['id'] | ExternalClient['clientid'],
+      nodeOrClientId2: Node['id'] | ExternalClient['clientid']
     ) => {
-      switch (newAclLevel) {
-        case 1:
-          return (
-            <Badge size="small" dot={originalAclLevel !== newAclLevel}>
-              <Button
-                danger
-                size="small"
-                icon={<StopOutlined />}
-                onClick={() => {
-                  setAcls((prevAcls) => {
-                    const newAcls = structuredClone(prevAcls);
-                    newAcls[nodeId1][nodeId2] = 2;
-                    newAcls[nodeId2][nodeId1] = 2;
-                    return newAcls;
-                  });
-                }}
-              />
-            </Badge>
-          );
-        case 2:
-          return (
-            <Badge size="small" dot={originalAclLevel !== newAclLevel}>
-              <Button
-                size="small"
-                style={{ color: '#3C8618', borderColor: '#274916' }}
-                icon={<CheckOutlined />}
-                onClick={() => {
-                  setAcls((prevAcls) => {
-                    const newAcls = structuredClone(prevAcls);
-                    newAcls[nodeId1][nodeId2] = 1;
-                    newAcls[nodeId2][nodeId1] = 1;
-                    return newAcls;
-                  });
-                }}
-              />
-            </Badge>
-          );
-        default:
-          return <DashOutlined />;
+      if (type === 'node') {
+        switch (newAclLevel) {
+          case 1:
+            return (
+              <Badge size="small" dot={originalAclLevel !== newAclLevel}>
+                <Button
+                  danger
+                  size="small"
+                  icon={<StopOutlined />}
+                  onClick={() => {
+                    setAcls((prevAcls) => {
+                      const newAcls = structuredClone(prevAcls);
+                      newAcls[nodeOrClientId1][nodeOrClientId2] = 2;
+                      newAcls[nodeOrClientId2][nodeOrClientId1] = 2;
+                      return newAcls;
+                    });
+                  }}
+                />
+              </Badge>
+            );
+          case 2:
+            return (
+              <Badge size="small" dot={originalAclLevel !== newAclLevel}>
+                <Button
+                  size="small"
+                  style={{ color: '#3C8618', borderColor: '#274916' }}
+                  icon={<CheckOutlined />}
+                  onClick={() => {
+                    setAcls((prevAcls) => {
+                      const newAcls = structuredClone(prevAcls);
+                      newAcls[nodeOrClientId1][nodeOrClientId2] = 1;
+                      newAcls[nodeOrClientId2][nodeOrClientId1] = 1;
+                      return newAcls;
+                    });
+                  }}
+                />
+              </Badge>
+            );
+          default:
+            return <DashOutlined />;
+        }
       }
     };
 
@@ -1117,17 +1139,30 @@ export default function NetworkDetailsPage(props: PageProps) {
         width: '5rem',
         render(_: unknown, aclEntry: (typeof aclTableData)[0]) {
           return renderAclValue(
-            originalAcls?.[aclEntry.nodeId]?.[aclData.nodeId] ?? 0,
-            aclTableDataMap.get(aclEntry.nodeId)?.acls?.[aclData?.nodeId] ?? 0,
-            aclEntry.nodeId,
-            aclData.nodeId
+            [aclData.type, aclEntry.type].some((t) => t === 'client') ? 'client' : 'node',
+            aclData.type === 'node'
+              ? originalNodeAcls?.[aclEntry.nodeOrClientId]?.[aclData.nodeOrClientId] ?? 0
+              : getExtClientAclStatus(aclEntry.nodeOrClientId, originalClientAcls[aclData.nodeOrClientId] ?? {}),
+            aclData.type === 'node'
+              ? aclTableDataMap.get(aclEntry.nodeOrClientId)?.acls?.[aclData?.nodeOrClientId] ?? 0
+              : aclEntry.nodeOrClientId === aclData.nodeOrClientId // check disable toggling ones own self
+              ? 0
+              : getExtClientAclStatus(
+                  aclEntry.nodeOrClientId,
+                  aclTableDataMap.get(aclData.nodeOrClientId)?.clientAcls ?? {}
+                ),
+            aclEntry.nodeOrClientId,
+            aclData.nodeOrClientId
           );
         },
       })),
     ];
-  }, [aclTableData, originalAcls]);
+  }, [aclTableData, originalClientAcls, originalNodeAcls]);
 
-  const hasAclsBeenEdited = useMemo(() => JSON.stringify(acls) === JSON.stringify(originalAcls), [acls, originalAcls]);
+  const hasAclsBeenEdited = useMemo(
+    () => JSON.stringify(acls) === JSON.stringify(originalNodeAcls),
+    [acls, originalNodeAcls]
+  );
 
   const metricsTableCols = useMemo<TableColumnProps<NodeMetricsTableData>[]>(() => {
     const getFormattedData = (data: number) => {
@@ -2342,7 +2377,7 @@ export default function NetworkDetailsPage(props: PageProps) {
               style={{ marginRight: '1rem' }}
               icon={<ReloadOutlined />}
               onClick={() => {
-                setAcls(originalAcls);
+                setAcls(originalNodeAcls);
               }}
               disabled={hasAclsBeenEdited}
             />
@@ -2352,7 +2387,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                 try {
                   if (!networkId) return;
                   const newAcls = (await NetworksService.updateAcls(networkId, acls)).data;
-                  setOriginalAcls(newAcls);
+                  setOriginalNodeAcls(newAcls);
                   setAcls(newAcls);
                   notify.success({
                     message: 'ACLs updated',
@@ -2395,7 +2430,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     hasAclsBeenEdited,
     networkId,
     notify,
-    originalAcls,
+    originalNodeAcls,
     searchAclHost,
     showClientAcls,
   ]);
