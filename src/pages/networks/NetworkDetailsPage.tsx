@@ -473,7 +473,6 @@ export default function NetworkDetailsPage(props: PageProps) {
       networkClients.forEach((client) => {
         clientAclsContainer[client.clientid] = client.deniednodeacls ?? {};
       });
-      console.log(clientAclsContainer);
       setOriginalClientAcls(clientAclsContainer);
       setClientAcls(clientAclsContainer);
     } catch (err) {
@@ -1149,7 +1148,6 @@ export default function NetworkDetailsPage(props: PageProps) {
                           delete newClientAcls[nodeOrClientIdCol][nodeOrClientIdRow];
                         }
                       }
-                      console.log(newClientAcls);
                       return newClientAcls;
                     });
                   }}
@@ -1184,8 +1182,6 @@ export default function NetworkDetailsPage(props: PageProps) {
                           [nodeOrClientIdCol]: {} as never,
                         };
                       }
-                      console.log(newClientAcls);
-                      console.log(rowColTypeTuple);
                       return newClientAcls;
                     });
                   }}
@@ -1250,8 +1246,8 @@ export default function NetworkDetailsPage(props: PageProps) {
 
   const hasAclsBeenEdited = useMemo(
     () =>
-      JSON.stringify(nodeAcls) === JSON.stringify(originalNodeAcls) ||
-      JSON.stringify(clientAcls) === JSON.stringify(originalClientAcls),
+      JSON.stringify(nodeAcls) !== JSON.stringify(originalNodeAcls) ||
+      JSON.stringify(clientAcls) !== JSON.stringify(originalClientAcls),
     [clientAcls, nodeAcls, originalClientAcls, originalNodeAcls]
   );
 
@@ -1628,12 +1624,12 @@ export default function NetworkDetailsPage(props: PageProps) {
   const updateAllClientsAcls = useCallback(async () => {
     // TODO: optimise function or entire client ACL update flow. this wont scale
     if (!networkId || !isServerEE) return;
-    const clientsWithUpdatedAclsMap = clients.reduce(
-      (acc, c) => ({ ...acc, [c.clientid]: { ...c, deniednodeacls: clientAcls[c.clientid] ?? {} } }),
-      {} as Record<ExternalClient['clientid'], ExternalClient>
-    );
-    for (const clientId in clientAcls) {
-      await NodesService.updateExternalClient(clientId, networkId, clientsWithUpdatedAclsMap[clientId]);
+    for (let i = 0; i < clients.length; i++) {
+      const c = clients[i];
+      await NodesService.updateExternalClient(c.clientid, networkId, {
+        ...c,
+        deniednodeacls: clientAcls[c.clientid] ?? {},
+      });
     }
     loadClients();
   }, [clientAcls, clients, isServerEE, loadClients, networkId]);
@@ -2438,6 +2434,7 @@ export default function NetworkDetailsPage(props: PageProps) {
               style={{ marginRight: '1rem', color: '#3C8618', borderColor: '#274916' }}
               icon={<CheckOutlined />}
               onClick={() => {
+                // set node acls
                 setNodeAcls((prevAcls) => {
                   const newAcls = structuredClone(prevAcls);
                   for (const nodeId1 in newAcls) {
@@ -2452,6 +2449,17 @@ export default function NetworkDetailsPage(props: PageProps) {
                   }
                   return newAcls;
                 });
+
+                // set client acls
+                setClientAcls((prevAcls) => {
+                  const newAcls = structuredClone(prevAcls);
+                  for (const clientId in newAcls) {
+                    if (Object.prototype.hasOwnProperty.call(newAcls, clientId)) {
+                      newAcls[clientId] = {};
+                    }
+                  }
+                  return newAcls;
+                });
               }}
             />
             <Button
@@ -2460,6 +2468,7 @@ export default function NetworkDetailsPage(props: PageProps) {
               style={{ marginRight: '1rem' }}
               icon={<StopOutlined />}
               onClick={() => {
+                // set node acls
                 setNodeAcls((prevAcls) => {
                   const newAcls = structuredClone(prevAcls);
                   for (const nodeId1 in newAcls) {
@@ -2474,6 +2483,25 @@ export default function NetworkDetailsPage(props: PageProps) {
                   }
                   return newAcls;
                 });
+
+                // set client acls
+                setClientAcls((prevAcls) => {
+                  const newAcls = structuredClone(prevAcls);
+                  for (const clientId in newAcls) {
+                    if (Object.prototype.hasOwnProperty.call(newAcls, clientId)) {
+                      newAcls[clientId] = {};
+
+                      clients.forEach((c) => {
+                        newAcls[clientId][c.clientid] = {} as never;
+                      });
+
+                      networkNodes.forEach((n) => {
+                        newAcls[clientId][n.id] = {} as never;
+                      });
+                    }
+                  }
+                  return newAcls;
+                });
               }}
             />
             <Button
@@ -2482,8 +2510,9 @@ export default function NetworkDetailsPage(props: PageProps) {
               icon={<ReloadOutlined />}
               onClick={() => {
                 setNodeAcls(originalNodeAcls);
+                setClientAcls(originalClientAcls);
               }}
-              disabled={hasAclsBeenEdited}
+              disabled={!hasAclsBeenEdited}
             />
             <Button
               type="primary"
@@ -2507,7 +2536,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   setIsSubmittingAcls(false);
                 }
               }}
-              disabled={hasAclsBeenEdited}
+              disabled={!hasAclsBeenEdited}
               loading={isSubmittingAcls}
             >
               Submit Changes
@@ -2539,7 +2568,10 @@ export default function NetworkDetailsPage(props: PageProps) {
     isSubmittingAcls,
     aclTableCols,
     filteredAclData,
+    clients,
+    networkNodes,
     originalNodeAcls,
+    originalClientAcls,
     networkId,
     nodeAcls,
     isServerEE,
