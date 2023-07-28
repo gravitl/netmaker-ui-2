@@ -4,6 +4,7 @@ import '../CustomModal.scss';
 import { useTranslation } from 'react-i18next';
 import { ExclamationCircleOutlined, LoadingOutlined } from '@ant-design/icons';
 import { useStore } from '@/store/store';
+import { getLicenseDashboardUrl, getNetmakerSupportEmail } from '@/utils/RouteUtils';
 
 interface ServerMalfunctionModalProps {
   isOpen: boolean;
@@ -33,18 +34,43 @@ export default function ServerMalfunctionModal({ isOpen, onCancel }: ServerMalfu
           </Col>
         </Row>
 
-        <Row>
-          <Col span={24}>
-            <Typography.Title level={4}>{t('error.servermalfunction')}</Typography.Title>
-          </Col>
-          <Col span={24}>
-            <Typography.Text strong>{t('error.contactyourserveradmin')}</Typography.Text>
-          </Col>
-          <Col span={24} style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2rem' }}>
-            <Typography.Text>Dashboard will become responsive once the server is stable</Typography.Text>
-            <LoadingOutlined />
-          </Col>
-        </Row>
+        {store.serverStatus?.status?.billingError && (
+          <Row>
+            <Col span={24}>
+              <Typography.Title level={4}>{t('error.billingerroroccured')}</Typography.Title>
+              <Typography.Text strong>
+                {t('error.checkbillingsetting')}{' '}
+                <a href={getLicenseDashboardUrl()} rel="noreferrer" referrerPolicy="no-referrer" target="_blank">
+                  {t('common.licensedashboard')}
+                </a>
+              </Typography.Text>
+            </Col>
+            <Col span={24} style={{ marginTop: '2rem' }}>
+              <Typography.Text>
+                {t('common.reason')}: {store.serverStatus?.status?.billingErrorText ?? ''}
+              </Typography.Text>
+              <br />
+              <Typography.Text>
+                You can reach out to support at{' '}
+                <a href={`mailto:${getNetmakerSupportEmail()}`}>{getNetmakerSupportEmail()}</a>
+              </Typography.Text>
+            </Col>
+          </Row>
+        )}
+        {!store.serverStatus?.status?.billingError && (
+          <Row>
+            <Col span={24}>
+              <Typography.Title level={4}>{t('error.servermalfunction')}</Typography.Title>
+            </Col>
+            <Col span={24}>
+              <Typography.Text strong>{t('error.contactyourserveradmin')}</Typography.Text>
+            </Col>
+            <Col span={24} style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2rem' }}>
+              <Typography.Text>Dashboard will become responsive once the server is stable</Typography.Text>
+              <LoadingOutlined />
+            </Col>
+          </Row>
+        )}
       </Modal>
     </ConfigProvider>
   );

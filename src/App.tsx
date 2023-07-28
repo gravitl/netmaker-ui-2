@@ -31,9 +31,21 @@ function App() {
     } catch (err) {
       if (err instanceof AxiosError) {
         // notify.error({ message: 'Failed to connect to your server', description: (err as AxiosError).message });
-        storeSetServerStatus({ db_connected: false, broker_connected: false, healthyNetwork: true });
+        storeSetServerStatus({
+          db_connected: false,
+          broker_connected: false,
+          billingError: false,
+          billingErrorText: '',
+          healthyNetwork: true,
+        });
       } else {
-        storeSetServerStatus({ db_connected: false, broker_connected: false, healthyNetwork: false });
+        storeSetServerStatus({
+          db_connected: false,
+          broker_connected: false,
+          billingError: false,
+          billingErrorText: '',
+          healthyNetwork: false,
+        });
       }
     }
   }, [storeFetchHosts, storeFetchNodes, storeSetServerStatus]);
@@ -57,7 +69,13 @@ function App() {
   useEffect(
     () => {
       // set server status to healthy initially
-      storeSetServerStatus({ db_connected: true, broker_connected: true, healthyNetwork: true });
+      storeSetServerStatus({
+        db_connected: true,
+        broker_connected: true,
+        billingError: false,
+        billingErrorText: '',
+        healthyNetwork: true,
+      });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
