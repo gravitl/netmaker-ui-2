@@ -57,6 +57,8 @@ describe('ServerConfigService', () => {
       db_connected: false,
       broker_connected: false,
       healthyNetwork: false,
+      billingError: true,
+      billingErrorText: 'error',
     };
     mock.onGet(ApiRoutes.SERVER_STATUS).replyOnce(200, mockRes);
 
