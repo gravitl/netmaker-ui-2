@@ -23,7 +23,7 @@ import '../CustomModal.scss';
 import { Network } from '@/models/Network';
 import { ExtendedNode, Node } from '@/models/Node';
 import { getExtendedNode, getNodeConnectivityStatus } from '@/utils/NodeUtils';
-import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
+import { CloseOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { AxiosError } from 'axios';
 import { NodesService } from '@/services/NodesService';
@@ -201,6 +201,7 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
                             placeholder="Search host"
                             value={egressSearch}
                             onChange={(e) => setEgressSearch(e.target.value)}
+                            prefix={<SearchOutlined />}
                           />
                         </Col>
                       </Row>
@@ -313,7 +314,7 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
                         <Input
                           placeholder="CIDR range (eg: 10.0.0.0/8 or a123:4567::/16)"
                           style={{ width: '100%' }}
-                          suffix={
+                          prefix={
                             <Tooltip title="Remove">
                               <CloseOutlined onClick={() => remove(index)} />
                             </Tooltip>

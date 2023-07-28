@@ -2,7 +2,7 @@ import { Host } from '@/models/Host';
 import { AppRoutes } from '@/routes';
 import { useStore } from '@/store/store';
 import { getHostRoute } from '@/utils/RouteUtils';
-import { MoreOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons';
+import { MoreOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
 import {
   Button,
   Card,
@@ -688,6 +688,7 @@ export default function HostsPage(props: PageProps) {
                   placeholder="Search hosts"
                   value={searchText}
                   onChange={(ev) => setSearchText(ev.target.value)}
+                  prefix={<SearchOutlined />}
                 />
               </Col>
               <Col xs={12} md={6} style={{ textAlign: 'right' }}>

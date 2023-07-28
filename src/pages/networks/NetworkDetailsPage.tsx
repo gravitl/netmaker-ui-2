@@ -1760,6 +1760,7 @@ export default function NetworkDetailsPage(props: PageProps) {
               placeholder="Search hosts"
               value={searchHost}
               onChange={(ev) => setSearchHost(ev.target.value)}
+              prefix={<SearchOutlined />}
             />
           </Col>
           <Col xs={12} md={6} style={{ textAlign: 'right' }}>
@@ -1911,6 +1912,7 @@ export default function NetworkDetailsPage(props: PageProps) {
               placeholder="Search DNS"
               value={searchDns}
               onChange={(ev) => setSearchDns(ev.target.value)}
+              prefix={<SearchOutlined />}
             />
           </Col>
           <Col xs={12} md={6} style={{ textAlign: 'right' }}>
