@@ -85,6 +85,7 @@ import { NULL_HOST, NULL_NODE } from '@/constants/Types';
 import UpdateNodeModal from '@/components/modals/update-node-modal/UpdateNodeModal';
 import { getBrandingConfig } from '@/services/BaseService';
 import VirtualisedTable from '@/components/VirtualisedTable';
+import { NETWORK_GRAPH_SIGMA_CONTAINER_ID } from '@/constants/AppConstants';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -2619,8 +2620,10 @@ export default function NetworkDetailsPage(props: PageProps) {
         <Row style={{ width: '100%' }}>
           <Col xs={24} style={{ width: '100%', height: containerHeight }}>
             <SigmaContainer
+              id={NETWORK_GRAPH_SIGMA_CONTAINER_ID}
               style={{
                 backgroundColor: themeToken.colorBgContainer,
+                position: 'relative',
               }}
             >
               <NetworkGraph

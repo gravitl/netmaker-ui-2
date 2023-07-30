@@ -16,3 +16,5 @@ export const DEFAULT_BRANDING_CONFIG: BrandingConfig = {
 export const BUG_REPORT_URL = `https://github.com/gravitl/netmaker-ui-2/issues/new?title=${encodeURIComponent(
   'UI Bug Report'
 )}&body=:body`;
+
+export const NETWORK_GRAPH_SIGMA_CONTAINER_ID = 'network-graph-sigma-contaner';
