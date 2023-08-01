@@ -33,7 +33,6 @@ interface UpdateNodeModalProps {
 
 export default function UpdateNodeModal({ isOpen, node, onUpdateNode, onCancel }: UpdateNodeModalProps) {
   const [form] = Form.useForm<Node>();
-  const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
   const navigate = useNavigate();
 
@@ -57,11 +56,11 @@ export default function UpdateNodeModal({ isOpen, node, onUpdateNode, onCancel }
           expdatetime: Math.floor(new Date(formData.expdatetime).getTime() / 1000),
         })
       ).data;
-      notify.success({ message: `Host ${node.id} updated` });
+      notification.success({ message: `Host ${node.id} updated` });
       storeUpdateNode(newNode.id, newNode);
       onUpdateNode(newNode);
     } catch (err) {
-      notify.error({
+      notification.error({
         message: 'Failed to update host',
         description: extractErrorMsg(err as any),
       });
@@ -170,9 +169,6 @@ export default function UpdateNodeModal({ isOpen, node, onUpdateNode, onCancel }
           </Row>
         </div>
       </Form>
-
-      {/* notify */}
-      {notifyCtx}
     </Modal>
   );
 }
