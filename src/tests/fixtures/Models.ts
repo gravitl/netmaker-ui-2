@@ -15,8 +15,6 @@ export const stubHost1: Host = {
   isstatic: false,
   listenport: 0,
   localrange: '',
-  locallistenport: 0,
-  proxy_listen_port: 0,
   mtu: 0,
   interfaces: [],
   defaultinterface: '',
@@ -25,7 +23,6 @@ export const stubHost1: Host = {
   macaddress: '',
   internetgateway: '',
   nodes: [],
-  proxy_enabled: false,
   isdefault: false,
   nat_type: 'public',
 };
@@ -41,8 +38,6 @@ export const stubHost2: Host = {
   isstatic: false,
   listenport: 0,
   localrange: '',
-  locallistenport: 0,
-  proxy_listen_port: 0,
   mtu: 0,
   interfaces: [],
   defaultinterface: '',
@@ -51,7 +46,6 @@ export const stubHost2: Host = {
   macaddress: '',
   internetgateway: '',
   nodes: [],
-  proxy_enabled: false,
   isdefault: false,
   nat_type: 'asymmetric',
 };

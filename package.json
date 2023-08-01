@@ -1,7 +1,7 @@
 {
   "name": "netmaker-dashboard",
   "private": true,
-  "version": "0.20.4",
+  "version": "0.20.5",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -16,7 +16,7 @@
   "dependencies": {
     "@ant-design/icons": "^5.0.1",
     "@react-sigma/core": "^3.4.2",
-    "antd": "^5.7.0",
+    "antd": "^5.7.2",
     "axios": "^1.4.0",
     "axios-mock-adapter": "^1.21.5",
     "buffer": "^6.0.3",
@@ -37,20 +37,20 @@
     "react-router-dom": "^6.14.1",
     "react-window": "^1.8.9",
     "sigma": "^2.4.0",
-    "swr": "^2.1.5",
+    "swr": "^2.2.0",
     "zustand": "^4.3.9"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^14.0.0",
-    "@types/react": "^18.2.14",
-    "@types/react-dom": "^18.2.6",
+    "@types/react": "^18.2.15",
+    "@types/react-dom": "^18.2.7",
     "@types/react-window": "^1.8.5",
     "@typescript-eslint/eslint-plugin": "^5.61.0",
-    "@typescript-eslint/parser": "^5.61.0",
+    "@typescript-eslint/parser": "^5.62.0",
     "@vitejs/plugin-react": "^4.0.1",
-    "eslint": "^8.44.0",
-    "eslint-config-prettier": "^8.8.0",
+    "eslint": "^8.46.0",
+    "eslint-config-prettier": "^8.9.0",
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-react": "^7.32.2",
     "eslint-plugin-react-hooks": "^4.6.0",
@@ -61,7 +61,7 @@
     "sass": "^1.63.6",
     "typescript": "^5.1.6",
     "vite": "^4.3.9",
-    "vitest": "^0.32.2"
+    "vitest": "^0.33.0"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": "eslint --cache --fix"

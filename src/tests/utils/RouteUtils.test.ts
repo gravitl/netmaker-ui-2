@@ -20,8 +20,6 @@ const testHost: Host = {
   isstatic: false,
   listenport: 0,
   localrange: '',
-  locallistenport: 0,
-  proxy_listen_port: 0,
   mtu: 0,
   interfaces: [],
   defaultinterface: '',
@@ -30,7 +28,6 @@ const testHost: Host = {
   macaddress: '',
   internetgateway: '',
   nodes: [],
-  proxy_enabled: false,
   isdefault: false,
   nat_type: '',
 };

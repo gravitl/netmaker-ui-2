@@ -2,7 +2,7 @@ import { Host } from '@/models/Host';
 import { AppRoutes } from '@/routes';
 import { useStore } from '@/store/store';
 import { getHostRoute } from '@/utils/RouteUtils';
-import { MoreOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons';
+import { MoreOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
 import {
   Button,
   Card,
@@ -221,36 +221,6 @@ export default function HostsPage(props: PageProps) {
           </div>
         ),
       },
-      {
-        title: 'Proxy Status',
-        dataIndex: 'proxy_enabled',
-        render(value, host) {
-          return (
-            <Switch
-              checked={value}
-              onChange={(newStatus: boolean, ev) => {
-                ev.stopPropagation();
-                Modal.confirm({
-                  title: 'Toggle proxy status',
-                  content: `Are you sure you want to turn ${newStatus ? 'on' : 'off'} proxy for host ${host.name}?`,
-                  onOk: async () => {
-                    try {
-                      const newHost = (await HostsService.updateHost(host.id, { ...host, proxy_enabled: newStatus }))
-                        .data;
-                      storeUpdateHost(host.id, newHost);
-                    } catch (err) {
-                      notify.error({
-                        message: 'Failed to update host',
-                        description: extractErrorMsg(err as any),
-                      });
-                    }
-                  },
-                });
-              }}
-            />
-          );
-        },
-      },
       // {
       //   title: 'Relay status',
       //   render(_, host) {
@@ -360,7 +330,7 @@ export default function HostsPage(props: PageProps) {
         },
       },
     ],
-    [confirmToggleHostDefaultness, notify, confirmDeleteHost, onEditHost, refreshHostKeys, store.nodes, storeUpdateHost]
+    [confirmToggleHostDefaultness, confirmDeleteHost, onEditHost, refreshHostKeys, store.nodes]
   );
 
   const namHostsTableCols: TableColumnsType<Host> = useMemo(
@@ -718,6 +688,7 @@ export default function HostsPage(props: PageProps) {
                   placeholder="Search hosts"
                   value={searchText}
                   onChange={(ev) => setSearchText(ev.target.value)}
+                  prefix={<SearchOutlined />}
                 />
               </Col>
               <Col xs={12} md={6} style={{ textAlign: 'right' }}>

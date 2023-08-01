@@ -3,6 +3,8 @@ import { Node } from '@/models/Node';
 import { NodeConnectivityStatus } from '@/models/NodeConnectivityStatus';
 import { FormInstance, Tag } from 'antd';
 import { getNodeConnectivityStatus } from './NodeUtils';
+import { ExtClientAcls, ExternalClient } from '@/models/ExternalClient';
+import { ACL_ALLOWED, ACL_DENIED, AclStatus, ACL_UNDEFINED } from '@/models/Acl';
 
 export function renderNodeHealth(health: NodeConnectivityStatus) {
   switch (health) {
@@ -109,5 +111,34 @@ export function isValidJwt(jwt: string): boolean {
     return (json?.exp ?? 0) > Date.now() / 1000;
   } catch (err) {
     return false;
+  }
+}
+
+/**
+ * Checks whether a node or client is allowed or denied.
+ *
+ * @param nodeOrClientId node or client id to check
+ * @param clientOrClientAcl client or client ACL to check against
+ * @returns whether the node or client is allowed or denied
+ */
+export function getExtClientAclStatus(
+  nodeOrClientId: Node['id'] | ExternalClient['clientid'],
+  clientOrClientAcl: ExternalClient | ExtClientAcls
+): AclStatus {
+  // check if it is a client
+  if (clientOrClientAcl.clientid) {
+    if (nodeOrClientId === clientOrClientAcl.clientid) return ACL_UNDEFINED;
+    if (!clientOrClientAcl.deniednodeacls) return ACL_ALLOWED;
+    if (nodeOrClientId in clientOrClientAcl.deniednodeacls) {
+      return ACL_DENIED;
+    }
+    return ACL_ALLOWED;
+  } else {
+    // ExtClientAcls was passed
+    if (!clientOrClientAcl) return ACL_ALLOWED;
+    if (nodeOrClientId in clientOrClientAcl) {
+      return ACL_DENIED;
+    }
+    return ACL_ALLOWED;
   }
 }

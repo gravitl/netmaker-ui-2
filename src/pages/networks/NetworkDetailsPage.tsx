@@ -4,9 +4,9 @@ import AddEgressModal from '@/components/modals/add-egress-modal/AddEgressModal'
 import AddRelayModal from '@/components/modals/add-relay-modal/AddRelayModal';
 import ClientDetailsModal from '@/components/modals/client-detaiils-modal/ClientDetailsModal';
 import UpdateEgressModal from '@/components/modals/update-egress-modal/UpdateEgressModal';
-import { NodeAcl, NodeAclContainer } from '@/models/Acl';
+import { ACL_ALLOWED, ACL_DENIED, AclStatus, NodeAcl, NodeAclContainer } from '@/models/Acl';
 import { DNS } from '@/models/Dns';
-import { ExternalClient } from '@/models/ExternalClient';
+import { ExtClientAcls, ExternalClient } from '@/models/ExternalClient';
 import { Host } from '@/models/Host';
 import { Network } from '@/models/Network';
 import { ExtendedNode, Node } from '@/models/Node';
@@ -60,6 +60,7 @@ import {
   TableColumnProps,
   Tabs,
   TabsProps,
+  Tag,
   theme,
   Tooltip,
   Typography,
@@ -74,7 +75,7 @@ import { ControlsContainer, FullScreenControl, SearchControl, SigmaContainer, Zo
 import NetworkGraph from '@/components/NetworkGraph';
 import UpdateRelayModal from '@/components/modals/update-relay-modal/UpdateRelayModal';
 import { NetworkMetrics } from '@/models/Metrics';
-import { getHostHealth, getTimeMinHrs } from '@/utils/Utils';
+import { getExtClientAclStatus, getHostHealth, getTimeMinHrs } from '@/utils/Utils';
 import AddHostsToNetworkModal from '@/components/modals/add-hosts-to-network-modal/AddHostsToNetworkModal';
 import NewHostModal from '@/components/modals/new-host-modal/NewHostModal';
 import AddIngressModal from '@/components/modals/add-ingress-modal/AddIngressModal';
@@ -91,9 +92,11 @@ interface ExternalRoutesTableData {
 }
 
 interface AclTableData {
-  nodeId: Node['id'];
-  name: Host['name'];
-  acls: NodeAcl;
+  type: 'node' | 'client';
+  nodeOrClientId: Node['id'] | ExternalClient['clientid'];
+  name: Host['name'] | ExternalClient['clientid'];
+  acls?: NodeAcl;
+  clientAcls?: ExtClientAcls;
 }
 
 type MetricCategories = 'connectivity-status' | 'latency' | 'bytes-sent' | 'bytes-received' | 'uptime';
@@ -148,8 +151,10 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [searchDns, setSearchDns] = useState('');
   const [dnses, setDnses] = useState<DNS[]>([]);
   const [isAddDnsModalOpen, setIsAddDnsModalOpen] = useState(false);
-  const [acls, setAcls] = useState<NodeAclContainer>({});
-  const [originalAcls, setOriginalAcls] = useState<NodeAclContainer>({});
+  const [nodeAcls, setNodeAcls] = useState<NodeAclContainer>({});
+  const [originalNodeAcls, setOriginalNodeAcls] = useState<NodeAclContainer>({});
+  const [clientAcls, setClientAcls] = useState<Record<ExternalClient['clientid'], ExtClientAcls>>({});
+  const [originalClientAcls, setOriginalClientAcls] = useState<Record<ExternalClient['clientid'], ExtClientAcls>>({});
   const [isAddClientModalOpen, setIsAddClientModalOpen] = useState(false);
   const [clients, setClients] = useState<ExternalClient[]>([]);
   const [isClientDetailsModalOpen, setIsClientDetailsModalOpen] = useState(false);
@@ -177,6 +182,8 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [isUpdateClientModalOpen, setIsUpdateClientModalOpen] = useState(false);
   const [isUpdateNodeModalOpen, setIsUpdateNodeModalOpen] = useState(false);
   const [targetNode, setTargetNode] = useState<Node | null>(null);
+  const [showClientAcls, setShowClientAcls] = useState(false);
+  const [isSubmittingAcls, setIsSubmittingAcls] = useState(false);
 
   const networkNodes = useMemo(
     () =>
@@ -302,25 +309,40 @@ export default function NetworkDetailsPage(props: PageProps) {
     networkNodes.forEach((node) => {
       networkNodesMap.set(node.id, true);
     });
-    Object.keys(acls).forEach((nodeId) => {
+    Object.keys(nodeAcls).forEach((nodeId) => {
       if (networkNodesMap.has(nodeId)) {
-        networkAcls[nodeId] = acls[nodeId];
+        networkAcls[nodeId] = nodeAcls[nodeId];
       }
     });
     return networkAcls;
-  }, [acls, networkNodes]);
+  }, [nodeAcls, networkNodes]);
 
   const aclTableData = useMemo<AclTableData[]>(() => {
-    const aclDataPerNode = networkNodes
+    // node acls
+    const aclDataPerNode: AclTableData[] = networkNodes
       .map((node) => getExtendedNode(node, store.hostsCommonDetails))
       .map((node) => ({
-        nodeId: node.id,
+        type: 'node',
+        nodeOrClientId: node.id,
         name: node?.name ?? '',
         acls: networkAcls[node.id],
-      }))
-      .sort((a, b) => a?.name?.localeCompare(b?.name ?? '') ?? 0);
+      }));
+
+    // client acls
+    if (showClientAcls) {
+      clients.forEach((client) => {
+        aclDataPerNode.push({
+          type: 'client',
+          nodeOrClientId: client.clientid,
+          name: client.clientid,
+          clientAcls: clientAcls[client.clientid],
+        });
+      });
+    }
+
+    aclDataPerNode.sort((a, b) => a?.name?.localeCompare(b?.name ?? '') ?? 0);
     return aclDataPerNode;
-  }, [networkAcls, networkNodes, store.hostsCommonDetails]);
+  }, [clientAcls, clients, networkAcls, networkNodes, showClientAcls, store.hostsCommonDetails]);
 
   const filteredAclData = useMemo<AclTableData[]>(() => {
     return aclTableData.filter((node) => node.name.toLowerCase().includes(searchAclHost.toLowerCase()));
@@ -415,8 +437,8 @@ export default function NetworkDetailsPage(props: PageProps) {
     try {
       if (!networkId) return;
       const acls = (await NetworksService.getAcls(networkId)).data;
-      setAcls(acls);
-      setOriginalAcls(acls);
+      setNodeAcls(acls);
+      setOriginalNodeAcls(acls);
     } catch (err) {
       if (err instanceof AxiosError) {
         notify.error({
@@ -437,16 +459,19 @@ export default function NetworkDetailsPage(props: PageProps) {
   const loadClients = useCallback(async () => {
     try {
       if (!networkId) return;
-      const allClients = (await NodesService.getExternalClients()).data ?? [];
-      const networkClients = allClients.filter((client) => client.network === networkId);
+      const networkClients = (await NodesService.getNetworkExternalClients(networkId)).data ?? [];
       setClients(networkClients);
+      const clientAclsContainer = {} as Record<ExternalClient['clientid'], ExtClientAcls>;
+      networkClients.forEach((client) => {
+        clientAclsContainer[client.clientid] = client.deniednodeacls ?? {};
+      });
+      setOriginalClientAcls(clientAclsContainer);
+      setClientAcls(clientAclsContainer);
     } catch (err) {
-      if (err instanceof AxiosError) {
-        notify.error({
-          message: 'Error loading clients',
-          description: extractErrorMsg(err),
-        });
-      }
+      notify.error({
+        message: 'Error loading clients',
+        description: extractErrorMsg(err as any),
+      });
     }
   }, [networkId, notify]);
 
@@ -461,12 +486,10 @@ export default function NetworkDetailsPage(props: PageProps) {
             setClients((prev) => prev.filter((c) => c.clientid !== client.clientid));
             storeFetchNodes();
           } catch (err) {
-            if (err instanceof AxiosError) {
-              notify.error({
-                message: 'Error deleting Client',
-                description: extractErrorMsg(err),
-              });
-            }
+            notify.error({
+              message: 'Error deleting Client',
+              description: extractErrorMsg(err as any),
+            });
           }
         },
       });
@@ -1034,54 +1057,153 @@ export default function NetworkDetailsPage(props: PageProps) {
   );
 
   const aclTableCols = useMemo<TableColumnProps<AclTableData>[]>(() => {
-    const aclTableDataMap = new Map<Node['id'], AclTableData>();
-    aclTableData.forEach((aclData) => aclTableDataMap.set(aclData.nodeId, aclData));
+    const aclTableDataMap = new Map<Node['id'] | ExternalClient['clientid'], AclTableData>();
+    aclTableData.forEach((aclData) => aclTableDataMap.set(aclData.nodeOrClientId, aclData));
 
     const renderAclValue = (
-      originalAclLevel: number,
-      newAclLevel: number,
-      nodeId1: Node['id'],
-      nodeId2: Node['id']
+      rowColTypeTuple: [rowType: 'node' | 'client', colType: 'node' | 'client'],
+      originalAclLevel: AclStatus,
+      newAclLevel: AclStatus,
+      nodeOrClientIdRow: Node['id'] | ExternalClient['clientid'],
+      nodeOrClientIdCol: Node['id'] | ExternalClient['clientid']
     ) => {
-      switch (newAclLevel) {
-        case 1:
+      const type = rowColTypeTuple.some((t) => t === 'client') ? 'client' : 'node';
+      if (type === 'node') {
+        switch (newAclLevel) {
+          case ACL_DENIED:
+            return (
+              <Badge size="small" dot={originalAclLevel !== newAclLevel}>
+                <Button
+                  danger
+                  size="small"
+                  icon={<StopOutlined />}
+                  onClick={() => {
+                    setNodeAcls((prevAcls) => {
+                      const newAcls = structuredClone(prevAcls);
+                      newAcls[nodeOrClientIdRow][nodeOrClientIdCol] = 2;
+                      newAcls[nodeOrClientIdCol][nodeOrClientIdRow] = 2;
+                      return newAcls;
+                    });
+                  }}
+                />
+              </Badge>
+            );
+          case ACL_ALLOWED:
+            return (
+              <Badge size="small" dot={originalAclLevel !== newAclLevel}>
+                <Button
+                  size="small"
+                  style={{ color: '#3C8618', borderColor: '#274916' }}
+                  icon={<CheckOutlined />}
+                  onClick={() => {
+                    setNodeAcls((prevAcls) => {
+                      const newAcls = structuredClone(prevAcls);
+                      newAcls[nodeOrClientIdRow][nodeOrClientIdCol] = 1;
+                      newAcls[nodeOrClientIdCol][nodeOrClientIdRow] = 1;
+                      return newAcls;
+                    });
+                  }}
+                />
+              </Badge>
+            );
+          default:
+            return <DashOutlined />;
+        }
+      } else {
+        if (rowColTypeTuple[1] === 'node') {
+          return <DashOutlined />;
+        }
+        // TODO: optimise this bit of logic to prevent O^2. maybe refactor
+        const assocClient = clients.find((c) => c.clientid === nodeOrClientIdCol);
+        const assocIngress = networkNodes.find((n) => n.id === assocClient?.ingressgatewayid);
+        const assocIngressDenyList = Object.keys(nodeAcls[assocIngress?.id ?? ''] ?? {}).filter(
+          (targetNodeId) => nodeAcls[assocIngress?.id ?? ''][targetNodeId] === ACL_DENIED
+        );
+        if (assocIngressDenyList.includes(nodeOrClientIdRow)) {
           return (
             <Badge size="small" dot={originalAclLevel !== newAclLevel}>
               <Button
                 danger
+                disabled
+                title={`The associated ingress gateway (${
+                  assocIngress?.name ?? ''
+                }) has denied this client access to this node.`}
                 size="small"
                 icon={<StopOutlined />}
-                onClick={() => {
-                  setAcls((prevAcls) => {
-                    const newAcls = structuredClone(prevAcls);
-                    newAcls[nodeId1][nodeId2] = 2;
-                    newAcls[nodeId2][nodeId1] = 2;
-                    return newAcls;
-                  });
-                }}
               />
             </Badge>
           );
-        case 2:
-          return (
-            <Badge size="small" dot={originalAclLevel !== newAclLevel}>
-              <Button
-                size="small"
-                style={{ color: '#3C8618', borderColor: '#274916' }}
-                icon={<CheckOutlined />}
-                onClick={() => {
-                  setAcls((prevAcls) => {
-                    const newAcls = structuredClone(prevAcls);
-                    newAcls[nodeId1][nodeId2] = 1;
-                    newAcls[nodeId2][nodeId1] = 1;
-                    return newAcls;
-                  });
-                }}
-              />
-            </Badge>
-          );
-        default:
-          return <DashOutlined />;
+        }
+        switch (newAclLevel) {
+          case ACL_DENIED:
+            return (
+              <Badge size="small" dot={originalAclLevel !== newAclLevel}>
+                <Button
+                  danger
+                  size="small"
+                  icon={<StopOutlined />}
+                  onClick={() => {
+                    setClientAcls((prevClientAcls) => {
+                      const newClientAcls = structuredClone(prevClientAcls);
+                      // this check is because client acl data structure is not interchangeable an in that of nodes
+                      // this manipulation leads to "dirty data."
+                      // ie: clientAcls gets populated with node IDs as if they are clients
+                      // can be improved but doesnt matter at the moment as it would be ignored when sending to the server
+                      if (newClientAcls[nodeOrClientIdRow]) {
+                        delete newClientAcls[nodeOrClientIdRow][nodeOrClientIdCol];
+                        if (newClientAcls[nodeOrClientIdCol]) {
+                          delete newClientAcls[nodeOrClientIdRow][nodeOrClientIdCol];
+                        }
+                      }
+                      if (newClientAcls[nodeOrClientIdCol]) {
+                        delete newClientAcls[nodeOrClientIdCol][nodeOrClientIdRow];
+                        if (newClientAcls[nodeOrClientIdRow]) {
+                          delete newClientAcls[nodeOrClientIdCol][nodeOrClientIdRow];
+                        }
+                      }
+                      return newClientAcls;
+                    });
+                  }}
+                />
+              </Badge>
+            );
+          case ACL_ALLOWED:
+            return (
+              <Badge size="small" dot={originalAclLevel !== newAclLevel}>
+                <Button
+                  size="small"
+                  style={{ color: '#3C8618', borderColor: '#274916' }}
+                  icon={<CheckOutlined />}
+                  onClick={() => {
+                    setClientAcls((prevClientAcls) => {
+                      const newClientAcls = structuredClone(prevClientAcls);
+                      // this check is because client acl data structure is not interchangeable an in that of nodes
+                      // this manipulation leads to "dirty data."
+                      // ie: clientAcls gets populated with node IDs as if they are clients
+                      // can be improved but doesnt matter at the moment as it would be ignored when sending to the server
+                      if (newClientAcls[nodeOrClientIdRow]) {
+                        newClientAcls[nodeOrClientIdRow][nodeOrClientIdCol] = {} as never;
+                        newClientAcls[nodeOrClientIdCol] = {
+                          ...(newClientAcls[nodeOrClientIdCol] ?? {}),
+                          [nodeOrClientIdRow]: {} as never,
+                        };
+                      }
+                      if (newClientAcls[nodeOrClientIdCol]) {
+                        newClientAcls[nodeOrClientIdCol][nodeOrClientIdRow] = {} as never;
+                        newClientAcls[nodeOrClientIdRow] = {
+                          ...(newClientAcls[nodeOrClientIdRow] ?? {}),
+                          [nodeOrClientIdCol]: {} as never,
+                        };
+                      }
+                      return newClientAcls;
+                    });
+                  }}
+                />
+              </Badge>
+            );
+          default:
+            return <DashOutlined />;
+        }
       }
     };
 
@@ -1107,18 +1229,40 @@ export default function NetworkDetailsPage(props: PageProps) {
         title: aclData.name,
         width: '5rem',
         render(_: unknown, aclEntry: (typeof aclTableData)[0]) {
+          // aclData => column, aclEntry => row
+          const aclType = [aclData.type, aclEntry.type].some((t) => t === 'client') ? 'client' : 'node';
+
           return renderAclValue(
-            originalAcls?.[aclEntry.nodeId]?.[aclData.nodeId] ?? 0,
-            aclTableDataMap.get(aclEntry.nodeId)?.acls?.[aclData?.nodeId] ?? 0,
-            aclEntry.nodeId,
-            aclData.nodeId
+            // row/col type tuple
+            [aclEntry.type, aclData.type],
+            // original acl status
+            aclType === 'node'
+              ? originalNodeAcls?.[aclEntry.nodeOrClientId]?.[aclData.nodeOrClientId] ?? 0
+              : getExtClientAclStatus(aclEntry.nodeOrClientId, originalClientAcls[aclData.nodeOrClientId] ?? {}),
+            // new acl status
+            aclType === 'node'
+              ? aclTableDataMap.get(aclEntry.nodeOrClientId)?.acls?.[aclData?.nodeOrClientId] ?? 0
+              : aclEntry.nodeOrClientId === aclData.nodeOrClientId // check disable toggling ones own self
+              ? 0
+              : getExtClientAclStatus(
+                  aclEntry.nodeOrClientId,
+                  aclTableDataMap.get(aclData.nodeOrClientId)?.clientAcls ?? {}
+                ),
+            // node or client IDs
+            aclEntry.nodeOrClientId,
+            aclData.nodeOrClientId
           );
         },
       })),
     ];
-  }, [aclTableData, originalAcls]);
+  }, [aclTableData, clients, networkNodes, nodeAcls, originalClientAcls, originalNodeAcls]);
 
-  const hasAclsBeenEdited = useMemo(() => JSON.stringify(acls) === JSON.stringify(originalAcls), [acls, originalAcls]);
+  const hasAclsBeenEdited = useMemo(
+    () =>
+      JSON.stringify(nodeAcls) !== JSON.stringify(originalNodeAcls) ||
+      JSON.stringify(clientAcls) !== JSON.stringify(originalClientAcls),
+    [clientAcls, nodeAcls, originalClientAcls, originalNodeAcls]
+  );
 
   const metricsTableCols = useMemo<TableColumnProps<NodeMetricsTableData>[]>(() => {
     const getFormattedData = (data: number) => {
@@ -1393,12 +1537,12 @@ export default function NetworkDetailsPage(props: PageProps) {
     [networkNodes, store.hostsCommonDetails]
   );
 
-  const disconnectNodeFromNetwork = useCallback(
+  const removeNodeFromNetwork = useCallback(
     (newStatus: boolean, node: ExtendedNode) => {
       let forceDelete = false;
 
       Modal.confirm({
-        title: 'Disconnect host from network',
+        title: 'Remove host from network',
         content: (
           <>
             <Row>
@@ -1449,6 +1593,59 @@ export default function NetworkDetailsPage(props: PageProps) {
     },
     [networkId, notify, storeDeleteNode]
   );
+
+  const disconnectNodeFromNetwork = useCallback(
+    (newStatus: boolean, node: ExtendedNode) => {
+      Modal.confirm({
+        title: newStatus ? 'Connect host to network' : 'Disconnect host from network',
+        content: (
+          <>
+            <Row>
+              <Col xs={24}>
+                <Typography.Text>
+                  Are you sure you want {node?.name ?? ''} to {newStatus ? 'connect to' : 'disconnect from'} the
+                  network?
+                </Typography.Text>
+              </Col>
+            </Row>
+          </>
+        ),
+        async onOk() {
+          try {
+            if (!networkId) return;
+            const updatedNode = (await NodesService.updateNode(node.id, networkId, { ...node, connected: newStatus }))
+              .data;
+            store.updateNode(node.id, updatedNode);
+            notify.success({
+              message: `Successfully ${newStatus ? 'connected' : 'disconnected'}`,
+              description: `${node?.name ?? 'Host'} is now ${
+                newStatus ? 'connected to' : 'disconnected from'
+              } network ${networkId}.`,
+            });
+          } catch (err) {
+            notify.error({
+              message: 'Failed to update host',
+              description: extractErrorMsg(err as any),
+            });
+          }
+        },
+      });
+    },
+    [networkId, notify, store]
+  );
+
+  const updateAllClientsAcls = useCallback(async () => {
+    // TODO: optimise function or entire client ACL update flow. this wont scale
+    if (!networkId || !isServerEE) return;
+    for (let i = 0; i < clients.length; i++) {
+      const c = clients[i];
+      await NodesService.updateExternalClient(c.clientid, networkId, {
+        ...c,
+        deniednodeacls: clientAcls[c.clientid] ?? {},
+      });
+    }
+    loadClients();
+  }, [clientAcls, clients, isServerEE, loadClients, networkId]);
 
   // ui components
   const getOverviewContent = useCallback(() => {
@@ -1563,6 +1760,7 @@ export default function NetworkDetailsPage(props: PageProps) {
               placeholder="Search hosts"
               value={searchHost}
               onChange={(ev) => setSearchHost(ev.target.value)}
+              prefix={<SearchOutlined />}
             />
           </Col>
           <Col xs={12} md={6} style={{ textAlign: 'right' }}>
@@ -1631,6 +1829,12 @@ export default function NetworkDetailsPage(props: PageProps) {
                 //   dataIndex: 'name',
                 // },
                 {
+                  title: 'Connectivity',
+                  render: (_, node) => (
+                    <Tag color={node.connected ? 'green' : 'red'}>{node.connected ? 'Connected' : 'Disconnected'}</Tag>
+                  ),
+                },
+                {
                   title: 'Health Status',
                   render(_, node) {
                     return getHostHealth(node.hostid, [node]);
@@ -1653,12 +1857,23 @@ export default function NetworkDetailsPage(props: PageProps) {
                             },
                             {
                               key: 'disconnect',
+                              label: node.connected ? 'Disconnect host' : 'Connect host',
+                              disabled: node.pendingdelete !== false,
+                              title: node.pendingdelete !== false ? 'Host is being disconnected from network' : '',
+                              onClick: () =>
+                                disconnectNodeFromNetwork(
+                                  !node.connected,
+                                  getExtendedNode(node, store.hostsCommonDetails)
+                                ),
+                            },
+                            {
+                              key: 'remove',
                               label: 'Remove from network',
                               danger: true,
                               disabled: node.pendingdelete !== false,
                               title: node.pendingdelete !== false ? 'Host is being removed from network' : '',
                               onClick: () =>
-                                disconnectNodeFromNetwork(false, getExtendedNode(node, store.hostsCommonDetails)),
+                                removeNodeFromNetwork(false, getExtendedNode(node, store.hostsCommonDetails)),
                             },
                           ],
                         }}
@@ -1677,7 +1892,15 @@ export default function NetworkDetailsPage(props: PageProps) {
         </Row>
       </div>
     );
-  }, [searchHost, network?.isipv6, networkNodes, store.hostsCommonDetails, editNode, disconnectNodeFromNetwork]);
+  }, [
+    searchHost,
+    network?.isipv6,
+    networkNodes,
+    store.hostsCommonDetails,
+    editNode,
+    disconnectNodeFromNetwork,
+    removeNodeFromNetwork,
+  ]);
 
   const getDnsContent = useCallback(() => {
     return (
@@ -1689,6 +1912,7 @@ export default function NetworkDetailsPage(props: PageProps) {
               placeholder="Search DNS"
               value={searchDns}
               onChange={(ev) => setSearchDns(ev.target.value)}
+              prefix={<SearchOutlined />}
             />
           </Col>
           <Col xs={12} md={6} style={{ textAlign: 'right' }}>
@@ -2206,6 +2430,18 @@ export default function NetworkDetailsPage(props: PageProps) {
               prefix={<SearchOutlined />}
               style={{ width: '60%' }}
             />
+            {isServerEE && (
+              <span style={{ marginLeft: '2rem' }}>
+                <label style={{ marginRight: '1rem' }} htmlFor="show-clients-acl-switch">
+                  Show Clients
+                </label>
+                <Switch
+                  id="show-clients-acl-switch"
+                  checked={showClientAcls}
+                  onChange={(newVal) => setShowClientAcls(newVal)}
+                />
+              </span>
+            )}
           </Col>
           <Col xs={12} style={{ textAlign: 'right' }}>
             <Button
@@ -2213,7 +2449,8 @@ export default function NetworkDetailsPage(props: PageProps) {
               style={{ marginRight: '1rem', color: '#3C8618', borderColor: '#274916' }}
               icon={<CheckOutlined />}
               onClick={() => {
-                setAcls((prevAcls) => {
+                // set node acls
+                setNodeAcls((prevAcls) => {
                   const newAcls = structuredClone(prevAcls);
                   for (const nodeId1 in newAcls) {
                     if (Object.prototype.hasOwnProperty.call(newAcls, nodeId1)) {
@@ -2227,6 +2464,17 @@ export default function NetworkDetailsPage(props: PageProps) {
                   }
                   return newAcls;
                 });
+
+                // set client acls
+                setClientAcls((prevAcls) => {
+                  const newAcls = structuredClone(prevAcls);
+                  for (const clientId in newAcls) {
+                    if (Object.prototype.hasOwnProperty.call(newAcls, clientId)) {
+                      newAcls[clientId] = {};
+                    }
+                  }
+                  return newAcls;
+                });
               }}
             />
             <Button
@@ -2235,7 +2483,8 @@ export default function NetworkDetailsPage(props: PageProps) {
               style={{ marginRight: '1rem' }}
               icon={<StopOutlined />}
               onClick={() => {
-                setAcls((prevAcls) => {
+                // set node acls
+                setNodeAcls((prevAcls) => {
                   const newAcls = structuredClone(prevAcls);
                   for (const nodeId1 in newAcls) {
                     if (Object.prototype.hasOwnProperty.call(newAcls, nodeId1)) {
@@ -2249,6 +2498,25 @@ export default function NetworkDetailsPage(props: PageProps) {
                   }
                   return newAcls;
                 });
+
+                // set client acls
+                setClientAcls((prevAcls) => {
+                  const newAcls = structuredClone(prevAcls);
+                  for (const clientId in newAcls) {
+                    if (Object.prototype.hasOwnProperty.call(newAcls, clientId)) {
+                      newAcls[clientId] = {};
+
+                      clients.forEach((c) => {
+                        newAcls[clientId][c.clientid] = {} as never;
+                      });
+
+                      networkNodes.forEach((n) => {
+                        newAcls[clientId][n.id] = {} as never;
+                      });
+                    }
+                  }
+                  return newAcls;
+                });
               }}
             />
             <Button
@@ -2256,18 +2524,21 @@ export default function NetworkDetailsPage(props: PageProps) {
               style={{ marginRight: '1rem' }}
               icon={<ReloadOutlined />}
               onClick={() => {
-                setAcls(originalAcls);
+                setNodeAcls(originalNodeAcls);
+                setClientAcls(originalClientAcls);
               }}
-              disabled={hasAclsBeenEdited}
+              disabled={!hasAclsBeenEdited}
             />
             <Button
               type="primary"
               onClick={async () => {
                 try {
                   if (!networkId) return;
-                  const newAcls = (await NetworksService.updateAcls(networkId, acls)).data;
-                  setOriginalAcls(newAcls);
-                  setAcls(newAcls);
+                  setIsSubmittingAcls(true);
+                  const newAcls = (await NetworksService.updateAcls(networkId, nodeAcls)).data;
+                  if (isServerEE) await updateAllClientsAcls();
+                  setOriginalNodeAcls(newAcls);
+                  setNodeAcls(newAcls);
                   notify.success({
                     message: 'ACLs updated',
                   });
@@ -2276,9 +2547,12 @@ export default function NetworkDetailsPage(props: PageProps) {
                     message: 'Error updating ACLs',
                     description: extractErrorMsg(err as any),
                   });
+                } finally {
+                  setIsSubmittingAcls(false);
                 }
               }}
-              disabled={hasAclsBeenEdited}
+              disabled={!hasAclsBeenEdited}
+              loading={isSubmittingAcls}
             >
               Submit Changes
             </Button>
@@ -2290,7 +2564,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                 columns={aclTableCols}
                 dataSource={filteredAclData}
                 className="acl-table"
-                rowKey="nodeId"
+                rowKey="nodeOrClientId"
                 size="small"
                 pagination={false}
                 scroll={{
@@ -2302,7 +2576,23 @@ export default function NetworkDetailsPage(props: PageProps) {
         </Row>
       </div>
     );
-  }, [aclTableCols, acls, filteredAclData, hasAclsBeenEdited, networkId, notify, originalAcls, searchAclHost]);
+  }, [
+    searchAclHost,
+    showClientAcls,
+    hasAclsBeenEdited,
+    isSubmittingAcls,
+    aclTableCols,
+    filteredAclData,
+    clients,
+    networkNodes,
+    originalNodeAcls,
+    originalClientAcls,
+    networkId,
+    nodeAcls,
+    isServerEE,
+    updateAllClientsAcls,
+    notify,
+  ]);
 
   const getGraphContent = useCallback(() => {
     const containerHeight = '78vh';

@@ -1,3 +1,5 @@
+import { Node } from './Node';
+
 export interface ExternalClient {
   clientid: string;
   description: string;
@@ -15,4 +17,7 @@ export interface ExternalClient {
   internal_ip_addr6: string;
   dns: string;
   extraallowedips: string[];
+  deniednodeacls?: ExtClientAcls;
 }
+
+export type ExtClientAcls = Record<Node['id'] | ExternalClient['clientid'], never>;

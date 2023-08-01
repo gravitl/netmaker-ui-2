@@ -4,7 +4,7 @@ import { EnrollmentKey } from '@/models/EnrollmentKey';
 import { EnrollmentKeysService } from '@/services/EnrollmentKeysService';
 import { isEnrollmentKeyValid } from '@/utils/EnrollmentKeysUtils';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
-import { DeleteOutlined, MoreOutlined, PlusOutlined } from '@ant-design/icons';
+import { DeleteOutlined, MoreOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons';
 import {
   Button,
   Card,
@@ -253,6 +253,7 @@ export default function EnrollmentKeysPage(props: PageProps) {
                   placeholder="Search keys"
                   value={searchText}
                   onChange={(ev) => setSearchText(ev.target.value)}
+                  prefix={<SearchOutlined />}
                 />
               </Col>
               <Col xs={12} md={6} style={{ textAlign: 'right' }}>

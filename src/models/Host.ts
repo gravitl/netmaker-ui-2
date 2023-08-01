@@ -12,8 +12,6 @@ export interface Host {
   isstatic: boolean;
   listenport: number;
   localrange: string;
-  locallistenport: number;
-  proxy_listen_port: number;
   mtu: number;
   interfaces: Interface[];
   defaultinterface: string; // iface name
@@ -22,7 +20,6 @@ export interface Host {
   macaddress: string;
   internetgateway: string;
   nodes: Node['id'][];
-  proxy_enabled: boolean;
   isdefault: boolean;
   nat_type: 'public' | 'symmetric' | 'asymmetric' | 'double' | '';
 }

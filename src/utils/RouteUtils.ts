@@ -5,6 +5,7 @@ import { AppRoutes } from '../routes';
 import { AMUI_URL } from '@/services/BaseService';
 import { useStore } from '@/store/store';
 import { AvailableArchs, AvailableOses } from '@/models/AvailableOses';
+import { BUG_REPORT_URL } from '@/constants/AppConstants';
 
 type AmuiRouteAction = '' | 'upgrade' | 'invite-user';
 
@@ -112,4 +113,17 @@ export function deriveUrlWithoutQueryParams(url?: string): string {
 export function truncateQueryParamsFromCurrentUrl() {
   const nonSensitiveUrl = deriveUrlWithoutQueryParams();
   window.history.replaceState({}, '', nonSensitiveUrl);
+}
+
+// Function that opens a URL in a new tab
+export function openInNewTab(url: string) {
+  const win = window.open(url, '_blank');
+  if (win) win.focus();
+}
+
+// Function to file a bug report for the UI
+export function fileBugReport(body: string) {
+  openInNewTab(
+    BUG_REPORT_URL.replace(':body', `Describe what happened...%0A%0A Error log: %0A\`${encodeURIComponent(body)}\``)
+  );
 }
