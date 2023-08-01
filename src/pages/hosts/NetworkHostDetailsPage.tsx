@@ -655,7 +655,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
       {notifyCtx}
       {!!node && (
         <UpdateNodeModal
-          key={node.id}
+          key={JSON.stringify(node)}
           isOpen={isEditingNode}
           node={node}
           onCancel={() => {
