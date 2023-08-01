@@ -57,10 +57,10 @@ export async function setupTenantConfig(): Promise<void> {
   useStore.getState().setStore({
     baseUrl: resolvedBaseUrl,
     jwt: accessToken || useStore.getState().jwt,
-    tenantId,
-    tenantName,
+    tenantId: tenantId || useStore.getState().tenantId,
+    tenantName: tenantName || useStore.getState().tenantName,
     amuiAuthToken,
-    username,
+    username: username || useStore.getState().username,
     // user,
   });
 }
