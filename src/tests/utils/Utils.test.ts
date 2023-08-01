@@ -57,7 +57,6 @@ const testHost1: Host = {
   endpointip: '',
   publickey: '',
   macaddress: '',
-  internetgateway: '',
   nodes: [],
   isdefault: false,
   nat_type: '',

@@ -345,19 +345,11 @@ export default function HostDetailsPage(props: PageProps) {
           </Row>
         </Card>
 
-        <Card style={{ width: '50%', marginTop: '2rem' }}>
+        {/* <Card style={{ width: '50%', marginTop: '2rem' }}>
           <Typography.Title level={5} style={{ marginTop: '0rem' }}>
             Advanced settings
           </Typography.Title>
-          <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
-            <Col xs={12}>
-              <Typography.Text disabled>Internet Gateway</Typography.Text>
-            </Col>
-            <Col xs={12}>
-              <Typography.Text>{host.internetgateway}</Typography.Text>
-            </Col>
-          </Row>
-        </Card>
+        </Card> */}
       </div>
     );
   }, [host, themeToken.colorBorder]);

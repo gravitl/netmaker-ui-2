@@ -485,14 +485,6 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                   <Typography.Text>{host.debug ? 'Yes' : 'No'}</Typography.Text>
                 </Col>
               </Row>
-              <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
-                <Col xs={12}>
-                  <Typography.Text disabled>Internet Gateway</Typography.Text>
-                </Col>
-                <Col xs={12}>
-                  <Typography.Text>{host.internetgateway}</Typography.Text>
-                </Col>
-              </Row>
             </Collapse.Panel>
           </Collapse>
         </Card>
