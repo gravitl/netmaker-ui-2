@@ -67,7 +67,7 @@ export default function HostDetailsPage(props: PageProps) {
         dataIndex: 'addressString',
       },
     ],
-    [host?.defaultinterface]
+    [host?.defaultinterface],
   );
 
   const onUpdateHost = useCallback(() => {
@@ -213,6 +213,28 @@ export default function HostDetailsPage(props: PageProps) {
         } catch (err) {
           notify.error({
             message: 'Failed to refresh host keys',
+            description: extractErrorMsg(err as any),
+          });
+        }
+      },
+    });
+  }, [notify, hostId]);
+
+  const requestHostPull = useCallback(() => {
+    if (!hostId) return;
+    Modal.confirm({
+      title: 'Synchronise host',
+      content: `This will trigger this host to pull latest network(s) state from the server. Proceed?`,
+      onOk: async () => {
+        try {
+          await HostsService.requestHostPull(hostId);
+          notify.success({
+            message: 'Host is syncing...',
+            description: `Host pull has been initiated. This may take a while.`,
+          });
+        } catch (err) {
+          notify.error({
+            message: 'Failed to synchronise host',
             description: extractErrorMsg(err as any),
           });
         }
@@ -384,7 +406,7 @@ export default function HostDetailsPage(props: PageProps) {
                 host?.interfaces?.filter((iface) =>
                   `${iface.name}${iface.addressString}`
                     .toLocaleLowerCase()
-                    .includes(searchText.toLocaleLowerCase().trim())
+                    .includes(searchText.toLocaleLowerCase().trim()),
                 ) ?? []
               }
               rowKey={(iface) => `${iface.name}${iface.addressString}`}
@@ -457,6 +479,14 @@ export default function HostDetailsPage(props: PageProps) {
                             {host?.isdefault ? 'Unmake default' : 'Make default'}
                           </Typography.Text>
                         ),
+                      },
+                      {
+                        key: 'sync',
+                        label: <Typography.Text>Sync</Typography.Text>,
+                        onClick: (ev) => {
+                          ev.domEvent.stopPropagation();
+                          requestHostPull();
+                        },
                       },
                       {
                         key: 'refresh-key',

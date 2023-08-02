@@ -61,7 +61,7 @@ export default function HostsPage(props: PageProps) {
       hosts.filter((host) => {
         return host.name.toLowerCase().includes(searchText.toLowerCase());
       }),
-    [hosts, searchText]
+    [hosts, searchText],
   );
 
   const refreshHostKeys = useCallback(
@@ -85,7 +85,31 @@ export default function HostsPage(props: PageProps) {
         },
       });
     },
-    [notify]
+    [notify],
+  );
+
+  const requestHostPull = useCallback(
+    (host: Host) => {
+      Modal.confirm({
+        title: 'Synchronise host',
+        content: `This will trigger the host (${host.name}) to pull latest network(s) state from the server. Proceed?`,
+        onOk: async () => {
+          try {
+            await HostsService.requestHostPull(host.id);
+            notify.success({
+              message: 'Host is syncing...',
+              description: `Host pull has been initiated for ${host.name}. This may take a while.`,
+            });
+          } catch (err) {
+            notify.error({
+              message: 'Failed to synchronise host',
+              description: extractErrorMsg(err as any),
+            });
+          }
+        },
+      });
+    },
+    [notify],
   );
 
   const confirmToggleHostDefaultness = useCallback(
@@ -107,14 +131,14 @@ export default function HostsPage(props: PageProps) {
         },
       });
     },
-    [notify, storeUpdateHost]
+    [notify, storeUpdateHost],
   );
 
   const onEditHost = useCallback(
     (host: Host) => {
       navigate(getHostRoute(host, { edit: 'true' }));
     },
-    [navigate]
+    [navigate],
   );
 
   const confirmDeleteHost = useCallback(
@@ -156,7 +180,7 @@ export default function HostsPage(props: PageProps) {
         },
       });
     },
-    [notify, store.nodes, storeDeleteHost]
+    [notify, store.nodes, storeDeleteHost],
   );
 
   const refreshAllHostKeys = useCallback(() => {
@@ -281,6 +305,23 @@ export default function HostsPage(props: PageProps) {
         },
       },
       {
+        title: '',
+        width: '5rem',
+        render: (_, host) => (
+          <div onClick={(ev) => ev.stopPropagation()}>
+            <Button
+              type="text"
+              icon={<ReloadOutlined />}
+              onClick={() => {
+                requestHostPull(host);
+              }}
+            >
+              Sync
+            </Button>
+          </div>
+        ),
+      },
+      {
         width: '1rem',
         render(_, host) {
           return (
@@ -330,7 +371,7 @@ export default function HostsPage(props: PageProps) {
         },
       },
     ],
-    [confirmToggleHostDefaultness, confirmDeleteHost, onEditHost, refreshHostKeys, store.nodes]
+    [confirmToggleHostDefaultness, confirmDeleteHost, onEditHost, refreshHostKeys, store.nodes],
   );
 
   const namHostsTableCols: TableColumnsType<Host> = useMemo(
@@ -394,7 +435,7 @@ export default function HostsPage(props: PageProps) {
         },
       },
     ],
-    [confirmToggleHostDefaultness, onEditHost]
+    [confirmToggleHostDefaultness, onEditHost],
   );
 
   const networksTableCols: TableColumnsType<Network> = useMemo(
@@ -420,7 +461,7 @@ export default function HostsPage(props: PageProps) {
             title: 'Connection Status',
             render(_: any, network: Network) {
               const isConnected = store.nodes.some(
-                (node) => node.network === network.netid && node.hostid === selectedHost.id
+                (node) => node.network === network.netid && node.hostid === selectedHost.id,
               );
               return (
                 <Switch
@@ -436,7 +477,7 @@ export default function HostsPage(props: PageProps) {
                           await HostsService.updateHostsNetworks(
                             selectedHost.id,
                             network.netid,
-                            isConnected ? 'leave' : 'join'
+                            isConnected ? 'leave' : 'join',
                           );
                           notify.success({
                             message: `Host successfully ${
@@ -460,7 +501,7 @@ export default function HostsPage(props: PageProps) {
           }
         : {},
     ],
-    [notify, selectedHost, store.nodes]
+    [notify, selectedHost, store.nodes],
   );
 
   // ui components
@@ -561,7 +602,7 @@ export default function HostsPage(props: PageProps) {
         children: getNetworkAccessContent(),
       },
     ],
-    [getOverviewContent, getNetworkAccessContent]
+    [getOverviewContent, getNetworkAccessContent],
   );
 
   useEffect(() => {
