@@ -34,16 +34,14 @@ function App() {
         storeSetServerStatus({
           db_connected: false,
           broker_connected: false,
-          billingError: false,
-          billingErrorText: '',
+          license_error: '',
           healthyNetwork: true,
         });
       } else {
         storeSetServerStatus({
           db_connected: false,
           broker_connected: false,
-          billingError: false,
-          billingErrorText: '',
+          license_error: '',
           healthyNetwork: false,
         });
       }
@@ -72,13 +70,12 @@ function App() {
       storeSetServerStatus({
         db_connected: true,
         broker_connected: true,
-        billingError: false,
-        billingErrorText: '',
+        license_error: '',
         healthyNetwork: true,
       });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [],
   );
 
   useEffect(() => {

@@ -40,6 +40,5 @@ export interface ServerStatus {
   db_connected: boolean;
   broker_connected: boolean;
   healthyNetwork: boolean;
-  billingError: boolean;
-  billingErrorText: string;
+  license_error: string;
 }

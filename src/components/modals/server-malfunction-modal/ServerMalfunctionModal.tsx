@@ -34,7 +34,7 @@ export default function ServerMalfunctionModal({ isOpen, onCancel }: ServerMalfu
           </Col>
         </Row>
 
-        {store.serverStatus?.status?.billingError && (
+        {store.serverStatus?.status?.license_error && (
           <Row>
             <Col span={24}>
               <Typography.Title level={4}>{t('error.billingerroroccured')}</Typography.Title>
@@ -47,7 +47,7 @@ export default function ServerMalfunctionModal({ isOpen, onCancel }: ServerMalfu
             </Col>
             <Col span={24} style={{ marginTop: '2rem' }}>
               <Typography.Text>
-                {t('common.reason')}: {store.serverStatus?.status?.billingErrorText ?? ''}
+                {t('common.reason')}: {store.serverStatus?.status?.license_error ?? ''}
               </Typography.Text>
               <br />
               <Typography.Text>
@@ -57,7 +57,7 @@ export default function ServerMalfunctionModal({ isOpen, onCancel }: ServerMalfu
             </Col>
           </Row>
         )}
-        {!store.serverStatus?.status?.billingError && (
+        {!store.serverStatus?.status?.license_error && (
           <Row>
             <Col span={24}>
               <Typography.Title level={4}>{t('error.servermalfunction')}</Typography.Title>
