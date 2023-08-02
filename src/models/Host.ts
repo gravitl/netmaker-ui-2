@@ -18,7 +18,6 @@ export interface Host {
   endpointip: string;
   publickey: string;
   macaddress: string;
-  internetgateway: string;
   nodes: Node['id'][];
   isdefault: boolean;
   nat_type: 'public' | 'symmetric' | 'asymmetric' | 'double' | '';

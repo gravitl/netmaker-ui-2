@@ -5,7 +5,7 @@ import { HostsService } from '@/services/HostsService';
 import { useStore } from '@/store/store';
 import { getNodeConnectivityStatus } from '@/utils/NodeUtils';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
-import { ExclamationCircleFilled, SettingOutlined } from '@ant-design/icons';
+import { ExclamationCircleFilled, SearchOutlined, SettingOutlined } from '@ant-design/icons';
 import {
   Badge,
   Button,
@@ -485,14 +485,6 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                   <Typography.Text>{host.debug ? 'Yes' : 'No'}</Typography.Text>
                 </Col>
               </Row>
-              <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
-                <Col xs={12}>
-                  <Typography.Text disabled>Internet Gateway</Typography.Text>
-                </Col>
-                <Col xs={12}>
-                  <Typography.Text>{host.internetgateway}</Typography.Text>
-                </Col>
-              </Row>
             </Collapse.Panel>
           </Collapse>
         </Card>
@@ -510,6 +502,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
               placeholder="Search interfaces"
               value={searchText}
               onChange={(ev) => setSearchText(ev.target.value)}
+              prefix={<SearchOutlined />}
             />
           </Col>
         </Row>
@@ -654,7 +647,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
       {notifyCtx}
       {!!node && (
         <UpdateNodeModal
-          key={node.id}
+          key={JSON.stringify(node)}
           isOpen={isEditingNode}
           node={node}
           onCancel={() => {

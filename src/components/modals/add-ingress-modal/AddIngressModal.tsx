@@ -20,7 +20,7 @@ import '../CustomModal.scss';
 import { Network } from '@/models/Network';
 import { ExtendedNode, Node } from '@/models/Node';
 import { getExtendedNode, getNodeConnectivityStatus, isHostNatted } from '@/utils/NodeUtils';
-import { CloseOutlined } from '@ant-design/icons';
+import { CloseOutlined, SearchOutlined } from '@ant-design/icons';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { NodesService } from '@/services/NodesService';
 import { Host } from '@/models/Host';
@@ -169,6 +169,7 @@ export default function AddIngressModal({ isOpen, onCreateIngress, onCancel, net
                           placeholder="Search host"
                           value={gatewaySearch}
                           onChange={(e) => setGatewaySearch(e.target.value)}
+                          prefix={<SearchOutlined />}
                         />
                       </Col>
                     </Row>

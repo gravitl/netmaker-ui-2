@@ -19,7 +19,6 @@ export const NULL_HOST: Host = {
   endpointip: '',
   publickey: '',
   macaddress: '',
-  internetgateway: '',
   nodes: [],
   isdefault: false,
   nat_type: 'public',

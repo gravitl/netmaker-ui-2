@@ -1,4 +1,4 @@
-import { ArrowLeftOutlined, ArrowRightOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, ArrowRightOutlined, SearchOutlined } from '@ant-design/icons';
 import '../CustomModal.scss';
 import './NewHostModal.scss';
 import {
@@ -186,7 +186,12 @@ export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModa
                     Create new Key
                   </Button>
                 </div>
-                <Input size="small" placeholder="Search keys" onChange={(ev) => setKeySearch(ev.target.value)} />
+                <Input
+                  size="small"
+                  placeholder="Search keys"
+                  onChange={(ev) => setKeySearch(ev.target.value)}
+                  prefix={<SearchOutlined />}
+                />
                 <Table
                   style={{ marginTop: '1rem' }}
                   size="small"

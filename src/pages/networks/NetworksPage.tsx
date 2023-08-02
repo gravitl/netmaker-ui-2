@@ -1,6 +1,6 @@
 import { Network } from '@/models/Network';
 import { AppRoutes } from '@/routes';
-import { PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined, SearchOutlined } from '@ant-design/icons';
 import { Button, Card, Col, Input, Layout, Row, Skeleton, Table, TableColumnsType, Typography } from 'antd';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -219,6 +219,7 @@ export default function NetworksPage(props: PageProps) {
                   placeholder="Search networks"
                   value={searchText}
                   onChange={(ev) => setSearchText(ev.target.value)}
+                  prefix={<SearchOutlined />}
                 />
               </Col>
               <Col xs={12} md={6} style={{ textAlign: 'right' }}>

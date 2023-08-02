@@ -179,7 +179,7 @@ export default function UpdateEgressModal({
                         <Input
                           placeholder="CIDR range (eg: 10.0.0.0/8 or a123:4567::/16)"
                           style={{ width: '100%' }}
-                          suffix={
+                          prefix={
                             <Tooltip title="Remove">
                               <CloseOutlined onClick={() => remove(index)} />
                             </Tooltip>
