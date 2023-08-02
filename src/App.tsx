@@ -19,18 +19,18 @@ function App() {
   const storeFetchNodes = store.fetchNodes;
   const storeFetchHosts = store.fetchHosts;
   const storeIsLoggedIn = store.isLoggedIn;
-  const [notify, notifyCtx] = notification.useNotification();
   const [hasFetchedServerConfig, setHasFetchedServerConfig] = useState(false);
 
   const getUpdates = useCallback(async () => {
     try {
       const { data: serverStatus } = await ServerConfigService.getServerStatus();
       storeSetServerStatus({ ...serverStatus, healthyNetwork: true });
-      storeFetchHosts();
-      storeFetchNodes();
+      if (storeIsLoggedIn()) {
+        storeFetchHosts();
+        storeFetchNodes();
+      }
     } catch (err) {
       if (err instanceof AxiosError) {
-        // notify.error({ message: 'Failed to connect to your server', description: (err as AxiosError).message });
         storeSetServerStatus({
           db_connected: false,
           broker_connected: false,
@@ -46,18 +46,16 @@ function App() {
         });
       }
     }
-  }, [storeFetchHosts, storeFetchNodes, storeSetServerStatus]);
+  }, [storeFetchHosts, storeFetchNodes, storeIsLoggedIn, storeSetServerStatus]);
 
   useEffect(() => {
+    getUpdates();
     const id = setInterval(async () => {
-      if (storeIsLoggedIn()) {
-        getUpdates();
-
-        if (!hasFetchedServerConfig) {
-          const hasFetched = await storeFetchServerConfig();
-          if (hasFetched) {
-            setHasFetchedServerConfig(true);
-          }
+      getUpdates();
+      if (storeIsLoggedIn() && !hasFetchedServerConfig) {
+        const hasFetched = await storeFetchServerConfig();
+        if (hasFetched) {
+          setHasFetchedServerConfig(true);
         }
       }
     }, POLL_INTERVAL);
@@ -75,7 +73,7 @@ function App() {
       });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+    []
   );
 
   useEffect(() => {
@@ -103,8 +101,6 @@ function App() {
         <RouterProvider router={router} />
       </ConfigProvider>
 
-      {/* misc */}
-      {notifyCtx}
       <ServerMalfunctionModal isOpen={!store.serverStatus.isHealthy} />
     </div>
   );

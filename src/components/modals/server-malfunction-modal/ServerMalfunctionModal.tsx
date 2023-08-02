@@ -55,6 +55,10 @@ export default function ServerMalfunctionModal({ isOpen, onCancel }: ServerMalfu
                 <a href={`mailto:${getNetmakerSupportEmail()}`}>{getNetmakerSupportEmail()}</a>
               </Typography.Text>
             </Col>
+            <Col span={24} style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2rem' }}>
+              <Typography.Text>Dashboard will become responsive once billing is well-configured</Typography.Text>
+              <LoadingOutlined />
+            </Col>
           </Row>
         )}
         {!store.serverStatus?.status?.license_error && (
