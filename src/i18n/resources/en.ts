@@ -5,6 +5,9 @@ export const en: LanguageResource = {
     hello: 'Hello',
     hosts: 'Hosts',
     or: 'OR',
+    here: 'HERE',
+    reason: 'Reason',
+    licensedashboard: 'Licence dashboard',
   },
   auth: {
     login: 'Login',
@@ -30,6 +33,8 @@ export const en: LanguageResource = {
   error: {
     servermalfunction: 'Error server malfunction',
     contactyourserveradmin: 'Contact your server admin or check your network settings',
+    billingerroroccured: 'Billing/Payment error occured',
+    checkbillingsetting: "Check your tenant's billing settings in the",
   },
   info: {
     connectmultiplehosts: 'Connect multiple hosts',

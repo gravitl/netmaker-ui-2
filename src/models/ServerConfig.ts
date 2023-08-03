@@ -40,4 +40,5 @@ export interface ServerStatus {
   db_connected: boolean;
   broker_connected: boolean;
   healthyNetwork: boolean;
+  license_error: string;
 }
