@@ -74,8 +74,8 @@ import './NetworkDetailsPage.scss';
 import { ControlsContainer, FullScreenControl, SearchControl, SigmaContainer, ZoomControl } from '@react-sigma/core';
 import NetworkGraph from '@/components/NetworkGraph';
 import UpdateRelayModal from '@/components/modals/update-relay-modal/UpdateRelayModal';
-import { NetworkMetrics } from '@/models/Metrics';
-import { getExtClientAclStatus, getHostHealth, getTimeMinHrs } from '@/utils/Utils';
+import { MetricCategories, NetworkMetrics, NodeOrClientMetric, UptimeNodeMetrics } from '@/models/Metrics';
+import { getExtClientAclStatus, getHostHealth, getTimeMinHrs, renderMetricValue } from '@/utils/Utils';
 import AddHostsToNetworkModal from '@/components/modals/add-hosts-to-network-modal/AddHostsToNetworkModal';
 import NewHostModal from '@/components/modals/new-host-modal/NewHostModal';
 import AddIngressModal from '@/components/modals/add-ingress-modal/AddIngressModal';
@@ -100,15 +100,6 @@ interface AclTableData {
   clientAcls?: ExtClientAcls;
 }
 
-type MetricCategories = 'connectivity-status' | 'latency' | 'bytes-sent' | 'bytes-received' | 'uptime';
-
-interface UptimeNodeMetrics {
-  uptime: number;
-  fractionalUptime: number;
-  totalFractionalUptime: number;
-  uptimePercent: number | string;
-}
-
 interface NodeMetricsTableData {
   nodeId: Node['id'];
   nodeName: ExtendedNode['name'];
@@ -128,9 +119,6 @@ interface NodeMetricsTableData {
     [nodeId: string]: UptimeNodeMetrics;
   };
 }
-
-const METRIC_LATENCY_DANGER_THRESHOLD = 500;
-const METRIC_LATENCY_WARNING_THRESHOLD = 300;
 
 export default function NetworkDetailsPage(props: PageProps) {
   const { networkId } = useParams<{ networkId: string }>();
@@ -175,6 +163,9 @@ export default function NetworkDetailsPage(props: PageProps) {
   // const [isDownloadingMetrics, setIsDownloadingMetrics] = useState(false);
   const [currentMetric, setCurrentMetric] = useState<MetricCategories>('connectivity-status');
   const [networkNodeMetrics, setNetworkNodeMetrics] = useState<NetworkMetrics | null>(null);
+  const [clientMetrics, setClientMetrics] = useState<Record<ExternalClient['clientid'], NodeOrClientMetric> | null>(
+    null
+  );
   const [filteredMetricNodeId, setFilteredMetricNodeId] = useState<Node['id'] | null>(null);
   const [isAddHostsToNetworkModalOpen, setIsAddHostsToNetworkModalOpen] = useState(false);
   const [isAddNewHostModalOpen, setIsAddNewHostModalOpen] = useState(false);
@@ -433,6 +424,10 @@ export default function NetworkDetailsPage(props: PageProps) {
       return res;
     });
   }, [networkNodeMetrics?.nodes]);
+
+  const clientsMetricsData = useMemo<NodeOrClientMetric[]>(() => {
+    return Object.values(clientMetrics ?? {});
+  }, [clientMetrics]);
 
   const loadAcls = useCallback(async () => {
     try {
@@ -1266,138 +1261,6 @@ export default function NetworkDetailsPage(props: PageProps) {
   );
 
   const metricsTableCols = useMemo<TableColumnProps<NodeMetricsTableData>[]>(() => {
-    const getFormattedData = (data: number) => {
-      let unit = '';
-      let value = '';
-
-      // derive unit
-      if (data > 1000000000000) {
-        unit = 'TiB';
-      } else if (data > 1000000000) {
-        unit = 'GiB';
-      } else if (data > 1000000) {
-        unit = 'MiB';
-      } else if (data > 1000) {
-        unit = 'KiB';
-      } else {
-        unit = 'B';
-      }
-
-      // derive value
-      if (data > 1000000000000) {
-        value = (data / 1000000000000).toFixed(2);
-      } else if (data > 1000000000) {
-        value = (data / 1000000000).toFixed(2);
-      } else if (data > 1000000) {
-        value = (data / 1000000).toFixed(2);
-      } else if (data > 1000) {
-        value = (data / 1000).toFixed(2);
-      } else {
-        value = `${data}`;
-      }
-
-      return `${value} (${unit})`;
-    };
-
-    const getFormattedTime = (time: number) => {
-      let timeString = '';
-      if (time) {
-        const { hours, min } = getTimeMinHrs(time);
-        timeString = `${hours}h${min}m`;
-      } else {
-        timeString = '0h0m';
-      }
-      return timeString;
-    };
-
-    const renderMetricValue = (metricType: MetricCategories, value: unknown) => {
-      let fractionalDowntime: number;
-      let downtime: number;
-
-      switch (metricType) {
-        default:
-          return <></>;
-          break;
-        case 'connectivity-status':
-          if (value === true) {
-            return (
-              <div
-                style={{
-                  border: '2px solid #49AA19',
-                  borderRadius: '50%',
-                  background: '#162312',
-                  width: '15px',
-                  height: '15px',
-                }}
-              ></div>
-            );
-          }
-          return <CloseOutlined style={{ color: '#D32029' }} />;
-          break;
-        case 'latency':
-          return (
-            <Typography.Text
-              style={{
-                color:
-                  (value as number) > METRIC_LATENCY_DANGER_THRESHOLD
-                    ? '#D32029'
-                    : (value as number) > METRIC_LATENCY_WARNING_THRESHOLD
-                    ? '#D8BD14'
-                    : undefined,
-              }}
-            >
-              {value as number} ms
-            </Typography.Text>
-          );
-          break;
-        case 'bytes-sent':
-          return <Typography.Text>{getFormattedData(value as number)}</Typography.Text>;
-          break;
-        case 'bytes-received':
-          return <Typography.Text>{getFormattedData(value as number)}</Typography.Text>;
-          break;
-        case 'uptime':
-          fractionalDowntime =
-            (value as UptimeNodeMetrics).totalFractionalUptime / (value as UptimeNodeMetrics).fractionalUptime;
-          downtime =
-            (fractionalDowntime * (value as UptimeNodeMetrics).uptime) / (value as UptimeNodeMetrics).fractionalUptime;
-          return (
-            <Tooltip
-              title={
-                <Space style={{ width: '8rem' }} direction="vertical">
-                  <Row>
-                    <Col xs={12}>
-                      <Progress showInfo={false} percent={100} status="exception" />
-                    </Col>
-                    <Col xs={12} style={{ textAlign: 'right' }}>
-                      {getFormattedTime(downtime)}
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col xs={12}>
-                      <Progress showInfo={false} percent={100} status="success" />
-                    </Col>
-                    <Col xs={12} style={{ textAlign: 'right' }}>
-                      {getFormattedTime((value as UptimeNodeMetrics).uptime)}
-                    </Col>
-                  </Row>
-                </Space>
-              }
-            >
-              <Progress
-                style={{ width: '3rem' }}
-                showInfo={false}
-                type="line"
-                percent={100}
-                success={{ percent: Number((value as UptimeNodeMetrics).uptimePercent) }}
-              />{' '}
-              {(value as UptimeNodeMetrics).uptimePercent}%
-            </Tooltip>
-          );
-          break;
-      }
-    };
-
     switch (currentMetric) {
       case 'connectivity-status':
         return [
@@ -1530,6 +1393,51 @@ export default function NetworkDetailsPage(props: PageProps) {
     latencyMetricsData,
     uptimeMetricsData,
   ]);
+
+  const clientMetricsTableCols = useMemo<TableColumnProps<NodeOrClientMetric>[]>(() => {
+    return [
+      {
+        title: 'Client Name',
+        dataIndex: 'node_name',
+      },
+      {
+        title: 'Connected',
+        dataIndex: 'connected',
+        render: (val) => renderMetricValue('connectivity-status', val),
+      },
+      {
+        title: 'Uptime',
+        dataIndex: 'uptime',
+        render: (val, data) => {
+          const uptime: UptimeNodeMetrics = {
+            uptime: data.actualuptime ?? 0,
+            fractionalUptime: data.uptime ?? 0,
+            totalFractionalUptime: data.totaltime ?? 0,
+            uptimePercent: data?.percentup?.toFixed(2) ?? 0,
+          };
+          return renderMetricValue('uptime', uptime);
+        },
+      },
+      {
+        title: 'Latency',
+        render(_, data) {
+          return renderMetricValue('latency', data.latency);
+        },
+      },
+      {
+        title: 'Total Sent',
+        render(_, data) {
+          return renderMetricValue('bytes-sent', data.totalsent);
+        },
+      },
+      {
+        title: 'Total Received',
+        render(_, data) {
+          return renderMetricValue('bytes-received', data.totalreceived);
+        },
+      },
+    ];
+  }, []);
 
   const isDefaultDns = useCallback(
     (dns: DNS) => {
@@ -2658,6 +2566,7 @@ export default function NetworkDetailsPage(props: PageProps) {
               <Radio.Button value="bytes-sent">Bytes Sent</Radio.Button>
               <Radio.Button value="bytes-received">Bytes Received</Radio.Button>
               <Radio.Button value="uptime">Uptime</Radio.Button>
+              <Radio.Button value="clients">Clients</Radio.Button>
             </Radio.Group>
           </Col>
           <Col xs={8} style={{ textAlign: 'right' }}>
@@ -2719,6 +2628,16 @@ export default function NetworkDetailsPage(props: PageProps) {
                   pagination={false}
                 />
               )}
+              {currentMetric === 'clients' && (
+                <Table
+                  columns={clientMetricsTableCols}
+                  dataSource={clientsMetricsData}
+                  className="clients-metrics-table"
+                  rowKey="node_name"
+                  size="small"
+                  pagination={false}
+                />
+              )}
             </div>
           </Col>
         </Row>
@@ -2726,12 +2645,14 @@ export default function NetworkDetailsPage(props: PageProps) {
     );
   }, [
     currentMetric,
-    // isDownloadingMetrics,
     metricsTableCols,
     connectivityStatusMetricsData,
     latencyMetricsData,
     bytesSentMetricsData,
     bytesReceivedMetricsData,
+    clientMetricsTableCols,
+    clientsMetricsData,
+    // isDownloadingMetrics,
     // downloadMetrics,
   ]);
 
@@ -2832,6 +2753,8 @@ export default function NetworkDetailsPage(props: PageProps) {
       if (!networkId) return;
       const nodeMetrics = (await NetworksService.getNodeMetrics(networkId)).data;
       setNetworkNodeMetrics(nodeMetrics);
+      const clientMetrics = (await NetworksService.getClientMetrics(networkId)).data ?? {};
+      setClientMetrics(clientMetrics);
     } catch (err) {
       notify.error({
         message: 'Error loading host metrics',
