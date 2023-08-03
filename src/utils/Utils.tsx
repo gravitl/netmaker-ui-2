@@ -1,10 +1,14 @@
 import { Host } from '@/models/Host';
 import { Node } from '@/models/Node';
 import { NodeConnectivityStatus } from '@/models/NodeConnectivityStatus';
-import { FormInstance, Tag } from 'antd';
+import { Col, FormInstance, Progress, Row, Space, Tag, Tooltip, Typography } from 'antd';
 import { getNodeConnectivityStatus } from './NodeUtils';
 import { ExtClientAcls, ExternalClient } from '@/models/ExternalClient';
 import { ACL_ALLOWED, ACL_DENIED, AclStatus, ACL_UNDEFINED } from '@/models/Acl';
+import { CloseOutlined } from '@ant-design/icons';
+import { MetricCategories, UptimeNodeMetrics } from '@/models/Metrics';
+import { ReactNode } from 'react';
+import { METRIC_LATENCY_DANGER_THRESHOLD, METRIC_LATENCY_WARNING_THRESHOLD } from '@/constants/AppConstants';
 
 export function renderNodeHealth(health: NodeConnectivityStatus) {
   switch (health) {
@@ -140,5 +144,167 @@ export function getExtClientAclStatus(
       return ACL_DENIED;
     }
     return ACL_ALLOWED;
+  }
+}
+
+/**
+ * Gets the formatted data in bytes, KiB, MiB, GiB, or TiB.
+ *
+ * @param data data in bytes
+ * @returns data with unit
+ */
+export function getFormattedData(data: number): string {
+  let unit = '';
+  let value = '';
+
+  // derive unit
+  if (data > 1000000000000) {
+    unit = 'TiB';
+  } else if (data > 1000000000) {
+    unit = 'GiB';
+  } else if (data > 1000000) {
+    unit = 'MiB';
+  } else if (data > 1000) {
+    unit = 'KiB';
+  } else {
+    unit = 'B';
+  }
+
+  // derive value
+  if (data > 1000000000000) {
+    value = (data / 1000000000000).toFixed(2);
+  } else if (data > 1000000000) {
+    value = (data / 1000000000).toFixed(2);
+  } else if (data > 1000000) {
+    value = (data / 1000000).toFixed(2);
+  } else if (data > 1000) {
+    value = (data / 1000).toFixed(2);
+  } else {
+    value = data.toFixed(2);
+  }
+
+  return `${value} (${unit})`;
+}
+
+/**
+ * Gets the formatted time in hours and minutes.
+ *
+ * @param time unix time
+ * @returns formatted time in hrs and mins
+ */
+export function getFormattedTime(time: number): string {
+  let timeString = '';
+  if (time) {
+    const { hours, min } = getTimeMinHrs(time);
+    timeString = `${hours}h${min}m`;
+  } else {
+    timeString = '0h0m';
+  }
+  return timeString;
+}
+
+/**
+ * Renders a metric value.
+ *
+ * @param metricType type to render
+ * @param value metric value
+ * @returns rendered metric value as a react node
+ */
+export function renderMetricValue(metricType: MetricCategories, value: unknown): ReactNode {
+  let fractionalDowntime: number;
+  let downtime: number;
+
+  switch (metricType) {
+    default:
+      return <></>;
+      break;
+    case 'connectivity-status':
+      if (value === true) {
+        return (
+          <div
+            data-testid={`connectivity-metric-${value}`}
+            style={{
+              border: '2px solid #49AA19',
+              borderRadius: '50%',
+              background: '#162312',
+              width: '15px',
+              height: '15px',
+            }}
+          ></div>
+        );
+      }
+      return <CloseOutlined style={{ color: '#D32029' }} />;
+      break;
+    case 'latency':
+      return (
+        <Typography.Text
+          data-testid={`latency-metric-${value}`}
+          style={{
+            color:
+              (value as number) > METRIC_LATENCY_DANGER_THRESHOLD
+                ? '#D32029'
+                : (value as number) > METRIC_LATENCY_WARNING_THRESHOLD
+                ? '#D8BD14'
+                : undefined,
+          }}
+        >
+          {value as number} ms
+        </Typography.Text>
+      );
+      break;
+    case 'bytes-sent':
+      return (
+        <Typography.Text data-testid={`bytes-sent-metric-${value}`}>
+          {getFormattedData(value as number)}
+        </Typography.Text>
+      );
+      break;
+    case 'bytes-received':
+      return (
+        <Typography.Text data-testid={`bytes-received-metric-${value}`}>
+          {getFormattedData(value as number)}
+        </Typography.Text>
+      );
+      break;
+    case 'uptime':
+      fractionalDowntime =
+        (value as UptimeNodeMetrics).totalFractionalUptime / (value as UptimeNodeMetrics).fractionalUptime;
+      downtime =
+        (fractionalDowntime * (value as UptimeNodeMetrics).uptime) / (value as UptimeNodeMetrics).fractionalUptime;
+      return (
+        <Tooltip
+          title={
+            <Space style={{ width: '8rem' }} direction="vertical">
+              <Row>
+                <Col xs={12}>
+                  <Progress showInfo={false} percent={100} status="exception" />
+                </Col>
+                <Col xs={12} style={{ textAlign: 'right' }}>
+                  {getFormattedTime(downtime)}
+                </Col>
+              </Row>
+              <Row>
+                <Col xs={12}>
+                  <Progress showInfo={false} percent={100} status="success" />
+                </Col>
+                <Col xs={12} style={{ textAlign: 'right' }}>
+                  {getFormattedTime((value as UptimeNodeMetrics).uptime)}
+                </Col>
+              </Row>
+            </Space>
+          }
+        >
+          <Progress
+            data-testid={`uptime-metric-${JSON.stringify(value || {})}`}
+            style={{ width: '3rem' }}
+            showInfo={false}
+            type="line"
+            percent={100}
+            success={{ percent: Number((value as UptimeNodeMetrics).uptimePercent) }}
+          />{' '}
+          {(value as UptimeNodeMetrics).uptimePercent}%
+        </Tooltip>
+      );
+      break;
   }
 }

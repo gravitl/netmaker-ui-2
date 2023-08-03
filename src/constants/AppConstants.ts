@@ -18,3 +18,6 @@ export const BUG_REPORT_URL = `https://github.com/gravitl/netmaker-ui-2/issues/n
 )}&body=:body`;
 
 export const NETWORK_GRAPH_SIGMA_CONTAINER_ID = 'network-graph-sigma-contaner';
+
+export const METRIC_LATENCY_DANGER_THRESHOLD = 500;
+export const METRIC_LATENCY_WARNING_THRESHOLD = 300;
