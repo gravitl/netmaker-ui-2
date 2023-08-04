@@ -77,8 +77,10 @@ function App() {
   useEffect(() => {
     if (isIntercomReady) {
       intercomBoot({
+        // TODO: use a proper way to get email. username is coincidentally same as email in SaaS
         email: store.username,
-        name: 'Test User',
+        // TODO: find a way to get name
+        // name: '',
         customAttributes: {
           tier: (isServerEE ? 'paid_tier' : 'free_tier') as IntercomTiers,
         },
