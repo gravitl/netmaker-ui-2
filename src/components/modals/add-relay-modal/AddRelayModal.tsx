@@ -328,7 +328,7 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
         <Divider style={{ margin: '0px 0px 2rem 0px' }} />
         <div className="CustomModalBody">
           <Row>
-            <Col xs={24} style={{ textAlign: 'left' }}>
+            <Col xs={24} style={{ textAlign: 'right' }}>
               <Button type="primary" onClick={createRelay} loading={isSubmitting}>
                 Create Relay
               </Button>
