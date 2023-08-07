@@ -1,25 +1,37 @@
-import { ConfigProvider, notification, theme } from 'antd';
+import { ConfigProvider, theme } from 'antd';
 import { RouterProvider } from 'react-router-dom';
 import { router } from './routes';
 import { useStore } from './store/store';
 import './App.scss';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AxiosError } from 'axios';
 import { ServerConfigService } from './services/ServerConfigService';
 import ServerMalfunctionModal from './components/modals/server-malfunction-modal/ServerMalfunctionModal';
 import { getBrandingConfig } from './services/BaseService';
-
-const POLL_INTERVAL = 10_000;
+import { APP_UPDATE_POLL_INTERVAL } from './constants/AppConstants';
+import { useIntercom } from 'react-use-intercom';
+import { IntercomTiers } from './models/ServerConfig';
 
 function App() {
   const store = useStore();
+  const {
+    boot: intercomBoot,
+    shutdown: intercomShutdown,
+    // startTour: intercomStartTour
+  } = useIntercom();
 
+  const isServerEE = store.serverConfig?.IsEE === 'yes';
   const storeFetchServerConfig = store.fetchServerConfig;
   const storeSetServerStatus = store.setServerStatus;
   const storeFetchNodes = store.fetchNodes;
   const storeFetchHosts = store.fetchHosts;
   const storeIsLoggedIn = store.isLoggedIn;
   const [hasFetchedServerConfig, setHasFetchedServerConfig] = useState(false);
+
+  const isIntercomReady = useMemo(() => {
+    // TODO: add other params like tenant/server and user data loaded
+    return storeIsLoggedIn();
+  }, [storeIsLoggedIn]);
 
   const getUpdates = useCallback(async () => {
     try {
@@ -58,9 +70,26 @@ function App() {
           setHasFetchedServerConfig(true);
         }
       }
-    }, POLL_INTERVAL);
+    }, APP_UPDATE_POLL_INTERVAL);
     return () => clearInterval(id);
   }, [getUpdates, hasFetchedServerConfig, storeFetchServerConfig, storeIsLoggedIn]);
+
+  useEffect(() => {
+    if (isIntercomReady) {
+      intercomBoot({
+        // TODO: use a proper way to get email. username is coincidentally same as email in SaaS
+        email: store.username,
+        // TODO: find a way to get name
+        // name: '',
+        customAttributes: {
+          tier: (isServerEE ? 'paid_tier' : 'free_tier') as IntercomTiers,
+        },
+      });
+    }
+    return () => {
+      intercomShutdown();
+    };
+  }, [intercomBoot, intercomShutdown, isIntercomReady, isServerEE, store.username]);
 
   useEffect(
     () => {
@@ -73,7 +102,7 @@ function App() {
       });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [],
   );
 
   useEffect(() => {

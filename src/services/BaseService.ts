@@ -12,6 +12,8 @@ export const axiosService = axios.create();
 
 export const AMUI_URL = isSaasBuild ? (window as any).NMUI_AMUI_URL : '';
 
+export const INTERCOM_APP_ID = isSaasBuild ? (window as any).NMUI_INTERCOM_APP_ID : '';
+
 // function to resolve the particular SaaS tenant's backend URL, ...
 export async function setupTenantConfig(): Promise<void> {
   if (!isSaasBuild) {
@@ -114,7 +116,7 @@ axiosService.interceptors.response.use(
     }
     // Return the error so it can be handled by the calling code
     return Promise.reject(err);
-  }
+  },
 );
 
 // branding
@@ -123,5 +125,5 @@ window.document
   .querySelector('meta[name="description"]')
   ?.setAttribute(
     'content',
-    `The management UI for ${getBrandingConfig().productName}. ${getBrandingConfig().productName} makes networks :)`
+    `The management UI for ${getBrandingConfig().productName}. ${getBrandingConfig().productName} makes networks :)`,
   );
