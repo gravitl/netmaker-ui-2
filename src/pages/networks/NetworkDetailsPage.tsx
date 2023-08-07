@@ -587,6 +587,7 @@ export default function NetworkDetailsPage(props: PageProps) {
           try {
             await NetworksService.deleteDns(dns.network, dns.name);
             setDnses((dnses) => dnses.filter((d) => d.name !== dns.name));
+            notify.success({ message: 'DNS deleted' });
           } catch (err) {
             if (err instanceof AxiosError) {
               notify.error({
