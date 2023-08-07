@@ -45,6 +45,9 @@ jobs:
       - name: Set k8s deployment image
         run: kubectl set image deployment netmaker-ui netmaker-ui=${{ github.repository_owner }}/netmaker-ui-saas:${{ env.TAG }} -n accounts
 
+      - name: Set Intercom vars
+        run: kubectl set env deployment netmaker-ui INTERCOM_APP_ID=al371us8 -n accounts
+
       - name: Deploy to k8s cluster
         run: kubectl rollout restart deploy netmaker-ui -n accounts
 
