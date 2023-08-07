@@ -28,7 +28,7 @@ ENV VITE_IS_SAAS_BUILD=false
 ENV VITE_BASE_URL=
 
 ENV VITE_LICENSE_DASHBOARD_URL=https://account.netmaker.io
-
+ENV VITE_NETMAKER_SUPPORT_EMAIL=help@netmaker.io
 
 # EE customisations and branding
 ENV VITE_PRODUCT_NAME=

@@ -14,7 +14,7 @@ function updateHostsNetworks(
   hostId: Host['id'],
   networkId: Network['netid'],
   action: 'join' | 'leave',
-  forceLeave = false
+  forceLeave = false,
 ) {
   return action === 'join'
     ? axiosService.post<void>(`${ApiRoutes.HOSTS}/${hostId}/networks/${networkId}`)
@@ -33,6 +33,10 @@ function refreshHostKeys(hostId: Host['id']) {
   return axiosService.put<void>(`${ApiRoutes.HOSTS}/${hostId}/keys`);
 }
 
+function requestHostPull(hostId: Host['id']) {
+  return axiosService.post<void>(`${ApiRoutes.HOSTS}/${hostId}/sync`);
+}
+
 export const HostsService = {
   getHosts,
   deleteHost,
@@ -40,4 +44,5 @@ export const HostsService = {
   updateHost,
   refreshAllHostsKeys,
   refreshHostKeys,
+  requestHostPull,
 };

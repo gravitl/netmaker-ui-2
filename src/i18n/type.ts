@@ -3,6 +3,9 @@ export interface LanguageResource {
     hello: string;
     hosts: string;
     or: string;
+    here: string;
+    reason: string;
+    licensedashboard: string;
   };
   auth: {
     login: string;
@@ -28,6 +31,8 @@ export interface LanguageResource {
   error: {
     servermalfunction: string;
     contactyourserveradmin: string;
+    billingerroroccured: string;
+    checkbillingsetting: string;
   };
   info: {
     connectmultiplehosts: string;
