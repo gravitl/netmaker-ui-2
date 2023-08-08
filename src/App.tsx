@@ -83,13 +83,14 @@ function App() {
         // name: '',
         customAttributes: {
           tier: (isServerEE ? 'paid_tier' : 'free_tier') as IntercomTiers,
+          tenantId: store.tenantId ?? '',
         },
       });
     }
     return () => {
       intercomShutdown();
     };
-  }, [intercomBoot, intercomShutdown, isIntercomReady, isServerEE, store.username]);
+  }, [intercomBoot, intercomShutdown, isIntercomReady, isServerEE, store.tenantId, store.username]);
 
   useEffect(
     () => {
