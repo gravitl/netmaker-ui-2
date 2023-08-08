@@ -19,8 +19,8 @@ import { EnrollmentKey } from '@/models/EnrollmentKey';
 import { CreateEnrollmentKeyReqDto } from '@/services/dtos/CreateEnrollmentKeyReqDto';
 import { EnrollmentKeysService } from '@/services/EnrollmentKeysService';
 import { useStore } from '@/store/store';
-import moment from 'moment';
 import { Modify } from '@/types/react-app-env';
+import { Dayjs } from 'dayjs';
 
 interface AddEnrollmentKeyModalProps {
   isOpen: boolean;
@@ -28,7 +28,7 @@ interface AddEnrollmentKeyModalProps {
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
 }
 
-type AddEnrollmentKeyFormData = Modify<CreateEnrollmentKeyReqDto, { expiration: moment.Moment }>;
+type AddEnrollmentKeyFormData = Modify<CreateEnrollmentKeyReqDto, { expiration: Dayjs }>;
 
 export default function AddEnrollmentKeyModal({ isOpen, onCreateKey, onCancel }: AddEnrollmentKeyModalProps) {
   const [form] = Form.useForm<AddEnrollmentKeyFormData>();
