@@ -34,8 +34,6 @@ export default function ServerMalfunctionModal({ isOpen, onCancel }: ServerMalfu
       malfunctions.push('network');
     }
 
-    console.log(store.serverStatus?.status);
-
     return malfunctions;
   }, [store.serverStatus]);
 
