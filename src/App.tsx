@@ -43,12 +43,31 @@ function App() {
       }
     } catch (err) {
       if (err instanceof AxiosError) {
-        storeSetServerStatus({
-          db_connected: false,
-          broker_connected: false,
-          license_error: '',
-          healthyNetwork: true,
-        });
+        if (err.response) {
+          // non-2xx res
+          storeSetServerStatus({
+            db_connected: store.serverStatus?.status?.db_connected || false,
+            broker_connected: store.serverStatus?.status?.broker_connected || false,
+            license_error: store.serverStatus?.status?.license_error || '',
+            healthyNetwork: true,
+          });
+        } else if (err.request) {
+          // requst was made but no response was received
+          storeSetServerStatus({
+            db_connected: store.serverStatus?.status?.db_connected || false,
+            broker_connected: store.serverStatus?.status?.broker_connected || false,
+            license_error: store.serverStatus?.status?.license_error || '',
+            healthyNetwork: false,
+          });
+        } else {
+          // something bad happened when th request was being made
+          storeSetServerStatus({
+            db_connected: store.serverStatus?.status?.db_connected || false,
+            broker_connected: store.serverStatus?.status?.broker_connected || false,
+            license_error: store.serverStatus?.status?.license_error || '',
+            healthyNetwork: false,
+          });
+        }
       } else {
         storeSetServerStatus({
           db_connected: false,
@@ -58,7 +77,15 @@ function App() {
         });
       }
     }
-  }, [storeFetchHosts, storeFetchNodes, storeIsLoggedIn, storeSetServerStatus]);
+  }, [
+    store.serverStatus?.status?.broker_connected,
+    store.serverStatus?.status?.db_connected,
+    store.serverStatus?.status?.license_error,
+    storeFetchHosts,
+    storeFetchNodes,
+    storeIsLoggedIn,
+    storeSetServerStatus,
+  ]);
 
   useEffect(() => {
     getUpdates();

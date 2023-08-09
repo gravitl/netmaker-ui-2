@@ -1,5 +1,5 @@
-import { Col, ConfigProvider, Modal, Row, theme, Typography } from 'antd';
-import { MouseEvent } from 'react';
+import { Col, Collapse, CollapseProps, ConfigProvider, Modal, Row, theme, Typography } from 'antd';
+import { MouseEvent, useMemo } from 'react';
 import '../CustomModal.scss';
 import { useTranslation } from 'react-i18next';
 import { ExclamationCircleOutlined, LoadingOutlined } from '@ant-design/icons';
@@ -12,9 +12,90 @@ interface ServerMalfunctionModalProps {
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
 }
 
+type ServerMalfunctionType = 'billing' | 'db' | 'broker' | 'network';
+
 export default function ServerMalfunctionModal({ isOpen, onCancel }: ServerMalfunctionModalProps) {
   const { t } = useTranslation();
   const store = useStore();
+
+  const getServerMalfunctions = useMemo(() => {
+    const malfunctions: ServerMalfunctionType[] = [];
+
+    if (store.serverStatus?.status?.license_error) {
+      malfunctions.push('billing');
+    }
+    if (!store.serverStatus?.status?.db_connected) {
+      malfunctions.push('db');
+    }
+    if (!store.serverStatus?.status?.broker_connected) {
+      malfunctions.push('broker');
+    }
+    if (!store.serverStatus?.status?.healthyNetwork) {
+      malfunctions.push('network');
+    }
+
+    console.log(store.serverStatus?.status);
+
+    return malfunctions;
+  }, [store.serverStatus]);
+
+  const reasons = useMemo<CollapseProps['items']>(() => {
+    const reasons: CollapseProps['items'] = [];
+
+    if (getServerMalfunctions.includes('billing')) {
+      reasons.push({
+        key: 'billing',
+        label: `${reasons.length + 1}. Billing Issues`,
+        children: (
+          <>
+            {t('error.checkbillingsetting')}{' '}
+            <a href={getLicenseDashboardUrl()} rel="noreferrer" referrerPolicy="no-referrer" target="_blank">
+              {t('common.licensedashboard')}
+            </a>
+            . Also check your Netmaker server logs for detailed information.
+          </>
+        ),
+      });
+    }
+    if (getServerMalfunctions.includes('db')) {
+      reasons.push({
+        key: 'db',
+        label: `${reasons.length + 1}. Database Reachability Issues`,
+        children: (
+          <>
+            The server is not able to connect to the database. Check your Netmaker server config logs for detailed
+            information.
+          </>
+        ),
+      });
+    }
+    if (getServerMalfunctions.includes('broker')) {
+      reasons.push({
+        key: 'broker',
+        label: `${reasons.length + 1}. Broker Reachability Issues`,
+        children: (
+          <>
+            The server is not able to connect to the message broker. Check your Netmaker server config logs for detailed
+            information.
+          </>
+        ),
+      });
+    }
+    if (getServerMalfunctions.includes('network')) {
+      reasons.push({
+        key: 'network',
+        label: `${reasons.length + 1}. Network Connectivity Issues`,
+        children: (
+          <>
+            The dashboard is not able to connect to your Netmaker server. Check your network connection, SSL certificate
+            or DNS settings for your tenant.
+          </>
+        ),
+      });
+    }
+
+    return reasons;
+  }, [getServerMalfunctions, t]);
 
   return (
     // TODO: find a way to DRY the theme config provider
@@ -34,47 +115,30 @@ export default function ServerMalfunctionModal({ isOpen, onCancel }: ServerMalfu
           </Col>
         </Row>
 
-        {store.serverStatus?.status?.license_error && (
-          <Row>
-            <Col span={24}>
-              <Typography.Title level={4}>{t('error.billingerroroccured')}</Typography.Title>
-              <Typography.Text strong>
-                {t('error.checkbillingsetting')}{' '}
-                <a href={getLicenseDashboardUrl()} rel="noreferrer" referrerPolicy="no-referrer" target="_blank">
-                  {t('common.licensedashboard')}
-                </a>
-              </Typography.Text>
-            </Col>
-            <Col span={24} style={{ marginTop: '2rem' }}>
-              <Typography.Text>
-                {t('common.reason')}: {store.serverStatus?.status?.license_error ?? ''}
-              </Typography.Text>
-              <br />
-              <Typography.Text>
-                You can reach out to support at{' '}
-                <a href={`mailto:${getNetmakerSupportEmail()}`}>{getNetmakerSupportEmail()}</a>
-              </Typography.Text>
-            </Col>
-            <Col span={24} style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2rem' }}>
-              <Typography.Text>Dashboard will become responsive once billing is well-configured</Typography.Text>
-              <LoadingOutlined />
-            </Col>
-          </Row>
-        )}
-        {!store.serverStatus?.status?.license_error && (
-          <Row>
-            <Col span={24}>
-              <Typography.Title level={4}>{t('error.servermalfunction')}</Typography.Title>
-            </Col>
-            <Col span={24}>
-              <Typography.Text strong>{t('error.contactyourserveradmin')}</Typography.Text>
-            </Col>
-            <Col span={24} style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2rem' }}>
-              <Typography.Text>Dashboard will become responsive once the server is stable</Typography.Text>
-              <LoadingOutlined />
-            </Col>
-          </Row>
-        )}
+        <Row>
+          <Col span={24}>
+            <Typography.Title level={4}>Netmaker is not functioning properly</Typography.Title>
+          </Col>
+          <Col span={24}>
+            <Typography.Text strong>
+              Contact your server admin, check your network settings or{' '}
+              <a href={`mailto:${getNetmakerSupportEmail()}`} target="_blank" rel="noreferrer">
+                email us
+              </a>
+            </Typography.Text>
+          </Col>
+
+          <Col span={24} style={{ marginTop: '2rem' }}>
+            <Typography.Text>Possible reasons:</Typography.Text>
+            <br />
+            <Collapse size="small" defaultActiveKey={[]} ghost items={reasons} />
+          </Col>
+
+          <Col span={24} style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2rem' }}>
+            <Typography.Text>Dashboard will become responsive once the issue(s) is resolved</Typography.Text>
+            <LoadingOutlined />
+          </Col>
+        </Row>
       </Modal>
     </ConfigProvider>
   );
