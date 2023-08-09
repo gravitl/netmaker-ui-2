@@ -24,6 +24,7 @@ import {
   TabsProps,
   Tag,
   theme,
+  Tooltip,
   Typography,
 } from 'antd';
 import { AxiosError } from 'axios';
@@ -263,7 +264,9 @@ export default function HostDetailsPage(props: PageProps) {
 
           <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
             <Col xs={12}>
-              <Typography.Text disabled>ID</Typography.Text>
+              <Tooltip title="Unique identifier for the host">
+                <Typography.Text disabled>ID</Typography.Text>
+              </Tooltip>
             </Col>
             <Col xs={12}>
               <Typography.Text>{host.id}</Typography.Text>
@@ -271,7 +274,9 @@ export default function HostDetailsPage(props: PageProps) {
           </Row>
           <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
             <Col xs={12}>
-              <Typography.Text disabled>Endpoint</Typography.Text>
+              <Tooltip title="Host public IP address">
+                <Typography.Text disabled>Endpoint</Typography.Text>
+              </Tooltip>
             </Col>
             <Col xs={12}>
               <Typography.Text>{host.endpointip}</Typography.Text>
@@ -279,7 +284,9 @@ export default function HostDetailsPage(props: PageProps) {
           </Row>
           <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
             <Col xs={12}>
-              <Typography.Text disabled>Listen Port</Typography.Text>
+              <Tooltip title="Host public listen port">
+                <Typography.Text disabled>Listen Port</Typography.Text>
+              </Tooltip>
             </Col>
             <Col xs={12}>
               <Typography.Text>{host.listenport}</Typography.Text>
@@ -287,7 +294,9 @@ export default function HostDetailsPage(props: PageProps) {
           </Row>
           <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
             <Col xs={12}>
-              <Typography.Text disabled>MAC Address</Typography.Text>
+              <Tooltip title="MAC address of the host's NIC">
+                <Typography.Text disabled>MAC Address</Typography.Text>
+              </Tooltip>
             </Col>
             <Col xs={12}>
               <Typography.Text>{host.macaddress}</Typography.Text>
@@ -295,7 +304,9 @@ export default function HostDetailsPage(props: PageProps) {
           </Row>
           <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
             <Col xs={12}>
-              <Typography.Text disabled>MTU</Typography.Text>
+              <Tooltip title="Maximum Transmission Unit for the host">
+                <Typography.Text disabled>MTU</Typography.Text>
+              </Tooltip>
             </Col>
             <Col xs={12}>
               <Typography.Text>{host.mtu}</Typography.Text>
@@ -303,7 +314,9 @@ export default function HostDetailsPage(props: PageProps) {
           </Row>
           <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
             <Col xs={12}>
-              <Typography.Text disabled>Public Key</Typography.Text>
+              <Tooltip title="Host public key">
+                <Typography.Text disabled>Public Key</Typography.Text>
+              </Tooltip>
             </Col>
             <Col xs={12}>
               <Typography.Text>{host.publickey}</Typography.Text>
