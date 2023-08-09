@@ -1,5 +1,19 @@
-import { EditOutlined } from '@ant-design/icons';
-import { Button, Col, Divider, Form, Input, Modal, notification, Row, Select, Switch, theme } from 'antd';
+import { EditOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import {
+  Button,
+  Col,
+  Divider,
+  Form,
+  Input,
+  Modal,
+  notification,
+  Row,
+  Select,
+  Switch,
+  theme,
+  Tooltip,
+  Typography,
+} from 'antd';
 import { MouseEvent, useCallback } from 'react';
 import { CreateNetworkDto } from '@/services/dtos/CreateNetworkDto';
 import { NetworksService } from '@/services/NetworksService';
@@ -38,7 +52,7 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
     try {
       const formData = await form.validateFields();
       const network = convertNetworkPayloadToUiNetwork(
-        (await NetworksService.createNetwork(convertUiNetworkToNetworkPayload(formData as unknown as Network))).data
+        (await NetworksService.createNetwork(convertUiNetworkToNetworkPayload(formData as unknown as Network))).data,
       );
       store.addNetwork(network);
       notify.success({ message: `Network ${network.netid} created` });
@@ -89,7 +103,18 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
           layout="vertical"
           initialValues={{ isipv4: true, isipv6: false, defaultacl: 'yes' }}
         >
-          <Form.Item label="Network name" name="netid" rules={[{ required: true }]}>
+          <Form.Item
+            label={
+              <>
+                <Typography.Text className="label-with-tooltip">Network name</Typography.Text>
+                <Tooltip title="Unique name for the network">
+                  <InfoCircleOutlined />
+                </Tooltip>
+              </>
+            }
+            name="netid"
+            rules={[{ required: true }]}
+          >
             <Input placeholder="Network name" />
           </Form.Item>
 
@@ -104,7 +129,12 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
           >
             <Col xs={24}>
               <Row justify="space-between" style={{ marginBottom: isIpv4Val ? '.5rem' : '0px' }}>
-                <Col>IPv4</Col>
+                <Col>
+                  <Typography.Text className="label-with-tooltip">IPv4</Typography.Text>
+                  <Tooltip title="IPv4 range for the netework">
+                    <InfoCircleOutlined />
+                  </Tooltip>
+                </Col>
                 <Col>
                   <Form.Item name="isipv4" noStyle valuePropName="checked">
                     <Switch />
@@ -134,7 +164,12 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
           >
             <Col xs={24}>
               <Row justify="space-between" style={{ marginBottom: isIpv6Val ? '.5rem' : '0px' }}>
-                <Col>IPv6</Col>
+                <Col>
+                  <Typography.Text className="label-with-tooltip">IPv6</Typography.Text>
+                  <Tooltip title="IPv6 range for the netework">
+                    <InfoCircleOutlined />
+                  </Tooltip>
+                </Col>
                 <Col>
                   <Form.Item name="isipv6" noStyle valuePropName="checked">
                     <Switch />
@@ -163,7 +198,12 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
           >
             <Col xs={24}>
               <Row justify="space-between">
-                <Col>Default Access Control</Col>
+                <Col>
+                  <Typography.Text className="label-with-tooltip">Default Access Control</Typography.Text>
+                  <Tooltip title="Whether new network hosts should be accessible or not by default">
+                    <InfoCircleOutlined />
+                  </Tooltip>
+                </Col>
                 <Col xs={8}>
                   <Form.Item name="defaultacl" style={{ marginBottom: '0px' }} rules={[{ required: true }]}>
                     <Select
