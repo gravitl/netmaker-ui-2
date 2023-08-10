@@ -164,7 +164,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [currentMetric, setCurrentMetric] = useState<MetricCategories>('connectivity-status');
   const [networkNodeMetrics, setNetworkNodeMetrics] = useState<NetworkMetrics | null>(null);
   const [clientMetrics, setClientMetrics] = useState<Record<ExternalClient['clientid'], NodeOrClientMetric> | null>(
-    null
+    null,
   );
   const [filteredMetricNodeId, setFilteredMetricNodeId] = useState<Node['id'] | null>(null);
   const [isAddHostsToNetworkModalOpen, setIsAddHostsToNetworkModalOpen] = useState(false);
@@ -183,7 +183,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         .map((node) => getExtendedNode(node, store.hostsCommonDetails))
         .filter((node) => node.network === networkId)
         .filter((node) => `${node?.name ?? ''}${node.address}`.toLowerCase().includes(searchHost.toLowerCase())),
-    [store.nodes, store.hostsCommonDetails, networkId, searchHost]
+    [store.nodes, store.hostsCommonDetails, networkId, searchHost],
   );
 
   const clientGateways = useMemo<ExtendedNode[]>(() => {
@@ -195,7 +195,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const filteredClientGateways = useMemo<ExtendedNode[]>(
     () =>
       clientGateways.filter((node) => node.name?.toLowerCase().includes(searchClientGateways.toLowerCase()) ?? false),
-    [clientGateways, searchClientGateways]
+    [clientGateways, searchClientGateways],
   );
 
   const filteredClients = useMemo<ExternalClient[]>(
@@ -210,7 +210,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         })
         .filter((client) => client.clientid?.toLowerCase().includes(searchClients.toLowerCase()) ?? false)
         .sort((a, b) => a.ingressgatewayid.localeCompare(b.ingressgatewayid)),
-    [clients, filteredClientGateways, searchClients, selectedGateway]
+    [clients, filteredClientGateways, searchClients, selectedGateway],
   );
 
   const egresses = useMemo<ExtendedNode[]>(() => {
@@ -221,7 +221,7 @@ export default function NetworkDetailsPage(props: PageProps) {
 
   const filteredEgresses = useMemo<ExtendedNode[]>(
     () => egresses.filter((egress) => egress.name?.toLowerCase().includes(searchEgress.toLowerCase()) ?? false),
-    [egresses, searchEgress]
+    [egresses, searchEgress],
   );
 
   const filteredExternalRoutes = useMemo<ExternalRoutesTableData[]>(() => {
@@ -256,7 +256,7 @@ export default function NetworkDetailsPage(props: PageProps) {
 
   const filteredRelays = useMemo<ExtendedNode[]>(
     () => relays.filter((relay) => relay.name?.toLowerCase().includes(searchRelay.toLowerCase()) ?? false),
-    [relays, searchRelay]
+    [relays, searchRelay],
   );
 
   const filteredRelayedNodes = useMemo<ExtendedNode[]>(() => {
@@ -292,7 +292,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       });
     },
-    [networkId, notify]
+    [networkId, notify],
   );
 
   const networkAcls = useMemo(() => {
@@ -490,7 +490,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       });
     },
-    [notify, storeFetchNodes]
+    [notify, storeFetchNodes],
   );
 
   const openClientDetails = useCallback((client: ExternalClient) => {
@@ -519,7 +519,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       });
     },
-    [loadClients, notify, store.hostsCommonDetails, storeFetchNodes]
+    [loadClients, notify, store.hostsCommonDetails, storeFetchNodes],
   );
 
   const confirmDeleteEgress = useCallback(
@@ -542,7 +542,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       });
     },
-    [notify, store.hostsCommonDetails, storeFetchNodes]
+    [notify, store.hostsCommonDetails, storeFetchNodes],
   );
 
   const confirmDeleteRange = useCallback(
@@ -575,7 +575,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       });
     },
-    [networkId, notify, store]
+    [networkId, notify, store],
   );
 
   const confirmDeleteDns = useCallback(
@@ -599,7 +599,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       });
     },
-    [notify]
+    [notify],
   );
 
   const confirmDeleteRelay = useCallback(
@@ -623,7 +623,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       });
     },
-    [notify, store, networkId]
+    [notify, store, networkId],
   );
 
   const confirmRemoveRelayed = useCallback(
@@ -654,7 +654,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       });
     },
-    [networkId, notify, storeFetchNodes]
+    [networkId, notify, storeFetchNodes],
   );
 
   const gatewaysTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(
@@ -728,7 +728,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       },
     ],
-    [confirmDeleteGateway]
+    [confirmDeleteGateway],
   );
 
   const egressTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(
@@ -799,7 +799,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       },
     ],
-    [confirmDeleteEgress]
+    [confirmDeleteEgress],
   );
 
   const externalRoutesTableCols = useMemo<TableColumnProps<ExternalRoutesTableData>[]>(() => {
@@ -929,7 +929,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       },
     ],
-    [confirmDeleteClient, networkNodes, openClientDetails, store.hostsCommonDetails, toggleClientStatus]
+    [confirmDeleteClient, networkNodes, openClientDetails, store.hostsCommonDetails, toggleClientStatus],
   );
 
   const relayTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(
@@ -992,7 +992,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       },
     ],
-    [confirmDeleteRelay]
+    [confirmDeleteRelay],
   );
 
   const relayedTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(
@@ -1030,7 +1030,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                         onClick={() =>
                           confirmRemoveRelayed(
                             relayed,
-                            networkNodes.find((node) => node.id === relayed.relayedby) ?? NULL_NODE
+                            networkNodes.find((node) => node.id === relayed.relayedby) ?? NULL_NODE,
                           )
                         }
                       >
@@ -1050,7 +1050,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       },
     ],
-    [confirmRemoveRelayed, networkNodes]
+    [confirmRemoveRelayed, networkNodes],
   );
 
   const aclTableCols = useMemo<TableColumnProps<AclTableData>[]>(() => {
@@ -1062,7 +1062,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       originalAclLevel: AclStatus,
       newAclLevel: AclStatus,
       nodeOrClientIdRow: Node['id'] | ExternalClient['clientid'],
-      nodeOrClientIdCol: Node['id'] | ExternalClient['clientid']
+      nodeOrClientIdCol: Node['id'] | ExternalClient['clientid'],
     ) => {
       const type = rowColTypeTuple.some((t) => t === 'client') ? 'client' : 'node';
       if (type === 'node') {
@@ -1114,7 +1114,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         const assocClient = clients.find((c) => c.clientid === nodeOrClientIdCol);
         const assocIngress = networkNodes.find((n) => n.id === assocClient?.ingressgatewayid);
         const assocIngressDenyList = Object.keys(nodeAcls[assocIngress?.id ?? ''] ?? {}).filter(
-          (targetNodeId) => nodeAcls[assocIngress?.id ?? ''][targetNodeId] === ACL_DENIED
+          (targetNodeId) => nodeAcls[assocIngress?.id ?? ''][targetNodeId] === ACL_DENIED,
         );
         if (assocIngressDenyList.includes(nodeOrClientIdRow)) {
           return (
@@ -1243,11 +1243,11 @@ export default function NetworkDetailsPage(props: PageProps) {
               ? 0
               : getExtClientAclStatus(
                   aclEntry.nodeOrClientId,
-                  aclTableDataMap.get(aclData.nodeOrClientId)?.clientAcls ?? {}
+                  aclTableDataMap.get(aclData.nodeOrClientId)?.clientAcls ?? {},
                 ),
             // node or client IDs
             aclEntry.nodeOrClientId,
-            aclData.nodeOrClientId
+            aclData.nodeOrClientId,
           );
         },
       })),
@@ -1258,7 +1258,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     () =>
       JSON.stringify(nodeAcls) !== JSON.stringify(originalNodeAcls) ||
       JSON.stringify(clientAcls) !== JSON.stringify(originalClientAcls),
-    [clientAcls, nodeAcls, originalClientAcls, originalNodeAcls]
+    [clientAcls, nodeAcls, originalClientAcls, originalNodeAcls],
   );
 
   const metricsTableCols = useMemo<TableColumnProps<NodeMetricsTableData>[]>(() => {
@@ -1444,7 +1444,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     (dns: DNS) => {
       return networkNodes.some((node) => getExtendedNode(node, store.hostsCommonDetails).name === dns.name);
     },
-    [networkNodes, store.hostsCommonDetails]
+    [networkNodes, store.hostsCommonDetails],
   );
 
   const removeNodeFromNetwork = useCallback(
@@ -1501,7 +1501,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       });
     },
-    [networkId, notify, storeDeleteNode]
+    [networkId, notify, storeDeleteNode],
   );
 
   const disconnectNodeFromNetwork = useCallback(
@@ -1541,7 +1541,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       });
     },
-    [networkId, notify, store]
+    [networkId, notify, store],
   );
 
   const updateAllClientsAcls = useCallback(async () => {
@@ -1773,7 +1773,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                               onClick: () =>
                                 disconnectNodeFromNetwork(
                                   !node.connected,
-                                  getExtendedNode(node, store.hostsCommonDetails)
+                                  getExtendedNode(node, store.hostsCommonDetails),
                                 ),
                             },
                             {
@@ -2703,7 +2703,7 @@ export default function NetworkDetailsPage(props: PageProps) {
               children: network ? getMetricsContent() : <Skeleton active />,
             },
           ]
-        : []
+        : [],
     );
 
     if (isServerEE) {

@@ -71,7 +71,7 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
 
   const network = useMemo<Network | undefined>(
     () => store.networks.find((net) => net.netid === networkId),
-    [networkId, store.networks]
+    [networkId, store.networks],
   );
 
   const networkHosts = useMemo<ExtendedNode[]>(() => {
@@ -85,9 +85,9 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
       networkHosts.filter(
         (node) =>
           node.name?.toLowerCase().includes(egressSearch.toLowerCase()) ||
-          node.address?.toLowerCase().includes(egressSearch.toLowerCase())
+          node.address?.toLowerCase().includes(egressSearch.toLowerCase()),
       ),
-    [egressSearch, networkHosts]
+    [egressSearch, networkHosts],
   );
 
   const egressTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(() => {
@@ -155,7 +155,7 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
       form.setFieldsValue({
         ranges: [
           ...new Set(
-            [...rangesVal, internetRangeIpv4]
+            [...rangesVal, internetRangeIpv4],
             // .concat(network?.isipv6 ? [internetRangeIpv6] : [])
           ),
         ],

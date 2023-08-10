@@ -58,7 +58,7 @@ export default function UpdateEgressModal({
 
   const extendedEgress = useMemo(
     () => getExtendedNode(egress, store.hostsCommonDetails),
-    [egress, store.hostsCommonDetails]
+    [egress, store.hostsCommonDetails],
   );
 
   const getNodeConnectivity = useCallback((node: Node) => {

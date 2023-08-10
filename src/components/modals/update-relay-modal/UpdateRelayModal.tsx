@@ -70,7 +70,7 @@ export default function UpdateRelayModal({ relay, isOpen, onUpdateRelay, onCance
 
   const filteredNetworkNodes = useMemo<ExtendedNode[]>(
     () => networkNodes.filter((node) => node.name?.toLowerCase().includes(relayedSearch.toLowerCase())),
-    [networkNodes, relayedSearch]
+    [networkNodes, relayedSearch],
   );
 
   const relayTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(() => {
@@ -185,7 +185,7 @@ export default function UpdateRelayModal({ relay, isOpen, onUpdateRelay, onCance
                         rowKey="id"
                         dataSource={[...filteredNetworkNodes.filter((h) => h.id !== relay.id)].sort((a, b) =>
                           // sort non-relayed hosts to the top
-                          isNodeRelay(a) === isNodeRelay(b) ? 0 : isNodeRelay(a) ? 1 : -1
+                          isNodeRelay(a) === isNodeRelay(b) ? 0 : isNodeRelay(a) ? 1 : -1,
                         )}
                         onRow={(node) => {
                           return {

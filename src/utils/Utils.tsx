@@ -9,6 +9,7 @@ import { CloseOutlined } from '@ant-design/icons';
 import { MetricCategories, UptimeNodeMetrics } from '@/models/Metrics';
 import { ReactNode } from 'react';
 import { METRIC_LATENCY_DANGER_THRESHOLD, METRIC_LATENCY_WARNING_THRESHOLD } from '@/constants/AppConstants';
+import { Rule } from 'antd/es/form';
 
 export function renderNodeHealth(health: NodeConnectivityStatus) {
   switch (health) {
@@ -35,7 +36,7 @@ export function getTimeMinHrs(duration: number) {
 export function getHostHealth(
   hostId: Host['id'],
   hostNodes: Node[],
-  shouldRender = true
+  shouldRender = true,
 ): JSX.Element | NodeConnectivityStatus {
   const nodeHealths = hostNodes
     .filter((n) => n.hostid === hostId)
@@ -97,7 +98,7 @@ function parseJwt(token: string) {
       .map(function (c) {
         return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
       })
-      .join('')
+      .join(''),
   );
 
   return JSON.parse(jsonPayload);
@@ -127,7 +128,7 @@ export function isValidJwt(jwt: string): boolean {
  */
 export function getExtClientAclStatus(
   nodeOrClientId: Node['id'] | ExternalClient['clientid'],
-  clientOrClientAcl: ExternalClient | ExtClientAcls
+  clientOrClientAcl: ExternalClient | ExtClientAcls,
 ): AclStatus {
   // check if it is a client
   if (clientOrClientAcl.clientid) {
@@ -308,3 +309,51 @@ export function renderMetricValue(metricType: MetricCategories, value: unknown):
       break;
   }
 }
+
+const validateEmail = (_: any, value: string, callback: any) => {
+  /* eslint-disable */
+  const regex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/; // Regular expression for email validation
+
+  if (regex.test(value)) {
+    return Promise.resolve();
+  } else {
+    return Promise.reject('Please enter a valid email address.');
+  }
+};
+
+const validateName = (fieldName: string): Rule[] => [
+  { required: false, message: `Please enter a ${fieldName}.` },
+  {
+    validator: (_: any, value: string, callback: any) => {
+      const regex = /^[A-Z][a-zA-Z ]*$/;
+      if (regex.test(value)) {
+        return Promise.resolve();
+      } else {
+        return Promise.reject(`${fieldName} should start with a capital letter and contain only alphabets.`);
+      }
+    },
+  },
+];
+
+const validateSpecialCharactersWithNumbers = (_: any, value: string, callback: any) => {
+  const regex = /^[a-zA-Z0-9\s]+$/; // Regular expression to allow only alphabetic characters, numbers and spaces
+
+  if (!regex.test(value)) {
+    return Promise.reject('Special characters are not allowed.');
+  } else {
+    return Promise.resolve();
+  }
+};
+
+export const validatePlainTextFieldWithNumbersButNotRequired: Rule[] = [
+  { required: false, message: 'Please enter a value.' },
+  { validator: validateSpecialCharactersWithNumbers },
+];
+
+export const validateEmailField: Rule[] = [
+  { required: true, message: 'Please enter a value.' },
+  { validator: validateEmail },
+];
+
+export const validateLastNameField = validateName('last name');
+export const validateFirstNameField = validateName('first name');

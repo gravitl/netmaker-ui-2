@@ -45,7 +45,7 @@ export default function MainLayout() {
       structuredClone(store.networks)
         .sort((a, b) => a.netid.localeCompare(b.netid))
         .slice(0, 5),
-    [store.networks]
+    [store.networks],
   );
 
   const sidebarLogo = useMemo(() => {
@@ -128,7 +128,7 @@ export default function MainLayout() {
                 //   icon: UserOutlined,
                 //   label: 'Users',
                 // },
-              ]
+              ],
         )
         .concat(
           isSaasBuild || store.user?.isadmin
@@ -139,7 +139,7 @@ export default function MainLayout() {
                   label: 'Users',
                 },
               ]
-            : []
+            : [],
         )
         .map((item) => ({
           key: item.key,
@@ -156,7 +156,7 @@ export default function MainLayout() {
             type: (child as any)?.type,
           })),
         })),
-    [recentNetworks, store.user?.isadmin]
+    [recentNetworks, store.user?.isadmin],
   );
 
   const sideNavBottomItems: MenuProps['items'] = useMemo(
@@ -272,7 +272,7 @@ export default function MainLayout() {
         ],
       })),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isSidebarCollapsed, currentTheme, i18n.language, navigate, setCurrentTheme, store.username, storeLogout]
+    [isSidebarCollapsed, currentTheme, i18n.language, navigate, setCurrentTheme, store.username, storeLogout],
   );
 
   const getActiveSideNavKeys = useCallback(() => {

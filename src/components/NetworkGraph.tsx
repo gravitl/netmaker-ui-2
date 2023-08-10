@@ -69,7 +69,7 @@ export default function NetworkGraph({ hosts, nodes, acl, clients }: NetworkGrap
       }
       return false;
     },
-    [acl]
+    [acl],
   );
 
   const renderNodes = useCallback(
@@ -123,7 +123,7 @@ export default function NetworkGraph({ hosts, nodes, acl, clients }: NetworkGrap
         }
       });
     },
-    []
+    [],
   );
 
   const renderEdges = useCallback(
@@ -160,7 +160,7 @@ export default function NetworkGraph({ hosts, nodes, acl, clients }: NetworkGrap
         }
       });
     },
-    [canNodesCommunitcate]
+    [canNodesCommunitcate],
   );
 
   const autoPositionGraphNodes = useCallback((graph: Graph, strategy: GraphPositioningStrategy) => {
@@ -190,10 +190,13 @@ export default function NetworkGraph({ hosts, nodes, acl, clients }: NetworkGrap
   useEffect(() => {
     const graph = new Graph();
 
-    const nodeToHostMap = nodes.reduce((acc, node) => {
-      acc[node.id] = hosts.find((host) => host.id === node.hostid) ?? NULL_HOST;
-      return acc;
-    }, {} as Record<Node['id'], Host>);
+    const nodeToHostMap = nodes.reduce(
+      (acc, node) => {
+        acc[node.id] = hosts.find((host) => host.id === node.hostid) ?? NULL_HOST;
+        return acc;
+      },
+      {} as Record<Node['id'], Host>,
+    );
 
     const sortedNodes = structuredClone(nodes).sort((a, b) => a.id.localeCompare(b.id));
     const sortedClient = structuredClone(clients).sort((a, b) => a.clientid.localeCompare(b.clientid));

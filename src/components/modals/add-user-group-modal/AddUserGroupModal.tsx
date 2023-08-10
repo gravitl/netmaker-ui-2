@@ -27,7 +27,7 @@ export default function AddUserGroupModal({ isOpen, onCreateUserGroup, onCancel 
       users
         .filter((u) => !u.isadmin || (u.isadmin && u.username === store.username))
         .map((u) => ({ label: u.username, value: u.username })),
-    [store.username, users]
+    [store.username, users],
   );
 
   const resetModal = () => {

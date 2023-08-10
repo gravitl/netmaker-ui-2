@@ -52,7 +52,6 @@ export default function LoginPage(props: LoginPageProps) {
       store.setStore({ jwt: data.Response.AuthToken, username: data.Response.UserName });
       await storeFetchServerConfig();
       await getUserAndUpdateInStore(data.Response.UserName);
-      // navigate(AppRoutes.DASHBOARD_ROUTE);
     } catch (err) {
       notify.error({ message: 'Failed to login', description: extractErrorMsg(err as any) });
     } finally {

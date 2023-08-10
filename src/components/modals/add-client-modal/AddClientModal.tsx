@@ -79,9 +79,9 @@ export default function AddClientModal({
       networkHosts.filter(
         (node) =>
           node.name?.toLowerCase().includes(gatewaySearch.toLowerCase()) ||
-          node.address?.toLowerCase().includes(gatewaySearch.toLowerCase())
+          node.address?.toLowerCase().includes(gatewaySearch.toLowerCase()),
       ),
-    [gatewaySearch, networkHosts]
+    [gatewaySearch, networkHosts],
   );
 
   const selectedGatewayHost = useMemo<Host | null>(() => {

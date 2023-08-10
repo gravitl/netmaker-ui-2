@@ -76,7 +76,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
         dataIndex: 'addressString',
       },
     ],
-    [host?.defaultinterface]
+    [host?.defaultinterface],
   );
 
   const onUpdateNode = useCallback(() => {
@@ -141,7 +141,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
         });
       }
     },
-    [hostId, node, networkId, notify, storeDeleteNode, navigate]
+    [hostId, node, networkId, notify, storeDeleteNode, navigate],
   );
 
   const onHostToggleConnectivity = useCallback(
@@ -163,7 +163,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
         });
       }
     },
-    [hostId, node, networkId, notify, store]
+    [hostId, node, networkId, notify, store],
   );
 
   const promptConfirmDisconnect = () => {
@@ -514,7 +514,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                 host?.interfaces?.filter((iface) =>
                   `${iface.name}${iface.addressString}`
                     .toLocaleLowerCase()
-                    .includes(searchText.toLocaleLowerCase().trim())
+                    .includes(searchText.toLocaleLowerCase().trim()),
                 ) ?? []
               }
               rowKey={(iface) => `${iface.name}${iface.addressString}`}
