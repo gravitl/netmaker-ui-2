@@ -1,10 +1,11 @@
-import { Col, Collapse, CollapseProps, ConfigProvider, Modal, Row, theme, Typography } from 'antd';
-import { MouseEvent, useMemo } from 'react';
+import { Button, Col, Collapse, CollapseProps, ConfigProvider, Modal, Row, theme, Typography } from 'antd';
+import { Fragment, MouseEvent, useMemo } from 'react';
 import '../CustomModal.scss';
 import { useTranslation } from 'react-i18next';
 import { ExclamationCircleOutlined, LoadingOutlined } from '@ant-design/icons';
 import { useStore } from '@/store/store';
-import { getLicenseDashboardUrl, getNetmakerSupportEmail } from '@/utils/RouteUtils';
+import { getAmuiUrl, getLicenseDashboardUrl, getNetmakerSupportEmail } from '@/utils/RouteUtils';
+import { isSaasBuild } from '@/services/BaseService';
 
 interface ServerMalfunctionModalProps {
   isOpen: boolean;
@@ -126,10 +127,18 @@ export default function ServerMalfunctionModal({ isOpen, onCancel }: ServerMalfu
             </Typography.Text>
           </Col>
 
-          <Col span={24} style={{ marginTop: '2rem' }}>
+          <Col span={24} style={{ marginTop: '1rem' }}>
             <Typography.Text>Possible reasons:</Typography.Text>
             <br />
             <Collapse size="small" defaultActiveKey={[]} ghost items={reasons} />
+            {isSaasBuild && (
+              <Fragment>
+                <br />
+                <Button type="primary" size="small" href={getAmuiUrl()}>
+                  Go to Account Management
+                </Button>
+              </Fragment>
+            )}
           </Col>
 
           <Col span={24} style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2rem' }}>
