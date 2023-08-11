@@ -79,9 +79,9 @@ export default function AddClientModal({
       networkHosts.filter(
         (node) =>
           node.name?.toLowerCase().includes(gatewaySearch.toLowerCase()) ||
-          node.address?.toLowerCase().includes(gatewaySearch.toLowerCase())
+          node.address?.toLowerCase().includes(gatewaySearch.toLowerCase()),
       ),
-    [gatewaySearch, networkHosts]
+    [gatewaySearch, networkHosts],
   );
 
   const selectedGatewayHost = useMemo<Host | null>(() => {
@@ -278,7 +278,7 @@ export default function AddClientModal({
 
         <Divider style={{ margin: '0px 0px 2rem 0px' }} />
         <div className="CustomModalBody">
-          <Form.Item label="Client ID (Optional)" name="clientid">
+          <Form.Item label="Client ID (Optional)" name="clientid" rules={[{ min: 5, max: 32 }]}>
             <Input placeholder="Unique name of client" />
           </Form.Item>
 
