@@ -99,7 +99,7 @@ export default function UsersPage(props: PageProps) {
         },
       });
     },
-    [notify]
+    [notify],
   );
 
   const onEditUser = useCallback((user: User) => {
@@ -176,7 +176,7 @@ export default function UsersPage(props: PageProps) {
         },
       },
     ],
-    [confirmDeleteUser, onEditUser, store.username]
+    [confirmDeleteUser, onEditUser, store.username],
   );
 
   const filteredUsers = useMemo(() => {
@@ -222,7 +222,7 @@ export default function UsersPage(props: PageProps) {
         children: getUsersContent(),
       },
     ],
-    [getUsersContent]
+    [getUsersContent],
   );
 
   useEffect(() => {

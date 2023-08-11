@@ -33,7 +33,7 @@ export default function AddDnsModal({ isOpen, onCreateDns, onCancel, networkId }
           label: `${node.address}, ${node.address6} (${getExtendedNode(node, store.hostsCommonDetails)?.name ?? ''})`,
           value: node.address ?? node.address6 ?? '',
         })),
-    [networkId, store.hostsCommonDetails, store.nodes]
+    [networkId, store.hostsCommonDetails, store.nodes],
   );
 
   const resetModal = () => {

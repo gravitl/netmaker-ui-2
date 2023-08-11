@@ -63,7 +63,7 @@ function getNodeMetrics(networkId: Network['netid']) {
 
 function getClientMetrics(networkId: Network['netid']) {
   return axiosService.get<Record<ExternalClient['clientid'], NodeOrClientMetric>>(
-    `${ApiRoutes.METRICS_EXTERNAL_CLIENT}/${networkId}`
+    `${ApiRoutes.METRICS_EXTERNAL_CLIENT}/${networkId}`,
   );
 }
 

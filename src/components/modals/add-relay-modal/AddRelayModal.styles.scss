@@ -1,25 +1,25 @@
 // .AddRelayModal {
-  .selected-row {
-    $bg-color: rgba(128, 107, 282);
-    $bg-color-alpha: rgba($bg-color, 0.1);
-    background-color: $bg-color-alpha !important;
+.selected-row {
+  $bg-color: rgba(128, 107, 282);
+  $bg-color-alpha: rgba($bg-color, 0.1);
+  background-color: $bg-color-alpha !important;
 
-    td.ant-table-column-sort {
-      background-color: transparent;
-    }
-
-    td:first-of-type {
-      transition: all 200ms;
-      border-left: 4px solid $bg-color;
-    }
+  td.ant-table-column-sort {
+    background-color: transparent;
   }
 
-  .unavailable-row {
+  td:first-of-type {
+    transition: all 200ms;
+    border-left: 4px solid $bg-color;
+  }
+}
+
+.unavailable-row {
+  color: grey !important;
+  cursor: not-allowed;
+
+  a {
     color: grey !important;
-    cursor: not-allowed;
-
-    a {
-      color: grey !important;
-    }
   }
+}
 // }

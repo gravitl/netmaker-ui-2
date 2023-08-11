@@ -38,7 +38,7 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
     try {
       const formData = await form.validateFields();
       const network = convertNetworkPayloadToUiNetwork(
-        (await NetworksService.createNetwork(convertUiNetworkToNetworkPayload(formData as unknown as Network))).data
+        (await NetworksService.createNetwork(convertUiNetworkToNetworkPayload(formData as unknown as Network))).data,
       );
       store.addNetwork(network);
       notify.success({ message: `Network ${network.netid} created` });
