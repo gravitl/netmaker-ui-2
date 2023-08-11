@@ -21,8 +21,9 @@ import { Host } from '@/models/Host';
 import { Node } from '@/models/Node';
 import { getHostRoute } from '@/utils/RouteUtils';
 import { NodesService } from '@/services/NodesService';
-import moment from 'moment';
 import { useNavigate } from 'react-router-dom';
+import dayjs from 'dayjs';
+import { NODE_EXP_TIME_FORMAT } from '@/constants/AppConstants';
 
 interface UpdateNodeModalProps {
   isOpen: boolean;
@@ -67,6 +68,10 @@ export default function UpdateNodeModal({ isOpen, node, onUpdateNode, onCancel }
     }
   };
 
+  const disabledDateTime = () => ({
+    disabledMinutes: () => Array.from({ length: 60 }, (_, i) => i + 1),
+  });
+
   return (
     <Modal
       title={
@@ -90,7 +95,7 @@ export default function UpdateNodeModal({ isOpen, node, onUpdateNode, onCancel }
         name="update-node-form"
         form={form}
         layout="vertical"
-        initialValues={{ ...node, expdatetime: moment(node.expdatetime * 1000), endpointip: host?.endpointip ?? '' }}
+        initialValues={{ ...node, expdatetime: dayjs(node.expdatetime * 1000), endpointip: host?.endpointip ?? '' }}
       >
         <div className="scrollable-modal-body">
           <div className="CustomModalBody">
@@ -121,7 +126,13 @@ export default function UpdateNodeModal({ isOpen, node, onUpdateNode, onCancel }
             </Form.Item>
 
             <Form.Item label="Expiration Date" name="expdatetime" rules={[{ required: true }]}>
-              <DatePicker showTime style={{ width: '100%' }} clearIcon={false} />
+              <DatePicker
+                showTime={true}
+                disabledTime={disabledDateTime}
+                style={{ width: '100%' }}
+                clearIcon={false}
+                format={NODE_EXP_TIME_FORMAT}
+              />
             </Form.Item>
 
             <Form.Item label="Endpoint IP" name="endpointip" rules={[{ required: isStaticVal }]}>

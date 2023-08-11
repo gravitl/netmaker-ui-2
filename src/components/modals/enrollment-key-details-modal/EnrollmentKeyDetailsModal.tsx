@@ -1,9 +1,9 @@
 import '../CustomModal.scss';
 import { Col, Divider, Modal, Row, Tag, Typography } from 'antd';
 import { EnrollmentKey, TimeBoundEnrollmentKey, UsesBasedEnrollmentKey } from '@/models/EnrollmentKey';
-import moment from 'moment';
 import { MouseEvent } from 'react';
 import { isEnrollmentKeyValid, renderEnrollmentKeyType } from '@/utils/EnrollmentKeysUtils';
+import dayjs from 'dayjs';
 
 interface EnrollmentKeyDetailsModalProps {
   isOpen: boolean;
@@ -83,7 +83,7 @@ export default function EnrollmentKeyDetailsModal({ isOpen, enrollmentKey, onCan
           </Col>
           <Col xs={16}>
             <Typography.Text>
-              {shouldShowExpDate ? moment(enrollmentKey.expiration).toLocaleString() : 'never'}
+              {shouldShowExpDate ? dayjs(enrollmentKey.expiration).toLocaleString() : 'never'}
             </Typography.Text>
           </Col>
         </Row>

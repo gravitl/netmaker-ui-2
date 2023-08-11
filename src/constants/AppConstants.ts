@@ -2,6 +2,8 @@ import { BrandingConfig } from '@/models/BrandingConfig';
 
 export const DATE_TIME_FORMAT = 'Do MMMM YYYY @ HH:mm';
 
+export const NODE_EXP_TIME_FORMAT = 'YYYY-MM-DD HH:mm';
+
 export const DEFAULT_BRANDING_CONFIG: BrandingConfig = {
   productName: 'Netmaker',
   logoDarkUrl: '/logo-dark.png',
