@@ -45,7 +45,9 @@ export default function DashboardPage(props: PageProps) {
   };
 
   useEffect(() => {
-    checkIfToOpenSurveyInNewTab();
+    if (!isSaasBuild) {
+      checkIfToOpenSurveyInNewTab();
+    }
   }, []);
 
   return (
