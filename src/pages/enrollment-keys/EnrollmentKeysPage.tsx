@@ -59,7 +59,7 @@ export default function EnrollmentKeysPage(props: PageProps) {
         },
       });
     },
-    [notify]
+    [notify],
   );
 
   const openKeyDetails = useCallback((key: EnrollmentKey) => {
@@ -133,7 +133,7 @@ export default function EnrollmentKeysPage(props: PageProps) {
       keys.filter((key) => {
         return key.tags.join('').concat(key.networks.join('')).toLowerCase().includes(searchText.toLowerCase());
       }),
-    [keys, searchText]
+    [keys, searchText],
   );
 
   const loadEnrollmentKeys = useCallback(async () => {

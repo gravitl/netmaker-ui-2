@@ -78,7 +78,7 @@ export default function NetworkPermissionsModal({ isOpen, network, onUpdate, onC
         });
       }
     },
-    [network, notify, onUpdate]
+    [network, notify, onUpdate],
   );
 
   const updateUserPermissions = useCallback(
@@ -117,7 +117,7 @@ export default function NetworkPermissionsModal({ isOpen, network, onUpdate, onC
         });
       }
     },
-    [network, notify, onUpdate]
+    [network, notify, onUpdate],
   );
 
   const groupsCols: TableColumnsType<GroupsTableData> = useMemo(
@@ -139,7 +139,7 @@ export default function NetworkPermissionsModal({ isOpen, network, onUpdate, onC
         },
       },
     ],
-    [updateGroupPermissions]
+    [updateGroupPermissions],
   );
 
   const filteredGroupsTableData = useMemo(() => {
@@ -174,7 +174,7 @@ export default function NetworkPermissionsModal({ isOpen, network, onUpdate, onC
         },
       },
     ],
-    [updateUserPermissions]
+    [updateUserPermissions],
   );
 
   const filteredUsersTableData = useMemo(() => {
@@ -247,7 +247,7 @@ export default function NetworkPermissionsModal({ isOpen, network, onUpdate, onC
         children: getUsersContent(),
       },
     ],
-    [getGroupsContent, getUsersContent]
+    [getGroupsContent, getUsersContent],
   );
 
   const updateDefaultAccessLevel = useCallback(
@@ -269,7 +269,7 @@ export default function NetworkPermissionsModal({ isOpen, network, onUpdate, onC
         });
       }
     },
-    [network, notify, onUpdate]
+    [network, notify, onUpdate],
   );
 
   const loadUserGroups = useCallback(async () => {

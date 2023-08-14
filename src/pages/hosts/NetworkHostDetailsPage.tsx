@@ -36,10 +36,10 @@ import './NetworkHostDetailsPage.scss';
 import { getHostRoute, getNetworkRoute, useQuery } from '@/utils/RouteUtils';
 import { Node } from '@/models/Node';
 import { NodeConnectivityStatus } from '@/models/NodeConnectivityStatus';
-import moment from 'moment';
 import { DATE_TIME_FORMAT } from '@/constants/AppConstants';
 import UpdateNodeModal from '@/components/modals/update-node-modal/UpdateNodeModal';
 import { NodesService } from '@/services/NodesService';
+import dayjs from 'dayjs';
 
 export default function NetworkHostDetailsPage(props: PageProps) {
   const { hostId, networkId } = useParams<{ hostId: string; networkId: string }>();
@@ -76,7 +76,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
         dataIndex: 'addressString',
       },
     ],
-    [host?.defaultinterface]
+    [host?.defaultinterface],
   );
 
   const onUpdateNode = useCallback(() => {
@@ -141,7 +141,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
         });
       }
     },
-    [hostId, node, networkId, notify, storeDeleteNode, navigate]
+    [hostId, node, networkId, notify, storeDeleteNode, navigate],
   );
 
   const onHostToggleConnectivity = useCallback(
@@ -163,7 +163,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
         });
       }
     },
-    [hostId, node, networkId, notify, store]
+    [hostId, node, networkId, notify, store],
   );
 
   const promptConfirmDisconnect = () => {
@@ -342,9 +342,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
               <Typography.Text disabled>Last Check-in Time</Typography.Text>
             </Col>
             <Col xs={12}>
-              <Typography.Text>
-                {moment((node?.lastcheckin ?? 0) * 1000).format(DATE_TIME_FORMAT) ?? ''}
-              </Typography.Text>
+              <Typography.Text>{dayjs((node?.lastcheckin ?? 0) * 1000).format(DATE_TIME_FORMAT) ?? ''}</Typography.Text>
             </Col>
           </Row>
 
@@ -353,9 +351,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
               <Typography.Text disabled>Expiration Date</Typography.Text>
             </Col>
             <Col xs={12}>
-              <Typography.Text>
-                {moment((node?.expdatetime ?? 0) * 1000).format(DATE_TIME_FORMAT) ?? ''}
-              </Typography.Text>
+              <Typography.Text>{dayjs((node?.expdatetime ?? 0) * 1000).format(DATE_TIME_FORMAT) ?? ''}</Typography.Text>
             </Col>
           </Row>
 
@@ -365,7 +361,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
             </Col>
             <Col xs={12}>
               <Typography.Text>
-                {moment((node?.lastmodified ?? 0) * 1000).format(DATE_TIME_FORMAT) ?? ''}
+                {dayjs((node?.lastmodified ?? 0) * 1000).format(DATE_TIME_FORMAT) ?? ''}
               </Typography.Text>
             </Col>
           </Row>
@@ -514,7 +510,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                 host?.interfaces?.filter((iface) =>
                   `${iface.name}${iface.addressString}`
                     .toLocaleLowerCase()
-                    .includes(searchText.toLocaleLowerCase().trim())
+                    .includes(searchText.toLocaleLowerCase().trim()),
                 ) ?? []
               }
               rowKey={(iface) => `${iface.name}${iface.addressString}`}
@@ -647,7 +643,6 @@ export default function NetworkHostDetailsPage(props: PageProps) {
       {notifyCtx}
       {!!node && (
         <UpdateNodeModal
-          key={JSON.stringify(node)}
           isOpen={isEditingNode}
           node={node}
           onCancel={() => {

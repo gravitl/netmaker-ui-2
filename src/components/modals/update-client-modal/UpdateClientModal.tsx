@@ -40,11 +40,11 @@ export default function UpdateClientModal({
         await NodesService.updateExternalClient(client.clientid, networkId, { ...client, ...formData })
       ).data;
       onUpdateClient(newClient);
-      notify.success({ message: `External client created` });
+      notify.success({ message: `External client updated` });
       resetModal();
     } catch (err) {
       notify.error({
-        message: 'Failed to create client',
+        message: 'Failed to update client',
         description: extractErrorMsg(err as any),
       });
     } finally {
@@ -67,7 +67,7 @@ export default function UpdateClientModal({
       <Divider style={{ margin: '0px 0px 2rem 0px' }} />
       <Form name="update-client-form" form={form} layout="vertical" initialValues={client}>
         <div className="CustomModalBody">
-          <Form.Item label="Client ID (Optional)" name="clientid">
+          <Form.Item label="Client ID (Optional)" name="clientid" rules={[{ min: 5, max: 32 }]}>
             <Input placeholder="Unique name of client" />
           </Form.Item>
 

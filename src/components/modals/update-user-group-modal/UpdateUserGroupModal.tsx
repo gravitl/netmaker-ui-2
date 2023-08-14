@@ -112,7 +112,7 @@ export default function UpdateUserGroupModal({
                   onClick={() => {
                     form.setFieldValue(
                       'users',
-                      users.filter((u) => !u.isadmin).map((u) => u.username)
+                      users.filter((u) => !u.isadmin).map((u) => u.username),
                     );
                   }}
                 >

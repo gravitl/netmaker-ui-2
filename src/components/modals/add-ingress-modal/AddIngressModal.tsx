@@ -60,9 +60,9 @@ export default function AddIngressModal({ isOpen, onCreateIngress, onCancel, net
         (node) =>
           (node.name?.toLowerCase().includes(gatewaySearch.toLowerCase()) ||
             node.address?.toLowerCase().includes(gatewaySearch.toLowerCase())) &&
-          node.isingressgateway === false
+          node.isingressgateway === false,
       ),
-    [gatewaySearch, networkHosts]
+    [gatewaySearch, networkHosts],
   );
 
   const selectedGatewayHost = useMemo<Host | null>(() => {

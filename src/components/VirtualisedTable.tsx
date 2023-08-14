@@ -6,7 +6,7 @@ import classNames from 'classnames';
 import ResizeObserver from 'rc-resize-observer';
 
 export default function VirtualisedTable<RecordType extends object>(
-  props: RequiredField<TableProps<RecordType>, 'scroll' | 'columns'>
+  props: RequiredField<TableProps<RecordType>, 'scroll' | 'columns'>,
 ) {
   const { columns, scroll } = props!;
   const [tableWidth, setTableWidth] = useState(0);

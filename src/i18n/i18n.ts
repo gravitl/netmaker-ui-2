@@ -34,7 +34,7 @@ i18n
         (window as any).missingTranslations,
         (draftState: any) => {
           draftState[`${key}`] = fallbackValue;
-        }
+        },
       );
     },
     interpolation: {

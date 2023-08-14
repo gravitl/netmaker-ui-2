@@ -48,7 +48,7 @@ function deleteNode(nodeId: Node['id'], networkId: Network['netid'], forceDelete
 function getExternalClientConfig(
   extClientId: ExternalClient['clientid'],
   networkId: Network['netid'],
-  type: 'qr' | 'file'
+  type: 'qr' | 'file',
 ) {
   return axiosService.get<string | ArrayBuffer>(`${ApiRoutes.EXTERNAL_CLIENTS}/${networkId}/${extClientId}/${type}`, {
     responseType: type === 'qr' ? 'arraybuffer' : undefined,
@@ -66,7 +66,7 @@ function getNetworkExternalClients(network: Network['netid']) {
 function updateExternalClient(
   extClientId: ExternalClient['clientid'],
   networkId: Network['netid'],
-  payload: UpdateExternalClientDto
+  payload: UpdateExternalClientDto,
 ) {
   return axiosService.put<ExternalClient>(`${ApiRoutes.EXTERNAL_CLIENTS}/${networkId}/${extClientId}`, payload);
 }

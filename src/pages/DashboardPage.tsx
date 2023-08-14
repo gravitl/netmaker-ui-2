@@ -1,4 +1,4 @@
-import { Alert, Button, Card, Col, Dropdown, Input, Layout, Row, Space, Tooltip, Typography } from 'antd';
+import { Alert, Button, Card, Col, Dropdown, Input, Layout, Row, Space, Tooltip, Typography, notification } from 'antd';
 import {
   ArrowRightOutlined,
   DownOutlined,
@@ -13,7 +13,7 @@ import { PageProps } from '../models/Page';
 import { AppRoutes } from '../routes';
 import { useNavigate } from 'react-router-dom';
 import AddNetworkModal from '@/components/modals/add-network-modal/AddNetworkModal';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useStore } from '@/store/store';
 import { getAmuiUrl, getLicenseDashboardUrl } from '@/utils/RouteUtils';
 import NewHostModal from '@/components/modals/new-host-modal/NewHostModal';
@@ -24,9 +24,31 @@ export default function DashboardPage(props: PageProps) {
   const store = useStore();
 
   const isServerEE = store.serverConfig?.IsEE === 'yes';
+  const NETMAKER_SURVEY_LINK = 'https://www.netmaker.io/self-hosted-updates';
   const [isAddNetworkModalOpen, setIsAddNetworkModalOpen] = useState(false);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [isNewHostModalOpen, setIsNewHostModalOpen] = useState(false);
+  const [notify, notifyCtx] = notification.useNotification();
+
+  const checkIfToOpenSurveyInNewTab = () => {
+    if (store.isFirstLogin) {
+      store.setFirstLogin(false);
+      if (store.serverConfig?.IsEE !== 'yes') {
+        // open surver in a new tab
+        notify.info({
+          message: 'Survey has been opened in another tab.',
+          description: 'Complete this optional survey to help improve the Netmaker experience.',
+        });
+        window.open(NETMAKER_SURVEY_LINK, '_blank');
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (!isSaasBuild) {
+      checkIfToOpenSurveyInNewTab();
+    }
+  }, []);
 
   return (
     <Layout.Content style={{ padding: props.isFullScreen ? 0 : 24 }}>
@@ -176,6 +198,7 @@ export default function DashboardPage(props: PageProps) {
         onFinish={() => navigate(AppRoutes.HOSTS_ROUTE)}
         onCancel={() => setIsNewHostModalOpen(false)}
       />
+      {notifyCtx}
     </Layout.Content>
   );
 }
