@@ -1,28 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
-import {
-  Button,
-  Col,
-  Divider,
-  Form,
-  FormInstance,
-  Input,
-  InputNumber,
-  InputRef,
-  Row,
-  Select,
-  Space,
-  Steps,
-  Tooltip,
-  Typography,
-  notification,
-} from 'antd';
+import { useState, useEffect } from 'react';
+import { Col, Form, FormInstance, Input, Row, Select, Tooltip, Typography } from 'antd';
 import {
   validateEmailField,
   validateFirstNameField,
   validateLastNameField,
   validatePlainTextFieldWithNumbersButNotRequired,
 } from '../../../utils/Utils';
-import { PlusOutlined, QuestionCircleOutlined } from '@ant-design/icons';
+import { QuestionCircleOutlined } from '@ant-design/icons';
 import { ExtraUserInfoForm } from '@/services/dtos/UserDtos';
 
 interface ExtraUserInfoProps {
@@ -32,24 +16,12 @@ interface ExtraUserInfoProps {
   displayButton?: boolean;
 }
 
-type selectType = 'useCase' | 'primaryInfraOption';
-
-export default function ExtraUserInfo({
-  updateUserInfo,
-  extraUserInfoForm,
-  isUpdatingUserInformation,
-  displayButton,
-}: ExtraUserInfoProps) {
+export default function ExtraUserInfo({ updateUserInfo, extraUserInfoForm }: ExtraUserInfoProps) {
   const [isCompanyPopulated, setIsCompanyPopulated] = useState(false);
-  const [useCases, setUseCases] = useState<string[]>(['Remote Access', 'Site-to-site', 'Overlay Network', 'Other']);
-  const [primaryInfraOptions, setPrimaryInfraOptions] = useState<string[]>([
-    'IoT-Edge',
-    'Cloud-Data-Center',
-    'Office-General-IT',
-    'Other',
-  ]);
-  const [ranges, setRanges] = useState<string[]>(['1-9', '10-49', '50-249', '250+']);
-  const [roles, setRoles] = useState<string[]>([
+  const [useCases] = useState<string[]>(['Remote Access', 'Site-to-site', 'Overlay Network', 'Other']);
+  const [primaryInfraOptions] = useState<string[]>(['IoT-Edge', 'Cloud-Data-Center', 'Office-General-IT', 'Other']);
+  const ranges = ['1-9', '10-49', '50-249', '250+'];
+  const roles = [
     'Engineering',
     'IT Specialist',
     'Executive',
@@ -60,41 +32,9 @@ export default function ExtraUserInfo({
     'Finance',
     'HR',
     'Other',
-  ]);
-  const [newUseCase, setNewUseCase] = useState<string>('');
-  const [newPrimaryInfraOption, setNewPrimaryInfraOption] = useState<string>('');
-  const useCaseInputRef = useRef<InputRef>(null);
-  const primaryInfraOptionInputRef = useRef<InputRef>(null);
-
+  ];
   const handleFormValuesChange = (changedValues: any, allValues: any) => {
     setIsCompanyPopulated(!!allValues.company_name);
-  };
-
-  const onInputChange = (event: React.ChangeEvent<HTMLInputElement>, inputType: selectType) => {
-    const { value } = event.target;
-    if (inputType === 'useCase') {
-      setNewUseCase(value);
-    } else {
-      setNewPrimaryInfraOption(value);
-    }
-  };
-
-  const addItem = (e: React.MouseEvent<HTMLButtonElement | HTMLAnchorElement>, inputType: selectType) => {
-    e.preventDefault();
-    let inputRef: React.RefObject<InputRef>;
-    if (inputType === 'useCase') {
-      setUseCases([...useCases, newUseCase]);
-      setNewUseCase('');
-      inputRef = useCaseInputRef;
-    } else {
-      setPrimaryInfraOptions([...primaryInfraOptions, newPrimaryInfraOption]);
-      setNewPrimaryInfraOption('');
-      inputRef = primaryInfraOptionInputRef;
-    }
-
-    setTimeout(() => {
-      inputRef.current?.focus();
-    }, 0);
   };
 
   useEffect(() => {
@@ -133,27 +73,6 @@ export default function ExtraUserInfo({
         <Select
           placeholder="Select a primary use case"
           size="large"
-          // dropdownRender={(menu) => (
-          //   <>
-          //     {menu}
-          //     <Divider style={{ margin: "8px 0" }} />
-          //     <Space style={{ padding: "0 8px 4px" }}>
-          //       <Input
-          //         placeholder="Please enter item"
-          //         ref={useCaseInputRef}
-          //         value={newUseCase}
-          //         onChange={(e) => onInputChange(e, "useCase")}
-          //       />
-          //       <Button
-          //         type="text"
-          //         icon={<PlusOutlined />}
-          //         onClick={(e) => addItem(e, "useCase")}
-          //       >
-          //         Add item
-          //       </Button>
-          //     </Space>
-          //   </>
-          // )}
           options={useCases.map((item) => ({ label: item, value: item }))}
         />
       </Form.Item>
@@ -164,27 +83,6 @@ export default function ExtraUserInfo({
         <Select
           placeholder="Select a primary infrastructure"
           size="large"
-          // dropdownRender={(menu) => (
-          //   <>
-          //     {menu}
-          //     <Divider style={{ margin: "8px 0" }} />
-          //     <Space style={{ padding: "0 8px 4px" }}>
-          //       <Input
-          //         placeholder="Please enter item"
-          //         ref={primaryInfraOptionInputRef}
-          //         value={newPrimaryInfraOption}
-          //         onChange={(e) => onInputChange(e, "primaryInfraOption")}
-          //       />
-          //       <Button
-          //         type="text"
-          //         icon={<PlusOutlined />}
-          //         onClick={(e) => addItem(e, "primaryInfraOption")}
-          //       >
-          //         Add item
-          //       </Button>
-          //     </Space>
-          //   </>
-          // )}
           options={primaryInfraOptions.map((item) => ({
             label: item,
             value: item,
