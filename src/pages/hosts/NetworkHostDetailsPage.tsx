@@ -252,7 +252,10 @@ export default function NetworkHostDetailsPage(props: PageProps) {
             Network settings
           </Typography.Title>
 
-          <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+          <Row
+            style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+            data-nmui-intercom="network-host-details_network"
+          >
             <Col xs={12}>
               <Typography.Text disabled>Network</Typography.Text>
             </Col>
@@ -261,7 +264,10 @@ export default function NetworkHostDetailsPage(props: PageProps) {
             </Col>
           </Row>
 
-          <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+          <Row
+            style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+            data-nmui-intercom="network-host-details_address"
+          >
             <Col xs={12}>
               <Typography.Text disabled>IP Address (IPv4)</Typography.Text>
             </Col>
@@ -271,7 +277,10 @@ export default function NetworkHostDetailsPage(props: PageProps) {
           </Row>
 
           {network && network.isipv6 && (
-            <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+            <Row
+              style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+              data-nmui-intercom="network-host-details_address6"
+            >
               <Col xs={12}>
                 <Typography.Text disabled>IP Address (IPv6)</Typography.Text>
               </Col>
@@ -281,7 +290,10 @@ export default function NetworkHostDetailsPage(props: PageProps) {
             </Row>
           )}
 
-          <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+          <Row
+            style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+            data-nmui-intercom="network-host-details_localaddress"
+          >
             <Col xs={12}>
               <Typography.Text disabled>Local Address</Typography.Text>
             </Col>
@@ -291,7 +303,10 @@ export default function NetworkHostDetailsPage(props: PageProps) {
           </Row>
 
           {node?.isegressgateway && (
-            <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+            <Row
+              style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+              data-nmui-intercom="network-host-details_egressgatewayranges"
+            >
               <Col xs={12}>
                 <Typography.Text disabled>Egress Gateway Ranges</Typography.Text>
               </Col>
@@ -301,7 +316,10 @@ export default function NetworkHostDetailsPage(props: PageProps) {
             </Row>
           )}
 
-          <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+          <Row
+            style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+            data-nmui-intercom="network-host-details_connected"
+          >
             <Col xs={12}>
               <Typography.Text disabled>Is Connected</Typography.Text>
             </Col>
@@ -310,7 +328,10 @@ export default function NetworkHostDetailsPage(props: PageProps) {
             </Col>
           </Row>
 
-          <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+          <Row
+            style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+            data-nmui-intercom="network-host-details_persistentkeepalive"
+          >
             <Col xs={12}>
               <Typography.Text disabled>Persistent Keepalive</Typography.Text>
             </Col>
@@ -319,7 +340,10 @@ export default function NetworkHostDetailsPage(props: PageProps) {
             </Col>
           </Row>
 
-          <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+          <Row
+            style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+            data-nmui-intercom="network-host-details_defaultacl"
+          >
             <Col xs={12}>
               <Typography.Text disabled>Default ACL</Typography.Text>
             </Col>
@@ -328,7 +352,10 @@ export default function NetworkHostDetailsPage(props: PageProps) {
             </Col>
           </Row>
 
-          <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+          <Row
+            style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+            data-nmui-intercom="network-host-details_dnson"
+          >
             <Col xs={12}>
               <Typography.Text disabled>DNS On</Typography.Text>
             </Col>
@@ -337,7 +364,10 @@ export default function NetworkHostDetailsPage(props: PageProps) {
             </Col>
           </Row>
 
-          <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+          <Row
+            style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+            data-nmui-intercom="network-host-details_lastcheckin"
+          >
             <Col xs={12}>
               <Typography.Text disabled>Last Check-in Time</Typography.Text>
             </Col>
@@ -346,7 +376,10 @@ export default function NetworkHostDetailsPage(props: PageProps) {
             </Col>
           </Row>
 
-          <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+          <Row
+            style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+            data-nmui-intercom="network-host-details_expdatetime"
+          >
             <Col xs={12}>
               <Typography.Text disabled>Expiration Date</Typography.Text>
             </Col>
@@ -355,7 +388,10 @@ export default function NetworkHostDetailsPage(props: PageProps) {
             </Col>
           </Row>
 
-          <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+          <Row
+            style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+            data-nmui-intercom="network-host-details_lastmodified"
+          >
             <Col xs={12}>
               <Typography.Text disabled>Last Modified Time</Typography.Text>
             </Col>
@@ -377,7 +413,10 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                 </Typography.Title>
               }
             >
-              <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+              <Row
+                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+                data-nmui-intercom="network-host-details_hostid"
+              >
                 <Col xs={12}>
                   <Typography.Text disabled>ID</Typography.Text>
                 </Col>
@@ -385,7 +424,10 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                   <Typography.Text>{host.id}</Typography.Text>
                 </Col>
               </Row>
-              <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+              <Row
+                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+                data-nmui-intercom="network-host-details_hostendpoint"
+              >
                 <Col xs={12}>
                   <Typography.Text disabled>Endpoint</Typography.Text>
                 </Col>
@@ -393,7 +435,10 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                   <Typography.Text>{host.endpointip}</Typography.Text>
                 </Col>
               </Row>
-              <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+              <Row
+                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+                data-nmui-intercom="network-host-details_hostlistenport"
+              >
                 <Col xs={12}>
                   <Typography.Text disabled>Listen Port</Typography.Text>
                 </Col>
@@ -401,7 +446,10 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                   <Typography.Text>{host.listenport}</Typography.Text>
                 </Col>
               </Row>
-              <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+              <Row
+                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+                data-nmui-intercom="network-host-details_hostmacaddress"
+              >
                 <Col xs={12}>
                   <Typography.Text disabled>MAC Address</Typography.Text>
                 </Col>
@@ -409,7 +457,10 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                   <Typography.Text>{host.macaddress}</Typography.Text>
                 </Col>
               </Row>
-              <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+              <Row
+                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+                data-nmui-intercom="network-host-details_hostmtu"
+              >
                 <Col xs={12}>
                   <Typography.Text disabled>MTU</Typography.Text>
                 </Col>
@@ -417,7 +468,10 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                   <Typography.Text>{host.mtu}</Typography.Text>
                 </Col>
               </Row>
-              <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+              <Row
+                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+                data-nmui-intercom="network-host-details_hostpublickey"
+              >
                 <Col xs={12}>
                   <Typography.Text disabled>Public Key</Typography.Text>
                 </Col>
@@ -425,7 +479,10 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                   <Typography.Text>{host.publickey}</Typography.Text>
                 </Col>
               </Row>
-              <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+              <Row
+                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+                data-nmui-intercom="network-host-details_hostos"
+              >
                 <Col xs={12}>
                   <Typography.Text disabled>Operating System</Typography.Text>
                 </Col>
@@ -433,7 +490,10 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                   <Typography.Text>{host.os}</Typography.Text>
                 </Col>
               </Row>
-              <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+              <Row
+                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+                data-nmui-intercom="network-host-details_hostversion"
+              >
                 <Col xs={12}>
                   <Typography.Text disabled>Version</Typography.Text>
                 </Col>
@@ -441,7 +501,10 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                   <Typography.Text>{host.version}</Typography.Text>
                 </Col>
               </Row>
-              <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+              <Row
+                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+                data-nmui-intercom="network-host-details_hostverbosity"
+              >
                 <Col xs={12}>
                   <Typography.Text disabled>Verbosity</Typography.Text>
                 </Col>
@@ -449,7 +512,10 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                   <Typography.Text>{host.verbosity}</Typography.Text>
                 </Col>
               </Row>
-              <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+              <Row
+                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+                data-nmui-intercom="network-host-details_hostdefaultinterface"
+              >
                 <Col xs={12}>
                   <Typography.Text disabled>Default Interface</Typography.Text>
                 </Col>
@@ -457,7 +523,10 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                   <Typography.Text>{host.defaultinterface}</Typography.Text>
                 </Col>
               </Row>
-              <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+              <Row
+                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+                data-nmui-intercom="network-host-details_hostisdefault"
+              >
                 <Col xs={12}>
                   <Typography.Text disabled>Default Host</Typography.Text>
                 </Col>
@@ -465,7 +534,10 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                   <Typography.Text>{host.isdefault ? 'Yes' : 'No'}</Typography.Text>
                 </Col>
               </Row>
-              <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+              <Row
+                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+                data-nmui-intercom="network-host-details_hostisstatic"
+              >
                 <Col xs={12}>
                   <Typography.Text disabled>Static Endpoint</Typography.Text>
                 </Col>
@@ -473,7 +545,10 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                   <Typography.Text>{host.isstatic ? 'Yes' : 'No'}</Typography.Text>
                 </Col>
               </Row>
-              <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+              <Row
+                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+                data-nmui-intercom="network-host-details_hostdebug"
+              >
                 <Col xs={12}>
                   <Typography.Text disabled>Debug</Typography.Text>
                 </Col>

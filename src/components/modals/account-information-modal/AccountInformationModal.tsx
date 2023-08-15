@@ -1,4 +1,4 @@
-import { Row, Col, theme, Form, Modal, Button } from 'antd';
+import { Row, Col, Form, Modal, Button } from 'antd';
 import { useState } from 'react';
 import ExtraUserInfo from './ExtraUserInfo';
 import { ExtraUserInfoForm } from '@/services/dtos/UserDtos';
@@ -12,15 +12,12 @@ interface AccountInformationModalProps {
 }
 
 export default function AccountInformationModal({ isModalOpen, setIsModalOpen, notify }: AccountInformationModalProps) {
-  const {
-    token: { colorBgContainer },
-  } = theme.useToken();
   const [form] = Form.useForm<ExtraUserInfoForm>();
   const [isUploadingUserInfo, setIsUploadingUserInfo] = useState(false);
 
   const handleUploadUserInfo = async () => {
     try {
-      const formInfo = await form.validateFields();
+      await form.validateFields();
       setIsUploadingUserInfo(true);
       // await UsersService.uploadUserInformation(formInfo);
       setIsUploadingUserInfo(false);

@@ -261,7 +261,10 @@ export default function HostDetailsPage(props: PageProps) {
             Host details
           </Typography.Title>
 
-          <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+          <Row
+            style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+            data-nmui-intercom="host-details_id"
+          >
             <Col xs={12}>
               <Typography.Text disabled>ID</Typography.Text>
             </Col>
@@ -269,7 +272,10 @@ export default function HostDetailsPage(props: PageProps) {
               <Typography.Text>{host.id}</Typography.Text>
             </Col>
           </Row>
-          <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+          <Row
+            style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+            data-nmui-intercom="host-details_endpoint"
+          >
             <Col xs={12}>
               <Typography.Text disabled>Endpoint</Typography.Text>
             </Col>
@@ -277,7 +283,10 @@ export default function HostDetailsPage(props: PageProps) {
               <Typography.Text>{host.endpointip}</Typography.Text>
             </Col>
           </Row>
-          <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+          <Row
+            style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+            data-nmui-intercom="host-details_listenport"
+          >
             <Col xs={12}>
               <Typography.Text disabled>Listen Port</Typography.Text>
             </Col>
@@ -285,7 +294,10 @@ export default function HostDetailsPage(props: PageProps) {
               <Typography.Text>{host.listenport}</Typography.Text>
             </Col>
           </Row>
-          <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+          <Row
+            style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+            data-nmui-intercom="host-details_macaddress"
+          >
             <Col xs={12}>
               <Typography.Text disabled>MAC Address</Typography.Text>
             </Col>
@@ -293,7 +305,10 @@ export default function HostDetailsPage(props: PageProps) {
               <Typography.Text>{host.macaddress}</Typography.Text>
             </Col>
           </Row>
-          <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+          <Row
+            style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+            data-nmui-intercom="host-details_mtu"
+          >
             <Col xs={12}>
               <Typography.Text disabled>MTU</Typography.Text>
             </Col>
@@ -301,7 +316,10 @@ export default function HostDetailsPage(props: PageProps) {
               <Typography.Text>{host.mtu}</Typography.Text>
             </Col>
           </Row>
-          <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+          <Row
+            style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+            data-nmui-intercom="host-details_publickey"
+          >
             <Col xs={12}>
               <Typography.Text disabled>Public Key</Typography.Text>
             </Col>
@@ -309,7 +327,10 @@ export default function HostDetailsPage(props: PageProps) {
               <Typography.Text>{host.publickey}</Typography.Text>
             </Col>
           </Row>
-          <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+          <Row
+            style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+            data-nmui-intercom="host-details_os"
+          >
             <Col xs={12}>
               <Typography.Text disabled>Operating System</Typography.Text>
             </Col>
@@ -317,7 +338,10 @@ export default function HostDetailsPage(props: PageProps) {
               <Typography.Text>{host.os}</Typography.Text>
             </Col>
           </Row>
-          <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+          <Row
+            style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+            data-nmui-intercom="host-details_version"
+          >
             <Col xs={12}>
               <Typography.Text disabled>Version</Typography.Text>
             </Col>
@@ -325,7 +349,10 @@ export default function HostDetailsPage(props: PageProps) {
               <Typography.Text>{host.version}</Typography.Text>
             </Col>
           </Row>
-          <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+          <Row
+            style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+            data-nmui-intercom="host-details_verbosity"
+          >
             <Col xs={12}>
               <Typography.Text disabled>Verbosity</Typography.Text>
             </Col>
@@ -333,7 +360,10 @@ export default function HostDetailsPage(props: PageProps) {
               <Typography.Text>{host.verbosity}</Typography.Text>
             </Col>
           </Row>
-          <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+          <Row
+            style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+            data-nmui-intercom="host-details_defaultinterface"
+          >
             <Col xs={12}>
               <Typography.Text disabled>Default Interface</Typography.Text>
             </Col>
@@ -341,7 +371,10 @@ export default function HostDetailsPage(props: PageProps) {
               <Typography.Text>{host.defaultinterface}</Typography.Text>
             </Col>
           </Row>
-          <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+          <Row
+            style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+            data-nmui-intercom="host-details_isdefault"
+          >
             <Col xs={12}>
               <Typography.Text disabled>Default Host</Typography.Text>
             </Col>
@@ -349,7 +382,10 @@ export default function HostDetailsPage(props: PageProps) {
               <Typography.Text>{host.isdefault ? 'Yes' : 'No'}</Typography.Text>
             </Col>
           </Row>
-          <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+          <Row
+            style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+            data-nmui-intercom="host-details_isstatic"
+          >
             <Col xs={12}>
               <Typography.Text disabled>Static Endpoint</Typography.Text>
             </Col>
@@ -357,7 +393,10 @@ export default function HostDetailsPage(props: PageProps) {
               <Typography.Text>{host.isstatic ? 'Yes' : 'No'}</Typography.Text>
             </Col>
           </Row>
-          <Row style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}>
+          <Row
+            style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+            data-nmui-intercom="host-details_debug"
+          >
             <Col xs={12}>
               <Typography.Text disabled>Debug</Typography.Text>
             </Col>
