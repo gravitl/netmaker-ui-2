@@ -199,7 +199,7 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
 
           <Row>
             <Col xs={24} style={{ textAlign: 'right' }}>
-              <Form.Item data-nmui-intercom="add-network-form_submit-btn">
+              <Form.Item data-nmui-intercom="add-network-form_submit">
                 <Button type="primary" onClick={createNetwork}>
                   Create Network
                 </Button>
