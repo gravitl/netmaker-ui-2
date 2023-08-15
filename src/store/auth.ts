@@ -12,14 +12,12 @@ export interface IAuthSlice {
   tenantName: TenantConfig['tenantName'];
   baseUrl: TenantConfig['baseUrl'];
   amuiAuthToken: TenantConfig['amuiAuthToken'];
-  isFirstLogin: boolean;
   user: User | null;
 
   // methods
   isLoggedIn: () => boolean;
   setStore: (config: Partial<TenantConfig & { user: User }>) => void;
   logout: () => void;
-  setFirstLogin: (val: boolean) => void;
 }
 
 const createAuthSlice: StateCreator<IAuthSlice, [], [], IAuthSlice> = (set, get) => ({
@@ -30,7 +28,6 @@ const createAuthSlice: StateCreator<IAuthSlice, [], [], IAuthSlice> = (set, get)
   username: '',
   baseUrl: '',
   amuiAuthToken: '',
-  isFirstLogin: true,
   user: null,
 
   isLoggedIn() {
@@ -39,9 +36,6 @@ const createAuthSlice: StateCreator<IAuthSlice, [], [], IAuthSlice> = (set, get)
   },
   setStore(config) {
     set(config);
-  },
-  setFirstLogin(val: boolean) {
-    set({ isFirstLogin: val });
   },
   logout() {
     set({
