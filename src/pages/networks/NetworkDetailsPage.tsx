@@ -1563,8 +1563,19 @@ export default function NetworkDetailsPage(props: PageProps) {
     return (
       <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
         <Card style={{ width: '50%' }}>
-          <Form name="network-form" form={form} layout="vertical" initialValues={network} disabled={!isEditingNetwork}>
-            <Form.Item label="Network name" name="netid" rules={[{ required: true }]}>
+          <Form
+            name="network-details-form"
+            form={form}
+            layout="vertical"
+            initialValues={network}
+            disabled={!isEditingNetwork}
+          >
+            <Form.Item
+              label="Network name"
+              name="netid"
+              rules={[{ required: true }]}
+              data-nmui-intercom="network-details-form_netid"
+            >
               <Input placeholder="Network name" disabled />
             </Form.Item>
 
@@ -1581,7 +1592,12 @@ export default function NetworkDetailsPage(props: PageProps) {
                 <Row justify="space-between" style={{ marginBottom: isIpv4Watch ? '.5rem' : '0px' }}>
                   <Col>IPv4</Col>
                   <Col>
-                    <Form.Item name="isipv4" valuePropName="checked" style={{ marginBottom: '0px' }}>
+                    <Form.Item
+                      name="isipv4"
+                      valuePropName="checked"
+                      style={{ marginBottom: '0px' }}
+                      data-nmui-intercom="network-details-form_isipv4"
+                    >
                       <Switch />
                     </Form.Item>
                   </Col>
@@ -1589,7 +1605,11 @@ export default function NetworkDetailsPage(props: PageProps) {
                 {isIpv4Watch && (
                   <Row>
                     <Col xs={24}>
-                      <Form.Item name="addressrange" style={{ marginBottom: '0px' }}>
+                      <Form.Item
+                        name="addressrange"
+                        style={{ marginBottom: '0px' }}
+                        data-nmui-intercom="network-details-form_addressrange"
+                      >
                         <Input placeholder="Enter address CIDR (eg: 192.168.1.0/24)" />
                       </Form.Item>
                     </Col>
@@ -1611,7 +1631,12 @@ export default function NetworkDetailsPage(props: PageProps) {
                 <Row justify="space-between" style={{ marginBottom: isIpv6Watch ? '.5rem' : '0px' }}>
                   <Col>IPv6</Col>
                   <Col>
-                    <Form.Item name="isipv6" valuePropName="checked" style={{ marginBottom: '0px' }}>
+                    <Form.Item
+                      name="isipv6"
+                      valuePropName="checked"
+                      style={{ marginBottom: '0px' }}
+                      data-nmui-intercom="network-details-form_isipv6"
+                    >
                       <Switch />
                     </Form.Item>
                   </Col>
@@ -1619,7 +1644,11 @@ export default function NetworkDetailsPage(props: PageProps) {
                 {isIpv6Watch && (
                   <Row>
                     <Col xs={24}>
-                      <Form.Item name="addressrange6" style={{ marginBottom: '0px' }}>
+                      <Form.Item
+                        name="addressrange6"
+                        style={{ marginBottom: '0px' }}
+                        data-nmui-intercom="network-details-form_addressrange6"
+                      >
                         <Input placeholder="Enter address CIDR (eg: 2002::1234:abcd:ffff:c0a8:101/64)" />
                       </Form.Item>
                     </Col>
@@ -1640,7 +1669,12 @@ export default function NetworkDetailsPage(props: PageProps) {
                 <Row justify="space-between">
                   <Col>Default Access Control</Col>
                   <Col xs={8}>
-                    <Form.Item name="defaultacl" style={{ marginBottom: '0px' }} rules={[{ required: true }]}>
+                    <Form.Item
+                      name="defaultacl"
+                      style={{ marginBottom: '0px' }}
+                      rules={[{ required: true }]}
+                      data-nmui-intercom="network-details-form_defaultacl"
+                    >
                       <Select
                         size="small"
                         style={{ width: '100%' }}
