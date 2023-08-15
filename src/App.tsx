@@ -158,7 +158,7 @@ function App() {
         <RouterProvider router={router} />
       </ConfigProvider>
 
-      {/* <ServerMalfunctionModal isOpen={!store.serverStatus.isHealthy} /> */}
+      <ServerMalfunctionModal isOpen={!store.serverStatus.isHealthy} />
     </div>
   );
 }
