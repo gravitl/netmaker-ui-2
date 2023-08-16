@@ -131,32 +131,47 @@ export default function NetworkGraph({ hosts, nodes, acl, clients }: NetworkGrap
       // connect mesh nodes
       for (let i = 0; i < nodes.length; i++) {
         for (let j = 0; j < nodes.length; j++) {
-          graph.addEdge(nodes[i].id, nodes[j].id, {
-            color: canNodesCommunitcate(nodes[i], nodes[j]) ? HOST_EDGE_COLOR : DISCONNECTED_EDGE_COLOR,
-            size: HOST_EDGE_SIZE,
-            type: 'arrow',
-          });
+          try {
+            graph.addEdge(nodes[i].id, nodes[j].id, {
+              color: canNodesCommunitcate(nodes[i], nodes[j]) ? HOST_EDGE_COLOR : DISCONNECTED_EDGE_COLOR,
+              size: HOST_EDGE_SIZE,
+              type: 'arrow',
+            });
+          } catch (err) {
+            console.error(err);
+            setGraphHasWarnings(true);
+          }
         }
       }
 
       // connect clients to their ingress
       clients.forEach((client) => {
-        graph.addEdge(client.clientid, client.ingressgatewayid, {
-          color: CLIENT_EDGE_COLOR,
-          size: CLIENT_EDGE_SIZE,
-          type: 'arrow',
-        });
+        try {
+          graph.addEdge(client.clientid, client.ingressgatewayid, {
+            color: CLIENT_EDGE_COLOR,
+            size: CLIENT_EDGE_SIZE,
+            type: 'arrow',
+          });
+        } catch (err) {
+          console.error(err);
+          setGraphHasWarnings(true);
+        }
       });
 
       // connect egress ranges to their egress
       graph.forEachNode((egressRangeGraphNodeId) => {
-        if (egressRangeGraphNodeId.startsWith(EGRESS_RANGE_PREFIX)) {
-          const egressNodeId = egressRangeGraphNodeId.replace(EGRESS_RANGE_PREFIX, '');
-          graph.addEdge(egressNodeId, egressRangeGraphNodeId, {
-            color: EGRESS_RANGE_EDGE_COLOR,
-            size: EGRESS_RANGE_EDGE_SIZE,
-            type: 'arrow',
-          });
+        try {
+          if (egressRangeGraphNodeId.startsWith(EGRESS_RANGE_PREFIX)) {
+            const egressNodeId = egressRangeGraphNodeId.replace(EGRESS_RANGE_PREFIX, '');
+            graph.addEdge(egressNodeId, egressRangeGraphNodeId, {
+              color: EGRESS_RANGE_EDGE_COLOR,
+              size: EGRESS_RANGE_EDGE_SIZE,
+              type: 'arrow',
+            });
+          }
+        } catch (err) {
+          console.error(err);
+          setGraphHasWarnings(true);
         }
       });
     },
@@ -227,7 +242,7 @@ export default function NetworkGraph({ hosts, nodes, acl, clients }: NetworkGrap
       warningIcon.src = '/icons/warning.svg';
       warningIcon.alt = 'warning';
       warningIcon.title =
-        'Graph may not be accurate. This is usually due to nodes or clients with the same IDs. Please ensure each node and client has a unique ID';
+        'Graph may not be accurate. This is usually due to nodes or clients with the same IDs. Please ensure each node and client has a unique ID and refresh the page.';
       warningIcon.style.color = 'yellow';
       warningIcon.style.position = 'absolute';
       warningIcon.style.top = '0rem';
