@@ -207,6 +207,37 @@ export default function HostsPage(props: PageProps) {
     });
   }, [notify]);
 
+  const confirmUpgradeClient = useCallback(
+    async (host: Host) => {
+      Modal.confirm({
+        title: 'Upgrade host version',
+        content: (
+          <>
+            <Row>
+              <Col xs={24}>
+                <Typography.Text>
+                  Are you sure you want to upgrade the version of this host {host.name}?
+                </Typography.Text>
+              </Col>
+            </Row>
+          </>
+        ),
+        onOk: async () => {
+          try {
+            await HostsService.upgradeClientVersion(host.id);
+            notify.success({ message: `The upgrade has been triggered and it may take a while` });
+          } catch (err) {
+            notify.error({
+              message: 'Failed to upgrade client version',
+              description: extractErrorMsg(err as any),
+            });
+          }
+        },
+      });
+    },
+    [notify, store.nodes],
+  );
+
   const hostsTableColumns: TableColumnsType<Host> = useMemo(
     () => [
       {
@@ -351,6 +382,17 @@ export default function HostsPage(props: PageProps) {
                     onClick: (ev) => {
                       ev.domEvent.stopPropagation();
                       onEditHost(host);
+                    },
+                  },
+                  {
+                    key: 'upgrade',
+                    label: 'Upgrade Version',
+                    disabled: host.version === store.serverConfig?.Version,
+                    onClick: (ev) => {
+                      console.log(host.version, store.serverConfig?.Version);
+                      console.log(host.version === store.serverConfig?.Version);
+                      ev.domEvent.stopPropagation();
+                      confirmUpgradeClient(host);
                     },
                   },
                   {
