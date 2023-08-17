@@ -3,15 +3,11 @@
 ## Netmaker UI v0.20.7
 
 ## Whats New
-- FreeBSD 13/14 specific binaries
-- Whitelabelling capabilities
+- Sync hosts: a feature that allows admin to trigger a host pull from the UI
 
 ## What's Fixed
-- Fixes for FreeBSD
-- Mac installer installs WireGuard
-- ACL rendering on UI
-- Updating Endpoint IP from UI
-     
+- Stability patches and improvements
+
 ## known issues
 - Windows installer does not install WireGuard
 - netclient-gui (windows) will display an erroneous error dialog when joining a network (can be ignored)
