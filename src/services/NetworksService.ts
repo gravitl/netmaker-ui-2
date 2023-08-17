@@ -6,7 +6,8 @@ import { Network, NetworkPayload } from '../models/Network';
 import { axiosService } from './BaseService';
 import { CreateAccessKeyDto } from './dtos/CreateAccessKeyDto';
 import { CreateNetworkDto } from './dtos/CreateNetworkDto';
-import { NetworkMetrics } from '@/models/Metrics';
+import { NetworkMetrics, NodeOrClientMetric } from '@/models/Metrics';
+import { ExternalClient } from '@/models/ExternalClient';
 
 function getNetworks() {
   return axiosService.get<NetworkPayload[]>(`${ApiRoutes.NETWORKS}`);
@@ -61,7 +62,9 @@ function getNodeMetrics(networkId: Network['netid']) {
 }
 
 function getClientMetrics(networkId: Network['netid']) {
-  return axiosService.get<NetworkMetrics>(`${ApiRoutes.METRICS_EXTERNAL_CLIENT}/${networkId}`);
+  return axiosService.get<Record<ExternalClient['clientid'], NodeOrClientMetric>>(
+    `${ApiRoutes.METRICS_EXTERNAL_CLIENT}/${networkId}`,
+  );
 }
 
 export const NetworksService = {

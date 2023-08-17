@@ -26,7 +26,6 @@ const testHost: Host = {
   endpointip: '',
   publickey: '',
   macaddress: '',
-  internetgateway: '',
   nodes: [],
   isdefault: false,
   nat_type: '',
@@ -61,7 +60,7 @@ describe('RouteUtils', () => {
     expect(getHostRoute(testHost.id)).toEqual('/hosts/test-host');
     expect(getHostRoute(testHost.id, { edit: 'true' })).toEqual('/hosts/test-host?edit=true');
     expect(getHostRoute(testHost.id, { edit: 'true' }, { open: 'true' })).toEqual(
-      '/hosts/test-host?edit=true&open=true'
+      '/hosts/test-host?edit=true&open=true',
     );
   });
 

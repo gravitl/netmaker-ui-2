@@ -23,6 +23,7 @@ export default function LoginPage(props: LoginPageProps) {
   const [form] = Form.useForm<LoginDto>();
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
+  const storeFetchServerConfig = store.fetchServerConfig;
   const navigate = useNavigate();
   const { backend, token } = useParams();
   const { t } = useTranslation();
@@ -49,8 +50,8 @@ export default function LoginPage(props: LoginPageProps) {
       setIsLoading(true);
       const data = await (await AuthService.login(formData)).data;
       store.setStore({ jwt: data.Response.AuthToken, username: data.Response.UserName });
+      await storeFetchServerConfig();
       await getUserAndUpdateInStore(data.Response.UserName);
-      // navigate(AppRoutes.DASHBOARD_ROUTE);
     } catch (err) {
       notify.error({ message: 'Failed to login', description: extractErrorMsg(err as any) });
     } finally {

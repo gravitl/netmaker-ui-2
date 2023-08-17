@@ -3,7 +3,7 @@ import { Network } from '@/models/Network';
 import { Node } from '@/models/Node';
 import { useLoadGraph, useSigma } from '@react-sigma/core';
 import Graph from 'graphology';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import circular from 'graphology-layout/circular';
 // import forceAtlas from 'graphology-layout-force';
 import forceAtlas2 from 'graphology-layout-forceatlas2';
@@ -13,6 +13,7 @@ import { ExternalClient } from '@/models/ExternalClient';
 import { theme } from 'antd';
 import { useStore } from '@/store/store';
 import { NULL_HOST } from '@/constants/Types';
+import { NETWORK_GRAPH_SIGMA_CONTAINER_ID } from '@/constants/AppConstants';
 
 interface NetworkGraphProps {
   network: Network;
@@ -51,6 +52,8 @@ export default function NetworkGraph({ hosts, nodes, acl, clients }: NetworkGrap
   const { token: themeToken } = theme.useToken();
   const store = useStore();
 
+  const [graphHasWarnings, setGraphHasWarnings] = useState(false);
+
   // use this for zoom level
   // sigma.getCamera().getState().ratio
 
@@ -66,49 +69,61 @@ export default function NetworkGraph({ hosts, nodes, acl, clients }: NetworkGrap
       }
       return false;
     },
-    [acl]
+    [acl],
   );
 
   const renderNodes = useCallback(
     (graph: Graph, nodes: Node[], nodeToHostMap: Record<Node['id'], Host>, clients: ExternalClient[]) => {
+      setGraphHasWarnings(false);
+
       nodes.forEach((node) => {
-        const nodeLabel = nodeToHostMap[node.id].name;
+        try {
+          const nodeLabel = nodeToHostMap[node.id].name;
 
-        // all nodes
-        graph.addNode(node.id, {
-          x: Math.round(Math.random() * 100),
-          y: Math.round(Math.random() * 100),
-          size: node.isegressgateway ? EGRESS_NODE_SIZE : HOST_NODE_SIZE,
-          label: nodeLabel,
-          color: HOST_COLOR,
-        });
-
-        // add egress ranges
-        if (node.isegressgateway) {
-          graph.addNode(`${EGRESS_RANGE_PREFIX}${node.id}`, {
+          // all nodes
+          graph.addNode(node.id, {
             x: Math.round(Math.random() * 100),
             y: Math.round(Math.random() * 100),
-            size: EGRESS_RANGE_SIZE,
-            label: node.egressgatewayranges.join(','),
-            color: EGRESS_RANGE_COLOR,
+            size: node.isegressgateway ? EGRESS_NODE_SIZE : HOST_NODE_SIZE,
+            label: nodeLabel,
+            color: HOST_COLOR,
           });
+
+          // add egress ranges
+          if (node.isegressgateway) {
+            graph.addNode(`${EGRESS_RANGE_PREFIX}${node.id}`, {
+              x: Math.round(Math.random() * 100),
+              y: Math.round(Math.random() * 100),
+              size: EGRESS_RANGE_SIZE,
+              label: node.egressgatewayranges.join(','),
+              color: EGRESS_RANGE_COLOR,
+            });
+          }
+        } catch (err) {
+          console.error(err);
+          setGraphHasWarnings(true);
         }
       });
 
       // add clients
       clients.forEach((client) => {
-        const nodeLabel = client.clientid;
+        try {
+          const nodeLabel = client.clientid;
 
-        graph.addNode(client.clientid, {
-          x: Math.round(Math.random() * 100),
-          y: Math.round(Math.random() * 100),
-          size: CLIENT_NODE_SIZE,
-          label: nodeLabel,
-          color: CLIENT_COLOR,
-        });
+          graph.addNode(client.clientid, {
+            x: Math.round(Math.random() * 100),
+            y: Math.round(Math.random() * 100),
+            size: CLIENT_NODE_SIZE,
+            label: nodeLabel,
+            color: CLIENT_COLOR,
+          });
+        } catch (err) {
+          console.error(err);
+          setGraphHasWarnings(true);
+        }
       });
     },
-    []
+    [],
   );
 
   const renderEdges = useCallback(
@@ -145,7 +160,7 @@ export default function NetworkGraph({ hosts, nodes, acl, clients }: NetworkGrap
         }
       });
     },
-    [canNodesCommunitcate]
+    [canNodesCommunitcate],
   );
 
   const autoPositionGraphNodes = useCallback((graph: Graph, strategy: GraphPositioningStrategy) => {
@@ -175,10 +190,13 @@ export default function NetworkGraph({ hosts, nodes, acl, clients }: NetworkGrap
   useEffect(() => {
     const graph = new Graph();
 
-    const nodeToHostMap = nodes.reduce((acc, node) => {
-      acc[node.id] = hosts.find((host) => host.id === node.hostid) ?? NULL_HOST;
-      return acc;
-    }, {} as Record<Node['id'], Host>);
+    const nodeToHostMap = nodes.reduce(
+      (acc, node) => {
+        acc[node.id] = hosts.find((host) => host.id === node.hostid) ?? NULL_HOST;
+        return acc;
+      },
+      {} as Record<Node['id'], Host>,
+    );
 
     const sortedNodes = structuredClone(nodes).sort((a, b) => a.id.localeCompare(b.id));
     const sortedClient = structuredClone(clients).sort((a, b) => a.clientid.localeCompare(b.clientid));
@@ -199,6 +217,33 @@ export default function NetworkGraph({ hosts, nodes, acl, clients }: NetworkGrap
       }
     };
   }, [autoPositionGraphNodes, clients, hosts, loadGraph, nodes, renderEdges, renderNodes]);
+
+  useEffect(() => {
+    const warningIconId = 'network-graph-warning-icon';
+    let warningIcon = window.document.querySelector(`#${warningIconId}`) as HTMLImageElement;
+    if (!warningIcon) {
+      warningIcon = window.document.createElement('img');
+      warningIcon.id = warningIconId;
+      warningIcon.src = '/icons/warning.svg';
+      warningIcon.alt = 'warning';
+      warningIcon.title =
+        'Graph may not be accurate. This is usually due to nodes or clients with the same IDs. Please ensure each node and client has a unique ID';
+      warningIcon.style.color = 'yellow';
+      warningIcon.style.position = 'absolute';
+      warningIcon.style.top = '0rem';
+      warningIcon.style.right = '2rem';
+      warningIcon.style.zIndex = '1000';
+      warningIcon.style.width = '30px';
+      warningIcon.style.height = '30px';
+      warningIcon.style.display = 'none';
+      window.document.querySelector(`#${NETWORK_GRAPH_SIGMA_CONTAINER_ID}`)?.appendChild(warningIcon);
+    }
+    if (graphHasWarnings) {
+      warningIcon.style.display = 'block';
+    } else {
+      warningIcon.style.display = 'none';
+    }
+  }, [graphHasWarnings]);
 
   return null;
 }

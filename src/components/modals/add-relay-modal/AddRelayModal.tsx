@@ -74,7 +74,7 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
 
   const filteredNetworkNodes = useMemo(
     () => networkNodes.filter((node) => node.name?.toLowerCase().includes(relaySearch.toLowerCase())),
-    [networkNodes, relaySearch]
+    [networkNodes, relaySearch],
   );
 
   const relayTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(() => {
@@ -248,13 +248,13 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
                             rowKey="id"
                             dataSource={[
                               ...filteredNetworkNodes
-                                .filter((node) =>
-                                  node.name?.toLocaleLowerCase().includes(relayedSearch.toLocaleLowerCase())
+                                .filter(
+                                  (node) => node.name?.toLocaleLowerCase().includes(relayedSearch.toLocaleLowerCase()),
                                 )
                                 .filter((h) => h.id !== selectedRelay.id),
                             ].sort((a, b) =>
                               // sort non-relayed hosts to the top
-                              isNodeRelay(a) === isNodeRelay(b) ? 0 : isNodeRelay(a) ? 1 : -1
+                              isNodeRelay(a) === isNodeRelay(b) ? 0 : isNodeRelay(a) ? 1 : -1,
                             )}
                             onRow={(node) => {
                               return {
@@ -328,7 +328,7 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
         <Divider style={{ margin: '0px 0px 2rem 0px' }} />
         <div className="CustomModalBody">
           <Row>
-            <Col xs={24} style={{ textAlign: 'left' }}>
+            <Col xs={24} style={{ textAlign: 'right' }}>
               <Button type="primary" onClick={createRelay} loading={isSubmitting}>
                 Create Relay
               </Button>

@@ -76,7 +76,7 @@ export default function ClientDetailsModal({ client, isOpen, onCancel, onUpdateC
         },
       });
     },
-    [client, notify, onUpdateClient]
+    [client, notify, onUpdateClient],
   );
 
   useEffect(() => {
@@ -116,7 +116,7 @@ export default function ClientDetailsModal({ client, isOpen, onCancel, onUpdateC
               disabled
               placeholder="Allowed IPs"
               defaultValue={[client.address, client.address6].concat(
-                client.extraallowedips ? client.extraallowedips : []
+                client.extraallowedips ? client.extraallowedips : [],
               )}
             />
           </Col>

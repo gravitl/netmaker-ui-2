@@ -62,9 +62,9 @@ export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModa
       enrollmentKeys
         .filter((key) => isEnrollmentKeyValid(key))
         .filter((key) =>
-          `${key.tags.join('')}${key.networks.join('')}`.toLowerCase().includes(keySearch.toLocaleLowerCase())
+          `${key.tags.join('')}${key.networks.join('')}`.toLowerCase().includes(keySearch.toLocaleLowerCase()),
         ),
-    [enrollmentKeys, keySearch]
+    [enrollmentKeys, keySearch],
   );
 
   const isOnLastStep = useMemo(() => {
@@ -499,9 +499,7 @@ export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModa
                       <li>
                         <Typography.Text>Run</Typography.Text>
                         <Typography.Text code copyable>
-                          {`sudo docker run -d --network host --privileged -e TOKEN=${
-                            selectedEnrollmentKey?.token
-                          } -v /etc/netclient:/etc/netclient --name netclient gravitl/netclient:${
+                          {`sudo docker run -d --network host --privileged -e TOKEN=${selectedEnrollmentKey?.token} -v /etc/netclient:/etc/netclient --name netclient gravitl/netclient:${
                             store.serverConfig?.Version ?? '<version>'
                           }`}
                         </Typography.Text>

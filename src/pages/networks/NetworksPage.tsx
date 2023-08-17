@@ -87,7 +87,7 @@ export default function NetworksPage(props: PageProps) {
       networks.filter((network) => {
         return network.netid.toLowerCase().includes(searchText.toLowerCase());
       }),
-    [networks, searchText]
+    [networks, searchText],
   );
 
   const loadNetworks = useCallback(async () => {

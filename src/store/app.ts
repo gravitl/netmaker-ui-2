@@ -32,7 +32,7 @@ const createAppSlice: StateCreator<IAppSlice, [], [], IAppSlice> = (set) => ({
     set(() => ({
       serverStatus: {
         status,
-        isHealthy: status.broker_connected && status.db_connected && status.healthyNetwork,
+        isHealthy: status.broker_connected && status.db_connected && status.healthyNetwork && !status.license_error,
       },
     })),
   fetchServerConfig: async () => {

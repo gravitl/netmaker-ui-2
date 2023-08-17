@@ -60,31 +60,68 @@ export default function UpdateHostModal({ isOpen, host, onUpdateHost, onCancel }
       <Form name="update-host-form" form={form} layout="vertical" initialValues={host}>
         <div className="scrollable-modal-body">
           <div className="CustomModalBody">
-            <Form.Item label="Host name" name="name" rules={[{ required: true }]}>
+            <Form.Item
+              label="Host name"
+              name="name"
+              rules={[{ required: true }]}
+              data-nmui-intercom="update-host-form_name"
+            >
               <Input placeholder="Host name" />
             </Form.Item>
 
-            <Form.Item label="Maximum Transmission Unit (MTU)" name="mtu" rules={[{ required: true }]}>
+            <Form.Item
+              label="Maximum Transmission Unit (MTU)"
+              name="mtu"
+              rules={[{ required: true }]}
+              data-nmui-intercom="update-host-form_mtu"
+            >
               <InputNumber placeholder="MTU" style={{ width: '100%' }} />
             </Form.Item>
 
-            <Form.Item label="Listen Port" name="listenport" rules={[{ required: true }]}>
+            <Form.Item
+              label="Listen Port"
+              name="listenport"
+              rules={[{ required: true }]}
+              data-nmui-intercom="update-host-form_listenport"
+            >
               <InputNumber placeholder="Listen Port" min={0} style={{ width: '100%' }} />
             </Form.Item>
 
-            <Form.Item label="Verbosity" name="verbosity" rules={[{ required: true }]}>
+            <Form.Item
+              label="Verbosity"
+              name="verbosity"
+              rules={[{ required: true }]}
+              data-nmui-intercom="update-host-form_verbosity"
+            >
               <InputNumber placeholder="Verbosity" min={0} max={4} style={{ width: '100%' }} />
             </Form.Item>
 
-            <Form.Item label="Static Endpoint" name="isstatic" valuePropName="checked" rules={[{ required: true }]}>
+            <Form.Item
+              label="Static Endpoint"
+              name="isstatic"
+              valuePropName="checked"
+              rules={[{ required: true }]}
+              data-nmui-intercom="update-host-form_isstatic"
+            >
               <Switch />
             </Form.Item>
 
-            <Form.Item label="Endpoint IP" name="endpointip" rules={[{ required: isStaticVal }]}>
+            <Form.Item
+              label="Endpoint IP"
+              name="endpointip"
+              rules={[{ required: isStaticVal }]}
+              data-nmui-intercom="update-host-form_endpointip"
+            >
               <Input placeholder="Endpoint IP" disabled={!isStaticVal} />
             </Form.Item>
 
-            <Form.Item label="Default Host" name="isdefault" valuePropName="checked" rules={[{ required: true }]}>
+            <Form.Item
+              label="Default Host"
+              name="isdefault"
+              valuePropName="checked"
+              rules={[{ required: true }]}
+              data-nmui-intercom="update-host-form_isdefault"
+            >
               <Switch />
             </Form.Item>
           </div>
@@ -94,7 +131,7 @@ export default function UpdateHostModal({ isOpen, host, onUpdateHost, onCancel }
         <div className="CustomModalBody">
           <Row>
             <Col xs={24} style={{ textAlign: 'right' }}>
-              <Form.Item noStyle>
+              <Form.Item noStyle data-nmui-intercom="update-host-form_submit">
                 <Button type="primary" onClick={updateHost}>
                   Update Host
                 </Button>

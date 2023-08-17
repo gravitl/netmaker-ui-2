@@ -21,8 +21,9 @@ import { Host } from '@/models/Host';
 import { Node } from '@/models/Node';
 import { getHostRoute } from '@/utils/RouteUtils';
 import { NodesService } from '@/services/NodesService';
-import moment from 'moment';
 import { useNavigate } from 'react-router-dom';
+import dayjs from 'dayjs';
+import { NODE_EXP_TIME_FORMAT } from '@/constants/AppConstants';
 
 interface UpdateNodeModalProps {
   isOpen: boolean;
@@ -33,7 +34,6 @@ interface UpdateNodeModalProps {
 
 export default function UpdateNodeModal({ isOpen, node, onUpdateNode, onCancel }: UpdateNodeModalProps) {
   const [form] = Form.useForm<Node>();
-  const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
   const navigate = useNavigate();
 
@@ -57,16 +57,20 @@ export default function UpdateNodeModal({ isOpen, node, onUpdateNode, onCancel }
           expdatetime: Math.floor(new Date(formData.expdatetime).getTime() / 1000),
         })
       ).data;
-      notify.success({ message: `Host ${node.id} updated` });
+      notification.success({ message: `Host ${node.id} updated` });
       storeUpdateNode(newNode.id, newNode);
       onUpdateNode(newNode);
     } catch (err) {
-      notify.error({
+      notification.error({
         message: 'Failed to update host',
         description: extractErrorMsg(err as any),
       });
     }
   };
+
+  const disabledDateTime = () => ({
+    disabledMinutes: () => Array.from({ length: 60 }, (_, i) => i + 1),
+  });
 
   return (
     <Modal
@@ -91,21 +95,31 @@ export default function UpdateNodeModal({ isOpen, node, onUpdateNode, onCancel }
         name="update-node-form"
         form={form}
         layout="vertical"
-        initialValues={{ ...node, expdatetime: moment(node.expdatetime * 1000), endpointip: host?.endpointip ?? '' }}
+        initialValues={{ ...node, expdatetime: dayjs(node.expdatetime * 1000), endpointip: host?.endpointip ?? '' }}
       >
         <div className="scrollable-modal-body">
           <div className="CustomModalBody">
-            <Form.Item label="IP Address (IPv4)" name="address" rules={[{ required: true }]}>
-              <Input placeholder="IP address" />
+            <Form.Item
+              label="IP Address (IPv4)"
+              name="address"
+              rules={[{ required: true }]}
+              data-nmui-intercom="update-node-form_address"
+            >
+              <Input placeholder="IPv4 address" />
             </Form.Item>
 
             {network?.isipv6 && (
-              <Form.Item label="IP Address (IPv6)" name="address6" rules={[{ required: true }]}>
-                <Input placeholder="MTU" />
+              <Form.Item
+                label="IP Address (IPv6)"
+                name="address6"
+                rules={[{ required: true }]}
+                data-nmui-intercom="update-node-form_address6"
+              >
+                <Input placeholder="IPv6 appress" />
               </Form.Item>
             )}
 
-            <Form.Item label="Local Address" name="localaddress">
+            <Form.Item label="Local Address" name="localaddress" data-nmui-intercom="update-node-form_localaddress">
               <Select
                 placeholder="Local address"
                 options={
@@ -117,19 +131,49 @@ export default function UpdateNodeModal({ isOpen, node, onUpdateNode, onCancel }
               />
             </Form.Item>
 
-            <Form.Item label="Persistent Keepalive" name="persistentkeepalive" rules={[{ required: true }]}>
+            <Form.Item
+              label="Persistent Keepalive"
+              name="persistentkeepalive"
+              rules={[{ required: true }]}
+              data-nmui-intercom="update-node-form_persistentkeepalive"
+            >
               <InputNumber placeholder="Persistent keepalive" min={0} style={{ width: '100%' }} />
             </Form.Item>
 
-            <Form.Item label="Expiration Date" name="expdatetime" rules={[{ required: true }]}>
-              <DatePicker showTime style={{ width: '100%' }} clearIcon={false} />
+            <Form.Item
+              label="Expiration Date"
+              name="expdatetime"
+              rules={[{ required: true }]}
+              data-nmui-intercom="update-node-form_expdatetime"
+            >
+              <DatePicker
+                showTime={true}
+                disabledTime={disabledDateTime}
+                style={{ width: '100%' }}
+                clearIcon={false}
+                format={NODE_EXP_TIME_FORMAT}
+              />
             </Form.Item>
 
-            <Form.Item label="Endpoint IP" name="endpointip" rules={[{ required: isStaticVal }]}>
-              <Input placeholder="Endpoint IP" disabled={!isStaticVal} />
+            <Form.Item
+              label="Endpoint IP"
+              name="endpointip"
+              rules={[{ required: isStaticVal }]}
+              data-nmui-intercom="update-node-form_endpointip"
+            >
+              <Input
+                placeholder="Endpoint IP"
+                disabled={!isStaticVal}
+                title="To edit, click Global Host Settings below"
+              />
             </Form.Item>
 
-            <Form.Item label="Default ACL Rule" name="defaultacl" rules={[{ required: true }]}>
+            <Form.Item
+              label="Default ACL Rule"
+              name="defaultacl"
+              rules={[{ required: true }]}
+              data-nmui-intercom="update-node-form_defaultacl"
+            >
               <Select
                 placeholder="ACL Rule"
                 options={[
@@ -140,11 +184,23 @@ export default function UpdateNodeModal({ isOpen, node, onUpdateNode, onCancel }
               />
             </Form.Item>
 
-            <Form.Item label="Connected" name="connected" valuePropName="checked" rules={[{ required: true }]}>
+            <Form.Item
+              label="Connected"
+              name="connected"
+              valuePropName="checked"
+              rules={[{ required: true }]}
+              data-nmui-intercom="update-node-form_connected"
+            >
               <Switch />
             </Form.Item>
 
-            <Form.Item label="DNS On" name="dnson" valuePropName="checked" rules={[{ required: true }]}>
+            <Form.Item
+              label="DNS On"
+              name="dnson"
+              valuePropName="checked"
+              rules={[{ required: true }]}
+              data-nmui-intercom="update-node-form_dnson"
+            >
               <Switch />
             </Form.Item>
           </div>
@@ -154,14 +210,14 @@ export default function UpdateNodeModal({ isOpen, node, onUpdateNode, onCancel }
         <div className="CustomModalBody">
           <Row>
             <Col xs={12}>
-              <Form.Item noStyle>
+              <Form.Item noStyle data-nmui-intercom="update-node-form_editglobalhost">
                 <Button onClick={() => navigate(getHostRoute(node.hostid, { edit: 'true' }))}>
                   Go to Global Host Settings
                 </Button>
               </Form.Item>
             </Col>
             <Col xs={12} style={{ textAlign: 'right' }}>
-              <Form.Item noStyle>
+              <Form.Item noStyle data-nmui-intercom="update-node-form_submit">
                 <Button type="primary" onClick={updateNode}>
                   Update Host
                 </Button>
@@ -170,9 +226,6 @@ export default function UpdateNodeModal({ isOpen, node, onUpdateNode, onCancel }
           </Row>
         </div>
       </Form>
-
-      {/* notify */}
-      {notifyCtx}
     </Modal>
   );
 }

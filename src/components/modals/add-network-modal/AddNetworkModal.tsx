@@ -38,7 +38,7 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
     try {
       const formData = await form.validateFields();
       const network = convertNetworkPayloadToUiNetwork(
-        (await NetworksService.createNetwork(convertUiNetworkToNetworkPayload(formData as unknown as Network))).data
+        (await NetworksService.createNetwork(convertUiNetworkToNetworkPayload(formData as unknown as Network))).data,
       );
       store.addNetwork(network);
       notify.success({ message: `Network ${network.netid} created` });
@@ -89,7 +89,12 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
           layout="vertical"
           initialValues={{ isipv4: true, isipv6: false, defaultacl: 'yes' }}
         >
-          <Form.Item label="Network name" name="netid" rules={[{ required: true }]}>
+          <Form.Item
+            label="Network name"
+            name="netid"
+            rules={[{ required: true }]}
+            data-nmui-intercom="add-network-form_netid"
+          >
             <Input placeholder="Network name" />
           </Form.Item>
 
@@ -106,7 +111,7 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
               <Row justify="space-between" style={{ marginBottom: isIpv4Val ? '.5rem' : '0px' }}>
                 <Col>IPv4</Col>
                 <Col>
-                  <Form.Item name="isipv4" noStyle valuePropName="checked">
+                  <Form.Item name="isipv4" noStyle valuePropName="checked" data-nmui-intercom="add-network-form_isipv4">
                     <Switch />
                   </Form.Item>
                 </Col>
@@ -114,7 +119,11 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
               {isIpv4Val && (
                 <Row>
                   <Col xs={24}>
-                    <Form.Item name="addressrange" style={{ marginBottom: '0px' }}>
+                    <Form.Item
+                      name="addressrange"
+                      style={{ marginBottom: '0px' }}
+                      data-nmui-intercom="add-network-form_addressrange"
+                    >
                       <Input placeholder="Enter address CIDR (eg: 192.168.1.0/24)" />
                     </Form.Item>
                   </Col>
@@ -136,7 +145,7 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
               <Row justify="space-between" style={{ marginBottom: isIpv6Val ? '.5rem' : '0px' }}>
                 <Col>IPv6</Col>
                 <Col>
-                  <Form.Item name="isipv6" noStyle valuePropName="checked">
+                  <Form.Item name="isipv6" noStyle valuePropName="checked" data-nmui-intercom="add-network-form_isipv6">
                     <Switch />
                   </Form.Item>
                 </Col>
@@ -145,7 +154,10 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
                 <Row>
                   <Col xs={24}>
                     <Form.Item name="addressrange6" style={{ marginBottom: '0px' }}>
-                      <Input placeholder="Enter address CIDR (eg: 2002::1234:abcd:ffff:c0a8:101/64)" />
+                      <Input
+                        placeholder="Enter address CIDR (eg: 2002::1234:abcd:ffff:c0a8:101/64)"
+                        data-nmui-intercom="add-network-form_addressrange6"
+                      />
                     </Form.Item>
                   </Col>
                 </Row>
@@ -165,7 +177,12 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
               <Row justify="space-between">
                 <Col>Default Access Control</Col>
                 <Col xs={8}>
-                  <Form.Item name="defaultacl" style={{ marginBottom: '0px' }} rules={[{ required: true }]}>
+                  <Form.Item
+                    name="defaultacl"
+                    style={{ marginBottom: '0px' }}
+                    rules={[{ required: true }]}
+                    data-nmui-intercom="add-network-form_defaultacl"
+                  >
                     <Select
                       size="small"
                       style={{ width: '100%' }}
@@ -180,13 +197,9 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
             </Col>
           </Row>
 
-          {/* <Form.Item label="Default Client DNS" name="defaultDns">
-            <Input placeholder="Default Client DNS" />
-          </Form.Item> */}
-
           <Row>
             <Col xs={24} style={{ textAlign: 'right' }}>
-              <Form.Item>
+              <Form.Item data-nmui-intercom="add-network-form_submit">
                 <Button type="primary" onClick={createNetwork}>
                   Create Network
                 </Button>

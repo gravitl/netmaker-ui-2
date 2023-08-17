@@ -69,7 +69,7 @@ export default function AddHostsToNetworkModal({
         },
       });
     },
-    [networkId, notify]
+    [networkId, notify],
   );
 
   // TODO: add autofill for fields

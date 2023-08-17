@@ -24,6 +24,7 @@ export default function SignupPage(props: SignupPageProps) {
   const location = useLocation();
 
   const [isSigninup, setIsSigningup] = useState(false);
+  const NETMAKER_SURVEY_LINK = 'https://www.netmaker.io/self-hosted-updates';
 
   const login = async (loginData: CreateUserReqDto) => {
     try {
@@ -41,6 +42,12 @@ export default function SignupPage(props: SignupPageProps) {
       const formData = await form.validateFields();
       setIsSigningup(true);
       await UsersService.createAdminUser(formData);
+      window.open(NETMAKER_SURVEY_LINK, '_blank');
+      notification.info({
+        message: 'A Survey has been opened in another tab.',
+        description: 'Complete this optional survey to help improve the Netmaker experience.',
+        duration: 30000,
+      });
       login(formData);
     } catch (err) {
       notification.error({ message: 'Failed to create admin', description: extractErrorMsg(err as any) });
