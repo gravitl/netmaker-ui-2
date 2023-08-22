@@ -1,7 +1,7 @@
 {
   "name": "netmaker-dashboard",
   "private": true,
-  "version": "0.20.7",
+  "version": "0.20.6",
   "type": "module",
   "scripts": {
     "dev": "vite",
