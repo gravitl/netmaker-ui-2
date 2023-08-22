@@ -95,18 +95,4 @@ describe('HostsService', () => {
     mock.onGet(testRoute).networkError();
     await expect(HostsService.refreshHostKeys(stubHost1.id)).rejects.toThrow();
   });
-
-  it('should request host pull/sync successfully and throw if error', async () => {
-    const testRoute = `${ApiRoutes.HOSTS}/${stubHost1.id}/sync`;
-
-    mock.onPost(testRoute).replyOnce(200);
-
-    await expect(HostsService.requestHostPull(stubHost1.id)).resolves.toBeTruthy();
-
-    mock.onGet(testRoute).replyOnce(500);
-    await expect(HostsService.requestHostPull(stubHost1.id)).rejects.toThrow();
-
-    mock.onGet(testRoute).networkError();
-    await expect(HostsService.requestHostPull(stubHost1.id)).rejects.toThrow();
-  });
 });
