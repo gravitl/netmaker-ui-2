@@ -1696,7 +1696,7 @@ export default function NetworkDetailsPage(props: PageProps) {
 
   const getHostsContent = useCallback(() => {
     return (
-      <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+      <div className="network-hosts-tab-content" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
         <Row justify="space-between" style={{ marginBottom: '1rem', width: '100%' }}>
           <Col xs={12} md={8}>
             <Input
