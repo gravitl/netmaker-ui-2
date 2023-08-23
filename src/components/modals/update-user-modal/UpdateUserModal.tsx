@@ -17,12 +17,10 @@ interface UpdateUserModalProps {
 type UpdateUserForm = {
   password: string;
   'confirm-password': string;
-  networks: User['networks'];
   isadmin: User['isadmin'];
 };
 
 type UpdateUserAuthForm = {
-  networks: User['networks'];
   isadmin: User['isadmin'];
 };
 
@@ -58,12 +56,6 @@ export default function UpdateUserModal({ isOpen, user, onUpdateUser, onCancel }
       });
     }
   };
-
-  useEffect(() => {
-    if (isAdminVal) {
-      authForm.setFieldValue('networks', []);
-    }
-  }, [authForm, isAdminVal]);
 
   return (
     <Modal
@@ -107,21 +99,12 @@ export default function UpdateUserModal({ isOpen, user, onUpdateUser, onCancel }
           </Form.Item>
         </Form>
 
-        {!user.isadmin && (
+        {(!user.isadmin || !user.issuperadmin) && (
           <Collapse ghost size="small" defaultActiveKey={user.username !== store.username ? ['user-auth'] : []}>
             <Collapse.Panel header="User authorizations" key="user-auth">
               <Form name="update-user-auth-form" form={authForm} layout="vertical" initialValues={user}>
                 <Form.Item label="Is Admin" name="isadmin" valuePropName="checked">
                   <Switch />
-                </Form.Item>
-
-                <Form.Item label="Allowed networks" name="networks">
-                  <Select
-                    placeholder="Select networks to give user access to"
-                    disabled={isAdminVal}
-                    mode="multiple"
-                    options={networks.map((n) => ({ label: n.netid, value: n.netid }))}
-                  />
                 </Form.Item>
               </Form>
             </Collapse.Panel>

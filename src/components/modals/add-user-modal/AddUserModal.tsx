@@ -1,4 +1,4 @@
-import { Button, Col, Divider, Form, Input, Modal, notification, Row, Switch } from 'antd';
+import { Button, Col, Divider, Form, Input, Modal, notification, Row, Select, Switch } from 'antd';
 import { MouseEvent, useCallback, useEffect, useState } from 'react';
 import { useStore } from '@/store/store';
 import '../CustomModal.scss';
@@ -37,6 +37,8 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
       if (!isServerEE) {
         formData.groups = ['*'];
       }
+      // set issuperadmin as false
+      formData.issuperadmin = false;
       const newUser = (await UsersService.createUser(formData)).data;
       resetModal();
       notify.success({ message: `User ${newUser.username} created` });
@@ -82,7 +84,7 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
     >
       <Divider style={{ margin: '0px 0px 2rem 0px' }} />
       <div className="CustomModalBody">
-        <Form name="add-user-form" form={form} layout="vertical" initialValues={{ groups: ['*'], isadmin: true }}>
+        <Form name="add-user-form" form={form} layout="vertical" initialValues={{ groups: ['*'], isadmin: false }}>
           <Form.Item label="Username" name="username" rules={[{ required: true }]}>
             <Input placeholder="Username" />
           </Form.Item>
@@ -113,10 +115,11 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
 
           <Form.Item label="Is admin" name="isadmin" valuePropName="checked">
             <Switch
-              disabled
+              disabled={!store.user?.issuperadmin}
               onChange={(newVal) => {
                 if (newVal) {
                   form.setFieldValue('networks', []);
+                  form.setFieldValue('isadmin', true);
                 }
               }}
             />

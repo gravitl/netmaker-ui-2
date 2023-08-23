@@ -14,11 +14,11 @@ function getUser(username: User['username']) {
 }
 
 function serverHasAdmin() {
-  return axiosService.get<boolean>(`${ApiRoutes.USERS_ADMIN}/hasadmin`);
+  return axiosService.get<boolean>(`${ApiRoutes.USERS_ADMIN}/hassuperadmin`);
 }
 
 function createAdminUser(payload: CreateUserReqDto) {
-  return axiosService.post<User>(`${ApiRoutes.USERS_ADMIN}/createadmin`, payload);
+  return axiosService.post<User>(`${ApiRoutes.USERS_ADMIN}/createsuperadmin`, payload);
 }
 
 function createUser(payload: User) {
@@ -55,6 +55,14 @@ function deleteUserGroup(userGroupName: UserGroup) {
   return axiosService.delete<void>(`${ApiRoutes.USER_GROUPS}/${userGroupName}`);
 }
 
+function attachUserToRemoteGateway(username: User['username']) {
+  return axiosService.post<void>(`${ApiRoutes.USERS}/${username}/remote_access_gw`);
+}
+
+function removeUserFromRemoteGateway(username: User['username']) {
+  return axiosService.delete<void>(`${ApiRoutes.USERS}/${username}/remote_access_gw`);
+}
+
 export const UsersService = {
   getUsers,
   getUser,
@@ -68,4 +76,6 @@ export const UsersService = {
   createUserGroup,
   getUserGroups,
   deleteUserGroup,
+  attachUserToRemoteGateway,
+  removeUserFromRemoteGateway,
 };

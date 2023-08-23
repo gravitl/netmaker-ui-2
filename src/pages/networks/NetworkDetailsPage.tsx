@@ -852,6 +852,14 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       },
       {
+        title: 'Owner ID',
+        dataIndex: 'ownerid',
+        width: 500,
+        render(value) {
+          return <Typography.Text>{value || 'n/a'}</Typography.Text>;
+        },
+      },
+      {
         title: 'Allowed IPs',
         render(_, client) {
           const addrs = `${client.address}, ${client.address6}`;
