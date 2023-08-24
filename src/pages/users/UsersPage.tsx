@@ -28,7 +28,6 @@ import { UsersService } from '@/services/UsersService';
 import { User } from '@/models/User';
 import AddUserModal from '@/components/modals/add-user-modal/AddUserModal';
 import UpdateUserModal from '@/components/modals/update-user-modal/UpdateUserModal';
-import NetworkPermissionsModal from '@/components/modals/network-permissions-modal/NetworkPermissionsModal';
 import { getBrandingConfig, isSaasBuild } from '@/services/BaseService';
 import { getAmuiUrl } from '@/utils/RouteUtils';
 
@@ -382,20 +381,6 @@ export default function UsersPage(props: PageProps) {
           onCancel={() => {
             setIsUpdateUserModalOpen(false);
             setSelectedUser(null);
-          }}
-        />
-      )}
-      {selectedNetwork && (
-        <NetworkPermissionsModal
-          key={selectedNetwork.netid}
-          isOpen={isNetworkPermissionsModalOpen}
-          network={selectedNetwork}
-          onUpdate={() => {
-            loadUsers();
-          }}
-          onCancel={() => {
-            setIsNetworkPermissionsModalOpen(false);
-            setSelectedNetwork(null);
           }}
         />
       )}

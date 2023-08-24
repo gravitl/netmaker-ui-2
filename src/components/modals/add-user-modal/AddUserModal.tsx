@@ -31,12 +31,6 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
   const createUser = async () => {
     try {
       const formData = await form.validateFields();
-      if (isAdminVal) {
-        formData.networks = [];
-      }
-      if (!isServerEE) {
-        formData.groups = ['*'];
-      }
       // set issuperadmin as false
       formData.issuperadmin = false;
       const newUser = (await UsersService.createUser(formData)).data;
@@ -59,12 +53,6 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
       console.log(err);
     }
   }, []);
-
-  useEffect(() => {
-    if (isAdminVal) {
-      form.setFieldsValue({ networks: [] });
-    }
-  }, [form, isAdminVal]);
 
   useEffect(() => {
     loadUsers();
