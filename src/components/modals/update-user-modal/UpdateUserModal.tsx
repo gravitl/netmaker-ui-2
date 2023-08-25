@@ -6,6 +6,7 @@ import { User } from '@/models/User';
 import { UsersService } from '@/services/UsersService';
 import { useStore } from '@/store/store';
 import { confirmDirtyModalClose } from '@/utils/Utils';
+import { isSaasBuild } from '@/services/BaseService';
 
 interface UpdateUserModalProps {
   isOpen: boolean;
@@ -30,6 +31,7 @@ export default function UpdateUserModal({ isOpen, user, onUpdateUser, onCancel }
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
 
+  const isServerEE = store.serverConfig?.IsEE === 'yes';
   const passwordVal = Form.useWatch('password', form);
 
   const updateUser = async () => {
@@ -63,6 +65,16 @@ export default function UpdateUserModal({ isOpen, user, onUpdateUser, onCancel }
     }
     return false;
   }, [store.user?.issuperadmin, user.username, store.username]);
+
+  const checkIfSwitchShouldBeDisabled = useCallback(() => {
+    if (store.user?.issuperadmin) {
+      return false;
+    } else if (!isServerEE && !isSaasBuild) {
+      return true;
+    } else {
+      return true;
+    }
+  }, [isServerEE, isSaasBuild, store.user?.issuperadmin]);
 
   return (
     <Modal
@@ -109,7 +121,7 @@ export default function UpdateUserModal({ isOpen, user, onUpdateUser, onCancel }
             <Collapse ghost size="small" defaultActiveKey={user.username !== store.username ? ['user-auth'] : []}>
               <Collapse.Panel header="User authorizations" key="user-auth">
                 <Form.Item label="Is Admin" name="isadmin" valuePropName="checked" initialValue={user.isadmin}>
-                  <Switch />
+                  <Switch disabled={checkIfSwitchShouldBeDisabled()} />
                 </Form.Item>
               </Collapse.Panel>
             </Collapse>

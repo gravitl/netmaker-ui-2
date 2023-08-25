@@ -5,6 +5,7 @@ import '../CustomModal.scss';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { User } from '@/models/User';
 import { UsersService } from '@/services/UsersService';
+import { isSaasBuild } from '@/services/BaseService';
 
 interface AddUserModalProps {
   isOpen: boolean;
@@ -54,6 +55,16 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
     }
   }, []);
 
+  const checkIfSwitchShouldBeDisabled = useCallback(() => {
+    if (store.user?.issuperadmin) {
+      return false;
+    } else if (!isServerEE && !isSaasBuild) {
+      return true;
+    } else {
+      return true;
+    }
+  }, [isServerEE, isSaasBuild, store.user?.issuperadmin]);
+
   useEffect(() => {
     loadUsers();
   }, [loadUsers]);
@@ -102,15 +113,7 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
           </Form.Item>
 
           <Form.Item label="Is admin" name="isadmin" valuePropName="checked">
-            <Switch
-              disabled={!store.user?.issuperadmin}
-              onChange={(newVal) => {
-                if (newVal) {
-                  form.setFieldValue('networks', []);
-                  form.setFieldValue('isadmin', true);
-                }
-              }}
-            />
+            <Switch disabled={checkIfSwitchShouldBeDisabled()} />
           </Form.Item>
 
           <Row>

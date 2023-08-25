@@ -1,5 +1,7 @@
+import { Node } from './Node';
+
 interface RemoteGatewayIds {
-  [key: string]: object;
+  [key: Node['id']]: object;
 }
 
 export interface User {

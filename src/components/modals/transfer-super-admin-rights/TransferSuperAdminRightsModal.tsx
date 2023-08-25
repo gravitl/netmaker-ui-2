@@ -34,13 +34,11 @@ export default function TransferSuperAdminRightsModal({
   const [isTransferLoading, setIsTransferLoading] = useState(false);
   const [admins, setAdmins] = useState<User[]>([]);
   const store = useStore();
-  const isServerEE = store.serverConfig?.IsEE === 'yes';
   const [selectedAdmin, setSelectedAdmin] = useState<User | null>(null);
 
   const loadUsers = useCallback(async () => {
     try {
       const users = (await UsersService.getUsers()).data;
-      // remove admins and the superadmin from the list
       setAdmins(users.filter((user) => user.isadmin));
     } catch (err) {
       notify.error({
@@ -74,11 +72,11 @@ export default function TransferSuperAdminRightsModal({
         description: extractErrorMsg(err as any),
       });
     }
-  }, [notify, selectedAdmin, onCancel]);
+  }, [notify, selectedAdmin, onCancel, onTransferSuccessful]);
 
   useEffect(() => {
     loadUsers();
-  }, [loadUsers, isServerEE]);
+  }, [loadUsers]);
 
   return (
     <Modal
