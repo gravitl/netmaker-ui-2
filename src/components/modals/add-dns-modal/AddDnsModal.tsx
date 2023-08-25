@@ -61,7 +61,7 @@ export default function AddDnsModal({ isOpen, onCreateDns, onCancel, networkId }
       notify.success({ message: `DNS entry ${dns.name} created` });
     } catch (err) {
       notify.error({
-        message: 'Failed to create network',
+        message: 'Failed to create dns entry',
         description: extractErrorMsg(err as any),
       });
     } finally {
@@ -79,23 +79,33 @@ export default function AddDnsModal({ isOpen, onCreateDns, onCancel, networkId }
       }}
       footer={null}
       centered
-      className="CustomModal"
+      className="CustomModal AddDnsModal"
     >
       <Divider style={{ margin: '0px 0px 2rem 0px' }} />
       <div className="CustomModalBody">
         <Form name="add-dns-form" form={form} layout="vertical">
-          <Form.Item label="DNS name" name="name" rules={[{ required: true }]}>
+          <Form.Item label="DNS name" name="name" rules={[{ required: true }]} data-nmui-intercom="add-dns-form_name">
             <Input placeholder="example" addonAfter={`.${networkId}`} />
           </Form.Item>
 
-          <Form.Item label="Address to alias" name="ip" rules={[{ required: true }]}>
+          <Form.Item
+            label="Address to alias"
+            name="ip"
+            rules={[{ required: true }]}
+            data-nmui-intercom="add-dns-form_ip"
+          >
             <AutoComplete options={nodeOptions} style={{ width: '100%' }} placeholder="Address" />
           </Form.Item>
 
           <Row>
             <Col xs={24} style={{ textAlign: 'right' }}>
               <Form.Item>
-                <Button type="primary" onClick={createDns} loading={isSubmitting}>
+                <Button
+                  type="primary"
+                  onClick={createDns}
+                  loading={isSubmitting}
+                  data-nmui-intercom="add-dns-form_submitbtn"
+                >
                   Create DNS
                 </Button>
               </Form.Item>

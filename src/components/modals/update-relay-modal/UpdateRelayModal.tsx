@@ -147,7 +147,7 @@ export default function UpdateRelayModal({ relay, isOpen, onUpdateRelay, onCance
       style={{ minWidth: '50vw' }}
     >
       <Divider style={{ margin: '0px 0px 2rem 0px' }} />
-      <Form name="add-relay-form" form={form} layout="vertical">
+      <Form name="update-relay-form" form={form} layout="vertical">
         <div className="CustomModalBody">
           <Row
             style={{
@@ -162,7 +162,12 @@ export default function UpdateRelayModal({ relay, isOpen, onUpdateRelay, onCance
             <Col span={6}>{extendedRelay && getNodeConnectivity(extendedRelay)}</Col>
           </Row>
 
-          <Form.Item label="Select hosts to relay" required style={{ marginTop: '1rem' }}>
+          <Form.Item
+            label="Select hosts to relay"
+            required
+            style={{ marginTop: '1rem' }}
+            data-nmui-intercom="update-relay-form_relayed"
+          >
             <Select
               placeholder="Select hosts to relay"
               dropdownRender={() => (
@@ -254,6 +259,7 @@ export default function UpdateRelayModal({ relay, isOpen, onUpdateRelay, onCance
                 onClick={updateRelay}
                 loading={isSubmitting}
                 danger={selectedRelayedIds.length === 0}
+                data-nmui-intercom="update-relay-form_submitbtn"
               >
                 {selectedRelayedIds.length === 0 ? 'Delete Relay' : 'Update Relay'}
               </Button>

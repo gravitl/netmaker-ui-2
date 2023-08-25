@@ -186,7 +186,12 @@ export default function AddClientModal({
       <Divider style={{ margin: '0px 0px 2rem 0px' }} />
       <Form name="add-client-form" form={form} layout="vertical">
         <div className="CustomModalBody">
-          <Form.Item label="Client Gateway" name="gatewayId" rules={[{ required: true }]}>
+          <Form.Item
+            label="Client Gateway"
+            name="gatewayId"
+            rules={[{ required: true }]}
+            data-nmui-intercom="add-client-form_gatewayId"
+          >
             {!selectedGateway && (
               <Select
                 placeholder="Select a host as gateway"
@@ -270,7 +275,7 @@ export default function AddClientModal({
           </Form.Item>
 
           {selectedGateway && !selectedGateway.isingressgateway && (
-            <Form.Item name="extclientdns" label="Default Client DNS">
+            <Form.Item name="extclientdns" label="Default Client DNS" data-nmui-intercom="add-client-form_extclientdns">
               <Input placeholder="Default DNS for associated clients" />
             </Form.Item>
           )}
@@ -278,7 +283,12 @@ export default function AddClientModal({
 
         <Divider style={{ margin: '0px 0px 2rem 0px' }} />
         <div className="CustomModalBody">
-          <Form.Item label="Client ID (Optional)" name="clientid" rules={[{ min: 5, max: 32 }]}>
+          <Form.Item
+            label="Client ID (Optional)"
+            name="clientid"
+            rules={[{ min: 5, max: 32 }]}
+            data-nmui-intercom="add-client-form_clientid"
+          >
             <Input placeholder="Unique name of client" />
           </Form.Item>
 
@@ -287,15 +297,19 @@ export default function AddClientModal({
               key="details"
               header={<Typography.Text style={{ marginTop: '0rem' }}>Advanced Settings</Typography.Text>}
             >
-              <Form.Item label="Public Key (Optional)" name="publickey">
+              <Form.Item label="Public Key (Optional)" name="publickey" data-nmui-intercom="add-client-form_publickey">
                 <Input placeholder="Public key" />
               </Form.Item>
 
-              <Form.Item label="DNS (Optional)" name="dns">
+              <Form.Item label="DNS (Optional)" name="dns" data-nmui-intercom="add-client-form_dns">
                 <Input placeholder="Client DNS" />
               </Form.Item>
 
-              <Form.Item label="Additional Addresses (Optional)" name="extraallowedips">
+              <Form.Item
+                label="Additional Addresses (Optional)"
+                name="extraallowedips"
+                data-nmui-intercom="add-client-form_extraallowedips"
+              >
                 <Select mode="tags" placeholder="Additional IP Addresses" clearIcon />
               </Form.Item>
             </Collapse.Panel>
