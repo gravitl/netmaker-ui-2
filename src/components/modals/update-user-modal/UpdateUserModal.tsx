@@ -58,8 +58,10 @@ export default function UpdateUserModal({ isOpen, user, onUpdateUser, onCancel }
   const shouldInputBeDisabled = useCallback(() => {
     if (store.user?.issuperadmin) {
       return false;
+    } else if (user.isadmin && user.username !== store.username) {
+      return true;
     }
-    return user.username !== store.username;
+    return false;
   }, [store.user?.issuperadmin, user.username, store.username]);
 
   return (

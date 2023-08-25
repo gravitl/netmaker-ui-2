@@ -97,7 +97,9 @@ export default function UsersPage(props: PageProps) {
   }, []);
 
   const getUserTagColor = (user: User) => {
-    if (user.issuperadmin || user.isadmin) {
+    if (user.issuperadmin) {
+      return 'success';
+    } else if (user.isadmin) {
       return 'warning';
     } else {
       return 'default';

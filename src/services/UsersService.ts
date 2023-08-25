@@ -5,6 +5,7 @@ import { UpdateUserReqDto } from './dtos/UserDtos';
 import { UserGroup } from '@/models/UserGroup';
 import { CreateUserReqDto } from './dtos/UserDtos';
 import { Node } from '@/models/Node';
+import { GatewayUsersResDto } from './dtos/GatewayUsersResDto';
 
 function getUsers() {
   return axiosService.get<User[]>(ApiRoutes.USERS);
@@ -68,6 +69,10 @@ function transferSuperAdminRights(username: User['username']) {
   return axiosService.post<void>(`${ApiRoutes.USERS_ADMIN}/transfersuperadmin/${username}`);
 }
 
+function getIngressUsers(nodeId: Node['id']) {
+  return axiosService.get<GatewayUsersResDto>(`${ApiRoutes.USERS}/ingress/${nodeId}`);
+}
+
 export const UsersService = {
   getUsers,
   getUser,
@@ -84,4 +89,5 @@ export const UsersService = {
   attachUserToIngress,
   removeUserFromIngress,
   transferSuperAdminRights,
+  getIngressUsers,
 };
