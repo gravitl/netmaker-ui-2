@@ -84,7 +84,7 @@ function deleteRelay(nodeId: Node['id'], networkId: Network['netid']) {
   return axiosService.delete<Node>(`${ApiRoutes.NODES}/${networkId}/${nodeId}/deleterelay`);
 }
 
-function getUsersAttachedToGateway(nodeId: Node['id'], networkId: Network['netid']) {
+function getIngressUsers(nodeId: Node['id'], networkId: Network['netid']) {
   return axiosService.get<GatewayUsersResDto>(`${ApiRoutes.NODES}/${networkId}/${nodeId}/ingress/users`);
 }
 
@@ -105,5 +105,5 @@ export const NodesService = {
   updateNode,
   createRelay,
   deleteRelay,
-  getUsersAttachedToGateway,
+  getIngressUsers,
 };

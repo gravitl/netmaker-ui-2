@@ -30,6 +30,7 @@ import AddUserModal from '@/components/modals/add-user-modal/AddUserModal';
 import UpdateUserModal from '@/components/modals/update-user-modal/UpdateUserModal';
 import { getBrandingConfig, isSaasBuild } from '@/services/BaseService';
 import { getAmuiUrl } from '@/utils/RouteUtils';
+import TransferSuperAdminRightsModal from '@/components/modals/transfer-super-admin-rights/TransferSuperAdminRightsModal';
 
 export default function UsersPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
@@ -41,9 +42,8 @@ export default function UsersPage(props: PageProps) {
   const [usersSearch, setUsersSearch] = useState('');
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
   const [isUpdateUserModalOpen, setIsUpdateUserModalOpen] = useState(false);
+  const [isTransferSuperAdminRightsModalOpen, setIsTransferSuperAdminRightsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [isNetworkPermissionsModalOpen, setIsNetworkPermissionsModalOpen] = useState(false);
-  const [selectedNetwork, setSelectedNetwork] = useState<Network | null>(null);
 
   const loadUsers = useCallback(async () => {
     try {
@@ -169,7 +169,7 @@ export default function UsersPage(props: PageProps) {
                     label: 'Edit',
                     disabled: checkIfCurrentUserCanEditOrDeleteUsers(user),
                     title: checkIfCurrentUserCanEditOrDeleteUsers(user) ? 'You cannot edit another admin user' : null,
-                    onClick: (ev) => {
+                    onClick: (ev: any) => {
                       ev.domEvent.stopPropagation();
                       const userClone = structuredClone(user);
                       onEditUser(userClone);
@@ -192,7 +192,22 @@ export default function UsersPage(props: PageProps) {
                       </Typography.Text>
                     ),
                   },
-                ] as MenuProps['items'],
+                ].concat(
+                  isServerEE && user.issuperadmin && store.username === user.username
+                    ? [
+                        {
+                          key: 'transfer',
+                          label: 'Transfer Super Admin Rights',
+                          disabled: false,
+                          title: null,
+                          onClick: (ev) => {
+                            ev.domEvent.stopPropagation();
+                            setIsTransferSuperAdminRightsModalOpen(true);
+                          },
+                        },
+                      ]
+                    : [],
+                ) as MenuProps['items'],
               }}
             >
               <Button type="text" icon={<MoreOutlined />} />
@@ -384,6 +399,14 @@ export default function UsersPage(props: PageProps) {
           }}
         />
       )}
+      <TransferSuperAdminRightsModal
+        isOpen={isTransferSuperAdminRightsModalOpen}
+        onCancel={() => setIsTransferSuperAdminRightsModalOpen(false)}
+        onTransferSuccessful={() => {
+          // refresh user list
+          loadUsers();
+        }}
+      />
     </Layout.Content>
   );
 }

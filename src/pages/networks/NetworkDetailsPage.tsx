@@ -34,6 +34,7 @@ import {
   SearchOutlined,
   SettingOutlined,
   StopOutlined,
+  UserOutlined,
 } from '@ant-design/icons';
 import {
   Alert,
@@ -86,6 +87,7 @@ import UpdateNodeModal from '@/components/modals/update-node-modal/UpdateNodeMod
 import { getBrandingConfig } from '@/services/BaseService';
 import VirtualisedTable from '@/components/VirtualisedTable';
 import { NETWORK_GRAPH_SIGMA_CONTAINER_ID } from '@/constants/AppConstants';
+import UpdateIngressUsersModal from '@/components/modals/update-ingress-users-modal/UpdateIngressUsersModal';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -173,6 +175,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [isUpdateGatewayModalOpen, setIsUpdateGatewayModalOpen] = useState(false);
   const [isUpdateClientModalOpen, setIsUpdateClientModalOpen] = useState(false);
   const [isUpdateNodeModalOpen, setIsUpdateNodeModalOpen] = useState(false);
+  const [isUpdateIngressUsersModalOpen, setIsUpdateIngressUsersModalOpen] = useState(false);
   const [targetNode, setTargetNode] = useState<Node | null>(null);
   const [showClientAcls, setShowClientAcls] = useState(false);
   const [isSubmittingAcls, setIsSubmittingAcls] = useState(false);
@@ -704,7 +707,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                         <EditOutlined /> Edit
                       </Typography.Text>
                     ),
-                    onClick: (info) => {
+                    onClick: (info: any) => {
                       info.domEvent.stopPropagation();
                     },
                   },
@@ -715,11 +718,32 @@ export default function NetworkDetailsPage(props: PageProps) {
                         <DeleteOutlined /> Delete
                       </Typography.Text>
                     ),
-                    onClick: (info) => {
+                    onClick: (info: any) => {
                       info.domEvent.stopPropagation();
                     },
                   },
-                ] as MenuProps['items'],
+                ].concat(
+                  isServerEE
+                    ? [
+                        {
+                          key: 'addremove',
+                          label: (
+                            <Typography.Text
+                              onClick={() => {
+                                setSelectedGateway(gateway);
+                                setIsUpdateIngressUsersModalOpen(true);
+                              }}
+                            >
+                              <UserOutlined /> Add / Remove Users
+                            </Typography.Text>
+                          ),
+                          onClick: (info) => {
+                            info.domEvent.stopPropagation();
+                          },
+                        },
+                      ]
+                    : [],
+                ) as MenuProps['items'],
               }}
             >
               <Button type="text" icon={<MoreOutlined />} />
@@ -3087,6 +3111,14 @@ export default function NetworkDetailsPage(props: PageProps) {
             setIsUpdateGatewayModalOpen(false);
           }}
           onCancel={() => setIsUpdateGatewayModalOpen(false)}
+        />
+      )}
+      {selectedGateway && (
+        <UpdateIngressUsersModal
+          isOpen={isUpdateIngressUsersModalOpen}
+          ingress={selectedGateway}
+          networkId={networkId}
+          onCancel={() => setIsUpdateIngressUsersModalOpen(false)}
         />
       )}
       {targetClient && (

@@ -1,5 +1,5 @@
 import { Button, Col, Collapse, Divider, Form, Input, Modal, notification, Row, Select, Switch } from 'antd';
-import { MouseEvent, useEffect } from 'react';
+import { MouseEvent, useCallback, useEffect } from 'react';
 import '../CustomModal.scss';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { User } from '@/models/User';
@@ -30,22 +30,20 @@ export default function UpdateUserModal({ isOpen, user, onUpdateUser, onCancel }
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
 
-  const networks = store.networks;
   const passwordVal = Form.useWatch('password', form);
-  const isAdminVal = Form.useWatch('isadmin', authForm);
 
   const updateUser = async () => {
     try {
       const formData = await form.validateFields();
-      const authFormData = await authForm.validateFields();
+      const { ['confirm-password']: confirmPwd, ...restFormData } = formData;
 
       let newUser: User = user;
-      // you can only update your own password
-      if (user.username === store.username && formData.password) {
-        newUser = (await UsersService.updateUser(user.username, { username: user.username, ...formData })).data;
-      }
-      if (!user.isadmin) {
-        newUser = (await UsersService.updateUserDetails(user.username, { ...user, ...authFormData })).data;
+      // super admin can update any user or user can update himself
+      if (store.user?.issuperadmin || (user.username === store.username && formData.password)) {
+        newUser = (await UsersService.updateUser(user.username, { username: user.username, ...restFormData })).data;
+      } else {
+        notify.error({ message: 'You are not authorized to update this user' });
+        return;
       }
       notify.success({ message: `User ${newUser.username} updated` });
       onUpdateUser(newUser);
@@ -56,6 +54,13 @@ export default function UpdateUserModal({ isOpen, user, onUpdateUser, onCancel }
       });
     }
   };
+
+  const shouldInputBeDisabled = useCallback(() => {
+    if (store.user?.issuperadmin) {
+      return false;
+    }
+    return user.username !== store.username;
+  }, [store.user?.issuperadmin, user.username, store.username]);
 
   return (
     <Modal
@@ -76,7 +81,7 @@ export default function UpdateUserModal({ isOpen, user, onUpdateUser, onCancel }
       <div className="CustomModalBody">
         <Form name="update-user-form" form={form} layout="vertical">
           <Form.Item label="Password" name="password">
-            <Input disabled={user.username !== store.username} placeholder="(unchanged)" type="password" />
+            <Input disabled={shouldInputBeDisabled()} placeholder="(unchanged)" type="password" />
           </Form.Item>
 
           <Form.Item
@@ -95,22 +100,19 @@ export default function UpdateUserModal({ isOpen, user, onUpdateUser, onCancel }
             ]}
             dependencies={['password']}
           >
-            <Input disabled={user.username !== store.username} placeholder="(unchanged)" type="password" />
+            <Input disabled={shouldInputBeDisabled()} placeholder="(unchanged)" type="password" />
           </Form.Item>
-        </Form>
 
-        {(!user.isadmin || !user.issuperadmin) && (
-          <Collapse ghost size="small" defaultActiveKey={user.username !== store.username ? ['user-auth'] : []}>
-            <Collapse.Panel header="User authorizations" key="user-auth">
-              <Form name="update-user-auth-form" form={authForm} layout="vertical" initialValues={user}>
-                <Form.Item label="Is Admin" name="isadmin" valuePropName="checked">
+          {store.user?.issuperadmin && (
+            <Collapse ghost size="small" defaultActiveKey={user.username !== store.username ? ['user-auth'] : []}>
+              <Collapse.Panel header="User authorizations" key="user-auth">
+                <Form.Item label="Is Admin" name="isadmin" valuePropName="checked" initialValue={user.isadmin}>
                   <Switch />
                 </Form.Item>
-              </Form>
-            </Collapse.Panel>
-          </Collapse>
-        )}
-
+              </Collapse.Panel>
+            </Collapse>
+          )}
+        </Form>
         <Row>
           <Col xs={24} style={{ textAlign: 'right' }}>
             <Form.Item>
