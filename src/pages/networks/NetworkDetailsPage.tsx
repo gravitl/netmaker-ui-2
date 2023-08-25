@@ -2375,7 +2375,7 @@ export default function NetworkDetailsPage(props: PageProps) {
               style={{ width: '60%' }}
             />
             {isServerEE && (
-              <span style={{ marginLeft: '2rem' }}>
+              <span style={{ marginLeft: '2rem' }} data-nmui-intercom="network-details-acls_showclientstoggle">
                 <label style={{ marginRight: '1rem' }} htmlFor="show-clients-acl-switch">
                   Show Clients
                 </label>
@@ -2596,12 +2596,24 @@ export default function NetworkDetailsPage(props: PageProps) {
         <Row style={{ width: '100%' }}>
           <Col xs={16}>
             <Radio.Group value={currentMetric} onChange={(ev) => setCurrentMetric(ev.target.value)}>
-              <Radio.Button value="connectivity-status">Connectivity Status</Radio.Button>
-              <Radio.Button value="latency">Latency</Radio.Button>
-              <Radio.Button value="bytes-sent">Bytes Sent</Radio.Button>
-              <Radio.Button value="bytes-received">Bytes Received</Radio.Button>
-              <Radio.Button value="uptime">Uptime</Radio.Button>
-              <Radio.Button value="clients">Clients</Radio.Button>
+              <Radio.Button value="connectivity-status" data-nmui-intercom="network-details-metrics_connectivitystatus">
+                Connectivity Status
+              </Radio.Button>
+              <Radio.Button value="latency" data-nmui-intercom="network-details-metrics_latency">
+                Latency
+              </Radio.Button>
+              <Radio.Button value="bytes-sent" data-nmui-intercom="network-details-metrics_bytessent">
+                Bytes Sent
+              </Radio.Button>
+              <Radio.Button value="bytes-received" data-nmui-intercom="network-details-metrics_bytesreceived">
+                Bytes Received
+              </Radio.Button>
+              <Radio.Button value="uptime" data-nmui-intercom="network-details-metrics_uptime">
+                Uptime
+              </Radio.Button>
+              <Radio.Button value="clients" data-nmui-intercom="network-details-metrics_clients">
+                Clients
+              </Radio.Button>
             </Radio.Group>
           </Col>
           <Col xs={8} style={{ textAlign: 'right' }}>

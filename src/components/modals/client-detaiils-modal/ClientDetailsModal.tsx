@@ -166,7 +166,7 @@ export default function ClientDetailsModal({ client, isOpen, onCancel, onUpdateC
             />
           </Col>
         </Row>
-        <Row style={{ marginTop: '1rem' }} data-nmui-intercom="client-details_download">
+        <Row style={{ marginTop: '1rem' }} data-nmui-intercom="client-details_downloadbtn">
           <Col xs={24}>
             <Button onClick={downloadClientData}>
               <DownloadOutlined /> Download config
