@@ -107,19 +107,24 @@ export default function UpdateEgressModal({
         onCancel?.(ev);
       }}
       footer={null}
-      className="CustomModal"
+      className="CustomModal UpdateEgressModal"
       style={{ minWidth: '50vw' }}
     >
       <Divider style={{ margin: '0px 0px 2rem 0px' }} />
       <Form
-        name="add-egress-form"
+        name="update-egress-form"
         form={form}
         layout="vertical"
         initialValues={{ ...egress, natEnabled: egress.egressgatewaynatenabled }}
       >
         <div className="" style={{ maxHeight: '60vh', overflow: 'auto' }}>
           <div className="CustomModalBody">
-            <Form.Item label="Host" rules={[{ required: true }]} style={{ marginBottom: '0px' }}>
+            <Form.Item
+              label="Host"
+              rules={[{ required: true }]}
+              style={{ marginBottom: '0px' }}
+              data-nmui-intercom="update-egress-form_host"
+            >
               {!!extendedEgress && (
                 <>
                   <Row style={{ border: `1px solid ${themeToken.colorBorder}`, padding: '.5rem', borderRadius: '8px' }}>
@@ -137,7 +142,11 @@ export default function UpdateEgressModal({
 
           <Divider style={{ margin: '0px 0px 2rem 0px' }} />
           <div className="CustomModalBody">
-            <Form.Item name="natEnabled" label="Enable NAT for egress traffic">
+            <Form.Item
+              name="natEnabled"
+              label="Enable NAT for egress traffic"
+              data-nmui-intercom="update-egress-form_natEnabled"
+            >
               <Switch defaultChecked={egress.egressgatewaynatenabled} />
             </Form.Item>
             {!natEnabledVal && (
@@ -149,7 +158,11 @@ export default function UpdateEgressModal({
 
             <Typography.Title level={4}>Select external ranges</Typography.Title>
 
-            <Form.List name="ranges" initialValue={egress.egressgatewayranges}>
+            <Form.List
+              name="ranges"
+              initialValue={egress.egressgatewayranges}
+              data-nmui-intercom="update-egress-form_ranges"
+            >
               {(fields, { add, remove }, { errors }) => (
                 <>
                   {fields.map((field, index) => (
@@ -203,7 +216,13 @@ export default function UpdateEgressModal({
         <div className="CustomModalBody">
           <Row>
             <Col xs={24} style={{ textAlign: 'right' }}>
-              <Button type="primary" danger={ranges?.length === 0} onClick={updateEgress} loading={isSubmitting}>
+              <Button
+                type="primary"
+                danger={ranges?.length === 0}
+                onClick={updateEgress}
+                loading={isSubmitting}
+                data-nmui-intercom="update-egress-form_submitbtn"
+              >
                 {ranges?.length === 0 ? 'Delete Egress' : 'Update Egress'}
               </Button>
             </Col>

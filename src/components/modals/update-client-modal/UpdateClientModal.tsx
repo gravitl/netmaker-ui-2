@@ -61,13 +61,18 @@ export default function UpdateClientModal({
         onCancel && onCancel(ev);
       }}
       footer={null}
-      className="CustomModal"
+      className="CustomModal UpdateClientModal"
       style={{ minWidth: '50vw' }}
     >
       <Divider style={{ margin: '0px 0px 2rem 0px' }} />
       <Form name="update-client-form" form={form} layout="vertical" initialValues={client}>
         <div className="CustomModalBody">
-          <Form.Item label="Client ID (Optional)" name="clientid" rules={[{ min: 5, max: 32 }]}>
+          <Form.Item
+            label="Client ID (Optional)"
+            name="clientid"
+            rules={[{ min: 5, max: 32 }]}
+            data-nmui-intercom="update-client-form_clientid"
+          >
             <Input placeholder="Unique name of client" />
           </Form.Item>
 
@@ -76,15 +81,23 @@ export default function UpdateClientModal({
               key="details"
               header={<Typography.Text style={{ marginTop: '0rem' }}>Advanced Settings</Typography.Text>}
             >
-              <Form.Item label="Public Key (Optional)" name="publickey">
+              <Form.Item
+                label="Public Key (Optional)"
+                name="publickey"
+                data-nmui-intercom="update-client-form_publickey"
+              >
                 <Input placeholder="Public key" />
               </Form.Item>
 
-              <Form.Item label="DNS (Optional)" name="dns">
+              <Form.Item label="DNS (Optional)" name="dns" data-nmui-intercom="update-client-form_dns">
                 <Input placeholder="Client DNS" />
               </Form.Item>
 
-              <Form.Item label="Additional Addresses (Optional)" name="extraallowedips">
+              <Form.Item
+                label="Additional Addresses (Optional)"
+                name="extraallowedips"
+                data-nmui-intercom="update-client-form_extraallowedips"
+              >
                 <Select mode="tags" placeholder="Additional IP Addresses" clearIcon />
               </Form.Item>
             </Collapse.Panel>
@@ -95,7 +108,12 @@ export default function UpdateClientModal({
         <div className="CustomModalBody">
           <Row>
             <Col xs={24} style={{ textAlign: 'right' }}>
-              <Button type="primary" onClick={updateClient} loading={isSubmitting}>
+              <Button
+                type="primary"
+                onClick={updateClient}
+                loading={isSubmitting}
+                data-nmui-intercom="update-client-form_submitbtn"
+              >
                 Update Client
               </Button>
             </Col>
