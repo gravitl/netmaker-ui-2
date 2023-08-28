@@ -41,7 +41,11 @@ export default function UpdateUserModal({ isOpen, user, onUpdateUser, onCancel }
 
       let newUser: User = user;
       // super admin can update any user or user can update himself
-      if (store.user?.issuperadmin || (user.username === store.username && formData.password)) {
+      if (
+        store.user?.issuperadmin ||
+        (store.user?.isadmin && !user.isadmin) ||
+        (user.username === store.username && formData.password)
+      ) {
         newUser = (await UsersService.updateUser(user.username, { username: user.username, ...restFormData })).data;
       } else {
         notify.error({ message: 'You are not authorized to update this user' });

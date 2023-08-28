@@ -21,8 +21,7 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
   const store = useStore();
 
   const isServerEE = store.serverConfig?.IsEE === 'yes';
-  const [users, setUsers] = useState<User[]>([]);
-  const isAdminVal = Form.useWatch('isadmin', form);
+  const [isAdmin, setIsAdmin] = useState(false);
   const passwordVal = Form.useWatch('password', form);
 
   const resetModal = () => {
@@ -46,28 +45,16 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
     }
   };
 
-  const loadUsers = useCallback(async () => {
-    try {
-      const users = (await UsersService.getUsers()).data;
-      setUsers(users);
-    } catch (err) {
-      console.log(err);
-    }
-  }, []);
-
   const checkIfSwitchShouldBeDisabled = useCallback(() => {
     if (store.user?.issuperadmin) {
       return false;
     } else if (!isServerEE && !isSaasBuild) {
+      setIsAdmin(true);
       return true;
     } else {
       return true;
     }
-  }, [isServerEE, isSaasBuild, store.user?.issuperadmin]);
-
-  useEffect(() => {
-    loadUsers();
-  }, [loadUsers]);
+  }, [isServerEE, store.user?.issuperadmin]);
 
   return (
     <Modal
@@ -83,7 +70,7 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
     >
       <Divider style={{ margin: '0px 0px 2rem 0px' }} />
       <div className="CustomModalBody">
-        <Form name="add-user-form" form={form} layout="vertical" initialValues={{ groups: ['*'], isadmin: false }}>
+        <Form name="add-user-form" form={form} layout="vertical" initialValues={{ isAdmin }}>
           <Form.Item label="Username" name="username" rules={[{ required: true }]}>
             <Input placeholder="Username" />
           </Form.Item>

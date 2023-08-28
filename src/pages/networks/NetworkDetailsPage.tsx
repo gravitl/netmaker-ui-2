@@ -660,6 +660,62 @@ export default function NetworkDetailsPage(props: PageProps) {
     [networkId, notify, storeFetchNodes],
   );
 
+  const getGatewayDropdownOptions = useCallback((gateway: Node) => {
+    const defaultOptions: MenuProps['items'] = [
+      {
+        key: 'edit',
+        label: (
+          <Typography.Text
+            onClick={() => {
+              setSelectedGateway(gateway);
+              setIsUpdateGatewayModalOpen(true);
+            }}
+          >
+            <EditOutlined /> Edit
+          </Typography.Text>
+        ),
+        onClick: (info: any) => {
+          info.domEvent.stopPropagation();
+        },
+      },
+      {
+        key: 'delete',
+        label: (
+          <Typography.Text onClick={() => confirmDeleteGateway(gateway)}>
+            <DeleteOutlined /> Delete
+          </Typography.Text>
+        ),
+        onClick: (info: any) => {
+          info.domEvent.stopPropagation();
+        },
+      },
+    ];
+
+    if (isServerEE) {
+      const addRemoveUsersOption: MenuProps['items'] = [
+        {
+          key: 'addremove',
+          label: (
+            <Typography.Text
+              onClick={() => {
+                setSelectedGateway(gateway);
+                setIsUpdateIngressUsersModalOpen(true);
+              }}
+            >
+              <UserOutlined /> Add / Remove Users
+            </Typography.Text>
+          ),
+          onClick: (info) => {
+            info.domEvent.stopPropagation();
+          },
+        },
+      ];
+      return [...addRemoveUsersOption, ...defaultOptions];
+    }
+
+    return defaultOptions;
+  }, []);
+
   const gatewaysTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(
     () => [
       {
@@ -694,56 +750,7 @@ export default function NetworkDetailsPage(props: PageProps) {
             <Dropdown
               placement="bottomRight"
               menu={{
-                items: [
-                  {
-                    key: 'edit',
-                    label: (
-                      <Typography.Text
-                        onClick={() => {
-                          setSelectedGateway(gateway);
-                          setIsUpdateGatewayModalOpen(true);
-                        }}
-                      >
-                        <EditOutlined /> Edit
-                      </Typography.Text>
-                    ),
-                    onClick: (info: any) => {
-                      info.domEvent.stopPropagation();
-                    },
-                  },
-                  {
-                    key: 'delete',
-                    label: (
-                      <Typography.Text onClick={() => confirmDeleteGateway(gateway)}>
-                        <DeleteOutlined /> Delete
-                      </Typography.Text>
-                    ),
-                    onClick: (info: any) => {
-                      info.domEvent.stopPropagation();
-                    },
-                  },
-                ].concat(
-                  isServerEE
-                    ? [
-                        {
-                          key: 'addremove',
-                          label: (
-                            <Typography.Text
-                              onClick={() => {
-                                setSelectedGateway(gateway);
-                                setIsUpdateIngressUsersModalOpen(true);
-                              }}
-                            >
-                              <UserOutlined /> Add / Remove Users
-                            </Typography.Text>
-                          ),
-                          onClick: (info) => {
-                            info.domEvent.stopPropagation();
-                          },
-                        },
-                      ]
-                    : [],
-                ) as MenuProps['items'],
+                items: getGatewayDropdownOptions(gateway),
               }}
             >
               <Button type="text" icon={<MoreOutlined />} />

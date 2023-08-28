@@ -7,6 +7,7 @@ import { Node } from '@/models/Node';
 import { UsersService } from '@/services/UsersService';
 import { NodesService } from '@/services/NodesService';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
+import { SearchOutlined } from '@ant-design/icons';
 
 interface UpdateIngressUsersModalProps {
   isOpen: boolean;
@@ -25,6 +26,7 @@ export default function UpdateIngressUsersModal({
   const [notify, notifyCtx] = notification.useNotification();
   const [isUsersLoading, setIsUsersLoading] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
+  const [usersSearch, setUsersSearch] = useState<string>('');
   const store = useStore();
   const [ingressUsers, setIngressUsers] = useState<User[]>([]);
   const isServerEE = store.serverConfig?.IsEE === 'yes';
@@ -46,7 +48,7 @@ export default function UpdateIngressUsersModal({
     } finally {
       setIsUsersLoading(false);
     }
-  }, [notify, ingress.id, networkId]);
+  }, [notify, ingress.id]);
 
   const getLinkText = useCallback(
     (user: User) => {
@@ -71,6 +73,8 @@ export default function UpdateIngressUsersModal({
             } else {
               await UsersService.attachUserToIngress(user.username, ingress.id);
             }
+
+            loadUsers();
           } catch (err) {
             notify.error({
               message: 'Failed to add/remove user',
@@ -80,7 +84,7 @@ export default function UpdateIngressUsersModal({
         },
       });
     },
-    [notify, ingressUsers, ingress.id, getLinkText],
+    [notify, ingressUsers, ingress.id, getLinkText, loadUsers],
   );
 
   const usersTableColumns: TableColumnsType<User> = useMemo(
@@ -105,6 +109,12 @@ export default function UpdateIngressUsersModal({
     [getLinkText, confirmAttachOrRemoveUser],
   );
 
+  const filteredUsers = useMemo(() => {
+    return users.filter((u) => {
+      return u.username.toLowerCase().includes(usersSearch.trim().toLowerCase());
+    });
+  }, [users, usersSearch]);
+
   useEffect(() => {
     loadUsers();
   }, [loadUsers, isServerEE]);
@@ -121,8 +131,24 @@ export default function UpdateIngressUsersModal({
       style={{ minWidth: '50vw' }}
     >
       <Row className="" style={{ marginTop: '1rem', padding: '20px 24px' }}>
+        <Col xs={24} md={8}>
+          <Input
+            size="small"
+            placeholder="Search users"
+            prefix={<SearchOutlined />}
+            value={usersSearch}
+            onChange={(ev) => setUsersSearch(ev.target.value)}
+            style={{ marginBottom: '1rem' }}
+          />
+        </Col>
         <Col xs={24}>
-          <Table columns={usersTableColumns} dataSource={users} rowKey="username" loading={isUsersLoading} />
+          <Table
+            columns={usersTableColumns}
+            dataSource={filteredUsers}
+            rowKey="username"
+            loading={isUsersLoading}
+            size="small"
+          />
         </Col>
       </Row>
       {notifyCtx}
