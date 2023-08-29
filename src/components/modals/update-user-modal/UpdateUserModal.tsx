@@ -46,7 +46,7 @@ export default function UpdateUserModal({ isOpen, user, onUpdateUser, onCancel }
         (store.user?.isadmin && !user.isadmin) ||
         (user.username === store.username && formData.password)
       ) {
-        newUser = (await UsersService.updateUser(user.username, { username: user.username, ...restFormData })).data;
+        newUser = (await UsersService.updateUser(user.username, { ...user, ...restFormData })).data;
       } else {
         notify.error({ message: 'You are not authorized to update this user' });
         return;
