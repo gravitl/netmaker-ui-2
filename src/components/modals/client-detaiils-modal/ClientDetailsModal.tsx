@@ -137,9 +137,7 @@ export default function ClientDetailsModal({ client, isOpen, onCancel, onUpdateC
           <Col xs={8}>
             <Typography.Text>Client DNS</Typography.Text>
           </Col>
-          <Col xs={16}>
-            <Typography.Text copyable>{client.dns}</Typography.Text>
-          </Col>
+          <Col xs={16}>{client.dns && <Typography.Text copyable>{client.dns}</Typography.Text>}</Col>
         </Row>
         <Divider style={{ margin: '1rem 0px 1rem 0px' }} />
 
