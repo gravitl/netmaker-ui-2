@@ -185,6 +185,7 @@ export default function UsersPage(props: PageProps) {
                       : null,
                     label: (
                       <Typography.Text
+                        disabled={checkIfCurrentUserCanEditOrDeleteUsers(user)}
                         onClick={(ev) => {
                           ev.stopPropagation();
                           confirmDeleteUser(user);
