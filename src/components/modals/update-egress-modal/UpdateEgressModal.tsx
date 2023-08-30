@@ -84,7 +84,6 @@ export default function UpdateEgressModal({
           natEnabled: formData.natEnabled ? 'yes' : 'no',
         });
       }
-      resetModal();
       onUpdateEgress();
       notify.success({ message: `Egress gateway updated` });
     } catch (err) {

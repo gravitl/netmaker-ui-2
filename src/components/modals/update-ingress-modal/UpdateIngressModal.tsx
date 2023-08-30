@@ -45,7 +45,6 @@ export default function UpdateIngressModal({
         await NodesService.updateNode(ingress.id, networkId, { ...ingress, ingressdns: formData.ingressdns })
       ).data;
       storeUpdateNode(ingress.id, newNode);
-      resetModal();
       notify.success({ message: `Ingress gateway updated` });
       onUpdateIngress();
     } catch (err) {

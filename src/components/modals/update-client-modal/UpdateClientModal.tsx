@@ -1,5 +1,5 @@
 import { Button, Col, Collapse, Divider, Form, Input, Modal, notification, Row, Select, Typography } from 'antd';
-import { MouseEvent, useState } from 'react';
+import { MouseEvent, useEffect, useState } from 'react';
 import '../CustomModal.scss';
 import { Network } from '@/models/Network';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
@@ -41,7 +41,6 @@ export default function UpdateClientModal({
       ).data;
       onUpdateClient(newClient);
       notify.success({ message: `External client updated` });
-      resetModal();
     } catch (err) {
       notify.error({
         message: 'Failed to update client',
