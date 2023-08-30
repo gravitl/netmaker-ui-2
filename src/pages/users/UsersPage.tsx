@@ -22,7 +22,6 @@ import {
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { PageProps } from '../../models/Page';
 import './UsersPage.scss';
-import { Network } from '@/models/Network';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { UsersService } from '@/services/UsersService';
 import { User } from '@/models/User';
@@ -228,6 +227,16 @@ export default function UsersPage(props: PageProps) {
     });
   }, [users, usersSearch]);
 
+  const getUserAndUpdateInStore = async (username: User['username'] | undefined) => {
+    if (!username) return;
+    try {
+      const user = await (await UsersService.getUser(username)).data;
+      store.setStore({ user });
+    } catch (err) {
+      notify.error({ message: 'Failed to get user details', description: extractErrorMsg(err as any) });
+    }
+  };
+
   // ui components
   const getUsersContent = useCallback(() => {
     return (
@@ -406,7 +415,8 @@ export default function UsersPage(props: PageProps) {
         isOpen={isTransferSuperAdminRightsModalOpen}
         onCancel={() => setIsTransferSuperAdminRightsModalOpen(false)}
         onTransferSuccessful={() => {
-          // refresh user list
+          // refresh user list and refresh current user
+          getUserAndUpdateInStore(store.username);
           loadUsers();
         }}
       />
