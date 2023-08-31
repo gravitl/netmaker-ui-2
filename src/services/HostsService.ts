@@ -14,7 +14,7 @@ function updateHostsNetworks(
   hostId: Host['id'],
   networkId: Network['netid'],
   action: 'join' | 'leave',
-  forceLeave = false
+  forceLeave = false,
 ) {
   return action === 'join'
     ? axiosService.post<void>(`${ApiRoutes.HOSTS}/${hostId}/networks/${networkId}`)
