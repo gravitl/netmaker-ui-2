@@ -139,6 +139,14 @@ function App() {
     if (favicon) {
       (document.getElementById('favicon') as HTMLLinkElement)?.setAttribute('href', favicon);
     }
+
+    // stop loading animation when the app is ready
+    const loader = document.getElementById('nmui-loading');
+    if (loader) {
+      loader.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200 }).onfinish = () => {
+        loader.remove();
+      };
+    }
   }, []);
 
   return (
