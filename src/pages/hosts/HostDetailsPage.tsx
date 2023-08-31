@@ -220,28 +220,6 @@ export default function HostDetailsPage(props: PageProps) {
     });
   }, [notify, hostId]);
 
-  const requestHostPull = useCallback(() => {
-    if (!hostId) return;
-    Modal.confirm({
-      title: 'Synchronise host',
-      content: `This will trigger this host to pull latest network(s) state from the server. Proceed?`,
-      onOk: async () => {
-        try {
-          await HostsService.requestHostPull(hostId);
-          notify.success({
-            message: 'Host is syncing...',
-            description: `Host pull has been initiated. This may take a while.`,
-          });
-        } catch (err) {
-          notify.error({
-            message: 'Failed to synchronise host',
-            description: extractErrorMsg(err as any),
-          });
-        }
-      },
-    });
-  }, [notify, hostId]);
-
   const getOverviewContent = useCallback(() => {
     if (!host) return <Skeleton active />;
     return (
@@ -510,14 +488,6 @@ export default function HostDetailsPage(props: PageProps) {
                             {host?.isdefault ? 'Unmake default' : 'Make default'}
                           </Typography.Text>
                         ),
-                      },
-                      {
-                        key: 'sync',
-                        label: <Typography.Text>Sync</Typography.Text>,
-                        onClick: (ev) => {
-                          ev.domEvent.stopPropagation();
-                          requestHostPull();
-                        },
                       },
                       {
                         key: 'refresh-key',

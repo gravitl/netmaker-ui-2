@@ -88,30 +88,6 @@ export default function HostsPage(props: PageProps) {
     [notify],
   );
 
-  const requestHostPull = useCallback(
-    (host: Host) => {
-      Modal.confirm({
-        title: 'Synchronise host',
-        content: `This will trigger the host (${host.name}) to pull latest network(s) state from the server. Proceed?`,
-        onOk: async () => {
-          try {
-            await HostsService.requestHostPull(host.id);
-            notify.success({
-              message: 'Host is syncing...',
-              description: `Host pull has been initiated for ${host.name}. This may take a while.`,
-            });
-          } catch (err) {
-            notify.error({
-              message: 'Failed to synchronise host',
-              description: extractErrorMsg(err as any),
-            });
-          }
-        },
-      });
-    },
-    [notify],
-  );
-
   const confirmToggleHostDefaultness = useCallback(
     async (host: Host) => {
       Modal.confirm({
@@ -303,23 +279,6 @@ export default function HostsPage(props: PageProps) {
               return <Tag color="success">Healthy</Tag>;
           }
         },
-      },
-      {
-        title: '',
-        width: '5rem',
-        render: (_, host) => (
-          <div onClick={(ev) => ev.stopPropagation()}>
-            <Button
-              type="text"
-              icon={<ReloadOutlined />}
-              onClick={() => {
-                requestHostPull(host);
-              }}
-            >
-              Sync
-            </Button>
-          </div>
-        ),
       },
       {
         width: '1rem',
