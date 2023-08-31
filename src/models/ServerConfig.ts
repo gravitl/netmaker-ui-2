@@ -55,6 +55,7 @@ export interface TenantConfig {
   tenantId?: string;
   tenantName?: string;
   amuiAuthToken?: string;
+  amuiUserId?: string;
 }
 
 export interface ServerStatus {

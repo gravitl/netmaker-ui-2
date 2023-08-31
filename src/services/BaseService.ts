@@ -33,6 +33,7 @@ export async function setupTenantConfig(): Promise<void> {
   const tenantId = url.searchParams.get('tenantId') ?? '';
   const tenantName = url.searchParams.get('tenantName') ?? '';
   const username = url.searchParams.get('username') ?? '';
+  const amuiUserId = url.searchParams.get('userId') ?? '';
 
   const resolvedBaseUrl = baseUrl
     ? baseUrl?.startsWith('https')
@@ -63,6 +64,7 @@ export async function setupTenantConfig(): Promise<void> {
     tenantName: tenantName || useStore.getState().tenantName,
     amuiAuthToken,
     username: username || useStore.getState().username,
+    amuiUserId: amuiUserId || useStore.getState().amuiUserId,
     // user,
   });
 }
