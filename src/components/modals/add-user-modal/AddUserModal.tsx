@@ -22,6 +22,7 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
 
   const isServerEE = store.serverConfig?.IsEE === 'yes';
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isSwitchDisabled, setIsSwitchDisabled] = useState(false);
   const passwordVal = Form.useWatch('password', form);
 
   const resetModal = () => {
@@ -45,16 +46,20 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
     }
   };
 
-  const checkIfSwitchShouldBeDisabled = useCallback(() => {
+  const checkIfSwitchShouldBeDisabled = () => {
     if (store.user?.issuperadmin) {
-      return false;
+      setIsSwitchDisabled(false);
     } else if (!isServerEE && !isSaasBuild) {
       setIsAdmin(true);
-      return true;
+      setIsSwitchDisabled(true);
     } else {
-      return true;
+      setIsSwitchDisabled(true);
     }
-  }, [isServerEE, store.user?.issuperadmin]);
+  };
+
+  useEffect(() => {
+    checkIfSwitchShouldBeDisabled();
+  }, [store.user]);
 
   return (
     <Modal
@@ -70,7 +75,7 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
     >
       <Divider style={{ margin: '0px 0px 2rem 0px' }} />
       <div className="CustomModalBody">
-        <Form name="add-user-form" form={form} layout="vertical" initialValues={{ isAdmin }}>
+        <Form name="add-user-form" form={form} layout="vertical" initialValues={{ isadmin: isAdmin }}>
           <Form.Item label="Username" name="username" rules={[{ required: true }]}>
             <Input placeholder="Username" />
           </Form.Item>
@@ -100,7 +105,7 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
           </Form.Item>
 
           <Form.Item label="Is admin" name="isadmin" valuePropName="checked">
-            <Switch disabled={checkIfSwitchShouldBeDisabled()} />
+            <Switch disabled={isSwitchDisabled} />
           </Form.Item>
 
           <Row>
