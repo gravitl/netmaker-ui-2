@@ -1,6 +1,6 @@
 # Netmaker UI release notes
 
-## Netmaker UI v0.21.0
+## Netmaker UI v0.20.5
 
 ## Whats New
 - Sync hosts: a feature that allows admin to trigger a host pull from the UI
