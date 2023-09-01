@@ -1,10 +1,11 @@
-import { Button, Col, Divider, Form, Input, Modal, notification, Row, Switch } from 'antd';
+import { Button, Col, Divider, Form, Input, Modal, notification, Row, Select, Switch } from 'antd';
 import { MouseEvent, useCallback, useEffect, useState } from 'react';
 import { useStore } from '@/store/store';
 import '../CustomModal.scss';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { User } from '@/models/User';
 import { UsersService } from '@/services/UsersService';
+import { isSaasBuild } from '@/services/BaseService';
 
 interface AddUserModalProps {
   isOpen: boolean;
@@ -20,8 +21,8 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
   const store = useStore();
 
   const isServerEE = store.serverConfig?.IsEE === 'yes';
-  const [users, setUsers] = useState<User[]>([]);
-  const isAdminVal = Form.useWatch('isadmin', form);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isSwitchDisabled, setIsSwitchDisabled] = useState(false);
   const passwordVal = Form.useWatch('password', form);
 
   const resetModal = () => {
@@ -31,12 +32,8 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
   const createUser = async () => {
     try {
       const formData = await form.validateFields();
-      if (isAdminVal) {
-        formData.networks = [];
-      }
-      if (!isServerEE) {
-        formData.groups = ['*'];
-      }
+      // set issuperadmin as false
+      formData.issuperadmin = false;
       const newUser = (await UsersService.createUser(formData)).data;
       resetModal();
       notify.success({ message: `User ${newUser.username} created` });
@@ -49,24 +46,20 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
     }
   };
 
-  const loadUsers = useCallback(async () => {
-    try {
-      const users = (await UsersService.getUsers()).data;
-      setUsers(users);
-    } catch (err) {
-      console.log(err);
+  const checkIfSwitchShouldBeDisabled = () => {
+    if (store.user?.issuperadmin) {
+      setIsSwitchDisabled(false);
+    } else if (!isServerEE && !isSaasBuild) {
+      setIsAdmin(true);
+      setIsSwitchDisabled(true);
+    } else {
+      setIsSwitchDisabled(true);
     }
-  }, []);
+  };
 
   useEffect(() => {
-    if (isAdminVal) {
-      form.setFieldsValue({ networks: [] });
-    }
-  }, [form, isAdminVal]);
-
-  useEffect(() => {
-    loadUsers();
-  }, [loadUsers]);
+    checkIfSwitchShouldBeDisabled();
+  }, [store.user]);
 
   return (
     <Modal
@@ -82,7 +75,7 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
     >
       <Divider style={{ margin: '0px 0px 2rem 0px' }} />
       <div className="CustomModalBody">
-        <Form name="add-user-form" form={form} layout="vertical" initialValues={{ groups: ['*'], isadmin: true }}>
+        <Form name="add-user-form" form={form} layout="vertical" initialValues={{ isadmin: isAdmin }}>
           <Form.Item label="Username" name="username" rules={[{ required: true }]}>
             <Input placeholder="Username" />
           </Form.Item>
@@ -112,14 +105,7 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
           </Form.Item>
 
           <Form.Item label="Is admin" name="isadmin" valuePropName="checked">
-            <Switch
-              disabled
-              onChange={(newVal) => {
-                if (newVal) {
-                  form.setFieldValue('networks', []);
-                }
-              }}
-            />
+            <Switch disabled={isSwitchDisabled} />
           </Form.Item>
 
           <Row>

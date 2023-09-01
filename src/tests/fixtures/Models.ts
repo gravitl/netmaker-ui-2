@@ -169,15 +169,15 @@ export const stubNodes: Node[] = [stubNode1, stubNode2];
 export const stubUser1: User = {
   username: 'user-1',
   isadmin: true,
-  networks: [],
-  groups: ['*'],
+  issuperadmin: false,
+  remote_gw_ids: null,
 };
 
 export const stubUser2: User = {
   username: 'user-2',
   isadmin: false,
-  networks: null,
-  groups: null,
+  issuperadmin: false,
+  remote_gw_ids: null,
 };
 
 export const stubUsers: User[] = [stubUser1, stubUser2];

@@ -34,6 +34,7 @@ import {
   SearchOutlined,
   SettingOutlined,
   StopOutlined,
+  UserOutlined,
 } from '@ant-design/icons';
 import {
   Alert,
@@ -86,6 +87,7 @@ import UpdateNodeModal from '@/components/modals/update-node-modal/UpdateNodeMod
 import { getBrandingConfig } from '@/services/BaseService';
 import VirtualisedTable from '@/components/VirtualisedTable';
 import { NETWORK_GRAPH_SIGMA_CONTAINER_ID } from '@/constants/AppConstants';
+import UpdateIngressUsersModal from '@/components/modals/update-ingress-users-modal/UpdateIngressUsersModal';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -173,6 +175,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [isUpdateGatewayModalOpen, setIsUpdateGatewayModalOpen] = useState(false);
   const [isUpdateClientModalOpen, setIsUpdateClientModalOpen] = useState(false);
   const [isUpdateNodeModalOpen, setIsUpdateNodeModalOpen] = useState(false);
+  const [isUpdateIngressUsersModalOpen, setIsUpdateIngressUsersModalOpen] = useState(false);
   const [targetNode, setTargetNode] = useState<Node | null>(null);
   const [showClientAcls, setShowClientAcls] = useState(false);
   const [isSubmittingAcls, setIsSubmittingAcls] = useState(false);
@@ -657,6 +660,62 @@ export default function NetworkDetailsPage(props: PageProps) {
     [networkId, notify, storeFetchNodes],
   );
 
+  const getGatewayDropdownOptions = useCallback((gateway: Node) => {
+    const defaultOptions: MenuProps['items'] = [
+      {
+        key: 'edit',
+        label: (
+          <Typography.Text
+            onClick={() => {
+              setSelectedGateway(gateway);
+              setIsUpdateGatewayModalOpen(true);
+            }}
+          >
+            <EditOutlined /> Edit
+          </Typography.Text>
+        ),
+        onClick: (info: any) => {
+          info.domEvent.stopPropagation();
+        },
+      },
+      {
+        key: 'delete',
+        label: (
+          <Typography.Text onClick={() => confirmDeleteGateway(gateway)}>
+            <DeleteOutlined /> Delete
+          </Typography.Text>
+        ),
+        onClick: (info: any) => {
+          info.domEvent.stopPropagation();
+        },
+      },
+    ];
+
+    if (isServerEE) {
+      const addRemoveUsersOption: MenuProps['items'] = [
+        {
+          key: 'addremove',
+          label: (
+            <Typography.Text
+              onClick={() => {
+                setSelectedGateway(gateway);
+                setIsUpdateIngressUsersModalOpen(true);
+              }}
+            >
+              <UserOutlined /> Add / Remove Users
+            </Typography.Text>
+          ),
+          onClick: (info) => {
+            info.domEvent.stopPropagation();
+          },
+        },
+      ];
+      return [...addRemoveUsersOption, ...defaultOptions];
+    }
+
+    return defaultOptions;
+  }, []);
+
   const gatewaysTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(
     () => [
       {
@@ -691,35 +750,7 @@ export default function NetworkDetailsPage(props: PageProps) {
             <Dropdown
               placement="bottomRight"
               menu={{
-                items: [
-                  {
-                    key: 'edit',
-                    label: (
-                      <Typography.Text
-                        onClick={() => {
-                          setSelectedGateway(gateway);
-                          setIsUpdateGatewayModalOpen(true);
-                        }}
-                      >
-                        <EditOutlined /> Edit
-                      </Typography.Text>
-                    ),
-                    onClick: (info) => {
-                      info.domEvent.stopPropagation();
-                    },
-                  },
-                  {
-                    key: 'delete',
-                    label: (
-                      <Typography.Text onClick={() => confirmDeleteGateway(gateway)}>
-                        <DeleteOutlined /> Delete
-                      </Typography.Text>
-                    ),
-                    onClick: (info) => {
-                      info.domEvent.stopPropagation();
-                    },
-                  },
-                ] as MenuProps['items'],
+                items: getGatewayDropdownOptions(gateway),
               }}
             >
               <Button type="text" icon={<MoreOutlined />} />
@@ -849,6 +880,14 @@ export default function NetworkDetailsPage(props: PageProps) {
         width: 500,
         render(value, client) {
           return <Typography.Link onClick={() => openClientDetails(client)}>{value}</Typography.Link>;
+        },
+      },
+      {
+        title: 'Owner ID',
+        dataIndex: 'ownerid',
+        width: 500,
+        render(value) {
+          return <Typography.Text>{value || 'n/a'}</Typography.Text>;
         },
       },
       {
@@ -3091,6 +3130,14 @@ export default function NetworkDetailsPage(props: PageProps) {
             setIsUpdateGatewayModalOpen(false);
           }}
           onCancel={() => setIsUpdateGatewayModalOpen(false)}
+        />
+      )}
+      {selectedGateway && (
+        <UpdateIngressUsersModal
+          isOpen={isUpdateIngressUsersModalOpen}
+          ingress={selectedGateway}
+          networkId={networkId}
+          onCancel={() => setIsUpdateIngressUsersModalOpen(false)}
         />
       )}
       {targetClient && (
