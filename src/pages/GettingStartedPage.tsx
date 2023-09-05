@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AppRoutes } from '../routes';
 import { AppErrorBoundary } from '@/components/AppErrorBoundary';
+import { resolveAppRoute } from '@/utils/RouteUtils';
 
 const { Content } = Layout;
 
@@ -34,7 +35,7 @@ export default function GettingStartedPage() {
     const maxNumOfStepsIndex = gettingStartedSteps.length - 1;
     // if on last step
     if (currentStep === maxNumOfStepsIndex) {
-      navigate(AppRoutes.DASHBOARD_ROUTE);
+      navigate(resolveAppRoute(AppRoutes.DASHBOARD_ROUTE));
       return;
     }
 

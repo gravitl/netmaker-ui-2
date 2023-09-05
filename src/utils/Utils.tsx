@@ -16,6 +16,7 @@ import {
 import { Rule } from 'antd/es/form';
 import { useStore } from '@/store/store';
 import { BrandingConfig } from '@/models/BrandingConfig';
+import { isSaasBuild } from '@/services/BaseService';
 
 export function renderNodeHealth(health: NodeConnectivityStatus) {
   switch (health) {
@@ -374,6 +375,9 @@ export function useBranding(): BrandingConfig {
   const [branding, setBranding] = useState<BrandingConfig>(DEFAULT_BRANDING_CONFIG);
 
   useEffect(() => {
+    if (isSaasBuild) {
+      setBranding(DEFAULT_BRANDING_CONFIG);
+    }
     if (serverStatus?.status?.is_pro) {
       setBranding({
         productName: import.meta.env.VITE_PRODUCT_NAME || DEFAULT_BRANDING_CONFIG.productName,

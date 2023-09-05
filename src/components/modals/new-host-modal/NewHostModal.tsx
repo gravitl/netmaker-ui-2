@@ -25,6 +25,8 @@ import { EnrollmentKeysService } from '@/services/EnrollmentKeysService';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { isEnrollmentKeyValid } from '@/utils/EnrollmentKeysUtils';
 import AddEnrollmentKeyModal from '../add-enrollment-key-modal/AddEnrollmentKeyModal';
+import { isSaasBuild } from '@/services/BaseService';
+import { ServerConfigService } from '@/services/ServerConfigService';
 
 interface NewHostModal {
   isOpen: boolean;
@@ -257,7 +259,13 @@ export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModa
                       className={`os-button ${selectedOs === 'windows' ? 'active' : ''}`}
                       onClick={(ev) => onShowInstallGuide(ev, 'windows')}
                     >
-                      <img src={`/icons/windows-${theme}.jpg`} alt="windows icon" className="logo" />
+                      <img
+                        src={`${
+                          isSaasBuild ? `/${ServerConfigService.getUiVersion()}` : ''
+                        }/icons/windows-${theme}.jpg`}
+                        alt="windows icon"
+                        className="logo"
+                      />
                       <p>Windows</p>
                     </div>
                   </Col>
@@ -266,7 +274,11 @@ export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModa
                       className={`os-button ${selectedOs === 'macos' ? 'active' : ''}`}
                       onClick={(ev) => onShowInstallGuide(ev, 'macos')}
                     >
-                      <img src={`/icons/macos-${theme}.jpg`} alt="macos icon" className="logo" />
+                      <img
+                        src={`${isSaasBuild ? `/${ServerConfigService.getUiVersion()}` : ''}/icons/macos-${theme}.jpg`}
+                        alt="macos icon"
+                        className="logo"
+                      />
                       <p>Mac</p>
                     </div>
                   </Col>
@@ -275,7 +287,11 @@ export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModa
                       className={`os-button ${selectedOs === 'linux' ? 'active' : ''}`}
                       onClick={(ev) => onShowInstallGuide(ev, 'linux')}
                     >
-                      <img src={`/icons/linux-${theme}.jpg`} alt="linux icon" className="logo" />
+                      <img
+                        src={`${isSaasBuild ? `/${ServerConfigService.getUiVersion()}` : ''}/icons/linux-${theme}.jpg`}
+                        alt="linux icon"
+                        className="logo"
+                      />
                       <p>Linux</p>
                     </div>
                   </Col>
@@ -286,7 +302,13 @@ export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModa
                       }`}
                       onClick={(ev) => onShowInstallGuide(ev, 'freebsd13')}
                     >
-                      <img src={`/icons/freebsd-${theme}.jpg`} alt="freebsd icon" className="logo" />
+                      <img
+                        src={`${
+                          isSaasBuild ? `/${ServerConfigService.getUiVersion()}` : ''
+                        }/icons/freebsd-${theme}.jpg`}
+                        alt="freebsd icon"
+                        className="logo"
+                      />
                       <p>FreeBSD</p>
                     </div>
                   </Col>
@@ -295,7 +317,11 @@ export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModa
                       className={`os-button ${selectedOs === 'docker' ? 'active' : ''}`}
                       onClick={(ev) => onShowInstallGuide(ev, 'docker')}
                     >
-                      <img src={`/icons/docker-${theme}.jpg`} alt="docker icon" className="logo" />
+                      <img
+                        src={`${isSaasBuild ? `/${ServerConfigService.getUiVersion()}` : ''}/icons/docker-${theme}.jpg`}
+                        alt="docker icon"
+                        className="logo"
+                      />
                       <p>Docker</p>
                     </div>
                   </Col>
