@@ -76,7 +76,7 @@ import { ControlsContainer, FullScreenControl, SearchControl, SigmaContainer, Zo
 import NetworkGraph from '@/components/NetworkGraph';
 import UpdateRelayModal from '@/components/modals/update-relay-modal/UpdateRelayModal';
 import { MetricCategories, NetworkMetrics, NodeOrClientMetric, UptimeNodeMetrics } from '@/models/Metrics';
-import { getExtClientAclStatus, getHostHealth, getTimeMinHrs, renderMetricValue } from '@/utils/Utils';
+import { getExtClientAclStatus, getHostHealth, renderMetricValue, useBranding } from '@/utils/Utils';
 import AddHostsToNetworkModal from '@/components/modals/add-hosts-to-network-modal/AddHostsToNetworkModal';
 import NewHostModal from '@/components/modals/new-host-modal/NewHostModal';
 import AddIngressModal from '@/components/modals/add-ingress-modal/AddIngressModal';
@@ -84,7 +84,6 @@ import UpdateIngressModal from '@/components/modals/update-ingress-modal/UpdateI
 import UpdateClientModal from '@/components/modals/update-client-modal/UpdateClientModal';
 import { NULL_HOST, NULL_NODE } from '@/constants/Types';
 import UpdateNodeModal from '@/components/modals/update-node-modal/UpdateNodeModal';
-import { getBrandingConfig } from '@/services/BaseService';
 import VirtualisedTable from '@/components/VirtualisedTable';
 import { NETWORK_GRAPH_SIGMA_CONTAINER_ID } from '@/constants/AppConstants';
 import UpdateIngressUsersModal from '@/components/modals/update-ingress-users-modal/UpdateIngressUsersModal';
@@ -128,6 +127,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const navigate = useNavigate();
   const [notify, notifyCtx] = notification.useNotification();
   const { token: themeToken } = theme.useToken();
+  const branding = useBranding();
 
   const storeFetchNodes = store.fetchNodes;
   const storeDeleteNode = store.deleteNode;
@@ -2288,8 +2288,8 @@ export default function NetworkDetailsPage(props: PageProps) {
               </Typography.Title>
               <Typography.Text style={{ color: 'white ' }}>
                 Enable devices in your network to communicate with othererwise unreachable devices with relays.{' '}
-                {getBrandingConfig().productName} uses Turn servers to automatically route traffic in these scenarios,
-                but sometimes, you’d rather specify which device should be routing the traffic
+                {branding.productName} uses Turn servers to automatically route traffic in these scenarios, but
+                sometimes, you’d rather specify which device should be routing the traffic
                 <a href="https://www.netmaker.io/features/relay" target="_blank" rel="noreferrer">
                   (Learn More)
                 </a>

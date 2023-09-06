@@ -1,7 +1,5 @@
 // import { ApiRoutes } from '@/constants/ApiRoutes';
 // import { User } from '@/models/User';
-import { DEFAULT_BRANDING_CONFIG } from '@/constants/AppConstants';
-import { BrandingConfig } from '@/models/BrandingConfig';
 import { useStore } from '@/store/store';
 import { truncateQueryParamsFromCurrentUrl } from '@/utils/RouteUtils';
 import axios from 'axios';
@@ -69,31 +67,6 @@ export async function setupTenantConfig(): Promise<void> {
   });
 }
 
-export function getBrandingConfig(): BrandingConfig {
-  const branding: BrandingConfig = {
-    productName: import.meta.env.VITE_PRODUCT_NAME || DEFAULT_BRANDING_CONFIG.productName,
-    logoDarkUrl: import.meta.env.VITE_TENANT_LOGO_DARK_URL || DEFAULT_BRANDING_CONFIG.logoDarkUrl,
-    logoLightUrl: import.meta.env.VITE_TENANT_LOGO_LIGHT_URL || DEFAULT_BRANDING_CONFIG.logoLightUrl,
-    logoAltText: import.meta.env.VITE_TENANT_LOGO_ALT_TEXT || DEFAULT_BRANDING_CONFIG.logoAltText,
-    logoDarkSmallUrl:
-      import.meta.env.VITE_TENANT_LOGO_DARK_SMALL_URL ||
-      import.meta.env.VITE_TENANT_LOGO_DARK_URL ||
-      DEFAULT_BRANDING_CONFIG.logoDarkSmallUrl,
-    logoLightSmallUrl:
-      import.meta.env.VITE_TENANT_LOGO_LIGHT_SMALL_URL ||
-      import.meta.env.VITE_TENANT_LOGO_LIGHT_URL ||
-      DEFAULT_BRANDING_CONFIG.logoLightSmallUrl,
-    favicon:
-      import.meta.env.VITE_TENANT_FAVICON_URL ||
-      import.meta.env.VITE_TENANT_LOGO_LIGHT_SMALL_URL ||
-      import.meta.env.VITE_TENANT_LOGO_LIGHT_URL ||
-      DEFAULT_BRANDING_CONFIG.favicon,
-    primaryColor: import.meta.env.VITE_TENANT_PRIMARY_COLOR || DEFAULT_BRANDING_CONFIG.primaryColor,
-  };
-
-  return branding;
-}
-
 // token interceptor for axios
 axiosService.interceptors.request.use((config) => {
   const token = useStore.getState().jwt;
@@ -120,12 +93,3 @@ axiosService.interceptors.response.use(
     return Promise.reject(err);
   },
 );
-
-// branding
-window.document.title = `${getBrandingConfig().productName} Dashboard`;
-window.document
-  .querySelector('meta[name="description"]')
-  ?.setAttribute(
-    'content',
-    `The management UI for ${getBrandingConfig().productName}. ${getBrandingConfig().productName} makes networks :)`,
-  );

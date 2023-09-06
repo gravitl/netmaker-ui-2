@@ -7,10 +7,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AxiosError } from 'axios';
 import { ServerConfigService } from './services/ServerConfigService';
 import ServerMalfunctionModal from './components/modals/server-malfunction-modal/ServerMalfunctionModal';
-import { getBrandingConfig } from './services/BaseService';
-import { APP_UPDATE_POLL_INTERVAL } from './constants/AppConstants';
 import { useIntercom } from 'react-use-intercom';
-import { IntercomTiers } from './models/ServerConfig';
+import { APP_UPDATE_POLL_INTERVAL } from './constants/AppConstants';
+import { useBranding } from './utils/Utils';
 
 function App() {
   const store = useStore();
@@ -27,6 +26,7 @@ function App() {
   const storeFetchHosts = store.fetchHosts;
   const storeIsLoggedIn = store.isLoggedIn;
   const [hasFetchedServerConfig, setHasFetchedServerConfig] = useState(false);
+  const branding = useBranding();
 
   const isIntercomReady = useMemo(() => {
     // TODO: add other params like tenant/server and user data loaded
@@ -110,7 +110,7 @@ function App() {
     return () => {
       intercomShutdown();
     };
-  }, [intercomBoot, intercomShutdown, isIntercomReady, isServerEE, store.tenantId, store.username]);
+  }, [intercomBoot, intercomShutdown, isIntercomReady, isServerEE, store.amuiUserId, store.tenantId, store.username]);
 
   useEffect(
     () => {
@@ -127,20 +127,19 @@ function App() {
   );
 
   useEffect(() => {
-    // one-time effect to load favicon
-    const favicon = getBrandingConfig().favicon;
+    const favicon = branding.favicon;
     if (favicon) {
       (document.getElementById('favicon') as HTMLLinkElement)?.setAttribute('href', favicon);
     }
+  }, [branding]);
 
-    // stop loading animation when the app is ready
-    const loader = document.getElementById('nmui-loading');
-    if (loader) {
-      loader.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200 }).onfinish = () => {
-        loader.remove();
-      };
-    }
-  }, []);
+  // stop loading animation when the app is ready
+  const loader = document.getElementById('nmui-loading');
+  if (loader) {
+    loader.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200 }).onfinish = () => {
+      loader.remove();
+    };
+  }
 
   return (
     <div className="App">
@@ -148,8 +147,8 @@ function App() {
         theme={{
           algorithm: store.currentTheme === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm,
           token: {
-            colorPrimary: getBrandingConfig().primaryColor,
-            colorLink: getBrandingConfig().primaryColor,
+            colorPrimary: branding.primaryColor,
+            colorLink: branding.primaryColor,
             fontFamily: 'Inter, SFPro, system-ui, Avenir, Helvetica, Arial, sans-serif',
             fontSize: 16,
             // colorBgContainer: 'black',
