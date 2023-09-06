@@ -52,7 +52,7 @@ function App() {
             broker_connected: store.serverStatus?.status?.broker_connected || false,
             license_error: store.serverStatus?.status?.license_error || '',
             healthyNetwork: true,
-            IsEE: store.serverStatus?.status?.IsEE ?? 'no',
+            IsEE: store.serverStatus?.status?.IsEE ?? false,
           });
         } else if (err.request) {
           // request was made but no response was received
@@ -61,7 +61,7 @@ function App() {
             broker_connected: store.serverStatus?.status?.broker_connected || false,
             license_error: store.serverStatus?.status?.license_error || '',
             healthyNetwork: false,
-            IsEE: store.serverStatus?.status?.IsEE ?? 'no',
+            IsEE: store.serverStatus?.status?.IsEE ?? false,
           });
         } else {
           // something bad happened when the request was being made
@@ -70,7 +70,7 @@ function App() {
             broker_connected: store.serverStatus?.status?.broker_connected || false,
             license_error: store.serverStatus?.status?.license_error || '',
             healthyNetwork: false,
-            IsEE: store.serverStatus?.status?.IsEE ?? 'no',
+            IsEE: store.serverStatus?.status?.IsEE ?? false,
           });
         }
       } else {
@@ -79,7 +79,7 @@ function App() {
           broker_connected: false,
           license_error: '',
           healthyNetwork: false,
-          IsEE: store.serverStatus?.status?.IsEE ?? 'no',
+          IsEE: store.serverStatus?.status?.IsEE ?? false,
         });
       }
     }
@@ -136,7 +136,7 @@ function App() {
         broker_connected: true,
         license_error: '',
         healthyNetwork: true,
-        IsEE: store.serverStatus?.status?.IsEE ?? 'no',
+        IsEE: store.serverStatus?.status?.IsEE ?? false,
       });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
