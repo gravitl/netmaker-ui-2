@@ -369,12 +369,12 @@ export const validateFirstNameField = validateName('first name');
  * @returns the branding config
  */
 export function useBranding(): BrandingConfig {
-  const serverConfig = useStore((s) => s.serverConfig);
+  const serverStatus = useStore((s) => s.serverStatus);
 
   const [branding, setBranding] = useState<BrandingConfig>(DEFAULT_BRANDING_CONFIG);
 
   useEffect(() => {
-    if (serverConfig?.IsEE === 'yes') {
+    if (serverStatus?.status?.IsEE === 'yes') {
       setBranding({
         productName: import.meta.env.VITE_PRODUCT_NAME || DEFAULT_BRANDING_CONFIG.productName,
         logoDarkUrl: import.meta.env.VITE_TENANT_LOGO_DARK_URL || DEFAULT_BRANDING_CONFIG.logoDarkUrl,
@@ -398,7 +398,7 @@ export function useBranding(): BrandingConfig {
     } else {
       setBranding(DEFAULT_BRANDING_CONFIG);
     }
-  }, [serverConfig?.IsEE]);
+  }, [serverStatus?.status?.IsEE]);
 
   return branding;
 }

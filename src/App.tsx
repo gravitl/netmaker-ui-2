@@ -19,14 +19,16 @@ function App() {
     // startTour: intercomStartTour
   } = useIntercom();
 
+  const branding = useBranding();
   const isServerEE = store.serverConfig?.IsEE === 'yes';
   const storeFetchServerConfig = store.fetchServerConfig;
   const storeSetServerStatus = store.setServerStatus;
   const storeFetchNodes = store.fetchNodes;
   const storeFetchHosts = store.fetchHosts;
   const storeIsLoggedIn = store.isLoggedIn;
+
   const [hasFetchedServerConfig, setHasFetchedServerConfig] = useState(false);
-  const branding = useBranding();
+  const [isAppReady, setIsAppReady] = useState(false);
 
   const isIntercomReady = useMemo(() => {
     // TODO: add other params like tenant/server and user data loaded
@@ -50,22 +52,25 @@ function App() {
             broker_connected: store.serverStatus?.status?.broker_connected || false,
             license_error: store.serverStatus?.status?.license_error || '',
             healthyNetwork: true,
+            IsEE: store.serverStatus?.status?.IsEE ?? 'no',
           });
         } else if (err.request) {
-          // requst was made but no response was received
+          // request was made but no response was received
           storeSetServerStatus({
             db_connected: store.serverStatus?.status?.db_connected || false,
             broker_connected: store.serverStatus?.status?.broker_connected || false,
             license_error: store.serverStatus?.status?.license_error || '',
             healthyNetwork: false,
+            IsEE: store.serverStatus?.status?.IsEE ?? 'no',
           });
         } else {
-          // something bad happened when th request was being made
+          // something bad happened when the request was being made
           storeSetServerStatus({
             db_connected: store.serverStatus?.status?.db_connected || false,
             broker_connected: store.serverStatus?.status?.broker_connected || false,
             license_error: store.serverStatus?.status?.license_error || '',
             healthyNetwork: false,
+            IsEE: store.serverStatus?.status?.IsEE ?? 'no',
           });
         }
       } else {
@@ -74,6 +79,7 @@ function App() {
           broker_connected: false,
           license_error: '',
           healthyNetwork: false,
+          IsEE: store.serverStatus?.status?.IsEE ?? 'no',
         });
       }
     }
@@ -81,6 +87,7 @@ function App() {
     store.serverStatus?.status?.broker_connected,
     store.serverStatus?.status?.db_connected,
     store.serverStatus?.status?.license_error,
+    store.serverStatus?.status?.IsEE,
     storeFetchHosts,
     storeFetchNodes,
     storeIsLoggedIn,
@@ -98,7 +105,16 @@ function App() {
         }
       }
     }, APP_UPDATE_POLL_INTERVAL);
-    return () => clearInterval(id);
+
+    // give some time so server status.isEE can load and branding can be determined
+    const tId = setTimeout(() => {
+      setIsAppReady(true);
+    }, 1000);
+
+    return () => {
+      clearInterval(id);
+      clearTimeout(tId);
+    };
   }, [getUpdates, hasFetchedServerConfig, storeFetchServerConfig, storeIsLoggedIn]);
 
   useEffect(() => {
@@ -120,6 +136,7 @@ function App() {
         broker_connected: true,
         license_error: '',
         healthyNetwork: true,
+        IsEE: store.serverStatus?.status?.IsEE ?? 'no',
       });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -134,12 +151,14 @@ function App() {
   }, [branding]);
 
   // stop loading animation when the app is ready
-  const loader = document.getElementById('nmui-loading');
-  if (loader) {
-    loader.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200 }).onfinish = () => {
-      loader.remove();
-    };
-  }
+  useEffect(() => {
+    const loader = document.getElementById('nmui-loading');
+    if (isAppReady && loader) {
+      loader.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200 }).onfinish = () => {
+        loader.remove();
+      };
+    }
+  }, [isAppReady]);
 
   return (
     <div className="App">
