@@ -142,7 +142,7 @@ function App() {
           token: {
             colorPrimary: getBrandingConfig().primaryColor,
             colorLink: getBrandingConfig().primaryColor,
-            fontFamily: 'SFPro, Inter, system-ui, Avenir, Helvetica, Arial, sans-serif',
+            fontFamily: 'Inter, SFPro, system-ui, Avenir, Helvetica, Arial, sans-serif',
             fontSize: 16,
             // colorBgContainer: 'black',
           },

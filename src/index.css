@@ -1,10 +1,13 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300&display=swap');
+
 @font-face {
   font-family: SFPro;
   src: url('/SFProText-Regular.ttf');
 }
 
+
 :root {
-  font-family: SFPro, Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family:'Inter', SFPro, system-ui, Avenir, Helvetica, Arial, sans-serif;
   color-scheme: light dark;
 }
 
