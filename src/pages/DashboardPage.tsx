@@ -13,7 +13,7 @@ import { PageProps } from '../models/Page';
 import { AppRoutes } from '../routes';
 import { useNavigate } from 'react-router-dom';
 import AddNetworkModal from '@/components/modals/add-network-modal/AddNetworkModal';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useStore } from '@/store/store';
 import { getAmuiUrl, getLicenseDashboardUrl } from '@/utils/RouteUtils';
 import NewHostModal from '@/components/modals/new-host-modal/NewHostModal';
@@ -27,6 +27,13 @@ export default function DashboardPage(props: PageProps) {
   const [isAddNetworkModalOpen, setIsAddNetworkModalOpen] = useState(false);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [isNewHostModalOpen, setIsNewHostModalOpen] = useState(false);
+  const [showUpgradeAlert, setShowUpgradeAlert] = useState(false);
+
+  useEffect(() => {
+    if (!isServerEE) {
+      setShowUpgradeAlert(true);
+    }
+  }, [isServerEE]);
 
   return (
     <Layout.Content style={{ padding: props.isFullScreen ? 0 : 24 }}>
@@ -34,7 +41,7 @@ export default function DashboardPage(props: PageProps) {
         <Layout.Header style={{ width: '100%', padding: '0px', backgroundColor: 'transparent' }}>
           <Row>
             <Col xs={12}>
-              {!isServerEE && (
+              {showUpgradeAlert && (
                 <Alert
                   message="You are on the free plan"
                   type="warning"
