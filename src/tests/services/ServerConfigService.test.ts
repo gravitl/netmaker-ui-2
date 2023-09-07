@@ -79,7 +79,7 @@ describe('ServerConfigService', () => {
       broker_connected: false,
       healthyNetwork: false,
       license_error: 'error',
-      IsEE: false,
+      is_pro: false,
     };
     mock.onGet(ApiRoutes.SERVER_STATUS).replyOnce(200, mockRes);
 

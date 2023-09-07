@@ -63,7 +63,7 @@ export interface ServerStatus {
   broker_connected: boolean;
   healthyNetwork: boolean;
   license_error: string;
-  IsEE: boolean;
+  is_pro: boolean;
 }
 
 export type IntercomTiers = 'paid_tier' | 'free_tier';
