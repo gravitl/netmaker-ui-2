@@ -3,10 +3,11 @@
 ## Netmaker UI v0.21.0
 
 ## Whats New
-- Sync hosts: a feature that allows admin to trigger a host pull from the UI
+- New user management UI
+- UI/UX improvements
 
 ## What's Fixed
-- Stability patches and improvements
+- Bug fixes for graph, copy DNS button and client DNS not updating properly
 
 ## known issues
 - Windows installer does not install WireGuard
