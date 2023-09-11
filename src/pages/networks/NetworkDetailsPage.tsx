@@ -1910,7 +1910,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                 {
                   title: 'DNS Entry',
                   render(_, dns) {
-                    return <Typography.Text copyable>{`${dns.name}.${dns.network}`}</Typography.Text>;
+                    return <Typography.Text copyable>{`${dns.name}`}</Typography.Text>;
                   },
                   sorter: (a, b) => a.name.localeCompare(b.name),
                   defaultSortOrder: 'ascend',
