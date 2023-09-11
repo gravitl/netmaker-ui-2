@@ -58,6 +58,11 @@ export function getAmuiUrl(action: AmuiRouteAction = '') {
   }&action=${action}`;
 }
 
+// Function to get AMUI tenants route
+export function getAmuiTenantsUrl() {
+  return `${AMUI_URL}/tenants`;
+}
+
 // Function to get license dashboard route
 export function getLicenseDashboardUrl() {
   return import.meta.env.VITE_LICENSE_DASHBOARD_URL;
