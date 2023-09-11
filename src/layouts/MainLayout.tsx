@@ -5,13 +5,14 @@ import {
   KeyOutlined,
   LaptopOutlined,
   LogoutOutlined,
+  RightOutlined,
   // MobileOutlined,
   UserOutlined,
 } from '@ant-design/icons';
 import { Alert, Col, MenuProps, Row, Select, Switch, Typography } from 'antd';
 import { Layout, Menu, theme } from 'antd';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { getAmuiUrl, getHostRoute, getNetworkRoute } from '../utils/RouteUtils';
+import { getAmuiTenantsUrl, getAmuiUrl, getHostRoute, getNetworkRoute } from '../utils/RouteUtils';
 import { useStore } from '../store/store';
 import { AppRoutes } from '@/routes';
 import { useTranslation } from 'react-i18next';
@@ -120,6 +121,11 @@ export default function MainLayout() {
                   key: 'amui',
                   icon: UserOutlined,
                   label: 'Manage Account',
+                },
+                {
+                  key: 'amuitenants',
+                  icon: RightOutlined,
+                  label: 'Switch Tenant',
                 },
               ]
             : [
@@ -349,6 +355,9 @@ export default function MainLayout() {
                   break;
                 case 'amui':
                   window.location = getAmuiUrl() as any;
+                  break;
+                case 'amuitenants':
+                  window.location = getAmuiTenantsUrl() as any;
                   break;
                 case 'users':
                   navigate(AppRoutes.USERS_ROUTE);
