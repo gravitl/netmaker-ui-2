@@ -27,7 +27,7 @@ export const de: LanguageResource = {
     terms2: 'Nutzungsbedingungen',
     terms3: 'und',
     terms4: 'Datenschutzbestimmungen',
-    sso: 'SSO Login',
+    sso: 'SSO Anmeldung',
     or: 'oder',
   },
   error: {
