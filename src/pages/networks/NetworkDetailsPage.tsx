@@ -1853,8 +1853,6 @@ export default function NetworkDetailsPage(props: PageProps) {
                               key: 'remove',
                               label: 'Remove from network',
                               danger: true,
-                              disabled: node.pendingdelete !== false,
-                              title: node.pendingdelete !== false ? 'Host is being removed from network' : '',
                               onClick: () =>
                                 removeNodeFromNetwork(false, getExtendedNode(node, store.hostsCommonDetails)),
                             },
