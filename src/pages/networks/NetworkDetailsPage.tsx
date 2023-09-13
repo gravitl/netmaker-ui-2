@@ -20,7 +20,6 @@ import { getNetworkHostRoute, resolveAppRoute } from '@/utils/RouteUtils';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import {
   CheckOutlined,
-  CloseOutlined,
   DashOutlined,
   DeleteOutlined,
   DownOutlined,
@@ -50,12 +49,10 @@ import {
   MenuProps,
   Modal,
   notification,
-  Progress,
   Radio,
   Row,
   Select,
   Skeleton,
-  Space,
   Switch,
   Table,
   TableColumnProps,
@@ -660,61 +657,64 @@ export default function NetworkDetailsPage(props: PageProps) {
     [networkId, notify, storeFetchNodes],
   );
 
-  const getGatewayDropdownOptions = useCallback((gateway: Node) => {
-    const defaultOptions: MenuProps['items'] = [
-      {
-        key: 'edit',
-        label: (
-          <Typography.Text
-            onClick={() => {
-              setSelectedGateway(gateway);
-              setIsUpdateGatewayModalOpen(true);
-            }}
-          >
-            <EditOutlined /> Edit
-          </Typography.Text>
-        ),
-        onClick: (info: any) => {
-          info.domEvent.stopPropagation();
-        },
-      },
-      {
-        key: 'delete',
-        label: (
-          <Typography.Text onClick={() => confirmDeleteGateway(gateway)}>
-            <DeleteOutlined /> Delete
-          </Typography.Text>
-        ),
-        onClick: (info: any) => {
-          info.domEvent.stopPropagation();
-        },
-      },
-    ];
-
-    if (isServerEE) {
-      const addRemoveUsersOption: MenuProps['items'] = [
+  const getGatewayDropdownOptions = useCallback(
+    (gateway: Node) => {
+      const defaultOptions: MenuProps['items'] = [
         {
-          key: 'addremove',
+          key: 'edit',
           label: (
             <Typography.Text
               onClick={() => {
                 setSelectedGateway(gateway);
-                setIsUpdateIngressUsersModalOpen(true);
+                setIsUpdateGatewayModalOpen(true);
               }}
             >
-              <UserOutlined /> Add / Remove Users
+              <EditOutlined /> Edit
             </Typography.Text>
           ),
-          onClick: (info) => {
+          onClick: (info: any) => {
+            info.domEvent.stopPropagation();
+          },
+        },
+        {
+          key: 'delete',
+          label: (
+            <Typography.Text onClick={() => confirmDeleteGateway(gateway)}>
+              <DeleteOutlined /> Delete
+            </Typography.Text>
+          ),
+          onClick: (info: any) => {
             info.domEvent.stopPropagation();
           },
         },
       ];
-      return [...addRemoveUsersOption, ...defaultOptions];
-    }
 
-    return defaultOptions;
-  }, []);
+      if (isServerEE) {
+        const addRemoveUsersOption: MenuProps['items'] = [
+          {
+            key: 'addremove',
+            label: (
+              <Typography.Text
+                onClick={() => {
+                  setSelectedGateway(gateway);
+                  setIsUpdateIngressUsersModalOpen(true);
+                }}
+              >
+                <UserOutlined /> Add / Remove Users
+              </Typography.Text>
+            ),
+            onClick: (info) => {
+              info.domEvent.stopPropagation();
+            },
+          },
+        ];
+        return [...addRemoveUsersOption, ...defaultOptions];
+      }
+
+      return defaultOptions;
+    },
+    [confirmDeleteGateway, isServerEE],
+  );
 
   const gatewaysTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(
     () => [
@@ -759,7 +759,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       },
     ],
-    [confirmDeleteGateway],
+    [getGatewayDropdownOptions],
   );
 
   const egressTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(
@@ -2396,7 +2396,16 @@ export default function NetworkDetailsPage(props: PageProps) {
         )}
       </div>
     );
-  }, [filteredRelayedNodes, filteredRelays, relayTableCols, relayedTableCols, relays, searchRelay, selectedRelay]);
+  }, [
+    branding.productName,
+    filteredRelayedNodes,
+    filteredRelays,
+    relayTableCols,
+    relayedTableCols,
+    relays.length,
+    searchRelay,
+    selectedRelay,
+  ]);
 
   const getAclsContent = useCallback(() => {
     return (
