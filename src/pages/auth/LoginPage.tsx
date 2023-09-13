@@ -126,7 +126,11 @@ export default function LoginPage(props: LoginPageProps) {
         >
           <Row>
             <Col xs={24} style={{ textAlign: 'center' }}>
-              <Image width="200px" src={currentTheme === 'dark' ? branding.logoDarkUrl : branding.logoLightUrl} />
+              <Image
+                preview={false}
+                width="200px"
+                src={currentTheme === 'dark' ? branding.logoDarkUrl : branding.logoLightUrl}
+              />
             </Col>
           </Row>
 
