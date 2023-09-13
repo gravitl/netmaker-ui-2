@@ -16,9 +16,10 @@ import { getAmuiTenantsUrl, getAmuiUrl, getHostRoute, getNetworkRoute } from '..
 import { useStore } from '../store/store';
 import { AppRoutes } from '@/routes';
 import { useTranslation } from 'react-i18next';
-import { getBrandingConfig, isSaasBuild } from '@/services/BaseService';
+import { isSaasBuild } from '@/services/BaseService';
 import { ServerConfigService } from '@/services/ServerConfigService';
 import { AppErrorBoundary } from '@/components/AppErrorBoundary';
+import { useBranding } from '@/utils/Utils';
 
 const { Content, Sider } = Layout;
 
@@ -37,6 +38,7 @@ export default function MainLayout() {
   const storeFetchNetworks = useStore((state) => state.fetchNetworks);
   const storeLogout = useStore((state) => state.logout);
   const location = useLocation();
+  const branding = useBranding();
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
@@ -50,7 +52,7 @@ export default function MainLayout() {
   );
 
   const sidebarLogo = useMemo(() => {
-    const { logoDarkUrl, logoLightUrl, logoDarkSmallUrl, logoLightSmallUrl } = getBrandingConfig();
+    const { logoDarkUrl, logoLightUrl, logoDarkSmallUrl, logoLightSmallUrl } = branding;
 
     if (currentTheme === 'dark') {
       if (isSidebarCollapsed) {
@@ -67,7 +69,7 @@ export default function MainLayout() {
     }
 
     return '';
-  }, [currentTheme, isSidebarCollapsed]);
+  }, [branding, currentTheme, isSidebarCollapsed]);
 
   const sideNavItems: MenuProps['items'] = useMemo(
     () =>
@@ -324,7 +326,7 @@ export default function MainLayout() {
           <Link to={AppRoutes.DASHBOARD_ROUTE}>
             <img
               src={sidebarLogo}
-              alt={getBrandingConfig().logoAltText}
+              alt={branding.logoAltText}
               style={{ width: '100%', padding: '1rem 2rem 1rem 2rem' }}
             />
           </Link>
@@ -414,10 +416,8 @@ export default function MainLayout() {
                     style={{ border: 'none', height: '4rem', fontSize: '1rem', color: '#D4B106' }}
                     message={
                       !store.serverStatus.status?.healthyNetwork
-                        ? `Unable to reach ${getBrandingConfig().productName} server. Check you internet connection.`
-                        : `Your ${
-                            getBrandingConfig().productName
-                          } server is not running properly. This may impact network performance. Contact your administrator.`
+                        ? `Unable to reach ${branding.productName} server. Check you internet connection.`
+                        : `Your ${branding.productName} server is not running properly. This may impact network performance. Contact your administrator.`
                     }
                   />
                 </Col>

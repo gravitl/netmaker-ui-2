@@ -7,13 +7,14 @@ import { Button, Checkbox, Col, Divider, Form, Image, Input, Layout, notificatio
 import { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { AMUI_URL, getBrandingConfig, isSaasBuild } from '../../services/BaseService';
+import { AMUI_URL, isSaasBuild } from '../../services/BaseService';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { UsersService } from '@/services/UsersService';
 import { User } from '@/models/User';
 import { ApiRoutes } from '@/constants/ApiRoutes';
 import { truncateQueryParamsFromCurrentUrl, useQuery } from '@/utils/RouteUtils';
 import { AppErrorBoundary } from '@/components/AppErrorBoundary';
+import { useBranding } from '@/utils/Utils';
 
 interface LoginPageProps {
   isFullScreen?: boolean;
@@ -30,6 +31,7 @@ export default function LoginPage(props: LoginPageProps) {
   const query = useQuery();
   const location = useLocation();
   const currentTheme = store.currentTheme;
+  const branding = useBranding();
 
   const oauthToken = query.get('login');
   const oauthUser = query.get('user');
@@ -125,8 +127,9 @@ export default function LoginPage(props: LoginPageProps) {
           <Row>
             <Col xs={24} style={{ textAlign: 'center' }}>
               <Image
+                preview={false}
                 width="200px"
-                src={currentTheme === 'dark' ? getBrandingConfig().logoDarkUrl : getBrandingConfig().logoLightUrl}
+                src={currentTheme === 'dark' ? branding.logoDarkUrl : branding.logoLightUrl}
               />
             </Col>
           </Row>
