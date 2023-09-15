@@ -7,9 +7,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import AddNetworkModal from '../../components/modals/add-network-modal/AddNetworkModal';
 import { PageProps } from '../../models/Page';
 import { useStore } from '../../store/store';
-
 import './NetworksPage.scss';
-import { getNetworkRoute } from '@/utils/RouteUtils';
+import { getNetworkRoute, resolveAppRoute } from '@/utils/RouteUtils';
 
 export default function NetworksPage(props: PageProps) {
   const store = useStore();
@@ -27,7 +26,7 @@ export default function NetworksPage(props: PageProps) {
         compare: (a, b) => a.netid.localeCompare(b.netid),
       },
       defaultSortOrder: 'ascend',
-      render: (netId) => <Link to={`${AppRoutes.NETWORKS_ROUTE}/${netId}`}>{netId}</Link>,
+      render: (netId) => <Link to={`${resolveAppRoute(AppRoutes.NETWORKS_ROUTE)}/${netId}`}>{netId}</Link>,
     },
     {
       title: 'Address Range (IPv4)',

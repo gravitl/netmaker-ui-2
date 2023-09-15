@@ -1,15 +1,17 @@
 import { ConfigProvider, theme } from 'antd';
 import { RouterProvider } from 'react-router-dom';
 import { router } from './routes';
-import { useStore } from './store/store';
+import { BrowserStore, useStore } from './store/store';
 import './App.scss';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AxiosError } from 'axios';
 import { ServerConfigService } from './services/ServerConfigService';
 import ServerMalfunctionModal from './components/modals/server-malfunction-modal/ServerMalfunctionModal';
-import { useIntercom } from 'react-use-intercom';
-import { APP_UPDATE_POLL_INTERVAL } from './constants/AppConstants';
 import { useBranding } from './utils/Utils';
+import { isSaasBuild } from './services/BaseService';
+import { APP_UPDATE_POLL_INTERVAL } from './constants/AppConstants';
+import { useIntercom } from 'react-use-intercom';
+import { reloadNmuiWithVersion } from './utils/RouteUtils';
 
 function App() {
   const store = useStore();
@@ -99,9 +101,14 @@ function App() {
     const id = setInterval(async () => {
       getUpdates();
       if (storeIsLoggedIn() && !hasFetchedServerConfig) {
-        const hasFetched = await storeFetchServerConfig();
+        const [hasFetched, serverConfig] = await storeFetchServerConfig();
         if (hasFetched) {
           setHasFetchedServerConfig(true);
+
+          if (isSaasBuild && !BrowserStore.hasNmuiVersionSynced()) {
+            BrowserStore.syncNmuiVersion();
+            reloadNmuiWithVersion(serverConfig?.Version ?? '');
+          }
         }
       }
     }, APP_UPDATE_POLL_INTERVAL);
@@ -144,8 +151,12 @@ function App() {
   );
 
   useEffect(() => {
-    const favicon = branding.favicon;
+    // one-time effect to load favicon
+    let favicon = branding.favicon;
     if (favicon) {
+      if (isSaasBuild) {
+        favicon = `/${ServerConfigService.getUiVersion()}${favicon}`;
+      }
       (document.getElementById('favicon') as HTMLLinkElement)?.setAttribute('href', favicon);
     }
   }, [branding]);

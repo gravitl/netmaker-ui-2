@@ -4,6 +4,7 @@ import {
   GlobalOutlined,
   KeyOutlined,
   LaptopOutlined,
+  LoadingOutlined,
   LogoutOutlined,
   RightOutlined,
   // MobileOutlined,
@@ -12,8 +13,8 @@ import {
 import { Alert, Col, MenuProps, Row, Select, Switch, Typography } from 'antd';
 import { Layout, Menu, theme } from 'antd';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { getAmuiTenantsUrl, getAmuiUrl, getHostRoute, getNetworkRoute } from '../utils/RouteUtils';
-import { useStore } from '../store/store';
+import { getAmuiTenantsUrl, getAmuiUrl, getHostRoute, getNetworkRoute, resolveAppRoute } from '../utils/RouteUtils';
+import { BrowserStore, useStore } from '../store/store';
 import { AppRoutes } from '@/routes';
 import { useTranslation } from 'react-i18next';
 import { isSaasBuild } from '@/services/BaseService';
@@ -56,15 +57,15 @@ export default function MainLayout() {
 
     if (currentTheme === 'dark') {
       if (isSidebarCollapsed) {
-        return logoDarkSmallUrl;
+        return isSaasBuild ? `/${ServerConfigService.getUiVersion()}${logoDarkSmallUrl}` : logoDarkSmallUrl;
       } else {
-        return logoDarkUrl;
+        return isSaasBuild ? `/${ServerConfigService.getUiVersion()}${logoDarkUrl}` : logoDarkUrl;
       }
     } else if (currentTheme === 'light') {
       if (isSidebarCollapsed) {
-        return logoLightSmallUrl;
+        return isSaasBuild ? `/${ServerConfigService.getUiVersion()}${logoLightSmallUrl}` : logoLightSmallUrl;
       } else {
-        return logoLightUrl;
+        return isSaasBuild ? `/${ServerConfigService.getUiVersion()}${logoLightUrl}` : logoLightUrl;
       }
     }
 
@@ -164,7 +165,7 @@ export default function MainLayout() {
             type: (child as any)?.type,
           })),
         })),
-    [recentNetworks, store.user?.isadmin],
+    [recentNetworks, store.user?.isadmin, store.user?.issuperadmin],
   );
 
   const sideNavBottomItems: MenuProps['items'] = useMemo(
@@ -270,7 +271,7 @@ export default function MainLayout() {
                 }}
                 onClick={() => {
                   storeLogout();
-                  navigate(AppRoutes.LOGIN_ROUTE);
+                  navigate(resolveAppRoute(AppRoutes.LOGIN_ROUTE));
                 }}
               >
                 <LogoutOutlined /> Logout
@@ -284,17 +285,17 @@ export default function MainLayout() {
   );
 
   const getActiveSideNavKeys = useCallback(() => {
-    if (location.pathname === AppRoutes.NETWORKS_ROUTE) {
+    if (location.pathname === resolveAppRoute(AppRoutes.NETWORKS_ROUTE)) {
       return ['networks', 'all-networks'];
-    } else if (location.pathname === AppRoutes.HOSTS_ROUTE) {
+    } else if (location.pathname === resolveAppRoute(AppRoutes.HOSTS_ROUTE)) {
       return ['hosts', 'all-hosts'];
-    } else if (location.pathname === AppRoutes.CLIENTS_ROUTE) {
+    } else if (location.pathname === resolveAppRoute(AppRoutes.CLIENTS_ROUTE)) {
       return ['clients'];
-    } else if (location.pathname === AppRoutes.ENROLLMENT_KEYS_ROUTE) {
+    } else if (location.pathname === resolveAppRoute(AppRoutes.ENROLLMENT_KEYS_ROUTE)) {
       return ['enrollment-keys'];
-    } else if (location.pathname === AppRoutes.DASHBOARD_ROUTE) {
+    } else if (location.pathname === resolveAppRoute(AppRoutes.DASHBOARD_ROUTE)) {
       return ['dashboard'];
-    } else if (location.pathname === AppRoutes.USERS_ROUTE) {
+    } else if (location.pathname === resolveAppRoute(AppRoutes.USERS_ROUTE)) {
       return ['users'];
     }
   }, [location.pathname]);
@@ -323,7 +324,7 @@ export default function MainLayout() {
           }}
         >
           {/* logo */}
-          <Link to={AppRoutes.DASHBOARD_ROUTE}>
+          <Link to={resolveAppRoute(AppRoutes.DASHBOARD_ROUTE)}>
             <img
               src={sidebarLogo}
               alt={branding.logoAltText}
@@ -341,19 +342,19 @@ export default function MainLayout() {
             onClick={(menu) => {
               switch (menu.key) {
                 case 'dashboard':
-                  navigate(AppRoutes.DASHBOARD_ROUTE);
+                  navigate(resolveAppRoute(AppRoutes.DASHBOARD_ROUTE));
                   break;
                 case 'all-networks':
-                  navigate(AppRoutes.NETWORKS_ROUTE);
+                  navigate(resolveAppRoute(AppRoutes.NETWORKS_ROUTE));
                   break;
                 case 'hosts':
-                  navigate(AppRoutes.HOSTS_ROUTE);
+                  navigate(resolveAppRoute(AppRoutes.HOSTS_ROUTE));
                   break;
                 case 'clients':
-                  navigate(AppRoutes.CLIENTS_ROUTE);
+                  navigate(resolveAppRoute(AppRoutes.CLIENTS_ROUTE));
                   break;
                 case 'enrollment-keys':
-                  navigate(AppRoutes.ENROLLMENT_KEYS_ROUTE);
+                  navigate(resolveAppRoute(AppRoutes.ENROLLMENT_KEYS_ROUTE));
                   break;
                 case 'amui':
                   window.location = getAmuiUrl() as any;
@@ -362,7 +363,7 @@ export default function MainLayout() {
                   window.location = getAmuiTenantsUrl() as any;
                   break;
                 case 'users':
-                  navigate(AppRoutes.USERS_ROUTE);
+                  navigate(resolveAppRoute(AppRoutes.USERS_ROUTE));
                   break;
                 default:
                   if (menu.key.startsWith('networks/')) {
@@ -379,7 +380,8 @@ export default function MainLayout() {
           {!isSidebarCollapsed && (
             <div style={{ marginTop: '1rem', padding: '0rem 1.5rem', fontSize: '.8rem' }}>
               <Typography.Text style={{ fontSize: 'inherit' }}>
-                UI: {ServerConfigService.getUiVersion()}
+                UI: {ServerConfigService.getUiVersion()}{' '}
+                {isSaasBuild && !BrowserStore.hasNmuiVersionSynced() && <LoadingOutlined />}
               </Typography.Text>
               <br />
               <Typography.Text style={{ fontSize: 'inherit' }} type="secondary">

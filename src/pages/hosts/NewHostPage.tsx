@@ -2,7 +2,7 @@ import AddNetworkModal from '@/components/modals/add-network-modal/AddNetworkMod
 import { Network } from '@/models/Network';
 import { AppRoutes } from '@/routes';
 import { useStore } from '@/store/store';
-import { getNetclientDownloadLink, useQuery } from '@/utils/RouteUtils';
+import { getNetclientDownloadLink, resolveAppRoute, useQuery } from '@/utils/RouteUtils';
 import { CopyOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons';
 import { Button, Card, Col, Divider, Input, Layout, List, Row, Steps } from 'antd';
 import { MouseEvent, useCallback, useEffect, useState } from 'react';
@@ -39,11 +39,11 @@ export default function NewHostPage(props: PageProps) {
   }, []);
 
   const onFinish = useCallback(() => {
-    navigate(query.get('redirectTo') ?? AppRoutes.HOSTS_ROUTE);
+    navigate(query.get('redirectTo') ?? resolveAppRoute(AppRoutes.HOSTS_ROUTE));
   }, [navigate, query]);
 
   const onCancel = useCallback(() => {
-    navigate(query.get('redirectTo') ?? AppRoutes.HOSTS_ROUTE);
+    navigate(query.get('redirectTo') ?? resolveAppRoute(AppRoutes.HOSTS_ROUTE));
   }, [navigate, query]);
 
   const onShowInstallGuide = useCallback((ev: MouseEvent, os: AvailableOses) => {
