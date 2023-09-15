@@ -11,7 +11,7 @@ import {
 import { Alert, Col, MenuProps, Row, Select, Switch, Typography } from 'antd';
 import { Layout, Menu, theme } from 'antd';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { getAmuiUrl, getHostRoute, getNetworkRoute } from '../utils/RouteUtils';
+import { getAmuiUrl, getHostRoute, getNetworkRoute, resolveAppRoute } from '../utils/RouteUtils';
 import { useStore } from '../store/store';
 import { AppRoutes } from '@/routes';
 import { useTranslation } from 'react-i18next';
@@ -45,7 +45,7 @@ export default function MainLayout() {
       structuredClone(store.networks)
         .sort((a, b) => a.netid.localeCompare(b.netid))
         .slice(0, 5),
-    [store.networks]
+    [store.networks],
   );
 
   const sidebarLogo = useMemo(() => {
@@ -53,15 +53,15 @@ export default function MainLayout() {
 
     if (currentTheme === 'dark') {
       if (isSidebarCollapsed) {
-        return logoDarkSmallUrl;
+        return isSaasBuild ? `/${ServerConfigService.getUiVersion()}${logoDarkSmallUrl}` : logoDarkSmallUrl;
       } else {
-        return logoDarkUrl;
+        return isSaasBuild ? `/${ServerConfigService.getUiVersion()}${logoDarkUrl}` : logoDarkUrl;
       }
     } else if (currentTheme === 'light') {
       if (isSidebarCollapsed) {
-        return logoLightSmallUrl;
+        return isSaasBuild ? `/${ServerConfigService.getUiVersion()}${logoLightSmallUrl}` : logoLightSmallUrl;
       } else {
-        return logoLightUrl;
+        return isSaasBuild ? `/${ServerConfigService.getUiVersion()}${logoLightUrl}` : logoLightUrl;
       }
     }
 
@@ -128,7 +128,7 @@ export default function MainLayout() {
                 //   icon: UserOutlined,
                 //   label: 'Users',
                 // },
-              ]
+              ],
         )
         .concat(
           isSaasBuild || store.user?.isadmin
@@ -139,7 +139,7 @@ export default function MainLayout() {
                   label: 'Users',
                 },
               ]
-            : []
+            : [],
         )
         .map((item) => ({
           key: item.key,
@@ -156,7 +156,7 @@ export default function MainLayout() {
             type: (child as any)?.type,
           })),
         })),
-    [recentNetworks, store.user?.isadmin]
+    [recentNetworks, store.user?.isadmin],
   );
 
   const sideNavBottomItems: MenuProps['items'] = useMemo(
@@ -262,7 +262,7 @@ export default function MainLayout() {
                 }}
                 onClick={() => {
                   storeLogout();
-                  navigate(AppRoutes.LOGIN_ROUTE);
+                  navigate(resolveAppRoute(AppRoutes.LOGIN_ROUTE));
                 }}
               >
                 <LogoutOutlined /> Logout
@@ -272,21 +272,21 @@ export default function MainLayout() {
         ],
       })),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isSidebarCollapsed, currentTheme, i18n.language, navigate, setCurrentTheme, store.username, storeLogout]
+    [isSidebarCollapsed, currentTheme, i18n.language, navigate, setCurrentTheme, store.username, storeLogout],
   );
 
   const getActiveSideNavKeys = useCallback(() => {
-    if (location.pathname === AppRoutes.NETWORKS_ROUTE) {
+    if (location.pathname === resolveAppRoute(AppRoutes.NETWORKS_ROUTE)) {
       return ['networks', 'all-networks'];
-    } else if (location.pathname === AppRoutes.HOSTS_ROUTE) {
+    } else if (location.pathname === resolveAppRoute(AppRoutes.HOSTS_ROUTE)) {
       return ['hosts', 'all-hosts'];
-    } else if (location.pathname === AppRoutes.CLIENTS_ROUTE) {
+    } else if (location.pathname === resolveAppRoute(AppRoutes.CLIENTS_ROUTE)) {
       return ['clients'];
-    } else if (location.pathname === AppRoutes.ENROLLMENT_KEYS_ROUTE) {
+    } else if (location.pathname === resolveAppRoute(AppRoutes.ENROLLMENT_KEYS_ROUTE)) {
       return ['enrollment-keys'];
-    } else if (location.pathname === AppRoutes.DASHBOARD_ROUTE) {
+    } else if (location.pathname === resolveAppRoute(AppRoutes.DASHBOARD_ROUTE)) {
       return ['dashboard'];
-    } else if (location.pathname === AppRoutes.USERS_ROUTE) {
+    } else if (location.pathname === resolveAppRoute(AppRoutes.USERS_ROUTE)) {
       return ['users'];
     }
   }, [location.pathname]);
@@ -315,7 +315,7 @@ export default function MainLayout() {
           }}
         >
           {/* logo */}
-          <Link to={AppRoutes.DASHBOARD_ROUTE}>
+          <Link to={resolveAppRoute(AppRoutes.DASHBOARD_ROUTE)}>
             <img
               src={sidebarLogo}
               alt={getBrandingConfig().logoAltText}
@@ -333,25 +333,25 @@ export default function MainLayout() {
             onClick={(menu) => {
               switch (menu.key) {
                 case 'dashboard':
-                  navigate(AppRoutes.DASHBOARD_ROUTE);
+                  navigate(resolveAppRoute(AppRoutes.DASHBOARD_ROUTE));
                   break;
                 case 'all-networks':
-                  navigate(AppRoutes.NETWORKS_ROUTE);
+                  navigate(resolveAppRoute(AppRoutes.NETWORKS_ROUTE));
                   break;
                 case 'hosts':
-                  navigate(AppRoutes.HOSTS_ROUTE);
+                  navigate(resolveAppRoute(AppRoutes.HOSTS_ROUTE));
                   break;
                 case 'clients':
-                  navigate(AppRoutes.CLIENTS_ROUTE);
+                  navigate(resolveAppRoute(AppRoutes.CLIENTS_ROUTE));
                   break;
                 case 'enrollment-keys':
-                  navigate(AppRoutes.ENROLLMENT_KEYS_ROUTE);
+                  navigate(resolveAppRoute(AppRoutes.ENROLLMENT_KEYS_ROUTE));
                   break;
                 case 'amui':
                   window.location = getAmuiUrl() as any;
                   break;
                 case 'users':
-                  navigate(AppRoutes.USERS_ROUTE);
+                  navigate(resolveAppRoute(AppRoutes.USERS_ROUTE));
                   break;
                 default:
                   if (menu.key.startsWith('networks/')) {

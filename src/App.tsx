@@ -1,13 +1,14 @@
 import { ConfigProvider, notification, theme } from 'antd';
 import { RouterProvider } from 'react-router-dom';
 import { router } from './routes';
-import { useStore } from './store/store';
+import { BrowserStore, useStore } from './store/store';
 import './App.scss';
 import { useCallback, useEffect, useState } from 'react';
 import { AxiosError } from 'axios';
 import { ServerConfigService } from './services/ServerConfigService';
 import ServerMalfunctionModal from './components/modals/server-malfunction-modal/ServerMalfunctionModal';
-import { getBrandingConfig } from './services/BaseService';
+import { getBrandingConfig, isSaasBuild } from './services/BaseService';
+import { reloadNmuiWithVersion } from './utils/RouteUtils';
 
 const POLL_INTERVAL = 10_000;
 
@@ -47,6 +48,11 @@ function App() {
           const hasFetched = await storeFetchServerConfig();
           if (hasFetched) {
             setHasFetchedServerConfig(true);
+
+            if (isSaasBuild && !BrowserStore.hasNmuiVersionSynced()) {
+              BrowserStore.syncNmuiVersion();
+              reloadNmuiWithVersion(store.serverConfig?.Version ?? '');
+            }
           }
         }
       }
@@ -60,13 +66,16 @@ function App() {
       storeSetServerStatus({ db_connected: true, broker_connected: true, healthyNetwork: true });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [],
   );
 
   useEffect(() => {
     // one-time effect to load favicon
-    const favicon = getBrandingConfig().favicon;
+    let favicon = getBrandingConfig().favicon;
     if (favicon) {
+      if (isSaasBuild) {
+        favicon = `/${ServerConfigService.getUiVersion()}${favicon}`;
+      }
       (document.getElementById('favicon') as HTMLLinkElement)?.setAttribute('href', favicon);
     }
   }, []);

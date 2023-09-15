@@ -15,7 +15,7 @@ import { useNavigate } from 'react-router-dom';
 import AddNetworkModal from '@/components/modals/add-network-modal/AddNetworkModal';
 import { useState } from 'react';
 import { useStore } from '@/store/store';
-import { getAmuiUrl, getLicenseDashboardUrl } from '@/utils/RouteUtils';
+import { getAmuiUrl, getLicenseDashboardUrl, resolveAppRoute } from '@/utils/RouteUtils';
 import NewHostModal from '@/components/modals/new-host-modal/NewHostModal';
 import { getBrandingConfig, isSaasBuild } from '@/services/BaseService';
 
@@ -167,13 +167,13 @@ export default function DashboardPage(props: PageProps) {
         isOpen={isAddNetworkModalOpen}
         onCreateNetwork={() => {
           setIsAddNetworkModalOpen(false);
-          navigate(AppRoutes.NETWORKS_ROUTE);
+          navigate(resolveAppRoute(AppRoutes.NETWORKS_ROUTE));
         }}
         onCancel={() => setIsAddNetworkModalOpen(false)}
       />
       <NewHostModal
         isOpen={isNewHostModalOpen}
-        onFinish={() => navigate(AppRoutes.HOSTS_ROUTE)}
+        onFinish={() => navigate(resolveAppRoute(AppRoutes.HOSTS_ROUTE))}
         onCancel={() => setIsNewHostModalOpen(false)}
       />
     </Layout.Content>

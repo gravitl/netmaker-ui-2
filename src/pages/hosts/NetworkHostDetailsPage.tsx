@@ -33,7 +33,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { PageProps } from '../../models/Page';
 import './NetworkHostDetailsPage.scss';
-import { getHostRoute, getNetworkRoute, useQuery } from '@/utils/RouteUtils';
+import { getHostRoute, getNetworkRoute, resolveAppRoute, useQuery } from '@/utils/RouteUtils';
 import { Node } from '@/models/Node';
 import { NodeConnectivityStatus } from '@/models/NodeConnectivityStatus';
 import moment from 'moment';
@@ -76,7 +76,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
         dataIndex: 'addressString',
       },
     ],
-    [host?.defaultinterface]
+    [host?.defaultinterface],
   );
 
   const onUpdateNode = useCallback(() => {
@@ -101,7 +101,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
   const loadDetails = useCallback(() => {
     setIsLoading(true);
     if (!networkId) {
-      navigate(AppRoutes.NETWORKS_ROUTE);
+      navigate(resolveAppRoute(AppRoutes.NETWORKS_ROUTE));
       return;
     }
     if (!hostId) {
@@ -141,7 +141,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
         });
       }
     },
-    [hostId, node, networkId, notify, storeDeleteNode, navigate]
+    [hostId, node, networkId, notify, storeDeleteNode, navigate],
   );
 
   const onHostToggleConnectivity = useCallback(
@@ -163,7 +163,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
         });
       }
     },
-    [hostId, node, networkId, notify, store]
+    [hostId, node, networkId, notify, store],
   );
 
   const promptConfirmDisconnect = () => {
@@ -522,7 +522,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                 host?.interfaces?.filter((iface) =>
                   `${iface.name}${iface.addressString}`
                     .toLocaleLowerCase()
-                    .includes(searchText.toLocaleLowerCase().trim())
+                    .includes(searchText.toLocaleLowerCase().trim()),
                 ) ?? []
               }
               rowKey={(iface) => `${iface.name}${iface.addressString}`}

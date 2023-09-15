@@ -1,7 +1,7 @@
 import { Host } from '@/models/Host';
 import { AppRoutes } from '@/routes';
 import { useStore } from '@/store/store';
-import { getHostRoute } from '@/utils/RouteUtils';
+import { getHostRoute, resolveAppRoute } from '@/utils/RouteUtils';
 import { MoreOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
 import {
   Button,
@@ -61,7 +61,7 @@ export default function HostsPage(props: PageProps) {
       hosts.filter((host) => {
         return host.name.toLowerCase().includes(searchText.toLowerCase());
       }),
-    [hosts, searchText]
+    [hosts, searchText],
   );
 
   const refreshHostKeys = useCallback(
@@ -85,7 +85,7 @@ export default function HostsPage(props: PageProps) {
         },
       });
     },
-    [notify]
+    [notify],
   );
 
   const confirmToggleHostDefaultness = useCallback(
@@ -107,14 +107,14 @@ export default function HostsPage(props: PageProps) {
         },
       });
     },
-    [notify, storeUpdateHost]
+    [notify, storeUpdateHost],
   );
 
   const onEditHost = useCallback(
     (host: Host) => {
       navigate(getHostRoute(host, { edit: 'true' }));
     },
-    [navigate]
+    [navigate],
   );
 
   const confirmDeleteHost = useCallback(
@@ -156,7 +156,7 @@ export default function HostsPage(props: PageProps) {
         },
       });
     },
-    [notify, store.nodes, storeDeleteHost]
+    [notify, store.nodes, storeDeleteHost],
   );
 
   const refreshAllHostKeys = useCallback(() => {
@@ -330,7 +330,7 @@ export default function HostsPage(props: PageProps) {
         },
       },
     ],
-    [confirmToggleHostDefaultness, confirmDeleteHost, onEditHost, refreshHostKeys, store.nodes]
+    [confirmToggleHostDefaultness, confirmDeleteHost, onEditHost, refreshHostKeys, store.nodes],
   );
 
   const namHostsTableCols: TableColumnsType<Host> = useMemo(
@@ -394,7 +394,7 @@ export default function HostsPage(props: PageProps) {
         },
       },
     ],
-    [confirmToggleHostDefaultness, onEditHost]
+    [confirmToggleHostDefaultness, onEditHost],
   );
 
   const networksTableCols: TableColumnsType<Network> = useMemo(
@@ -420,7 +420,7 @@ export default function HostsPage(props: PageProps) {
             title: 'Connection Status',
             render(_: any, network: Network) {
               const isConnected = store.nodes.some(
-                (node) => node.network === network.netid && node.hostid === selectedHost.id
+                (node) => node.network === network.netid && node.hostid === selectedHost.id,
               );
               return (
                 <Switch
@@ -436,7 +436,7 @@ export default function HostsPage(props: PageProps) {
                           await HostsService.updateHostsNetworks(
                             selectedHost.id,
                             network.netid,
-                            isConnected ? 'leave' : 'join'
+                            isConnected ? 'leave' : 'join',
                           );
                           notify.success({
                             message: `Host successfully ${
@@ -460,7 +460,7 @@ export default function HostsPage(props: PageProps) {
           }
         : {},
     ],
-    [notify, selectedHost, store.nodes]
+    [notify, selectedHost, store.nodes],
   );
 
   // ui components
@@ -561,7 +561,7 @@ export default function HostsPage(props: PageProps) {
         children: getNetworkAccessContent(),
       },
     ],
-    [getOverviewContent, getNetworkAccessContent]
+    [getOverviewContent, getNetworkAccessContent],
   );
 
   useEffect(() => {
@@ -666,7 +666,7 @@ export default function HostsPage(props: PageProps) {
                   <Typography.Text>
                     If a host is already registered with the server, you can add it into any network directly from the
                     dashboard. Simply go to Network Access Management tab under the{' '}
-                    <Link to={AppRoutes.HOSTS_ROUTE}>Hosts page</Link>.
+                    <Link to={resolveAppRoute(AppRoutes.HOSTS_ROUTE)}>Hosts page</Link>.
                   </Typography.Text>
                 </Card>
               </Col>
@@ -722,7 +722,7 @@ export default function HostsPage(props: PageProps) {
         isOpen={isAddNewHostModalOpen}
         onFinish={() => {
           setIsAddNewHostModalOpen(false);
-          navigate(AppRoutes.HOSTS_ROUTE);
+          navigate(resolveAppRoute(AppRoutes.HOSTS_ROUTE));
         }}
         onCancel={() => setIsAddNewHostModalOpen(false)}
       />
