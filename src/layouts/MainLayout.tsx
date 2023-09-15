@@ -4,6 +4,7 @@ import {
   GlobalOutlined,
   KeyOutlined,
   LaptopOutlined,
+  LoadingOutlined,
   LogoutOutlined,
   RightOutlined,
   // MobileOutlined,
@@ -13,7 +14,7 @@ import { Alert, Col, MenuProps, Row, Select, Switch, Typography } from 'antd';
 import { Layout, Menu, theme } from 'antd';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { getAmuiTenantsUrl, getAmuiUrl, getHostRoute, getNetworkRoute, resolveAppRoute } from '../utils/RouteUtils';
-import { useStore } from '../store/store';
+import { BrowserStore, useStore } from '../store/store';
 import { AppRoutes } from '@/routes';
 import { useTranslation } from 'react-i18next';
 import { isSaasBuild } from '@/services/BaseService';
@@ -379,7 +380,8 @@ export default function MainLayout() {
           {!isSidebarCollapsed && (
             <div style={{ marginTop: '1rem', padding: '0rem 1.5rem', fontSize: '.8rem' }}>
               <Typography.Text style={{ fontSize: 'inherit' }}>
-                UI: {ServerConfigService.getUiVersion()}
+                UI: {ServerConfigService.getUiVersion()}{' '}
+                {isSaasBuild && !BrowserStore.hasNmuiVersionSynced() && <LoadingOutlined />}
               </Typography.Text>
               <br />
               <Typography.Text style={{ fontSize: 'inherit' }} type="secondary">
