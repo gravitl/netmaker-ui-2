@@ -32,7 +32,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { PageProps } from '../../models/Page';
 
 import './HostDetailsPage.scss';
-import { useQuery } from '@/utils/RouteUtils';
+import { resolveAppRoute, useQuery } from '@/utils/RouteUtils';
 
 export default function HostDetailsPage(props: PageProps) {
   const { hostId } = useParams<{ hostId: string }>();
@@ -112,13 +112,13 @@ export default function HostDetailsPage(props: PageProps) {
   const loadHost = useCallback(() => {
     setIsLoading(true);
     if (!hostId) {
-      navigate(AppRoutes.HOSTS_ROUTE);
+      navigate(resolveAppRoute(AppRoutes.HOSTS_ROUTE));
     }
     // load from store
     const host = store.hosts.find((h) => h.id === hostId);
     if (!host) {
       notify.error({ message: `Host ${hostId} not found` });
-      navigate(AppRoutes.HOSTS_ROUTE);
+      navigate(resolveAppRoute(AppRoutes.HOSTS_ROUTE));
       return;
     }
     setHost(host);
@@ -134,7 +134,7 @@ export default function HostDetailsPage(props: PageProps) {
       await HostsService.deleteHost(hostId, true);
       notify.success({ message: `Host ${host?.name} deleted` });
       storeDeleteHost(hostId);
-      navigate(AppRoutes.HOSTS_ROUTE);
+      navigate(resolveAppRoute(AppRoutes.HOSTS_ROUTE));
     } catch (err) {
       if (err instanceof AxiosError) {
         notify.error({
@@ -485,7 +485,7 @@ export default function HostDetailsPage(props: PageProps) {
         {/* top bar */}
         <Row className="tabbed-page-row-padding">
           <Col xs={24}>
-            <Link to={AppRoutes.HOSTS_ROUTE}>View All Hosts</Link>
+            <Link to={resolveAppRoute(AppRoutes.HOSTS_ROUTE)}>View All Hosts</Link>
             <Row>
               <Col xs={18}>
                 <Typography.Title level={2} style={{ marginTop: '.5rem', marginBottom: '2rem' }}>

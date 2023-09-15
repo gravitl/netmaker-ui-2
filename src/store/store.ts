@@ -29,3 +29,12 @@ export const useStore = create<INodeSlice & IAppSlice & INetworkSlice & IAuthSli
     ),
   ),
 );
+
+export const BrowserStore = {
+  hasNmuiVersionSynced: (): boolean => {
+    return window.sessionStorage.getItem('hasNmuiVersionSynced') === 'true';
+  },
+  syncNmuiVersion: () => {
+    window.sessionStorage.setItem('hasNmuiVersionSynced', 'true');
+  },
+};

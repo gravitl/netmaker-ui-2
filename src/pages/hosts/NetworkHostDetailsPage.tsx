@@ -33,7 +33,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { PageProps } from '../../models/Page';
 import './NetworkHostDetailsPage.scss';
-import { getHostRoute, getNetworkRoute, useQuery } from '@/utils/RouteUtils';
+import { getHostRoute, getNetworkRoute, resolveAppRoute, useQuery } from '@/utils/RouteUtils';
 import { Node } from '@/models/Node';
 import { NodeConnectivityStatus } from '@/models/NodeConnectivityStatus';
 import { DATE_TIME_FORMAT } from '@/constants/AppConstants';
@@ -101,7 +101,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
   const loadDetails = useCallback(() => {
     setIsLoading(true);
     if (!networkId) {
-      navigate(AppRoutes.NETWORKS_ROUTE);
+      navigate(resolveAppRoute(AppRoutes.NETWORKS_ROUTE));
       return;
     }
     if (!hostId) {

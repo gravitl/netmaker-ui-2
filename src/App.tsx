@@ -1,16 +1,17 @@
 import { ConfigProvider, theme } from 'antd';
 import { RouterProvider } from 'react-router-dom';
 import { router } from './routes';
-import { useStore } from './store/store';
+import { BrowserStore, useStore } from './store/store';
 import './App.scss';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AxiosError } from 'axios';
 import { ServerConfigService } from './services/ServerConfigService';
 import ServerMalfunctionModal from './components/modals/server-malfunction-modal/ServerMalfunctionModal';
-import { getBrandingConfig } from './services/BaseService';
 import { APP_UPDATE_POLL_INTERVAL } from './constants/AppConstants';
 import { useIntercom } from 'react-use-intercom';
 import { IntercomTiers } from './models/ServerConfig';
+import { getBrandingConfig, isSaasBuild } from './services/BaseService';
+import { reloadNmuiWithVersion } from './utils/RouteUtils';
 
 function App() {
   const store = useStore();
@@ -95,11 +96,16 @@ function App() {
         const hasFetched = await storeFetchServerConfig();
         if (hasFetched) {
           setHasFetchedServerConfig(true);
+
+          if (isSaasBuild && !BrowserStore.hasNmuiVersionSynced()) {
+            BrowserStore.syncNmuiVersion();
+            reloadNmuiWithVersion(store.serverConfig?.Version ?? '');
+          }
         }
       }
     }, APP_UPDATE_POLL_INTERVAL);
     return () => clearInterval(id);
-  }, [getUpdates, hasFetchedServerConfig, storeFetchServerConfig, storeIsLoggedIn]);
+  }, [getUpdates, hasFetchedServerConfig, store.serverConfig?.Version, storeFetchServerConfig, storeIsLoggedIn]);
 
   useEffect(() => {
     if (isIntercomReady) {
@@ -135,8 +141,11 @@ function App() {
 
   useEffect(() => {
     // one-time effect to load favicon
-    const favicon = getBrandingConfig().favicon;
+    let favicon = getBrandingConfig().favicon;
     if (favicon) {
+      if (isSaasBuild) {
+        favicon = `/${ServerConfigService.getUiVersion()}${favicon}`;
+      }
       (document.getElementById('favicon') as HTMLLinkElement)?.setAttribute('href', favicon);
     }
   }, []);

@@ -12,7 +12,7 @@ import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { UsersService } from '@/services/UsersService';
 import { User } from '@/models/User';
 import { ApiRoutes } from '@/constants/ApiRoutes';
-import { truncateQueryParamsFromCurrentUrl, useQuery } from '@/utils/RouteUtils';
+import { resolveAppRoute, truncateQueryParamsFromCurrentUrl, useQuery } from '@/utils/RouteUtils';
 import { AppErrorBoundary } from '@/components/AppErrorBoundary';
 
 interface LoginPageProps {
@@ -61,7 +61,7 @@ export default function LoginPage(props: LoginPageProps) {
 
   const checkIfServerHasAdminAndRedirect = useCallback(async () => {
     const hasAdmin = (await UsersService.serverHasAdmin()).data;
-    if (!hasAdmin) navigate(AppRoutes.SIGNUP_ROUTE);
+    if (!hasAdmin) navigate(resolveAppRoute(AppRoutes.SIGNUP_ROUTE));
   }, [navigate]);
 
   const onSSOLogin = useCallback(() => {
@@ -86,7 +86,7 @@ export default function LoginPage(props: LoginPageProps) {
     store.setStore({ jwt: token, baseUrl: backend });
     truncateQueryParamsFromCurrentUrl();
     // TODO: load username
-    navigate(AppRoutes.DASHBOARD_ROUTE);
+    navigate(resolveAppRoute(AppRoutes.DASHBOARD_ROUTE));
     return null;
   } else {
     if (oauthToken) {
@@ -95,13 +95,13 @@ export default function LoginPage(props: LoginPageProps) {
         getUserAndUpdateInStore(oauthUser);
       }
       truncateQueryParamsFromCurrentUrl();
-      navigate(AppRoutes.DASHBOARD_ROUTE);
+      navigate(resolveAppRoute(AppRoutes.DASHBOARD_ROUTE));
       return null;
     }
   }
 
   if (store.isLoggedIn()) {
-    navigate(AppRoutes.DASHBOARD_ROUTE);
+    navigate(resolveAppRoute(AppRoutes.DASHBOARD_ROUTE));
   }
 
   return (

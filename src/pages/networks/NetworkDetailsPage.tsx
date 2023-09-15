@@ -16,7 +16,7 @@ import { NetworksService } from '@/services/NetworksService';
 import { NodesService } from '@/services/NodesService';
 import { useStore } from '@/store/store';
 import { getExtendedNode, isNodeRelay } from '@/utils/NodeUtils';
-import { getNetworkHostRoute } from '@/utils/RouteUtils';
+import { getNetworkHostRoute, resolveAppRoute } from '@/utils/RouteUtils';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import {
   CheckOutlined,
@@ -2802,13 +2802,13 @@ export default function NetworkDetailsPage(props: PageProps) {
     setIsLoading(true);
     // route to networks if id is not present
     if (!networkId) {
-      navigate(AppRoutes.NETWORKS_ROUTE);
+      navigate(resolveAppRoute(AppRoutes.NETWORKS_ROUTE));
     }
     // load from store
     const network = store.networks.find((network) => network.netid === networkId);
     if (!network) {
       notify.error({ message: `Network ${networkId} not found` });
-      navigate(AppRoutes.NETWORKS_ROUTE);
+      navigate(resolveAppRoute(AppRoutes.NETWORKS_ROUTE));
       return;
     }
     setNetwork(network);
@@ -2860,7 +2860,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       await NetworksService.deleteNetwork(networkId);
       notify.success({ message: `Network ${networkId} deleted` });
       store.deleteNetwork(networkId);
-      navigate(AppRoutes.NETWORKS_ROUTE);
+      navigate(resolveAppRoute(AppRoutes.NETWORKS_ROUTE));
     } catch (err) {
       if (err instanceof AxiosError) {
         notify.error({
@@ -2902,7 +2902,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   }, [form, network]);
 
   if (!networkId) {
-    navigate(AppRoutes.NETWORKS_ROUTE);
+    navigate(resolveAppRoute(AppRoutes.NETWORKS_ROUTE));
     return null;
   }
 
@@ -2916,7 +2916,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         {/* top bar */}
         <Row className="tabbed-page-row-padding">
           <Col xs={24}>
-            <Link to={AppRoutes.NETWORKS_ROUTE}>View All Networks</Link>
+            <Link to={resolveAppRoute(AppRoutes.NETWORKS_ROUTE)}>View All Networks</Link>
             <Row>
               <Col xs={18}>
                 <Typography.Title level={2} style={{ marginTop: '.5rem', marginBottom: '2rem' }}>

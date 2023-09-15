@@ -1,7 +1,7 @@
 import { Host } from '@/models/Host';
 import { AppRoutes } from '@/routes';
 import { useStore } from '@/store/store';
-import { getHostRoute } from '@/utils/RouteUtils';
+import { getHostRoute, resolveAppRoute } from '@/utils/RouteUtils';
 import { MoreOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
 import {
   Button,
@@ -371,7 +371,7 @@ export default function HostsPage(props: PageProps) {
         },
       },
     ],
-    [confirmToggleHostDefaultness, confirmDeleteHost, onEditHost, refreshHostKeys, store.nodes],
+    [store.nodes, requestHostPull, confirmToggleHostDefaultness, refreshHostKeys, onEditHost, confirmDeleteHost],
   );
 
   const namHostsTableCols: TableColumnsType<Host> = useMemo(
@@ -707,7 +707,7 @@ export default function HostsPage(props: PageProps) {
                   <Typography.Text>
                     If a host is already registered with the server, you can add it into any network directly from the
                     dashboard. Simply go to Network Access Management tab under the{' '}
-                    <Link to={AppRoutes.HOSTS_ROUTE}>Hosts page</Link>.
+                    <Link to={resolveAppRoute(AppRoutes.HOSTS_ROUTE)}>Hosts page</Link>.
                   </Typography.Text>
                 </Card>
               </Col>
@@ -763,7 +763,7 @@ export default function HostsPage(props: PageProps) {
         isOpen={isAddNewHostModalOpen}
         onFinish={() => {
           setIsAddNewHostModalOpen(false);
-          navigate(AppRoutes.HOSTS_ROUTE);
+          navigate(resolveAppRoute(AppRoutes.HOSTS_ROUTE));
         }}
         onCancel={() => setIsAddNewHostModalOpen(false)}
       />
