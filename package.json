@@ -65,7 +65,7 @@
     "sass": "^1.66.1",
     "typescript": "^5.2.2",
     "vite": "^4.4.9",
-    "vitest": "^0.34.1"
+    "vitest": "^0.34.4"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": "eslint --cache --fix"
