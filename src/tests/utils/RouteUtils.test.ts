@@ -29,6 +29,7 @@ const testHost: Host = {
   nodes: [],
   isdefault: false,
   nat_type: '',
+  persistentkeepalive: 0,
 };
 
 const testNetwork: Network = {

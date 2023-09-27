@@ -132,15 +132,6 @@ export default function UpdateNodeModal({ isOpen, node, onUpdateNode, onCancel }
             </Form.Item>
 
             <Form.Item
-              label="Persistent Keepalive"
-              name="persistentkeepalive"
-              rules={[{ required: true }]}
-              data-nmui-intercom="update-node-form_persistentkeepalive"
-            >
-              <InputNumber placeholder="Persistent keepalive" min={0} style={{ width: '100%' }} />
-            </Form.Item>
-
-            <Form.Item
               label="Expiration Date"
               name="expdatetime"
               rules={[{ required: true }]}

@@ -8,7 +8,6 @@ const testNode: Node = {
   address: '',
   address6: '',
   localaddress: '',
-  persistentkeepalive: 0,
   interface: '',
   macaddress: '',
   lastmodified: 0,

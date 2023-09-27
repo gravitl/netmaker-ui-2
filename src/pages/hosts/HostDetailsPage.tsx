@@ -67,7 +67,7 @@ export default function HostDetailsPage(props: PageProps) {
         dataIndex: 'addressString',
       },
     ],
-    [host?.defaultinterface],
+    [host?.defaultinterface]
   );
 
   const onUpdateHost = useCallback(() => {
@@ -318,6 +318,17 @@ export default function HostDetailsPage(props: PageProps) {
           </Row>
           <Row
             style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+            data-nmui-intercom="host-details_persistentkeepalive"
+          >
+            <Col xs={12}>
+              <Typography.Text disabled>Persistent Keepalive</Typography.Text>
+            </Col>
+            <Col xs={12}>
+              <Typography.Text>{host?.persistentkeepalive ?? ''}</Typography.Text>
+            </Col>
+          </Row>
+          <Row
+            style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
             data-nmui-intercom="host-details_publickey"
           >
             <Col xs={12}>
@@ -437,7 +448,7 @@ export default function HostDetailsPage(props: PageProps) {
                 host?.interfaces?.filter((iface) =>
                   `${iface.name}${iface.addressString}`
                     .toLocaleLowerCase()
-                    .includes(searchText.toLocaleLowerCase().trim()),
+                    .includes(searchText.toLocaleLowerCase().trim())
                 ) ?? []
               }
               rowKey={(iface) => `${iface.name}${iface.addressString}`}

@@ -49,7 +49,7 @@ function generateRoutePair(path: string, element: JSX.Element): RouteObject[] {
           element,
           caseSensitive: false,
         }
-      : [],
+      : []
   );
 }
 
@@ -63,54 +63,54 @@ const routes: RouteObject[] = [
         '',
         <ProtectedRoute>
           <DashboardPage isFullScreen={false} />
-        </ProtectedRoute>,
+        </ProtectedRoute>
       ),
       ...generateRoutePair(
         AppRoutes.HOSTS_ROUTE.split('/').slice(1).join('/'),
         <ProtectedRoute>
           <HostsPage isFullScreen />
-        </ProtectedRoute>,
+        </ProtectedRoute>
       ),
       ...generateRoutePair(
         AppRoutes.HOST_ROUTE.split('/').slice(1).join('/'),
         <ProtectedRoute>
           <HostDetailsPage isFullScreen />
-        </ProtectedRoute>,
+        </ProtectedRoute>
       ),
       ...generateRoutePair(
         AppRoutes.NEW_HOST_ROUTE.split('/').slice(1).join('/'),
         <ProtectedRoute>
           <NewHostPage isFullScreen />
-        </ProtectedRoute>,
+        </ProtectedRoute>
       ),
       ...generateRoutePair(
         AppRoutes.ENROLLMENT_KEYS_ROUTE.split('/').slice(1).join('/'),
         <ProtectedRoute>
           <EnrollmentKeysPage isFullScreen />
-        </ProtectedRoute>,
+        </ProtectedRoute>
       ),
       ...generateRoutePair(AppRoutes.NETWORKS_ROUTE.split('/').slice(1).join('/'), <NetworksPage isFullScreen />),
       ...generateRoutePair(
         AppRoutes.NETWORK_DETAILS_ROUTE.split('/').slice(1).join('/'),
-        <NetworkDetailsPage isFullScreen />,
+        <NetworkDetailsPage isFullScreen />
       ),
       ...generateRoutePair(
         AppRoutes.NETWORK_HOST_ROUTE.split('/').slice(1).join('/'),
         <ProtectedRoute>
           <NetworkHostDetailsPage isFullScreen />
-        </ProtectedRoute>,
+        </ProtectedRoute>
       ),
       ...generateRoutePair(
         AppRoutes.ENROLLMENT_KEYS_ROUTE.split('/').slice(1).join('/'),
         <ProtectedRoute>
           <EnrollmentKeysPage isFullScreen />
-        </ProtectedRoute>,
+        </ProtectedRoute>
       ),
       ...generateRoutePair(
         AppRoutes.USERS_ROUTE.split('/').slice(1).join('/'),
         <ProtectedRoute>
           <UsersPage isFullScreen />
-        </ProtectedRoute>,
+        </ProtectedRoute>
       ),
     ],
   },

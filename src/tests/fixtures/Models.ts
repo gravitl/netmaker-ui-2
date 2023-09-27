@@ -24,6 +24,7 @@ export const stubHost1: Host = {
   nodes: [],
   isdefault: false,
   nat_type: 'public',
+  persistentkeepalive: 0,
 };
 
 export const stubHost2: Host = {
@@ -46,6 +47,7 @@ export const stubHost2: Host = {
   nodes: [],
   isdefault: false,
   nat_type: 'asymmetric',
+  persistentkeepalive: 0,
 };
 
 export const stubHosts: Host[] = [stubHost1, stubHost2];
@@ -104,7 +106,6 @@ export const stubNode1: Node = {
   address: '',
   address6: '',
   localaddress: '',
-  persistentkeepalive: 0,
   interface: '',
   macaddress: '',
   lastmodified: 0,
@@ -137,7 +138,6 @@ export const stubNode2: Node = {
   address: '',
   address6: '',
   localaddress: '',
-  persistentkeepalive: 0,
   interface: '',
   macaddress: '',
   lastmodified: 0,
