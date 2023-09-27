@@ -76,7 +76,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
         dataIndex: 'addressString',
       },
     ],
-    [host?.defaultinterface]
+    [host?.defaultinterface],
   );
 
   const onUpdateNode = useCallback(() => {
@@ -141,7 +141,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
         });
       }
     },
-    [hostId, node, networkId, notify, storeDeleteNode, navigate]
+    [hostId, node, networkId, notify, storeDeleteNode, navigate],
   );
 
   const onHostToggleConnectivity = useCallback(
@@ -163,7 +163,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
         });
       }
     },
-    [hostId, node, networkId, notify, store]
+    [hostId, node, networkId, notify, store],
   );
 
   const promptConfirmDisconnect = () => {
@@ -458,6 +458,17 @@ export default function NetworkHostDetailsPage(props: PageProps) {
               </Row>
               <Row
                 style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+                data-nmui-intercom="network-host-details_hostpersistentkeepalive"
+              >
+                <Col xs={12}>
+                  <Typography.Text disabled>Persistent Keepalive</Typography.Text>
+                </Col>
+                <Col xs={12}>
+                  <Typography.Text>{host.persistentkeepalive}</Typography.Text>
+                </Col>
+              </Row>
+              <Row
+                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
                 data-nmui-intercom="network-host-details_hostpublickey"
               >
                 <Col xs={12}>
@@ -573,7 +584,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                 host?.interfaces?.filter((iface) =>
                   `${iface.name}${iface.addressString}`
                     .toLocaleLowerCase()
-                    .includes(searchText.toLocaleLowerCase().trim())
+                    .includes(searchText.toLocaleLowerCase().trim()),
                 ) ?? []
               }
               rowKey={(iface) => `${iface.name}${iface.addressString}`}
