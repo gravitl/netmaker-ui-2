@@ -42,6 +42,7 @@ export default function MainLayout() {
   const branding = useBranding();
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [openSidebarMenus, setOpenSidebarMenus] = useState(['networks']);
 
   const recentNetworks = useMemo(
     // TODO: implement most recent ranking
@@ -326,6 +327,8 @@ export default function MainLayout() {
           {/* logo */}
           <Link to={resolveAppRoute(AppRoutes.DASHBOARD_ROUTE)}>
             <img
+              loading="eager"
+              referrerPolicy="no-referrer"
               src={sidebarLogo}
               alt={branding.logoAltText}
               style={{ width: '100%', padding: '1rem 2rem 1rem 2rem' }}
@@ -337,8 +340,11 @@ export default function MainLayout() {
             mode="inline"
             selectedKeys={getActiveSideNavKeys()}
             items={sideNavItems}
-            defaultOpenKeys={['networks', 'hosts']}
+            openKeys={openSidebarMenus}
             style={{ borderRight: 'none' }}
+            onOpenChange={(keys: string[]) => {
+              setOpenSidebarMenus(keys);
+            }}
             onClick={(menu) => {
               switch (menu.key) {
                 case 'dashboard':
