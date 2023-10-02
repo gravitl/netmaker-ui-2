@@ -4,7 +4,6 @@ import { produce } from 'immer';
 
 import { en } from './resources/en';
 import { fr } from './resources/fr';
-import { de } from './resources/de';
 
 // the translations
 // (tip move them in a JSON file and import them,
@@ -15,9 +14,6 @@ const resources: Resource = {
   },
   fr: {
     translation: fr,
-  },
-  de: {
-    translation: de,
   },
 };
 
