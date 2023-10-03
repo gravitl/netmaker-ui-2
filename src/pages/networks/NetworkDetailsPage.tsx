@@ -3155,6 +3155,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         isOpen={isAddNewHostModalOpen}
         onFinish={() => setIsAddNewHostModalOpen(false)}
         onCancel={() => setIsAddNewHostModalOpen(false)}
+        networkId={networkId}
       />
       <AddIngressModal
         isOpen={isAddClientGatewayModalOpen}

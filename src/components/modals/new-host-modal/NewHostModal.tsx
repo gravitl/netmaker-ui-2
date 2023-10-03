@@ -32,6 +32,7 @@ interface NewHostModal {
   isOpen: boolean;
   onFinish?: () => void;
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
+  networkId?: string;
 }
 
 const steps = [
@@ -46,7 +47,7 @@ const steps = [
   },
 ];
 
-export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModal) {
+export default function NewHostModal({ isOpen, onCancel, onFinish, networkId }: NewHostModal) {
   const store = useStore();
   const [notify, notifyCtx] = notification.useNotification();
 
@@ -92,6 +93,13 @@ export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModa
   const loadEnrollmentKeys = useCallback(async () => {
     try {
       const keys = (await EnrollmentKeysService.getEnrollmentKeys()).data;
+
+      if (networkId) {
+        const filteredKeys = keys.filter((key) => key.networks.includes(networkId));
+        setEnrollmentKeys(filteredKeys);
+        return;
+      }
+
       setEnrollmentKeys(keys);
     } catch (err) {
       notify.error({
@@ -100,7 +108,7 @@ export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModa
       });
       console.error(err);
     }
-  }, [notify]);
+  }, [notify, networkId]);
 
   const resetModal = () => {
     setCurrentStep(0);
@@ -552,6 +560,7 @@ export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModa
         onCancel={() => {
           setIsAddEnrollmentKeyModalOpen(false);
         }}
+        networkId={networkId}
       />
     </Modal>
   );
