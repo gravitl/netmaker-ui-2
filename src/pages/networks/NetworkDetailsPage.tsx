@@ -1306,10 +1306,17 @@ export default function NetworkDetailsPage(props: PageProps) {
         return [
           {
             title: '',
-            width: '10rem',
+            width: '5rem',
+            fixed: 'left',
             render(_, entry) {
               return (
-                <Typography.Text onClick={() => setFilteredMetricNodeId(entry.nodeId)}>
+                <Typography.Text
+                  style={{
+                    width: '5rem',
+                    wordBreak: 'keep-all',
+                  }}
+                  onClick={() => setFilteredMetricNodeId(entry.nodeId)}
+                >
                   {entry.nodeName}
                 </Typography.Text>
               );
@@ -1330,10 +1337,17 @@ export default function NetworkDetailsPage(props: PageProps) {
         return [
           {
             title: '',
-            width: '10rem',
+            width: '5rem',
+            fixed: 'left',
             render(_, entry) {
               return (
-                <Typography.Text onClick={() => setFilteredMetricNodeId(entry.nodeId)}>
+                <Typography.Text
+                  style={{
+                    width: '5rem',
+                    wordBreak: 'keep-all',
+                  }}
+                  onClick={() => setFilteredMetricNodeId(entry.nodeId)}
+                >
                   {entry.nodeName}
                 </Typography.Text>
               );
@@ -1354,10 +1368,17 @@ export default function NetworkDetailsPage(props: PageProps) {
         return [
           {
             title: '',
-            width: '10rem',
+            width: '5rem',
+            fixed: 'left',
             render(_, entry) {
               return (
-                <Typography.Text onClick={() => setFilteredMetricNodeId(entry.nodeId)}>
+                <Typography.Text
+                  style={{
+                    width: '5rem',
+                    wordBreak: 'keep-all',
+                  }}
+                  onClick={() => setFilteredMetricNodeId(entry.nodeId)}
+                >
                   {entry.nodeName}
                 </Typography.Text>
               );
@@ -1378,10 +1399,17 @@ export default function NetworkDetailsPage(props: PageProps) {
         return [
           {
             title: '',
-            width: '10rem',
+            width: '5rem',
+            fixed: 'left',
             render(_, entry) {
               return (
-                <Typography.Text onClick={() => setFilteredMetricNodeId(entry.nodeId)}>
+                <Typography.Text
+                  style={{
+                    width: '5rem',
+                    wordBreak: 'keep-all',
+                  }}
+                  onClick={() => setFilteredMetricNodeId(entry.nodeId)}
+                >
                   {entry.nodeName}
                 </Typography.Text>
               );
@@ -1402,10 +1430,17 @@ export default function NetworkDetailsPage(props: PageProps) {
         return [
           {
             title: '',
-            width: '10rem',
+            width: '5rem',
+            fixed: 'left',
             render(_, entry) {
               return (
-                <Typography.Text onClick={() => setFilteredMetricNodeId(entry.nodeId)}>
+                <Typography.Text
+                  style={{
+                    width: '5rem',
+                    wordBreak: 'keep-all',
+                  }}
+                  onClick={() => setFilteredMetricNodeId(entry.nodeId)}
+                >
                   {entry.nodeName}
                 </Typography.Text>
               );
@@ -1439,6 +1474,8 @@ export default function NetworkDetailsPage(props: PageProps) {
       {
         title: 'Client Name',
         dataIndex: 'node_name',
+        width: '5rem',
+        fixed: 'left',
       },
       {
         title: 'Connected',
@@ -2678,7 +2715,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   className="connectivity-status-metrics-table"
                   rowKey="nodeId"
                   size="small"
-                  pagination={false}
+                  pagination={{ pageSize: 100 }}
                 />
               )}
               {currentMetric === 'latency' && (
@@ -2688,7 +2725,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   className="latency-metrics-table"
                   rowKey="nodeId"
                   size="small"
-                  pagination={false}
+                  pagination={{ pageSize: 100 }}
                 />
               )}
               {currentMetric === 'bytes-sent' && (
@@ -2698,7 +2735,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   className="bytes-sent-metrics-table"
                   rowKey="nodeId"
                   size="small"
-                  pagination={false}
+                  pagination={{ pageSize: 100 }}
                 />
               )}
               {currentMetric === 'bytes-received' && (
@@ -2708,7 +2745,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   className="bytes-received-metrics-table"
                   rowKey="nodeId"
                   size="small"
-                  pagination={false}
+                  pagination={{ pageSize: 100 }}
                 />
               )}
               {currentMetric === 'uptime' && (
@@ -2718,7 +2755,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   className="latency-metrics-table"
                   rowKey="nodeId"
                   size="small"
-                  pagination={false}
+                  pagination={{ pageSize: 100 }}
                 />
               )}
               {currentMetric === 'clients' && (
@@ -2728,7 +2765,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   className="clients-metrics-table"
                   rowKey="node_name"
                   size="small"
-                  pagination={false}
+                  pagination={{ pageSize: 100 }}
                 />
               )}
             </div>

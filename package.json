@@ -12,9 +12,9 @@
     "lint": "eslint src/ --ext .js,.jsx,.ts,.tsx",
     "format": "prettier --write src/",
     "prepare": "husky install",
-    "predev": "scripts/resolve-asset-path.sh",
-    "postdev": "scripts/reset-asset-path.sh",
-    "prebuild": "scripts/resolve-asset-path.sh"
+    "predev": "node scripts/resolve-asset-path.cjs",
+    "postdev": "node scripts/reset-asset-path.cjs",
+    "prebuild": "node scripts/resolve-asset-path.cjs"
   },
   "dependencies": {
     "@ant-design/icons": "^5.0.1",
