@@ -17,7 +17,6 @@ LABEL \
 WORKDIR /usr/app
 COPY . /usr/app
 
-RUN chmod +x scripts/*.sh
 RUN apk add --no-cache jq
 
 # Switch for SaaS or Standalone build
