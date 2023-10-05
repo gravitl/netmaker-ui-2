@@ -32,7 +32,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { PageProps } from '../../models/Page';
 
 import './HostDetailsPage.scss';
-import { useQuery } from '@/utils/RouteUtils';
+import { resolveAppRoute, useQuery } from '@/utils/RouteUtils';
 
 export default function HostDetailsPage(props: PageProps) {
   const { hostId } = useParams<{ hostId: string }>();
@@ -112,13 +112,13 @@ export default function HostDetailsPage(props: PageProps) {
   const loadHost = useCallback(() => {
     setIsLoading(true);
     if (!hostId) {
-      navigate(AppRoutes.HOSTS_ROUTE);
+      navigate(resolveAppRoute(AppRoutes.HOSTS_ROUTE));
     }
     // load from store
     const host = store.hosts.find((h) => h.id === hostId);
     if (!host) {
       notify.error({ message: `Host ${hostId} not found` });
-      navigate(AppRoutes.HOSTS_ROUTE);
+      navigate(resolveAppRoute(AppRoutes.HOSTS_ROUTE));
       return;
     }
     setHost(host);
@@ -134,7 +134,7 @@ export default function HostDetailsPage(props: PageProps) {
       await HostsService.deleteHost(hostId, true);
       notify.success({ message: `Host ${host?.name} deleted` });
       storeDeleteHost(hostId);
-      navigate(AppRoutes.HOSTS_ROUTE);
+      navigate(resolveAppRoute(AppRoutes.HOSTS_ROUTE));
     } catch (err) {
       if (err instanceof AxiosError) {
         notify.error({
@@ -213,6 +213,28 @@ export default function HostDetailsPage(props: PageProps) {
         } catch (err) {
           notify.error({
             message: 'Failed to refresh host keys',
+            description: extractErrorMsg(err as any),
+          });
+        }
+      },
+    });
+  }, [notify, hostId]);
+
+  const requestHostPull = useCallback(() => {
+    if (!hostId) return;
+    Modal.confirm({
+      title: 'Synchronise host',
+      content: `This will trigger this host to pull latest network(s) state from the server. Proceed?`,
+      onOk: async () => {
+        try {
+          await HostsService.requestHostPull(hostId);
+          notify.success({
+            message: 'Host is syncing...',
+            description: `Host pull has been initiated. This may take a while.`,
+          });
+        } catch (err) {
+          notify.error({
+            message: 'Failed to synchronise host',
             description: extractErrorMsg(err as any),
           });
         }
@@ -463,7 +485,7 @@ export default function HostDetailsPage(props: PageProps) {
         {/* top bar */}
         <Row className="tabbed-page-row-padding">
           <Col xs={24}>
-            <Link to={AppRoutes.HOSTS_ROUTE}>View All Hosts</Link>
+            <Link to={resolveAppRoute(AppRoutes.HOSTS_ROUTE)}>View All Hosts</Link>
             <Row>
               <Col xs={18}>
                 <Typography.Title level={2} style={{ marginTop: '.5rem', marginBottom: '2rem' }}>
@@ -488,6 +510,14 @@ export default function HostDetailsPage(props: PageProps) {
                             {host?.isdefault ? 'Unmake default' : 'Make default'}
                           </Typography.Text>
                         ),
+                      },
+                      {
+                        key: 'sync',
+                        label: <Typography.Text>Sync</Typography.Text>,
+                        onClick: (ev) => {
+                          ev.domEvent.stopPropagation();
+                          requestHostPull();
+                        },
                       },
                       {
                         key: 'refresh-key',

@@ -4,6 +4,8 @@ import { User } from '@/models/User';
 import { UpdateUserReqDto } from './dtos/UserDtos';
 import { UserGroup } from '@/models/UserGroup';
 import { CreateUserReqDto } from './dtos/UserDtos';
+import { Node } from '@/models/Node';
+import { GatewayUsersResDto } from './dtos/GatewayUsersResDto';
 
 function getUsers() {
   return axiosService.get<User[]>(ApiRoutes.USERS);
@@ -14,11 +16,11 @@ function getUser(username: User['username']) {
 }
 
 function serverHasAdmin() {
-  return axiosService.get<boolean>(`${ApiRoutes.USERS_ADMIN}/hasadmin`);
+  return axiosService.get<boolean>(`${ApiRoutes.USERS_ADMIN}/hassuperadmin`);
 }
 
 function createAdminUser(payload: CreateUserReqDto) {
-  return axiosService.post<User>(`${ApiRoutes.USERS_ADMIN}/createadmin`, payload);
+  return axiosService.post<User>(`${ApiRoutes.USERS_ADMIN}/createsuperadmin`, payload);
 }
 
 function createUser(payload: User) {
@@ -55,6 +57,22 @@ function deleteUserGroup(userGroupName: UserGroup) {
   return axiosService.delete<void>(`${ApiRoutes.USER_GROUPS}/${userGroupName}`);
 }
 
+function attachUserToIngress(username: User['username'], ingressId: Node['id']) {
+  return axiosService.post<void>(`${ApiRoutes.USERS}/${username}/remote_access_gw/${ingressId}`);
+}
+
+function removeUserFromIngress(username: User['username'], ingressId: Node['id']) {
+  return axiosService.delete<void>(`${ApiRoutes.USERS}/${username}/remote_access_gw/${ingressId}`);
+}
+
+function transferSuperAdminRights(username: User['username']) {
+  return axiosService.post<void>(`${ApiRoutes.USERS_ADMIN}/transfersuperadmin/${username}`);
+}
+
+function getIngressUsers(nodeId: Node['id']) {
+  return axiosService.get<GatewayUsersResDto>(`${ApiRoutes.USERS}/ingress/${nodeId}`);
+}
+
 export const UsersService = {
   getUsers,
   getUser,
@@ -68,4 +86,8 @@ export const UsersService = {
   createUserGroup,
   getUserGroups,
   deleteUserGroup,
+  attachUserToIngress,
+  removeUserFromIngress,
+  transferSuperAdminRights,
+  getIngressUsers,
 };

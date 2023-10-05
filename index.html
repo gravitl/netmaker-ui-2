@@ -3,18 +3,33 @@
 
 <head>
   <meta charset="UTF-8" />
-  <link id="favicon" rel="icon" type="image/svg+xml" href="/favicon.ico" />
+  <link id="favicon" rel="icon" type="image/svg+xml" href="about:blank" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard</title>
 
   <meta name="description" content="Easily manage your WireGaurd networks. VPN supervision can be easy :)" />
   <meta name='authors' content='Dillon Carns, Alex Feiszli, Kwesi Frempong-Smart and Netmaker Inc.' />
+
+  <style>
+    html,
+    body {
+      margin: 0px;
+      padding: 0px;
+    }
+  </style>
 </head>
 
 <body>
+  <div id="nmui-loading"
+    style="position: absolute; z-index: 1000; height: 100%; width: 100%; display: flex; justify-content: center; align-items: center; background-color: #000000;">
+    <img src="###ASSET_BASE_PATH###/loader.svg" alt="loading" loading="eager">
+  </div>
+
   <div id="root"></div>
+
   <noscript>Please <a href="https://www.enablejavascript.io/" target="_blank" referrerpolicy="no-referrer">enable JavaScript</a> to run this application.</noscript>
-  <script type="text/javascript" src="/nmui-config.js"></script>
+
+  <script type="text/javascript" src="###ASSET_BASE_PATH###/nmui-config.js"></script>
   <script type="module" src="/src/main.tsx"></script>
 </body>
 

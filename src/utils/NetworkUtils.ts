@@ -1,5 +1,4 @@
 import { Network, NetworkPayload } from '@/models/Network';
-import { getBrandingConfig } from '@/services/BaseService';
 
 const convertStringToArray = (commaSeparatedData: string) => {
   const data = commaSeparatedData.split(',');

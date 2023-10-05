@@ -3,7 +3,7 @@ import { AuthService } from '@/services/AuthService';
 import { LoginDto } from '@/services/dtos/LoginDto';
 import { useStore } from '@/store/store';
 import { LockOutlined, MailOutlined } from '@ant-design/icons';
-import { Button, Checkbox, Col, Divider, Form, Input, Layout, notification, Row, Typography } from 'antd';
+import { Button, Checkbox, Col, Divider, Form, Image, Input, Layout, notification, Row, Typography } from 'antd';
 import { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -12,8 +12,9 @@ import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { UsersService } from '@/services/UsersService';
 import { User } from '@/models/User';
 import { ApiRoutes } from '@/constants/ApiRoutes';
-import { truncateQueryParamsFromCurrentUrl, useQuery } from '@/utils/RouteUtils';
+import { resolveAppRoute, truncateQueryParamsFromCurrentUrl, useQuery } from '@/utils/RouteUtils';
 import { AppErrorBoundary } from '@/components/AppErrorBoundary';
+import { useBranding } from '@/utils/Utils';
 
 interface LoginPageProps {
   isFullScreen?: boolean;
@@ -29,6 +30,8 @@ export default function LoginPage(props: LoginPageProps) {
   const { t } = useTranslation();
   const query = useQuery();
   const location = useLocation();
+  const currentTheme = store.currentTheme;
+  const branding = useBranding();
 
   const oauthToken = query.get('login');
   const oauthUser = query.get('user');
@@ -38,6 +41,11 @@ export default function LoginPage(props: LoginPageProps) {
   const getUserAndUpdateInStore = async (username: User['username']) => {
     try {
       const user = await (await UsersService.getUser(username)).data;
+
+      if (!user?.issuperadmin && !user?.isadmin) {
+        notify.error({ message: 'Failed to login', description: 'User is not an admin' });
+        return;
+      }
       store.setStore({ user });
     } catch (err) {
       notify.error({ message: 'Failed to get user details', description: extractErrorMsg(err as any) });
@@ -61,7 +69,7 @@ export default function LoginPage(props: LoginPageProps) {
 
   const checkIfServerHasAdminAndRedirect = useCallback(async () => {
     const hasAdmin = (await UsersService.serverHasAdmin()).data;
-    if (!hasAdmin) navigate(AppRoutes.SIGNUP_ROUTE);
+    if (!hasAdmin) navigate(resolveAppRoute(AppRoutes.SIGNUP_ROUTE));
   }, [navigate]);
 
   const onSSOLogin = useCallback(() => {
@@ -86,7 +94,7 @@ export default function LoginPage(props: LoginPageProps) {
     store.setStore({ jwt: token, baseUrl: backend });
     truncateQueryParamsFromCurrentUrl();
     // TODO: load username
-    navigate(AppRoutes.DASHBOARD_ROUTE);
+    navigate(resolveAppRoute(AppRoutes.DASHBOARD_ROUTE));
     return null;
   } else {
     if (oauthToken) {
@@ -95,13 +103,13 @@ export default function LoginPage(props: LoginPageProps) {
         getUserAndUpdateInStore(oauthUser);
       }
       truncateQueryParamsFromCurrentUrl();
-      navigate(AppRoutes.DASHBOARD_ROUTE);
+      navigate(resolveAppRoute(AppRoutes.DASHBOARD_ROUTE));
       return null;
     }
   }
 
   if (store.isLoggedIn()) {
-    navigate(AppRoutes.DASHBOARD_ROUTE);
+    navigate(resolveAppRoute(AppRoutes.DASHBOARD_ROUTE));
   }
 
   return (
@@ -117,6 +125,16 @@ export default function LoginPage(props: LoginPageProps) {
           }}
         >
           <Row>
+            <Col xs={24} style={{ textAlign: 'center' }}>
+              <Image
+                preview={false}
+                width="200px"
+                src={currentTheme === 'dark' ? branding.logoDarkUrl : branding.logoLightUrl}
+              />
+            </Col>
+          </Row>
+
+          <Row style={{ marginTop: '4rem' }}>
             <Col xs={24}>
               <Typography.Title level={2}>{t('signin.signin')}</Typography.Title>
             </Col>

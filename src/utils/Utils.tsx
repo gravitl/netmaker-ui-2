@@ -7,9 +7,16 @@ import { ExtClientAcls, ExternalClient } from '@/models/ExternalClient';
 import { ACL_ALLOWED, ACL_DENIED, AclStatus, ACL_UNDEFINED } from '@/models/Acl';
 import { CloseOutlined } from '@ant-design/icons';
 import { MetricCategories, UptimeNodeMetrics } from '@/models/Metrics';
-import { ReactNode } from 'react';
-import { METRIC_LATENCY_DANGER_THRESHOLD, METRIC_LATENCY_WARNING_THRESHOLD } from '@/constants/AppConstants';
+import { ReactNode, useEffect, useState } from 'react';
+import {
+  DEFAULT_BRANDING_CONFIG,
+  METRIC_LATENCY_DANGER_THRESHOLD,
+  METRIC_LATENCY_WARNING_THRESHOLD,
+} from '@/constants/AppConstants';
 import { Rule } from 'antd/es/form';
+import { useStore } from '@/store/store';
+import { BrandingConfig } from '@/models/BrandingConfig';
+import { isSaasBuild } from '@/services/BaseService';
 
 export function renderNodeHealth(health: NodeConnectivityStatus) {
   switch (health) {
@@ -310,9 +317,8 @@ export function renderMetricValue(metricType: MetricCategories, value: unknown):
   }
 }
 
-const validateEmail = (_: any, value: string, callback: any) => {
-  /* eslint-disable */
-  const regex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/; // Regular expression for email validation
+const validateEmail = (_: any, value: string) => {
+  const regex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/; // Regular expression for email validation
 
   if (regex.test(value)) {
     return Promise.resolve();
@@ -324,7 +330,7 @@ const validateEmail = (_: any, value: string, callback: any) => {
 const validateName = (fieldName: string): Rule[] => [
   { required: false, message: `Please enter a ${fieldName}.` },
   {
-    validator: (_: any, value: string, callback: any) => {
+    validator: (_: any, value: string) => {
       const regex = /^[A-Z][a-zA-Z ]*$/;
       if (regex.test(value)) {
         return Promise.resolve();
@@ -335,7 +341,7 @@ const validateName = (fieldName: string): Rule[] => [
   },
 ];
 
-const validateSpecialCharactersWithNumbers = (_: any, value: string, callback: any) => {
+const validateSpecialCharactersWithNumbers = (_: any, value: string) => {
   const regex = /^[a-zA-Z0-9\s]+$/; // Regular expression to allow only alphabetic characters, numbers and spaces
 
   if (!regex.test(value)) {
@@ -357,3 +363,46 @@ export const validateEmailField: Rule[] = [
 
 export const validateLastNameField = validateName('last name');
 export const validateFirstNameField = validateName('first name');
+
+/**
+ * Hook to get app branding configuration.
+ *
+ * @returns the branding config
+ */
+export function useBranding(): BrandingConfig {
+  const serverStatus = useStore((s) => s.serverStatus);
+
+  const [branding, setBranding] = useState<BrandingConfig>(DEFAULT_BRANDING_CONFIG);
+
+  useEffect(() => {
+    if (isSaasBuild) {
+      setBranding(DEFAULT_BRANDING_CONFIG);
+    }
+    if (serverStatus?.status?.is_pro) {
+      setBranding({
+        productName: import.meta.env.VITE_PRODUCT_NAME || DEFAULT_BRANDING_CONFIG.productName,
+        logoDarkUrl: import.meta.env.VITE_TENANT_LOGO_DARK_URL || DEFAULT_BRANDING_CONFIG.logoDarkUrl,
+        logoLightUrl: import.meta.env.VITE_TENANT_LOGO_LIGHT_URL || DEFAULT_BRANDING_CONFIG.logoLightUrl,
+        logoAltText: import.meta.env.VITE_TENANT_LOGO_ALT_TEXT || DEFAULT_BRANDING_CONFIG.logoAltText,
+        logoDarkSmallUrl:
+          import.meta.env.VITE_TENANT_LOGO_DARK_SMALL_URL ||
+          import.meta.env.VITE_TENANT_LOGO_DARK_URL ||
+          DEFAULT_BRANDING_CONFIG.logoDarkSmallUrl,
+        logoLightSmallUrl:
+          import.meta.env.VITE_TENANT_LOGO_LIGHT_SMALL_URL ||
+          import.meta.env.VITE_TENANT_LOGO_LIGHT_URL ||
+          DEFAULT_BRANDING_CONFIG.logoLightSmallUrl,
+        favicon:
+          import.meta.env.VITE_TENANT_FAVICON_URL ||
+          import.meta.env.VITE_TENANT_LOGO_LIGHT_SMALL_URL ||
+          import.meta.env.VITE_TENANT_LOGO_LIGHT_URL ||
+          DEFAULT_BRANDING_CONFIG.favicon,
+        primaryColor: import.meta.env.VITE_TENANT_PRIMARY_COLOR || DEFAULT_BRANDING_CONFIG.primaryColor,
+      });
+    } else {
+      setBranding(DEFAULT_BRANDING_CONFIG);
+    }
+  }, [serverStatus?.status?.is_pro]);
+
+  return branding;
+}

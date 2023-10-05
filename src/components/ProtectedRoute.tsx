@@ -1,5 +1,6 @@
 import { AppRoutes } from '@/routes';
 import { useStore } from '@/store/store';
+import { resolveAppRoute } from '@/utils/RouteUtils';
 import { Navigate } from 'react-router-dom';
 
 interface ProtectedRouteProps {
@@ -10,7 +11,7 @@ interface ProtectedRouteProps {
 
 export default function ProtectedRoute({ condition, redirectPath, children }: ProtectedRouteProps): JSX.Element {
   condition ??= () => useStore.getState().isLoggedIn();
-  redirectPath ??= AppRoutes.LOGIN_ROUTE;
+  redirectPath ??= resolveAppRoute(AppRoutes.LOGIN_ROUTE);
 
   if (!condition()) {
     return <Navigate to={redirectPath} replace />;

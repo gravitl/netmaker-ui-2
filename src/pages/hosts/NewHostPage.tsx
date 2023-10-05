@@ -2,16 +2,14 @@ import AddNetworkModal from '@/components/modals/add-network-modal/AddNetworkMod
 import { Network } from '@/models/Network';
 import { AppRoutes } from '@/routes';
 import { useStore } from '@/store/store';
-import { getNetclientDownloadLink, useQuery } from '@/utils/RouteUtils';
+import { getNetclientDownloadLink, resolveAppRoute, useQuery } from '@/utils/RouteUtils';
 import { CopyOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons';
 import { Button, Card, Col, Divider, Input, Layout, List, Row, Steps } from 'antd';
 import { MouseEvent, useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageProps } from '../../models/Page';
-
 import './NewHostPage.scss';
-import { getBrandingConfig } from '@/services/BaseService';
-import Search from 'antd/es/input/Search';
+import { useBranding } from '@/utils/Utils';
 
 type AvailableOses = 'windows' | 'macos' | 'linux' | 'freebsd' | 'docker';
 
@@ -28,6 +26,7 @@ export default function NewHostPage(props: PageProps) {
   const navigate = useNavigate();
   const store = useStore();
   const query = useQuery();
+  const branding = useBranding();
 
   const storeFetchNetworks = useStore((state) => state.fetchNetworks);
   const [currentStep, setCurrentStep] = useState(0);
@@ -40,11 +39,11 @@ export default function NewHostPage(props: PageProps) {
   }, []);
 
   const onFinish = useCallback(() => {
-    navigate(query.get('redirectTo') ?? AppRoutes.HOSTS_ROUTE);
+    navigate(query.get('redirectTo') ?? resolveAppRoute(AppRoutes.HOSTS_ROUTE));
   }, [navigate, query]);
 
   const onCancel = useCallback(() => {
-    navigate(query.get('redirectTo') ?? AppRoutes.HOSTS_ROUTE);
+    navigate(query.get('redirectTo') ?? resolveAppRoute(AppRoutes.HOSTS_ROUTE));
   }, [navigate, query]);
 
   const onShowInstallGuide = useCallback((ev: MouseEvent, os: AvailableOses) => {
@@ -196,9 +195,7 @@ export default function NewHostPage(props: PageProps) {
                         <Input
                           disabled
                           style={{ width: 'calc(100% - 32px)' }}
-                          defaultValue={`. { iwr -useb  https://raw.githubusercontent.com/gravitl/netmaker/master/scripts/netclient-install.ps1 } | iex; Netclient-Install -version "<your ${
-                            getBrandingConfig().productName
-                          } version>"`}
+                          defaultValue={`. { iwr -useb  https://raw.githubusercontent.com/gravitl/netmaker/master/scripts/netclient-install.ps1 } | iex; Netclient-Install -version "<your ${branding.productName} version>"`}
                         />
                         <Button icon={<CopyOutlined />} />
                       </Input.Group>
@@ -244,9 +241,7 @@ export default function NewHostPage(props: PageProps) {
                         <Input
                           disabled
                           style={{ width: 'calc(100% - 32px)' }}
-                          defaultValue={`curl -sfL https://raw.githubusercontent.com/gravitl/netmaker/master/scripts/netclient-install.sh | VERSION="<your ${
-                            getBrandingConfig().productName
-                          } version>" sh -`}
+                          defaultValue={`curl -sfL https://raw.githubusercontent.com/gravitl/netmaker/master/scripts/netclient-install.sh | VERSION="<your ${branding.productName} version>" sh -`}
                         />
                         <Button icon={<CopyOutlined />} />
                       </Input.Group>

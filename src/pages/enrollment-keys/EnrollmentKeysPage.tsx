@@ -27,10 +27,11 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { PageProps } from '../../models/Page';
 
 import './EnrollmentKeysPage.scss';
-import { getBrandingConfig } from '@/services/BaseService';
+import { useBranding } from '@/utils/Utils';
 
 export default function EnrollmentKeysPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
+  const branding = useBranding();
 
   const [keys, setKeys] = useState<EnrollmentKey[]>([]);
   const [isLoadingKeys, setIsLoadingKeys] = useState(true);
@@ -185,8 +186,8 @@ export default function EnrollmentKeysPage(props: PageProps) {
                 <Card className="header-card" style={{ height: '20rem', position: 'absolute', width: '100%' }}>
                   <Typography.Title level={3}>Add a Key</Typography.Title>
                   <Typography.Text>
-                    Use enrollment keys to connect hosts (netclients) to your {getBrandingConfig().productName} networks
-                    or register them to your {getBrandingConfig().productName} server.
+                    Use enrollment keys to connect hosts (netclients) to your {branding.productName} networks or
+                    register them to your {branding.productName} server.
                   </Typography.Text>
                   <Row style={{ marginTop: 'auto' }}>
                     <Col>

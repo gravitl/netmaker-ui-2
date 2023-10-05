@@ -15,13 +15,15 @@ import { useNavigate } from 'react-router-dom';
 import AddNetworkModal from '@/components/modals/add-network-modal/AddNetworkModal';
 import { useEffect, useMemo, useState } from 'react';
 import { useStore } from '@/store/store';
-import { getAmuiUrl, getLicenseDashboardUrl } from '@/utils/RouteUtils';
+import { getAmuiUrl, getLicenseDashboardUrl, resolveAppRoute } from '@/utils/RouteUtils';
 import NewHostModal from '@/components/modals/new-host-modal/NewHostModal';
-import { getBrandingConfig, isSaasBuild } from '@/services/BaseService';
+import { isSaasBuild } from '@/services/BaseService';
+import { useBranding } from '@/utils/Utils';
 
 export default function DashboardPage(props: PageProps) {
   const navigate = useNavigate();
   const store = useStore();
+  const branding = useBranding();
 
   const isServerEE = store.serverConfig?.IsEE === 'yes';
   const [isAddNetworkModalOpen, setIsAddNetworkModalOpen] = useState(false);
@@ -120,13 +122,13 @@ export default function DashboardPage(props: PageProps) {
         <Col>
           <Space direction="vertical" size="middle">
             <Card>
-              <h3>Start using {getBrandingConfig().productName}</h3>
+              <h3>Start using {branding.productName}</h3>
               <p>
-                {getBrandingConfig().productName} automates a secure superhighway between devices, clouds, virtual
-                machines, and servers using WireGuard®. It blows past any NAT’s, firewalls, or subnets that stand
-                between them to create a flat, simple network. The result is a secure overlay network that spans all
-                your devices, wherever they are. Of course, {getBrandingConfig().productName} does a lot more than that.
-                With ACL’s, Ingress, Egress, and Relays, you have complete control of your network.
+                {branding.productName} automates a secure superhighway between devices, clouds, virtual machines, and
+                servers using WireGuard®. It blows past any NAT’s, firewalls, or subnets that stand between them to
+                create a flat, simple network. The result is a secure overlay network that spans all your devices,
+                wherever they are. Of course, {branding.productName} does a lot more than that. With ACL’s, Ingress,
+                Egress, and Relays, you have complete control of your network.
               </p>
               <div>
                 <Button type="link" href="https://netmaker.io/demo-page" target="_blank" rel="noreferrer">
@@ -174,13 +176,13 @@ export default function DashboardPage(props: PageProps) {
         isOpen={isAddNetworkModalOpen}
         onCreateNetwork={() => {
           setIsAddNetworkModalOpen(false);
-          navigate(AppRoutes.NETWORKS_ROUTE);
+          navigate(resolveAppRoute(AppRoutes.NETWORKS_ROUTE));
         }}
         onCancel={() => setIsAddNetworkModalOpen(false)}
       />
       <NewHostModal
         isOpen={isNewHostModalOpen}
-        onFinish={() => navigate(AppRoutes.HOSTS_ROUTE)}
+        onFinish={() => navigate(resolveAppRoute(AppRoutes.HOSTS_ROUTE))}
         onCancel={() => setIsNewHostModalOpen(false)}
       />
     </Layout.Content>

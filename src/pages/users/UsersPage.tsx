@@ -22,36 +22,29 @@ import {
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { PageProps } from '../../models/Page';
 import './UsersPage.scss';
-import { Network } from '@/models/Network';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { UsersService } from '@/services/UsersService';
 import { User } from '@/models/User';
-import { UserGroup } from '@/models/UserGroup';
 import AddUserModal from '@/components/modals/add-user-modal/AddUserModal';
-import AddUserGroupModal from '@/components/modals/add-user-group-modal/AddUserGroupModal';
-import UpdateUserGroupModal from '@/components/modals/update-user-group-modal/UpdateUserGroupModal';
 import UpdateUserModal from '@/components/modals/update-user-modal/UpdateUserModal';
-import NetworkPermissionsModal from '@/components/modals/network-permissions-modal/NetworkPermissionsModal';
-import { getBrandingConfig, isSaasBuild } from '@/services/BaseService';
+import { isSaasBuild } from '@/services/BaseService';
 import { getAmuiUrl } from '@/utils/RouteUtils';
+import TransferSuperAdminRightsModal from '@/components/modals/transfer-super-admin-rights/TransferSuperAdminRightsModal';
+import { useBranding } from '@/utils/Utils';
 
 export default function UsersPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
+  const branding = useBranding();
 
   const isServerEE = store.serverConfig?.IsEE === 'yes';
   const [users, setUsers] = useState<User[]>([]);
-  const [userGroups, setUserGroups] = useState<UserGroup[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [usersSearch, setUsersSearch] = useState('');
-  const [isAddGroupModalOpen, setIsAddGroupModalOpen] = useState(false);
-  const [selectedGroup, setSelectedGroup] = useState<UserGroup | null>(null);
-  const [isUpdateGroupModalOpen, setIsUpdateGroupModalOpen] = useState(false);
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
   const [isUpdateUserModalOpen, setIsUpdateUserModalOpen] = useState(false);
+  const [isTransferSuperAdminRightsModalOpen, setIsTransferSuperAdminRightsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [isNetworkPermissionsModalOpen, setIsNetworkPermissionsModalOpen] = useState(false);
-  const [selectedNetwork, setSelectedNetwork] = useState<Network | null>(null);
 
   const loadUsers = useCallback(async () => {
     try {
@@ -65,18 +58,6 @@ export default function UsersPage(props: PageProps) {
       });
     } finally {
       setIsLoading(false);
-    }
-  }, [notify]);
-
-  const loadUserGroups = useCallback(async () => {
-    try {
-      const groups = await UsersService.getUserGroups();
-      setUserGroups(groups);
-    } catch (err) {
-      notify.error({
-        message: 'Failed to load user groups',
-        description: extractErrorMsg(err as any),
-      });
     }
   }, [notify]);
 
@@ -116,6 +97,52 @@ export default function UsersPage(props: PageProps) {
     }
   }, []);
 
+  const getUserTagColor = (user: User) => {
+    if (user.issuperadmin) {
+      return 'success';
+    } else if (user.isadmin) {
+      return 'warning';
+    } else {
+      return 'default';
+    }
+  };
+
+  const getUserTagText = (user: User) => {
+    if (user.issuperadmin) {
+      return 'Super Admin';
+    } else if (user.isadmin) {
+      return 'Admin';
+    } else {
+      return 'User';
+    }
+  };
+
+  const checkIfCurrentUserCanEditOrDeleteUsers = useCallback(
+    (user: User) => {
+      // if current user is super admin, he can edit or delete any user
+      if (store.user?.issuperadmin) {
+        return false;
+      }
+
+      if (store.user?.isadmin) {
+        // if current user is admin and he is editing his own profile, he can edit/delete his own profile
+        if (user.username === store.username) {
+          return false;
+        }
+
+        // if current user is admin, he can edit or delete any user except super admin and he can't edit/delete other admin users
+        if (user.issuperadmin || user.isadmin) {
+          return true;
+        }
+        return false;
+      }
+
+      // if current user is not admin or super admin, he can't edit or delete any user
+      return true;
+    },
+    [store.user, store.username],
+  );
+
   const usersTableColumns: TableColumnsType<User> = useMemo(
     () => [
       {
@@ -129,7 +156,7 @@ export default function UsersPage(props: PageProps) {
       {
         title: 'Role',
         render(_, user) {
-          return <Tag color={user.isadmin ? 'warning' : 'default'}>{user.isadmin ? 'Admin' : 'User'}</Tag>;
+          return <Tag color={getUserTagColor(user)}>{getUserTagText(user)}</Tag>;
         },
       },
       {
@@ -143,21 +170,23 @@ export default function UsersPage(props: PageProps) {
                   {
                     key: 'edit',
                     label: 'Edit',
-                    disabled: !(!user.isadmin || (user.isadmin && user.username === store.username)),
-                    title: !(!user.isadmin || (user.isadmin && user.username === store.username))
-                      ? 'You cannot edit another admin user'
-                      : null,
-                    onClick: (ev) => {
+                    disabled: checkIfCurrentUserCanEditOrDeleteUsers(user),
+                    title: checkIfCurrentUserCanEditOrDeleteUsers(user) ? 'You cannot edit another admin user' : null,
+                    onClick: (ev: any) => {
                       ev.domEvent.stopPropagation();
                       const userClone = structuredClone(user);
-                      userClone.networks ??= [];
                       onEditUser(userClone);
                     },
                   },
                   {
                     key: 'default',
+                    disabled: checkIfCurrentUserCanEditOrDeleteUsers(user),
+                    title: checkIfCurrentUserCanEditOrDeleteUsers(user)
+                      ? 'You cannot delete another admin user or the super admin'
+                      : null,
                     label: (
                       <Typography.Text
+                        disabled={checkIfCurrentUserCanEditOrDeleteUsers(user)}
                         onClick={(ev) => {
                           ev.stopPropagation();
                           confirmDeleteUser(user);
@@ -167,7 +196,22 @@ export default function UsersPage(props: PageProps) {
                       </Typography.Text>
                     ),
                   },
-                ] as MenuProps['items'],
+                ].concat(
+                  isServerEE && user.issuperadmin && store.username === user.username
+                    ? [
+                        {
+                          key: 'transfer',
+                          label: 'Transfer Super Admin Rights',
+                          disabled: false,
+                          title: null,
+                          onClick: (ev) => {
+                            ev.domEvent.stopPropagation();
+                            setIsTransferSuperAdminRightsModalOpen(true);
+                          },
+                        },
+                      ]
+                    : [],
+                ) as MenuProps['items'],
               }}
             >
               <Button type="text" icon={<MoreOutlined />} />
@@ -176,7 +220,7 @@ export default function UsersPage(props: PageProps) {
         },
       },
     ],
-    [confirmDeleteUser, onEditUser, store.username],
+    [checkIfCurrentUserCanEditOrDeleteUsers, isServerEE, store.username, onEditUser, confirmDeleteUser],
   );
 
   const filteredUsers = useMemo(() => {
@@ -184,6 +228,16 @@ export default function UsersPage(props: PageProps) {
       return u.username.toLowerCase().includes(usersSearch.trim().toLowerCase());
     });
   }, [users, usersSearch]);
+
+  const getUserAndUpdateInStore = async (username: User['username'] | undefined) => {
+    if (!username) return;
+    try {
+      const user = await (await UsersService.getUser(username)).data;
+      store.setStore({ user });
+    } catch (err) {
+      notify.error({ message: 'Failed to get user details', description: extractErrorMsg(err as any) });
+    }
+  };
 
   // ui components
   const getUsersContent = useCallback(() => {
@@ -227,10 +281,7 @@ export default function UsersPage(props: PageProps) {
 
   useEffect(() => {
     loadUsers();
-    if (isServerEE) {
-      loadUserGroups();
-    }
-  }, [loadUsers, loadUserGroups, isServerEE]);
+  }, [loadUsers, isServerEE]);
 
   return (
     <Layout.Content
@@ -251,15 +302,15 @@ export default function UsersPage(props: PageProps) {
                   Users
                 </Typography.Title>
                 <Typography.Text style={{ color: 'white ' }}>
-                  {getBrandingConfig().productName} allows you to perform Identity and Access Management (IAM) with
-                  users. You can create multiple profiles and restrict access to networks.
+                  {branding.productName} allows you to perform Identity and Access Management (IAM) with users. You can
+                  create multiple profiles and restrict access to networks.
                 </Typography.Text>
               </Col>
               <Col xs={(24 * 1) / 3} style={{ position: 'relative' }}>
                 <Card className="header-card" style={{ height: '20rem', position: 'absolute', width: '100%' }}>
                   <Typography.Title level={3}>Add a User</Typography.Title>
                   <Typography.Text>
-                    Users access the {getBrandingConfig().productName} UI to configure their networks.
+                    Users access the {branding.productName} UI to configure their networks.
                   </Typography.Text>
                   <Row style={{ marginTop: 'auto' }}>
                     <Col>
@@ -280,11 +331,11 @@ export default function UsersPage(props: PageProps) {
               <Col xs={7} style={{ marginRight: '1rem' }}>
                 <Card>
                   <Typography.Title level={4} style={{ marginTop: '0px' }}>
-                    Manage access to {getBrandingConfig().productName}
+                    Manage access to {branding.productName}
                   </Typography.Title>
                   <Typography.Text>
-                    {getBrandingConfig().productName} allows you to perform Identity and Access Management (IAM) with
-                    users. You can create multiple profiles and restrict access to networks.
+                    {branding.productName} allows you to perform Identity and Access Management (IAM) with users. You
+                    can create multiple profiles and restrict access to networks.
                   </Typography.Text>
                 </Card>
               </Col>
@@ -294,8 +345,8 @@ export default function UsersPage(props: PageProps) {
                     User Groups
                   </Typography.Title>
                   <Typography.Text>
-                    Easily manage access to a {getBrandingConfig().productName} resources by creating user groups. You
-                    can create multiple groups and assign users to them, then control access to the groups. This is a{' '}
+                    Easily manage access to a {branding.productName} resources by creating user groups. You can create
+                    multiple groups and assign users to them, then control access to the groups. This is a{' '}
                     <a href={getAmuiUrl('upgrade')} referrerPolicy="no-referrer">
                       Pro
                     </a>{' '}
@@ -306,11 +357,11 @@ export default function UsersPage(props: PageProps) {
               <Col xs={7}>
                 <Card>
                   <Typography.Title level={4} style={{ marginTop: '0px' }}>
-                    OAuth users on {getBrandingConfig().productName}
+                    OAuth users on {branding.productName}
                   </Typography.Title>
                   <Typography.Text>
-                    {getBrandingConfig().productName} supports OAuth (Social Sign-On) for user authentication. You can
-                    configure your OAuth provider to allow users to login to {getBrandingConfig().productName}.
+                    {branding.productName} supports OAuth (Social Sign-On) for user authentication. You can configure
+                    your OAuth provider to allow users to login to {branding.productName}.
                   </Typography.Text>
                 </Card>
               </Col>
@@ -346,33 +397,6 @@ export default function UsersPage(props: PageProps) {
           setIsAddUserModalOpen(false);
         }}
       />
-      <AddUserGroupModal
-        isOpen={isAddGroupModalOpen}
-        onCreateUserGroup={() => {
-          loadUserGroups();
-          loadUsers();
-          setIsAddGroupModalOpen(false);
-        }}
-        onCancel={() => {
-          setIsAddGroupModalOpen(false);
-        }}
-      />
-      {selectedGroup && (
-        <UpdateUserGroupModal
-          isOpen={isUpdateGroupModalOpen}
-          key={selectedGroup}
-          group={selectedGroup}
-          onUpdateUserGroup={() => {
-            loadUserGroups();
-            loadUsers();
-            setIsUpdateGroupModalOpen(false);
-          }}
-          onCancel={() => {
-            setIsUpdateGroupModalOpen(false);
-            setSelectedGroup(null);
-          }}
-        />
-      )}
       {selectedUser && (
         <UpdateUserModal
           isOpen={isUpdateUserModalOpen}
@@ -389,20 +413,15 @@ export default function UsersPage(props: PageProps) {
           }}
         />
       )}
-      {selectedNetwork && (
-        <NetworkPermissionsModal
-          key={selectedNetwork.netid}
-          isOpen={isNetworkPermissionsModalOpen}
-          network={selectedNetwork}
-          onUpdate={() => {
-            loadUsers();
-          }}
-          onCancel={() => {
-            setIsNetworkPermissionsModalOpen(false);
-            setSelectedNetwork(null);
-          }}
-        />
-      )}
+      <TransferSuperAdminRightsModal
+        isOpen={isTransferSuperAdminRightsModalOpen}
+        onCancel={() => setIsTransferSuperAdminRightsModalOpen(false)}
+        onTransferSuccessful={() => {
+          // refresh user list and refresh current user
+          getUserAndUpdateInStore(store.username);
+          loadUsers();
+        }}
+      />
     </Layout.Content>
   );
 }

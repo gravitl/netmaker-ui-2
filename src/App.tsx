@@ -1,16 +1,17 @@
 import { ConfigProvider, theme } from 'antd';
 import { RouterProvider } from 'react-router-dom';
 import { router } from './routes';
-import { useStore } from './store/store';
+import { BrowserStore, useStore } from './store/store';
 import './App.scss';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AxiosError } from 'axios';
 import { ServerConfigService } from './services/ServerConfigService';
 import ServerMalfunctionModal from './components/modals/server-malfunction-modal/ServerMalfunctionModal';
-import { getBrandingConfig } from './services/BaseService';
+import { useBranding } from './utils/Utils';
+import { isSaasBuild } from './services/BaseService';
 import { APP_UPDATE_POLL_INTERVAL } from './constants/AppConstants';
 import { useIntercom } from 'react-use-intercom';
-import { IntercomTiers } from './models/ServerConfig';
+import { reloadNmuiWithVersion } from './utils/RouteUtils';
 
 function App() {
   const store = useStore();
@@ -20,13 +21,16 @@ function App() {
     // startTour: intercomStartTour
   } = useIntercom();
 
+  const branding = useBranding();
   const isServerEE = store.serverConfig?.IsEE === 'yes';
   const storeFetchServerConfig = store.fetchServerConfig;
   const storeSetServerStatus = store.setServerStatus;
   const storeFetchNodes = store.fetchNodes;
   const storeFetchHosts = store.fetchHosts;
   const storeIsLoggedIn = store.isLoggedIn;
+
   const [hasFetchedServerConfig, setHasFetchedServerConfig] = useState(false);
+  const [isAppReady, setIsAppReady] = useState(false);
 
   const isIntercomReady = useMemo(() => {
     // TODO: add other params like tenant/server and user data loaded
@@ -50,22 +54,25 @@ function App() {
             broker_connected: store.serverStatus?.status?.broker_connected || false,
             license_error: store.serverStatus?.status?.license_error || '',
             healthyNetwork: true,
+            is_pro: store.serverStatus?.status?.is_pro ?? false,
           });
         } else if (err.request) {
-          // requst was made but no response was received
+          // request was made but no response was received
           storeSetServerStatus({
             db_connected: store.serverStatus?.status?.db_connected || false,
             broker_connected: store.serverStatus?.status?.broker_connected || false,
             license_error: store.serverStatus?.status?.license_error || '',
             healthyNetwork: false,
+            is_pro: store.serverStatus?.status?.is_pro ?? false,
           });
         } else {
-          // something bad happened when th request was being made
+          // something bad happened when the request was being made
           storeSetServerStatus({
             db_connected: store.serverStatus?.status?.db_connected || false,
             broker_connected: store.serverStatus?.status?.broker_connected || false,
             license_error: store.serverStatus?.status?.license_error || '',
             healthyNetwork: false,
+            is_pro: store.serverStatus?.status?.is_pro ?? false,
           });
         }
       } else {
@@ -74,6 +81,7 @@ function App() {
           broker_connected: false,
           license_error: '',
           healthyNetwork: false,
+          is_pro: store.serverStatus?.status?.is_pro ?? false,
         });
       }
     }
@@ -81,6 +89,7 @@ function App() {
     store.serverStatus?.status?.broker_connected,
     store.serverStatus?.status?.db_connected,
     store.serverStatus?.status?.license_error,
+    store.serverStatus?.status?.is_pro,
     storeFetchHosts,
     storeFetchNodes,
     storeIsLoggedIn,
@@ -92,13 +101,27 @@ function App() {
     const id = setInterval(async () => {
       getUpdates();
       if (storeIsLoggedIn() && !hasFetchedServerConfig) {
-        const hasFetched = await storeFetchServerConfig();
+        const [hasFetched, serverConfig] = await storeFetchServerConfig();
         if (hasFetched) {
           setHasFetchedServerConfig(true);
+
+          if (isSaasBuild && !BrowserStore.hasNmuiVersionSynced()) {
+            BrowserStore.syncNmuiVersion();
+            reloadNmuiWithVersion(serverConfig?.Version ?? '');
+          }
         }
       }
     }, APP_UPDATE_POLL_INTERVAL);
-    return () => clearInterval(id);
+
+    // give some time so server status.isEE can load and branding can be determined
+    const tId = setTimeout(() => {
+      setIsAppReady(true);
+    }, 1000);
+
+    return () => {
+      clearInterval(id);
+      clearTimeout(tId);
+    };
   }, [getUpdates, hasFetchedServerConfig, storeFetchServerConfig, storeIsLoggedIn]);
 
   useEffect(() => {
@@ -110,7 +133,7 @@ function App() {
     return () => {
       intercomShutdown();
     };
-  }, [intercomBoot, intercomShutdown, isIntercomReady, isServerEE, store.tenantId, store.username]);
+  }, [intercomBoot, intercomShutdown, isIntercomReady, isServerEE, store.amuiUserId, store.tenantId, store.username]);
 
   useEffect(
     () => {
@@ -120,6 +143,7 @@ function App() {
         broker_connected: true,
         license_error: '',
         healthyNetwork: true,
+        is_pro: store.serverStatus?.status?.is_pro ?? false,
       });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -128,11 +152,24 @@ function App() {
 
   useEffect(() => {
     // one-time effect to load favicon
-    const favicon = getBrandingConfig().favicon;
+    let favicon = branding.favicon;
     if (favicon) {
+      if (isSaasBuild) {
+        favicon = `/${ServerConfigService.getUiVersion()}${favicon}`;
+      }
       (document.getElementById('favicon') as HTMLLinkElement)?.setAttribute('href', favicon);
     }
-  }, []);
+  }, [branding]);
+
+  // stop loading animation when the app is ready
+  useEffect(() => {
+    const loader = document.getElementById('nmui-loading');
+    if (isAppReady && loader) {
+      loader.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200 }).onfinish = () => {
+        loader.remove();
+      };
+    }
+  }, [isAppReady]);
 
   return (
     <div className="App">
@@ -140,9 +177,9 @@ function App() {
         theme={{
           algorithm: store.currentTheme === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm,
           token: {
-            colorPrimary: getBrandingConfig().primaryColor,
-            colorLink: getBrandingConfig().primaryColor,
-            fontFamily: 'SFPro, Inter, system-ui, Avenir, Helvetica, Arial, sans-serif',
+            colorPrimary: branding.primaryColor,
+            colorLink: branding.primaryColor,
+            fontFamily: 'Inter, SFPro, system-ui, Avenir, Helvetica, Arial, sans-serif',
             fontSize: 16,
             // colorBgContainer: 'black',
           },
