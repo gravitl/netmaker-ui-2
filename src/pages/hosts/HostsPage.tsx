@@ -1,7 +1,7 @@
 import { Host } from '@/models/Host';
 import { AppRoutes } from '@/routes';
 import { useStore } from '@/store/store';
-import { getHostRoute } from '@/utils/RouteUtils';
+import { getHostRoute, resolveAppRoute } from '@/utils/RouteUtils';
 import { MoreOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
 import {
   Button,
@@ -79,6 +79,30 @@ export default function HostsPage(props: PageProps) {
           } catch (err) {
             notify.error({
               message: 'Failed to refresh host keys',
+              description: extractErrorMsg(err as any),
+            });
+          }
+        },
+      });
+    },
+    [notify],
+  );
+
+  const requestHostPull = useCallback(
+    (host: Host) => {
+      Modal.confirm({
+        title: 'Synchronise host',
+        content: `This will trigger the host (${host.name}) to pull latest network(s) state from the server. Proceed?`,
+        onOk: async () => {
+          try {
+            await HostsService.requestHostPull(host.id);
+            notify.success({
+              message: 'Host is syncing...',
+              description: `Host pull has been initiated for ${host.name}. This may take a while.`,
+            });
+          } catch (err) {
+            notify.error({
+              message: 'Failed to synchronise host',
               description: extractErrorMsg(err as any),
             });
           }
@@ -279,6 +303,23 @@ export default function HostsPage(props: PageProps) {
               return <Tag color="success">Healthy</Tag>;
           }
         },
+      },
+      {
+        title: '',
+        width: '5rem',
+        render: (_, host) => (
+          <div onClick={(ev) => ev.stopPropagation()}>
+            <Button
+              type="text"
+              icon={<ReloadOutlined />}
+              onClick={() => {
+                requestHostPull(host);
+              }}
+            >
+              Sync
+            </Button>
+          </div>
+        ),
       },
       {
         width: '1rem',
@@ -666,7 +707,7 @@ export default function HostsPage(props: PageProps) {
                   <Typography.Text>
                     If a host is already registered with the server, you can add it into any network directly from the
                     dashboard. Simply go to Network Access Management tab under the{' '}
-                    <Link to={AppRoutes.HOSTS_ROUTE}>Hosts page</Link>.
+                    <Link to={resolveAppRoute(AppRoutes.HOSTS_ROUTE)}>Hosts page</Link>.
                   </Typography.Text>
                 </Card>
               </Col>
@@ -722,7 +763,7 @@ export default function HostsPage(props: PageProps) {
         isOpen={isAddNewHostModalOpen}
         onFinish={() => {
           setIsAddNewHostModalOpen(false);
-          navigate(AppRoutes.HOSTS_ROUTE);
+          navigate(resolveAppRoute(AppRoutes.HOSTS_ROUTE));
         }}
         onCancel={() => setIsAddNewHostModalOpen(false)}
       />

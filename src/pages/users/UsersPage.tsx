@@ -27,13 +27,15 @@ import { UsersService } from '@/services/UsersService';
 import { User } from '@/models/User';
 import AddUserModal from '@/components/modals/add-user-modal/AddUserModal';
 import UpdateUserModal from '@/components/modals/update-user-modal/UpdateUserModal';
-import { getBrandingConfig, isSaasBuild } from '@/services/BaseService';
+import { isSaasBuild } from '@/services/BaseService';
 import { getAmuiUrl } from '@/utils/RouteUtils';
 import TransferSuperAdminRightsModal from '@/components/modals/transfer-super-admin-rights/TransferSuperAdminRightsModal';
+import { useBranding } from '@/utils/Utils';
 
 export default function UsersPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
+  const branding = useBranding();
 
   const isServerEE = store.serverConfig?.IsEE === 'yes';
   const [users, setUsers] = useState<User[]>([]);
@@ -218,7 +220,7 @@ export default function UsersPage(props: PageProps) {
         },
       },
     ],
-    [confirmDeleteUser, onEditUser, checkIfCurrentUserCanEditOrDeleteUsers],
+    [checkIfCurrentUserCanEditOrDeleteUsers, isServerEE, store.username, onEditUser, confirmDeleteUser],
   );
 
   const filteredUsers = useMemo(() => {
@@ -300,15 +302,15 @@ export default function UsersPage(props: PageProps) {
                   Users
                 </Typography.Title>
                 <Typography.Text style={{ color: 'white ' }}>
-                  {getBrandingConfig().productName} allows you to perform Identity and Access Management (IAM) with
-                  users. You can create multiple profiles and restrict access to networks.
+                  {branding.productName} allows you to perform Identity and Access Management (IAM) with users. You can
+                  create multiple profiles and restrict access to networks.
                 </Typography.Text>
               </Col>
               <Col xs={(24 * 1) / 3} style={{ position: 'relative' }}>
                 <Card className="header-card" style={{ height: '20rem', position: 'absolute', width: '100%' }}>
                   <Typography.Title level={3}>Add a User</Typography.Title>
                   <Typography.Text>
-                    Users access the {getBrandingConfig().productName} UI to configure their networks.
+                    Users access the {branding.productName} UI to configure their networks.
                   </Typography.Text>
                   <Row style={{ marginTop: 'auto' }}>
                     <Col>
@@ -329,11 +331,11 @@ export default function UsersPage(props: PageProps) {
               <Col xs={7} style={{ marginRight: '1rem' }}>
                 <Card>
                   <Typography.Title level={4} style={{ marginTop: '0px' }}>
-                    Manage access to {getBrandingConfig().productName}
+                    Manage access to {branding.productName}
                   </Typography.Title>
                   <Typography.Text>
-                    {getBrandingConfig().productName} allows you to perform Identity and Access Management (IAM) with
-                    users. You can create multiple profiles and restrict access to networks.
+                    {branding.productName} allows you to perform Identity and Access Management (IAM) with users. You
+                    can create multiple profiles and restrict access to networks.
                   </Typography.Text>
                 </Card>
               </Col>
@@ -343,8 +345,8 @@ export default function UsersPage(props: PageProps) {
                     User Groups
                   </Typography.Title>
                   <Typography.Text>
-                    Easily manage access to a {getBrandingConfig().productName} resources by creating user groups. You
-                    can create multiple groups and assign users to them, then control access to the groups. This is a{' '}
+                    Easily manage access to a {branding.productName} resources by creating user groups. You can create
+                    multiple groups and assign users to them, then control access to the groups. This is a{' '}
                     <a href={getAmuiUrl('upgrade')} referrerPolicy="no-referrer">
                       Pro
                     </a>{' '}
@@ -355,11 +357,11 @@ export default function UsersPage(props: PageProps) {
               <Col xs={7}>
                 <Card>
                   <Typography.Title level={4} style={{ marginTop: '0px' }}>
-                    OAuth users on {getBrandingConfig().productName}
+                    OAuth users on {branding.productName}
                   </Typography.Title>
                   <Typography.Text>
-                    {getBrandingConfig().productName} supports OAuth (Social Sign-On) for user authentication. You can
-                    configure your OAuth provider to allow users to login to {getBrandingConfig().productName}.
+                    {branding.productName} supports OAuth (Social Sign-On) for user authentication. You can configure
+                    your OAuth provider to allow users to login to {branding.productName}.
                   </Typography.Text>
                 </Card>
               </Col>

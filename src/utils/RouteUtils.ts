@@ -6,15 +6,39 @@ import { AMUI_URL } from '@/services/BaseService';
 import { useStore } from '@/store/store';
 import { AvailableArchs, AvailableOses } from '@/models/AvailableOses';
 import { BUG_REPORT_URL } from '@/constants/AppConstants';
+import { ServerConfigService } from '@/services/ServerConfigService';
 
 type AmuiRouteAction = '' | 'upgrade' | 'invite-user';
+
+/**
+ * Function to check if the current route is versioned.
+ * This is used to determine if React router should navigate with versioned routes
+ *
+ * @returns true if the current route is versioned
+ */
+export function isCurrentRouteVersioned() {
+  return window.location.pathname.startsWith(`/${ServerConfigService.getUiVersion()}`);
+}
+
+/**
+ * Function to check and provide a versioned route or not
+ *
+ * @param route route to resolve
+ * @returns the resolved route
+ */
+export function resolveAppRoute(route: string) {
+  if (isCurrentRouteVersioned()) {
+    return `/${ServerConfigService.getUiVersion()}${route}`;
+  }
+  return route;
+}
 
 // Get host route from host obj or ID
 export function getHostRoute(hostOrId: Host | Host['id'], ...queryParams: { [key: string]: string }[]): string {
   const placeholder = ':hostId';
   let route = '';
-  if (typeof hostOrId === 'string') route = `${AppRoutes.HOST_ROUTE.replace(placeholder, hostOrId)}`;
-  else route = `${AppRoutes.HOST_ROUTE.replace(placeholder, hostOrId.id)}`;
+  if (typeof hostOrId === 'string') route = `${resolveAppRoute(AppRoutes.HOST_ROUTE).replace(placeholder, hostOrId)}`;
+  else route = `${resolveAppRoute(AppRoutes.HOST_ROUTE).replace(placeholder, hostOrId.id)}`;
   route += queryParams.reduce((acc, curr) => {
     const key = Object.keys(curr)[0];
     return `${acc}${acc.includes('?') ? '&' : '?'}${key}=${curr[key]}`;
@@ -26,7 +50,7 @@ export function getHostRoute(hostOrId: Host | Host['id'], ...queryParams: { [key
 export function getNetworkHostRoute(hostOrId: Host | Host['id'], networkOrId: Network | Network['netid']): string {
   const networkPlaceholder = ':networkId';
   const hostPlaceholder = ':hostId';
-  let route = AppRoutes.NETWORK_HOST_ROUTE;
+  let route = resolveAppRoute(AppRoutes.NETWORK_HOST_ROUTE);
   if (typeof hostOrId === 'string') route = route.replace(hostPlaceholder, hostOrId);
   else route = route.replace(hostPlaceholder, hostOrId.id);
   if (typeof networkOrId === 'string') route = route.replace(networkPlaceholder, networkOrId);
@@ -37,13 +61,16 @@ export function getNetworkHostRoute(hostOrId: Host | Host['id'], networkOrId: Ne
 // Get network route from network obj or ID
 export function getNetworkRoute(networkOrId: Network | Network['netid']): string {
   const placeholder = ':networkId';
-  if (typeof networkOrId === 'string') return `${AppRoutes.NETWORK_DETAILS_ROUTE.replace(placeholder, networkOrId)}`;
-  return `${AppRoutes.NETWORK_DETAILS_ROUTE.replace(placeholder, networkOrId.netid)}`;
+  if (typeof networkOrId === 'string')
+    return `${resolveAppRoute(AppRoutes.NETWORK_DETAILS_ROUTE).replace(placeholder, networkOrId)}`;
+  return `${resolveAppRoute(AppRoutes.NETWORK_DETAILS_ROUTE).replace(placeholder, networkOrId.netid)}`;
 }
 
 // Get new host route
 export function getNewHostRoute(redirectTo?: string): string {
-  return `${AppRoutes.NEW_HOST_ROUTE}${redirectTo ? `?redirectTo=${encodeURIComponent(redirectTo)}` : ''}`;
+  return `${resolveAppRoute(AppRoutes.NEW_HOST_ROUTE)}${
+    redirectTo ? `?redirectTo=${encodeURIComponent(redirectTo)}` : ''
+  }`;
 }
 
 // Custom hook to use query params
@@ -77,7 +104,7 @@ export function getNetmakerSupportEmail() {
 export function getNetclientDownloadLink(
   os: AvailableOses,
   arch: AvailableArchs,
-  appType: 'gui' | 'cli' = 'gui',
+  appType: 'gui' | 'cli' = 'gui'
 ): [string, string] {
   const fileNamePlaceholder = ':fileName';
   const verisonPlaceholder = ':version';
@@ -134,6 +161,16 @@ export function openInNewTab(url: string) {
 // Function to file a bug report for the UI
 export function fileBugReport(body: string) {
   openInNewTab(
-    BUG_REPORT_URL.replace(':body', `Describe what happened...%0A%0A Error log: %0A\`${encodeURIComponent(body)}\``),
+    BUG_REPORT_URL.replace(':body', `Describe what happened...%0A%0A Error log: %0A\`${encodeURIComponent(body)}\``)
   );
+}
+
+/**
+ * Function to reload the UI with a specific version
+ *
+ * @param uiVersion ui version to load
+ */
+export function reloadNmuiWithVersion(uiVersion = '') {
+  const newUrl = `${window.location.origin}/${uiVersion ? `${uiVersion}/` : ''}`;
+  window.location.href = newUrl;
 }

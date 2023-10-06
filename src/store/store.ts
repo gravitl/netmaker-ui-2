@@ -6,13 +6,6 @@ import { HostSlice, IHostSlice } from './hosts';
 import { INetworkSlice, NetworkSlice } from './networks';
 import { INodeSlice, NodeSlice } from './nodes';
 
-// const useStore = create<ReturnType<typeof NodeSlice.createNodeSlice> & ReturnType<typeof AppSlice.createAppSlice>>(
-//   (set, get) => ({
-//     ...NodeSlice.createNodeSlice(set, get),
-//     ...AppSlice.createAppSlice(set, get),
-//   })
-// );
-
 export const useStore = create<INodeSlice & IAppSlice & INetworkSlice & IAuthSlice & IHostSlice>()(
   devtools(
     persist(
@@ -29,3 +22,12 @@ export const useStore = create<INodeSlice & IAppSlice & INetworkSlice & IAuthSli
     ),
   ),
 );
+
+export const BrowserStore = {
+  hasNmuiVersionSynced: (): boolean => {
+    return window.sessionStorage.getItem('hasNmuiVersionSynced') === 'true';
+  },
+  syncNmuiVersion: () => {
+    window.sessionStorage.setItem('hasNmuiVersionSynced', 'true');
+  },
+};

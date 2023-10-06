@@ -32,7 +32,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { PageProps } from '../../models/Page';
 
 import './HostDetailsPage.scss';
-import { useQuery } from '@/utils/RouteUtils';
+import { resolveAppRoute, useQuery } from '@/utils/RouteUtils';
 
 export default function HostDetailsPage(props: PageProps) {
   const { hostId } = useParams<{ hostId: string }>();
@@ -67,7 +67,7 @@ export default function HostDetailsPage(props: PageProps) {
         dataIndex: 'addressString',
       },
     ],
-    [host?.defaultinterface],
+    [host?.defaultinterface]
   );
 
   const onUpdateHost = useCallback(() => {
@@ -112,13 +112,13 @@ export default function HostDetailsPage(props: PageProps) {
   const loadHost = useCallback(() => {
     setIsLoading(true);
     if (!hostId) {
-      navigate(AppRoutes.HOSTS_ROUTE);
+      navigate(resolveAppRoute(AppRoutes.HOSTS_ROUTE));
     }
     // load from store
     const host = store.hosts.find((h) => h.id === hostId);
     if (!host) {
       notify.error({ message: `Host ${hostId} not found` });
-      navigate(AppRoutes.HOSTS_ROUTE);
+      navigate(resolveAppRoute(AppRoutes.HOSTS_ROUTE));
       return;
     }
     setHost(host);
@@ -134,7 +134,7 @@ export default function HostDetailsPage(props: PageProps) {
       await HostsService.deleteHost(hostId, true);
       notify.success({ message: `Host ${host?.name} deleted` });
       storeDeleteHost(hostId);
-      navigate(AppRoutes.HOSTS_ROUTE);
+      navigate(resolveAppRoute(AppRoutes.HOSTS_ROUTE));
     } catch (err) {
       if (err instanceof AxiosError) {
         notify.error({
@@ -220,6 +220,28 @@ export default function HostDetailsPage(props: PageProps) {
     });
   }, [notify, hostId]);
 
+  const requestHostPull = useCallback(() => {
+    if (!hostId) return;
+    Modal.confirm({
+      title: 'Synchronise host',
+      content: `This will trigger this host to pull latest network(s) state from the server. Proceed?`,
+      onOk: async () => {
+        try {
+          await HostsService.requestHostPull(hostId);
+          notify.success({
+            message: 'Host is syncing...',
+            description: `Host pull has been initiated. This may take a while.`,
+          });
+        } catch (err) {
+          notify.error({
+            message: 'Failed to synchronise host',
+            description: extractErrorMsg(err as any),
+          });
+        }
+      },
+    });
+  }, [notify, hostId]);
+
   const getOverviewContent = useCallback(() => {
     if (!host) return <Skeleton active />;
     return (
@@ -292,6 +314,17 @@ export default function HostDetailsPage(props: PageProps) {
             </Col>
             <Col xs={12}>
               <Typography.Text>{host.mtu}</Typography.Text>
+            </Col>
+          </Row>
+          <Row
+            style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+            data-nmui-intercom="host-details_persistentkeepalive"
+          >
+            <Col xs={12}>
+              <Typography.Text disabled>Persistent Keepalive</Typography.Text>
+            </Col>
+            <Col xs={12}>
+              <Typography.Text>{host?.persistentkeepalive ?? ''}</Typography.Text>
             </Col>
           </Row>
           <Row
@@ -415,7 +448,7 @@ export default function HostDetailsPage(props: PageProps) {
                 host?.interfaces?.filter((iface) =>
                   `${iface.name}${iface.addressString}`
                     .toLocaleLowerCase()
-                    .includes(searchText.toLocaleLowerCase().trim()),
+                    .includes(searchText.toLocaleLowerCase().trim())
                 ) ?? []
               }
               rowKey={(iface) => `${iface.name}${iface.addressString}`}
@@ -463,7 +496,7 @@ export default function HostDetailsPage(props: PageProps) {
         {/* top bar */}
         <Row className="tabbed-page-row-padding">
           <Col xs={24}>
-            <Link to={AppRoutes.HOSTS_ROUTE}>View All Hosts</Link>
+            <Link to={resolveAppRoute(AppRoutes.HOSTS_ROUTE)}>View All Hosts</Link>
             <Row>
               <Col xs={18}>
                 <Typography.Title level={2} style={{ marginTop: '.5rem', marginBottom: '2rem' }}>
@@ -488,6 +521,14 @@ export default function HostDetailsPage(props: PageProps) {
                             {host?.isdefault ? 'Unmake default' : 'Make default'}
                           </Typography.Text>
                         ),
+                      },
+                      {
+                        key: 'sync',
+                        label: <Typography.Text>Sync</Typography.Text>,
+                        onClick: (ev) => {
+                          ev.domEvent.stopPropagation();
+                          requestHostPull();
+                        },
                       },
                       {
                         key: 'refresh-key',
