@@ -18,7 +18,6 @@ const testNode1: Node = {
   address: '',
   address6: '',
   localaddress: '',
-  persistentkeepalive: 0,
   interface: '',
   macaddress: '',
   lastmodified: 0,
@@ -68,6 +67,7 @@ const testHost1: Host = {
   nodes: [],
   isdefault: false,
   nat_type: '',
+  persistentkeepalive: 0,
 };
 
 const testHost2: Host = { ...testHost1, nat_type: 'public' };

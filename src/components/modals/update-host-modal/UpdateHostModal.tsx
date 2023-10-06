@@ -79,6 +79,14 @@ export default function UpdateHostModal({ isOpen, host, onUpdateHost, onCancel }
             </Form.Item>
 
             <Form.Item
+              label="Persistent Keepalive"
+              name="persistentkeepalive"
+              data-nmui-intercom="update-host-form_persistentkeepalive"
+            >
+              <InputNumber placeholder="Persistent keepalive" min={0} style={{ width: '100%' }} />
+            </Form.Item>
+
+            <Form.Item
               label="Listen Port"
               name="listenport"
               rules={[{ required: true }]}

@@ -6,7 +6,6 @@ export interface Node {
   address: string;
   address6: string;
   localaddress: string;
-  persistentkeepalive: number;
   interface: string;
   macaddress: string;
   lastmodified: number;
