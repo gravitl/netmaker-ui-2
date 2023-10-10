@@ -7,6 +7,7 @@ import { CreateEgressNodeDto } from './dtos/CreateEgressNodeDto';
 import { CreateExternalClientReqDto } from './dtos/CreateExternalClientReqDto';
 import { CreateIngressNodeDto } from './dtos/CreateIngressNodeDto';
 import { CreateNodeRelayDto } from './dtos/CreateNodeRelayDto';
+import { GatewayUsersResDto } from './dtos/GatewayUsersResDto';
 import { UpdateExternalClientDto } from './dtos/UpdateExternalClientDto';
 
 function getNodes() {

@@ -45,7 +45,6 @@ export default function UpdateIngressModal({
         await NodesService.updateNode(ingress.id, networkId, { ...ingress, ingressdns: formData.ingressdns })
       ).data;
       storeUpdateNode(ingress.id, newNode);
-      resetModal();
       notify.success({ message: `Ingress gateway updated` });
       onUpdateIngress();
     } catch (err) {
@@ -75,7 +74,11 @@ export default function UpdateIngressModal({
       <Form name="update-ingress-form" form={form} layout="vertical" initialValues={ingress}>
         <div className="" style={{ maxHeight: '60vh', overflow: 'auto' }}>
           <div className="CustomModalBody">
-            <Form.Item name="ingressdns" label="Default External client DNS">
+            <Form.Item
+              name="ingressdns"
+              label="Default External client DNS"
+              data-nmui-intercom="update-ingress-form_ingressdns"
+            >
               <Input placeholder="DNS" />
             </Form.Item>
           </div>

@@ -104,14 +104,7 @@ function App() {
   useEffect(() => {
     if (isIntercomReady) {
       intercomBoot({
-        // TODO: use a proper way to get email. username is coincidentally same as email in SaaS
-        email: store.username,
-        // TODO: find a way to get name
-        // name: '',
-        customAttributes: {
-          tier: (isServerEE ? 'paid_tier' : 'free_tier') as IntercomTiers,
-          tenantId: store.tenantId ?? '',
-        },
+        userId: `${store.amuiUserId}_${store.tenantId}`,
       });
     }
     return () => {
@@ -139,6 +132,14 @@ function App() {
     if (favicon) {
       (document.getElementById('favicon') as HTMLLinkElement)?.setAttribute('href', favicon);
     }
+
+    // stop loading animation when the app is ready
+    const loader = document.getElementById('nmui-loading');
+    if (loader) {
+      loader.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200 }).onfinish = () => {
+        loader.remove();
+      };
+    }
   }, []);
 
   return (
@@ -149,7 +150,7 @@ function App() {
           token: {
             colorPrimary: getBrandingConfig().primaryColor,
             colorLink: getBrandingConfig().primaryColor,
-            fontFamily: 'SFPro, Inter, system-ui, Avenir, Helvetica, Arial, sans-serif',
+            fontFamily: 'Inter, SFPro, system-ui, Avenir, Helvetica, Arial, sans-serif',
             fontSize: 16,
             // colorBgContainer: 'black',
           },

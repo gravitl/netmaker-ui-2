@@ -34,6 +34,7 @@ import {
   SearchOutlined,
   SettingOutlined,
   StopOutlined,
+  UserOutlined,
 } from '@ant-design/icons';
 import {
   Alert,
@@ -86,6 +87,7 @@ import UpdateNodeModal from '@/components/modals/update-node-modal/UpdateNodeMod
 import { getBrandingConfig } from '@/services/BaseService';
 import VirtualisedTable from '@/components/VirtualisedTable';
 import { NETWORK_GRAPH_SIGMA_CONTAINER_ID } from '@/constants/AppConstants';
+import UpdateIngressUsersModal from '@/components/modals/update-ingress-users-modal/UpdateIngressUsersModal';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -173,6 +175,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [isUpdateGatewayModalOpen, setIsUpdateGatewayModalOpen] = useState(false);
   const [isUpdateClientModalOpen, setIsUpdateClientModalOpen] = useState(false);
   const [isUpdateNodeModalOpen, setIsUpdateNodeModalOpen] = useState(false);
+  const [isUpdateIngressUsersModalOpen, setIsUpdateIngressUsersModalOpen] = useState(false);
   const [targetNode, setTargetNode] = useState<Node | null>(null);
   const [showClientAcls, setShowClientAcls] = useState(false);
   const [isSubmittingAcls, setIsSubmittingAcls] = useState(false);
@@ -657,6 +660,62 @@ export default function NetworkDetailsPage(props: PageProps) {
     [networkId, notify, storeFetchNodes],
   );
 
+  const getGatewayDropdownOptions = useCallback((gateway: Node) => {
+    const defaultOptions: MenuProps['items'] = [
+      {
+        key: 'edit',
+        label: (
+          <Typography.Text
+            onClick={() => {
+              setSelectedGateway(gateway);
+              setIsUpdateGatewayModalOpen(true);
+            }}
+          >
+            <EditOutlined /> Edit
+          </Typography.Text>
+        ),
+        onClick: (info: any) => {
+          info.domEvent.stopPropagation();
+        },
+      },
+      {
+        key: 'delete',
+        label: (
+          <Typography.Text onClick={() => confirmDeleteGateway(gateway)}>
+            <DeleteOutlined /> Delete
+          </Typography.Text>
+        ),
+        onClick: (info: any) => {
+          info.domEvent.stopPropagation();
+        },
+      },
+    ];
+
+    if (isServerEE) {
+      const addRemoveUsersOption: MenuProps['items'] = [
+        {
+          key: 'addremove',
+          label: (
+            <Typography.Text
+              onClick={() => {
+                setSelectedGateway(gateway);
+                setIsUpdateIngressUsersModalOpen(true);
+              }}
+            >
+              <UserOutlined /> Add / Remove Users
+            </Typography.Text>
+          ),
+          onClick: (info) => {
+            info.domEvent.stopPropagation();
+          },
+        },
+      ];
+      return [...addRemoveUsersOption, ...defaultOptions];
+    }
+
+    return defaultOptions;
+  }, []);
+
   const gatewaysTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(
     () => [
       {
@@ -691,35 +750,7 @@ export default function NetworkDetailsPage(props: PageProps) {
             <Dropdown
               placement="bottomRight"
               menu={{
-                items: [
-                  {
-                    key: 'edit',
-                    label: (
-                      <Typography.Text
-                        onClick={() => {
-                          setSelectedGateway(gateway);
-                          setIsUpdateGatewayModalOpen(true);
-                        }}
-                      >
-                        <EditOutlined /> Edit
-                      </Typography.Text>
-                    ),
-                    onClick: (info) => {
-                      info.domEvent.stopPropagation();
-                    },
-                  },
-                  {
-                    key: 'delete',
-                    label: (
-                      <Typography.Text onClick={() => confirmDeleteGateway(gateway)}>
-                        <DeleteOutlined /> Delete
-                      </Typography.Text>
-                    ),
-                    onClick: (info) => {
-                      info.domEvent.stopPropagation();
-                    },
-                  },
-                ] as MenuProps['items'],
+                items: getGatewayDropdownOptions(gateway),
               }}
             >
               <Button type="text" icon={<MoreOutlined />} />
@@ -849,6 +880,14 @@ export default function NetworkDetailsPage(props: PageProps) {
         width: 500,
         render(value, client) {
           return <Typography.Link onClick={() => openClientDetails(client)}>{value}</Typography.Link>;
+        },
+      },
+      {
+        title: 'Owner ID',
+        dataIndex: 'ownerid',
+        width: 500,
+        render(value) {
+          return <Typography.Text>{value || 'n/a'}</Typography.Text>;
         },
       },
       {
@@ -1696,7 +1735,7 @@ export default function NetworkDetailsPage(props: PageProps) {
 
   const getHostsContent = useCallback(() => {
     return (
-      <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+      <div className="network-hosts-tab-content" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
         <Row justify="space-between" style={{ marginBottom: '1rem', width: '100%' }}>
           <Col xs={12} md={8}>
             <Input
@@ -2375,7 +2414,7 @@ export default function NetworkDetailsPage(props: PageProps) {
               style={{ width: '60%' }}
             />
             {isServerEE && (
-              <span style={{ marginLeft: '2rem' }}>
+              <span style={{ marginLeft: '2rem' }} data-nmui-intercom="network-details-acls_showclientstoggle">
                 <label style={{ marginRight: '1rem' }} htmlFor="show-clients-acl-switch">
                   Show Clients
                 </label>
@@ -2596,12 +2635,24 @@ export default function NetworkDetailsPage(props: PageProps) {
         <Row style={{ width: '100%' }}>
           <Col xs={16}>
             <Radio.Group value={currentMetric} onChange={(ev) => setCurrentMetric(ev.target.value)}>
-              <Radio.Button value="connectivity-status">Connectivity Status</Radio.Button>
-              <Radio.Button value="latency">Latency</Radio.Button>
-              <Radio.Button value="bytes-sent">Bytes Sent</Radio.Button>
-              <Radio.Button value="bytes-received">Bytes Received</Radio.Button>
-              <Radio.Button value="uptime">Uptime</Radio.Button>
-              <Radio.Button value="clients">Clients</Radio.Button>
+              <Radio.Button value="connectivity-status" data-nmui-intercom="network-details-metrics_connectivitystatus">
+                Connectivity Status
+              </Radio.Button>
+              <Radio.Button value="latency" data-nmui-intercom="network-details-metrics_latency">
+                Latency
+              </Radio.Button>
+              <Radio.Button value="bytes-sent" data-nmui-intercom="network-details-metrics_bytessent">
+                Bytes Sent
+              </Radio.Button>
+              <Radio.Button value="bytes-received" data-nmui-intercom="network-details-metrics_bytesreceived">
+                Bytes Received
+              </Radio.Button>
+              <Radio.Button value="uptime" data-nmui-intercom="network-details-metrics_uptime">
+                Uptime
+              </Radio.Button>
+              <Radio.Button value="clients" data-nmui-intercom="network-details-metrics_clients">
+                Clients
+              </Radio.Button>
             </Radio.Group>
           </Col>
           <Col xs={8} style={{ textAlign: 'right' }}>
@@ -3079,6 +3130,14 @@ export default function NetworkDetailsPage(props: PageProps) {
             setIsUpdateGatewayModalOpen(false);
           }}
           onCancel={() => setIsUpdateGatewayModalOpen(false)}
+        />
+      )}
+      {selectedGateway && (
+        <UpdateIngressUsersModal
+          isOpen={isUpdateIngressUsersModalOpen}
+          ingress={selectedGateway}
+          networkId={networkId}
+          onCancel={() => setIsUpdateIngressUsersModalOpen(false)}
         />
       )}
       {targetClient && (

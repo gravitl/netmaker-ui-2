@@ -90,12 +90,12 @@ export default function ClientDetailsModal({ client, isOpen, onCancel, onUpdateC
       onCancel={onCancel}
       footer={null}
       centered
-      className="CustomModal"
+      className="ClientDetailsModal CustomModal"
       style={{ minWidth: '50vw' }}
     >
       <Divider style={{ margin: '0px 0px 2rem 0px' }} />
       <div className="CustomModalBody">
-        <Row>
+        <Row data-nmui-intercom="client-details_id">
           <Col xs={8}>
             <Typography.Text>ID</Typography.Text>
           </Col>
@@ -105,7 +105,7 @@ export default function ClientDetailsModal({ client, isOpen, onCancel, onUpdateC
         </Row>
         <Divider style={{ margin: '1rem 0px 1rem 0px' }} />
 
-        <Row>
+        <Row data-nmui-intercom="client-details_allowedips">
           <Col xs={8}>
             <Typography.Text>Allowed IPs</Typography.Text>
           </Col>
@@ -123,7 +123,7 @@ export default function ClientDetailsModal({ client, isOpen, onCancel, onUpdateC
         </Row>
         <Divider style={{ margin: '1rem 0px 1rem 0px' }} />
 
-        <Row>
+        <Row data-nmui-intercom="client-details_publickey">
           <Col xs={8}>
             <Typography.Text>Public key</Typography.Text>
           </Col>
@@ -133,17 +133,15 @@ export default function ClientDetailsModal({ client, isOpen, onCancel, onUpdateC
         </Row>
         <Divider style={{ margin: '1rem 0px 1rem 0px' }} />
 
-        <Row>
+        <Row data-nmui-intercom="client-details_dns">
           <Col xs={8}>
             <Typography.Text>Client DNS</Typography.Text>
           </Col>
-          <Col xs={16}>
-            <Typography.Text copyable>{client.dns}</Typography.Text>
-          </Col>
+          <Col xs={16}>{client.dns && <Typography.Text copyable>{client.dns}</Typography.Text>}</Col>
         </Row>
         <Divider style={{ margin: '1rem 0px 1rem 0px' }} />
 
-        <Row>
+        <Row data-nmui-intercom="client-details_status">
           <Col xs={8}>
             <Typography.Text>Status</Typography.Text>
           </Col>
@@ -153,7 +151,7 @@ export default function ClientDetailsModal({ client, isOpen, onCancel, onUpdateC
         </Row>
         <Divider style={{ margin: '1rem 0px 1rem 0px' }} />
 
-        <Row>
+        <Row data-nmui-intercom="client-details_qr">
           <Col xs={24}>
             <Image
               loading="eager"
@@ -166,7 +164,7 @@ export default function ClientDetailsModal({ client, isOpen, onCancel, onUpdateC
             />
           </Col>
         </Row>
-        <Row style={{ marginTop: '1rem' }}>
+        <Row style={{ marginTop: '1rem' }} data-nmui-intercom="client-details_downloadbtn">
           <Col xs={24}>
             <Button onClick={downloadClientData}>
               <DownloadOutlined /> Download config

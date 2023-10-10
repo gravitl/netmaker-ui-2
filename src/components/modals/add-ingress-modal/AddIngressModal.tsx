@@ -155,7 +155,13 @@ export default function AddIngressModal({ isOpen, onCreateIngress, onCancel, net
       <Form name="add-ingress-form" form={form} layout="vertical">
         <div className="" style={{ maxHeight: '60vh', overflow: 'auto' }}>
           <div className="CustomModalBody">
-            <Form.Item label="Host" name="node" rules={[{ required: true }]} style={{ marginBottom: '0px' }}>
+            <Form.Item
+              label="Host"
+              name="node"
+              rules={[{ required: true }]}
+              style={{ marginBottom: '0px' }}
+              data-nmui-intercom="add-ingress-form_node"
+            >
               <Select
                 open={isSelectOpen}
                 placeholder="Select a host as gateway"
@@ -243,7 +249,12 @@ export default function AddIngressModal({ isOpen, onCreateIngress, onCancel, net
               </>
             )}
 
-            <Form.Item label="Default client DNS" name="extclientdns" style={{ marginTop: '1rem' }}>
+            <Form.Item
+              label="Default client DNS"
+              name="extclientdns"
+              style={{ marginTop: '1rem' }}
+              data-nmui-intercom="add-ingress-form_extclientdns"
+            >
               <Input placeholder="Default DNS for associated external clients" />
             </Form.Item>
           </div>
