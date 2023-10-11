@@ -12,7 +12,7 @@ const indexHtmlPath = path.join(__dirname,'..' ,'index.html');
 
 fs.readFile(viteConfigPath, 'utf8', (err, data) => {
   if (err) throw err;
-  const updatedData = data.replace(/###ASSET_BASE_PATH###/g, assetBasePath);
+  const updatedData = data.replace(/###ASSET_BASE_PATH###/g, isSaasBuild ? assetBasePath : '/');
   fs.writeFile(viteConfigPath, updatedData, 'utf8', (err) => {
     if (err) throw err;
   });
