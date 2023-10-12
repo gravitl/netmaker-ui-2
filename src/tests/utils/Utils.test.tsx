@@ -43,6 +43,7 @@ const testNode1: Node = {
   failover: false,
   relayedby: '',
   relaynodes: [],
+  autoupdate: false,
 };
 
 const testNode2 = { ...testNode1, lastcheckin: testNode1.lastcheckin - 400 };
@@ -68,6 +69,7 @@ const testHost1: Host = {
   isdefault: false,
   nat_type: '',
   persistentkeepalive: 0,
+  autoupdate: false,
 };
 
 const testHost2: Host = { ...testHost1, nat_type: 'public' };

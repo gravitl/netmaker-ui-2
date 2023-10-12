@@ -132,6 +132,15 @@ export default function UpdateHostModal({ isOpen, host, onUpdateHost, onCancel }
             >
               <Switch />
             </Form.Item>
+            <Form.Item
+              label="Auto Update"
+              name="autoupdate"
+              valuePropName="checked"
+              rules={[{ required: true }]}
+              data-nmui-intercom="update-node-form_autoupdate"
+            >
+              <Switch />
+            </Form.Item>
           </div>
         </div>
         <Divider style={{ margin: '0px 0px 2rem 0px' }} />
