@@ -3,18 +3,17 @@
 ## Netmaker UI v0.21.1
 
 ## Whats New
-- New user management UI
-- UI/UX improvements
+- Generic DNS support; DNS aliases no longer need to end in the host's network name
+- Persistent Keepalive property has been moved to global host settings
+- Host netclient version can now be upgraded from the UI
 
-## What's Fixed
-- Bug fixes for graph, copy DNS button and client DNS not updating properly
+## What's Fixed/Improvements
+- Reloading the page breaks the UI
+- Pro UI customsations loading on a CE server
+- Not able to force delete a zombie node (pending delete)
+- Metrics page getting crumbled when there's a lot of hosts
+- Show relevant enrollment keys when adding a new host from network page
+- Networks tab in sidebar getting expanded when a different page is opened
 
-## known issues
-- Windows installer does not install WireGuard
-- netclient-gui (windows) will display an erroneous error dialog when joining a network (can be ignored)
-- netclient-gui will continously display error dialog if netmaker server is offline
-- Incorrect metrics against ext clients
-- Host ListenPorts set to 0 after migration from 0.17.1 -> 0.21.1
-- Mac IPv6 addresses/route issues
-- Docker client can not re-join after complete deletion
-- netclient-gui network tab blank after disconnect
+## Known Issues
+- Graph page crashed when WebGL is not enabled. WebGL is required for the graph page to work.
