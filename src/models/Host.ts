@@ -22,6 +22,7 @@ export interface Host {
   isdefault: boolean;
   nat_type: 'public' | 'symmetric' | 'asymmetric' | 'double' | '';
   persistentkeepalive: number;
+  autoupdate: boolean;
 }
 
 export interface HostCommonDetails {

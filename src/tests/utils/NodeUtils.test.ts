@@ -33,6 +33,7 @@ const testNode: Node = {
   failover: false,
   relayedby: '',
   relaynodes: [],
+  autoupdate: false,
 };
 
 const hostRegistry: Record<Host['id'], HostCommonDetails> = {

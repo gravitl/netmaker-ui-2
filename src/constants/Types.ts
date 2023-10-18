@@ -23,6 +23,7 @@ export const NULL_HOST: Host = {
   isdefault: false,
   nat_type: 'public',
   persistentkeepalive: 0,
+  autoupdate: false,
 };
 
 export const NULL_NODE: Node = {
@@ -56,6 +57,7 @@ export const NULL_NODE: Node = {
   failover: false,
   relayedby: '',
   relaynodes: [],
+  autoupdate: false,
 };
 
 export const NULL_NETWORK_PROSETTINGS: ProSettings = {
