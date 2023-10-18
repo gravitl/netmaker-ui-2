@@ -1,8 +1,8 @@
-name: NMUI SaaS Deployment to Dev
+name: NMUI SaaS Deployment to SaaS Dev
 
 on:
   push:
-    branches: [develop]
+    branches: [saas-dev]
   workflow_dispatch:
 
 jobs:
