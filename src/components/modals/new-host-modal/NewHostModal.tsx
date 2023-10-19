@@ -538,6 +538,23 @@ export default function NewHostModal({ isOpen, onCancel, onFinish, networkId }: 
                           }`}
                         </Typography.Text>
                       </li>
+                      <li>
+                        <Typography.Text>Compose</Typography.Text>
+                        <Typography.Text code copyable>
+{`
+version: '3.7'
+services:
+  netclient:
+    image: gravitl/netclient:${store.serverConfig?.Version ?? '<version>'}
+    network_mode: host
+    privileged: true
+    environment:
+      - TOKEN=${selectedEnrollmentKey?.token}
+    volumes:
+      - /etc/netclient:/etc/netclient
+`}
+                        </Typography.Text>
+                      </li>
                     </ol>
                     <small>Note: It might take a few minutes for the host to show up in the network(s)</small>
                   </div>
