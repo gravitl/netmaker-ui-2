@@ -8,7 +8,6 @@ const testNode: Node = {
   address: '',
   address6: '',
   localaddress: '',
-  persistentkeepalive: 0,
   interface: '',
   macaddress: '',
   lastmodified: 0,
@@ -34,6 +33,7 @@ const testNode: Node = {
   failover: false,
   relayedby: '',
   relaynodes: [],
+  autoupdate: false,
 };
 
 const hostRegistry: Record<Host['id'], HostCommonDetails> = {

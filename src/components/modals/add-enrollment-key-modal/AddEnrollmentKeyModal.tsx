@@ -13,7 +13,7 @@ import {
   Row,
   Select,
 } from 'antd';
-import { MouseEvent, useState } from 'react';
+import { MouseEvent, useCallback, useMemo, useState } from 'react';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { EnrollmentKey } from '@/models/EnrollmentKey';
 import { CreateEnrollmentKeyReqDto } from '@/services/dtos/CreateEnrollmentKeyReqDto';
@@ -26,15 +26,27 @@ interface AddEnrollmentKeyModalProps {
   isOpen: boolean;
   onCreateKey: (key: EnrollmentKey) => any;
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
+  networkId?: string;
 }
 
 type AddEnrollmentKeyFormData = Modify<CreateEnrollmentKeyReqDto, { expiration: Dayjs }>;
 
-export default function AddEnrollmentKeyModal({ isOpen, onCreateKey, onCancel }: AddEnrollmentKeyModalProps) {
+export default function AddEnrollmentKeyModal({
+  isOpen,
+  onCreateKey,
+  onCancel,
+  networkId,
+}: AddEnrollmentKeyModalProps) {
   const [form] = Form.useForm<AddEnrollmentKeyFormData>();
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
-  const networkOptions = store.networks.map((n) => ({ label: n.netid, value: n.netid }));
+
+  const networkOptions = useMemo(() => {
+    if (networkId) {
+      return store.networks.filter((n) => n.netid === networkId).map((n) => ({ label: n.netid, value: n.netid }));
+    }
+    return store.networks.map((n) => ({ label: n.netid, value: n.netid }));
+  }, [networkId, store.networks]);
 
   const [type, setType] = useState<'unlimited' | 'uses' | 'time'>('unlimited');
 

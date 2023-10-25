@@ -11,6 +11,7 @@ import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { useState } from 'react';
 import { AxiosError } from 'axios';
 import { AppErrorBoundary } from '@/components/AppErrorBoundary';
+import { resolveAppRoute } from '@/utils/RouteUtils';
 
 interface SignupPageProps {
   isFullScreen?: boolean;
@@ -30,10 +31,10 @@ export default function SignupPage(props: SignupPageProps) {
     try {
       const data = await (await AuthService.login(loginData)).data;
       store.setStore({ jwt: data.Response.AuthToken, username: data.Response.UserName });
-      navigate(AppRoutes.DASHBOARD_ROUTE);
+      navigate(resolveAppRoute(AppRoutes.DASHBOARD_ROUTE));
     } catch (err) {
       notification.error({ message: 'Failed to login', description: err as any });
-      navigate(AppRoutes.LOGIN_ROUTE);
+      navigate(resolveAppRoute(AppRoutes.LOGIN_ROUTE));
     }
   };
 
@@ -52,7 +53,7 @@ export default function SignupPage(props: SignupPageProps) {
     } catch (err) {
       notification.error({ message: 'Failed to create admin', description: extractErrorMsg(err as any) });
       if (err instanceof AxiosError && err.response?.status === 400) {
-        navigate(AppRoutes.LOGIN_ROUTE);
+        navigate(resolveAppRoute(AppRoutes.LOGIN_ROUTE));
       }
     } finally {
       setIsSigningup(false);
@@ -129,7 +130,12 @@ export default function SignupPage(props: SignupPageProps) {
             </Divider>
 
             <Form.Item>
-              <Button type="link" block onClick={() => navigate(AppRoutes.LOGIN_ROUTE)} loading={isSigninup}>
+              <Button
+                type="link"
+                block
+                onClick={() => navigate(resolveAppRoute(AppRoutes.LOGIN_ROUTE))}
+                loading={isSigninup}
+              >
                 {t('auth.login')}
               </Button>
             </Form.Item>

@@ -33,7 +33,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { PageProps } from '../../models/Page';
 import './NetworkHostDetailsPage.scss';
-import { getHostRoute, getNetworkRoute, useQuery } from '@/utils/RouteUtils';
+import { getHostRoute, getNetworkRoute, resolveAppRoute, useQuery } from '@/utils/RouteUtils';
 import { Node } from '@/models/Node';
 import { NodeConnectivityStatus } from '@/models/NodeConnectivityStatus';
 import { DATE_TIME_FORMAT } from '@/constants/AppConstants';
@@ -101,7 +101,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
   const loadDetails = useCallback(() => {
     setIsLoading(true);
     if (!networkId) {
-      navigate(AppRoutes.NETWORKS_ROUTE);
+      navigate(resolveAppRoute(AppRoutes.NETWORKS_ROUTE));
       return;
     }
     if (!hostId) {
@@ -330,18 +330,6 @@ export default function NetworkHostDetailsPage(props: PageProps) {
 
           <Row
             style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
-            data-nmui-intercom="network-host-details_persistentkeepalive"
-          >
-            <Col xs={12}>
-              <Typography.Text disabled>Persistent Keepalive</Typography.Text>
-            </Col>
-            <Col xs={12}>
-              <Typography.Text>{node?.persistentkeepalive ?? ''}</Typography.Text>
-            </Col>
-          </Row>
-
-          <Row
-            style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
             data-nmui-intercom="network-host-details_defaultacl"
           >
             <Col xs={12}>
@@ -470,6 +458,17 @@ export default function NetworkHostDetailsPage(props: PageProps) {
               </Row>
               <Row
                 style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+                data-nmui-intercom="network-host-details_hostpersistentkeepalive"
+              >
+                <Col xs={12}>
+                  <Typography.Text disabled>Persistent Keepalive</Typography.Text>
+                </Col>
+                <Col xs={12}>
+                  <Typography.Text>{host.persistentkeepalive}</Typography.Text>
+                </Col>
+              </Row>
+              <Row
+                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
                 data-nmui-intercom="network-host-details_hostpublickey"
               >
                 <Col xs={12}>
@@ -554,6 +553,17 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                 </Col>
                 <Col xs={12}>
                   <Typography.Text>{host.debug ? 'Yes' : 'No'}</Typography.Text>
+                </Col>
+              </Row>
+              <Row
+                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+                data-nmui-intercom="network-host-details_autoupdate"
+              >
+                <Col xs={12}>
+                  <Typography.Text disabled>Auto Update</Typography.Text>
+                </Col>
+                <Col xs={12}>
+                  <Typography.Text>{host.autoupdate ? 'Yes' : 'No'}</Typography.Text>
                 </Col>
               </Row>
             </Collapse.Panel>

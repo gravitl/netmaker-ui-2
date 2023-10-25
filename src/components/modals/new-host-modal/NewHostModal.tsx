@@ -25,11 +25,14 @@ import { EnrollmentKeysService } from '@/services/EnrollmentKeysService';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { isEnrollmentKeyValid } from '@/utils/EnrollmentKeysUtils';
 import AddEnrollmentKeyModal from '../add-enrollment-key-modal/AddEnrollmentKeyModal';
+import { isSaasBuild } from '@/services/BaseService';
+import { ServerConfigService } from '@/services/ServerConfigService';
 
 interface NewHostModal {
   isOpen: boolean;
   onFinish?: () => void;
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
+  networkId?: string;
 }
 
 const steps = [
@@ -44,7 +47,7 @@ const steps = [
   },
 ];
 
-export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModal) {
+export default function NewHostModal({ isOpen, onCancel, onFinish, networkId }: NewHostModal) {
   const store = useStore();
   const [notify, notifyCtx] = notification.useNotification();
 
@@ -90,6 +93,13 @@ export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModa
   const loadEnrollmentKeys = useCallback(async () => {
     try {
       const keys = (await EnrollmentKeysService.getEnrollmentKeys()).data;
+
+      if (networkId) {
+        const filteredKeys = keys.filter((key) => key.networks.includes(networkId));
+        setEnrollmentKeys(filteredKeys);
+        return;
+      }
+
       setEnrollmentKeys(keys);
     } catch (err) {
       notify.error({
@@ -98,7 +108,7 @@ export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModa
       });
       console.error(err);
     }
-  }, [notify]);
+  }, [notify, networkId]);
 
   const resetModal = () => {
     setCurrentStep(0);
@@ -257,7 +267,13 @@ export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModa
                       className={`os-button ${selectedOs === 'windows' ? 'active' : ''}`}
                       onClick={(ev) => onShowInstallGuide(ev, 'windows')}
                     >
-                      <img src={`/icons/windows-${theme}.jpg`} alt="windows icon" className="logo" />
+                      <img
+                        src={`${
+                          isSaasBuild ? `/${ServerConfigService.getUiVersion()}` : ''
+                        }/icons/windows-${theme}.jpg`}
+                        alt="windows icon"
+                        className="logo"
+                      />
                       <p>Windows</p>
                     </div>
                   </Col>
@@ -266,7 +282,11 @@ export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModa
                       className={`os-button ${selectedOs === 'macos' ? 'active' : ''}`}
                       onClick={(ev) => onShowInstallGuide(ev, 'macos')}
                     >
-                      <img src={`/icons/macos-${theme}.jpg`} alt="macos icon" className="logo" />
+                      <img
+                        src={`${isSaasBuild ? `/${ServerConfigService.getUiVersion()}` : ''}/icons/macos-${theme}.jpg`}
+                        alt="macos icon"
+                        className="logo"
+                      />
                       <p>Mac</p>
                     </div>
                   </Col>
@@ -275,7 +295,11 @@ export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModa
                       className={`os-button ${selectedOs === 'linux' ? 'active' : ''}`}
                       onClick={(ev) => onShowInstallGuide(ev, 'linux')}
                     >
-                      <img src={`/icons/linux-${theme}.jpg`} alt="linux icon" className="logo" />
+                      <img
+                        src={`${isSaasBuild ? `/${ServerConfigService.getUiVersion()}` : ''}/icons/linux-${theme}.jpg`}
+                        alt="linux icon"
+                        className="logo"
+                      />
                       <p>Linux</p>
                     </div>
                   </Col>
@@ -286,7 +310,13 @@ export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModa
                       }`}
                       onClick={(ev) => onShowInstallGuide(ev, 'freebsd13')}
                     >
-                      <img src={`/icons/freebsd-${theme}.jpg`} alt="freebsd icon" className="logo" />
+                      <img
+                        src={`${
+                          isSaasBuild ? `/${ServerConfigService.getUiVersion()}` : ''
+                        }/icons/freebsd-${theme}.jpg`}
+                        alt="freebsd icon"
+                        className="logo"
+                      />
                       <p>FreeBSD</p>
                     </div>
                   </Col>
@@ -295,7 +325,11 @@ export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModa
                       className={`os-button ${selectedOs === 'docker' ? 'active' : ''}`}
                       onClick={(ev) => onShowInstallGuide(ev, 'docker')}
                     >
-                      <img src={`/icons/docker-${theme}.jpg`} alt="docker icon" className="logo" />
+                      <img
+                        src={`${isSaasBuild ? `/${ServerConfigService.getUiVersion()}` : ''}/icons/docker-${theme}.jpg`}
+                        alt="docker icon"
+                        className="logo"
+                      />
                       <p>Docker</p>
                     </div>
                   </Col>
@@ -526,6 +560,7 @@ export default function NewHostModal({ isOpen, onCancel, onFinish }: NewHostModa
         onCancel={() => {
           setIsAddEnrollmentKeyModalOpen(false);
         }}
+        networkId={networkId}
       />
     </Modal>
   );

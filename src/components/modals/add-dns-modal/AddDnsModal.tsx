@@ -9,6 +9,7 @@ import { DNS } from '@/models/Dns';
 import { Node } from '@/models/Node';
 import { isValidIpv4OrCidr, isValidIpv6OrCidr, truncateIpFromCidr } from '@/utils/NetworkUtils';
 import { getExtendedNode } from '@/utils/NodeUtils';
+import { Rule } from 'antd/es/form';
 
 interface AddDnsModalProps {
   isOpen: boolean;
@@ -69,6 +70,22 @@ export default function AddDnsModal({ isOpen, onCreateDns, onCancel, networkId }
     }
   };
 
+  const validateUrl = (_: any, value: string) => {
+    /* eslint-disable */
+    const regex = /^[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-z]{2,6}$/; // Regular expression for url validation
+  
+    if (regex.test(value)) {
+      return Promise.resolve();
+    } else {
+      return Promise.reject("Please enter a valid URL.");
+    }
+  };
+
+  const validateUrlInput: Rule[] = [
+    { required: true, message: "Please enter a value." },
+    { validator: validateUrl },
+  ];
+
   return (
     <Modal
       title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Create a DNS Entry</span>}
@@ -84,8 +101,8 @@ export default function AddDnsModal({ isOpen, onCreateDns, onCancel, networkId }
       <Divider style={{ margin: '0px 0px 2rem 0px' }} />
       <div className="CustomModalBody">
         <Form name="add-dns-form" form={form} layout="vertical">
-          <Form.Item label="DNS name" name="name" rules={[{ required: true }]} data-nmui-intercom="add-dns-form_name">
-            <Input placeholder="example" addonAfter={`.${networkId}`} />
+          <Form.Item label="DNS name" name="name" rules={validateUrlInput} data-nmui-intercom="add-dns-form_name">
+            <Input placeholder="myserver.example.com" />
           </Form.Item>
 
           <Form.Item

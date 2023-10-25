@@ -1,5 +1,5 @@
 import { AppRoutes } from '@/routes';
-import { fileBugReport } from '@/utils/RouteUtils';
+import { fileBugReport, resolveAppRoute } from '@/utils/RouteUtils';
 import { Button, Card, Col, Layout, Result, Row, Typography } from 'antd';
 import { useNavigate } from 'react-router-dom';
 
@@ -39,14 +39,18 @@ export function AppErrorPage(props: AppErrorPageProps) {
                   size="large"
                   onClick={() => {
                     fileBugReport(`${props.error}\n${JSON.stringify(props.info, null, 4)}`);
-                    navigate(AppRoutes.DASHBOARD_ROUTE);
+                    navigate(resolveAppRoute(AppRoutes.DASHBOARD_ROUTE));
                   }}
                 >
                   File a Bug Report
                 </Button>
               </Col>
               <Col span={12}>
-                <Button type="primary" size="large" onClick={() => navigate(AppRoutes.DASHBOARD_ROUTE)}>
+                <Button
+                  type="primary"
+                  size="large"
+                  onClick={() => navigate(resolveAppRoute(AppRoutes.DASHBOARD_ROUTE))}
+                >
                   Back Home
                 </Button>
               </Col>

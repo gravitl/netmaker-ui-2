@@ -6,7 +6,6 @@ export interface Node {
   address: string;
   address6: string;
   localaddress: string;
-  persistentkeepalive: number;
   interface: string;
   macaddress: string;
   lastmodified: number;
@@ -32,6 +31,7 @@ export interface Node {
   failover: boolean;
   relayedby: Node['id'];
   relaynodes?: Node['id'][];
+  autoupdate: boolean;
 }
 
 export type ExtendedNode = Node & Partial<HostCommonDetails>;
