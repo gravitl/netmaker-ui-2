@@ -17,7 +17,7 @@
     "prebuild": "node scripts/resolve-asset-path.cjs"
   },
   "dependencies": {
-    "@ant-design/icons": "^5.0.1",
+    "@ant-design/icons": "^5.2.6",
     "@react-sigma/core": "^3.4.2",
     "antd": "^5.9.0",
     "axios": "^1.5.0",
