@@ -67,3 +67,5 @@ export const NULL_NETWORK_PROSETTINGS: ProSettings = {
   allowedusers: [],
   allowedgroups: [],
 };
+
+export const NULL_NODE_ID = '00000000-0000-0000-0000-000000000000';
