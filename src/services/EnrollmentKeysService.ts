@@ -15,8 +15,13 @@ function deleteEnrollmentKey(id: EnrollmentKey['value']) {
   return axiosService.delete<void>(`${ApiRoutes.ENROLLMENT_KEYS}/${id}`);
 }
 
+function updateEnrollmentKey(id: EnrollmentKey['value'], payload: CreateEnrollmentKeyReqDto) {
+  return axiosService.put<EnrollmentKey>(`${ApiRoutes.ENROLLMENT_KEYS}/${id}`, payload);
+}
+
 export const EnrollmentKeysService = {
   getEnrollmentKeys,
   createEnrollmentKey,
   deleteEnrollmentKey,
+  updateEnrollmentKey,
 };
