@@ -50,8 +50,7 @@ export function getExtendedNode(node: Node, hostCommonDetails: Record<string, Ho
  * @returns whether node is a relay or not
  */
 export function isNodeRelay(node: Node): boolean {
-  if (node.relaynodes) return node.relaynodes.length > 0;
-  return false;
+  return !!node.isrelay;
 }
 
 /**
