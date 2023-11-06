@@ -34,6 +34,8 @@ const testNode: Node = {
   relayedby: '',
   relaynodes: [],
   autoupdate: false,
+  isrelay: false,
+  isrelayed: false,
 };
 
 const hostRegistry: Record<Host['id'], HostCommonDetails> = {
