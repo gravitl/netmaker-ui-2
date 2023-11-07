@@ -58,6 +58,8 @@ export const NULL_NODE: Node = {
   relayedby: '',
   relaynodes: [],
   autoupdate: false,
+  isrelay: false,
+  isrelayed: false,
 };
 
 export const NULL_NETWORK_PROSETTINGS: ProSettings = {

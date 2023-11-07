@@ -133,6 +133,8 @@ export const stubNode1: Node = {
   failover: false,
   relayedby: '',
   autoupdate: false,
+  isrelay: false,
+  isrelayed: false,
 };
 
 export const stubNode2: Node = {
@@ -166,6 +168,8 @@ export const stubNode2: Node = {
   failover: false,
   relayedby: '',
   autoupdate: false,
+  isrelay: false,
+  isrelayed: false,
 };
 
 export const stubNodes: Node[] = [stubNode1, stubNode2];
