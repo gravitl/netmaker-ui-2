@@ -1,6 +1,6 @@
 # Netmaker UI release notes
 
-## Netmaker UI v0.21.1
+## Netmaker UI v0.21.2
 
 ## Whats New
 - Generic DNS support; DNS aliases no longer need to end in the host's network name
