@@ -226,7 +226,7 @@ export default function AddIngressModal({ isOpen, onCreateIngress, onCancel, net
                     <Button
                       danger
                       size="small"
-                      type="text"
+                      type="primary"
                       icon={<CloseOutlined />}
                       onClick={() => {
                         form.setFieldValue('gatewayId', '');

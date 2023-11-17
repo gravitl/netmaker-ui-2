@@ -4,7 +4,14 @@ import { EnrollmentKey } from '@/models/EnrollmentKey';
 import { EnrollmentKeysService } from '@/services/EnrollmentKeysService';
 import { isEnrollmentKeyValid } from '@/utils/EnrollmentKeysUtils';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
-import { DeleteOutlined, EditOutlined, MoreOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons';
+import {
+  DeleteOutlined,
+  EditOutlined,
+  MoreOutlined,
+  PlusOutlined,
+  ReloadOutlined,
+  SearchOutlined,
+} from '@ant-design/icons';
 import {
   Button,
   Card,
@@ -123,22 +130,24 @@ export default function EnrollmentKeysPage(props: PageProps) {
                 {
                   key: 'edit',
                   label: (
-                    <Typography.Text onClick={() => openEditKeyModal(key)}>
+                    <Typography.Text>
                       <EditOutlined /> Edit Key
                     </Typography.Text>
                   ),
                   onClick: (info) => {
+                    openEditKeyModal(key);
                     info.domEvent.stopPropagation();
                   },
                 },
                 {
                   key: 'delete',
                   label: (
-                    <Typography.Text onClick={() => confirmRemoveKey(key)}>
+                    <Typography.Text>
                       <DeleteOutlined /> Delete Key
                     </Typography.Text>
                   ),
                   onClick: (info) => {
+                    confirmRemoveKey(key);
                     info.domEvent.stopPropagation();
                   },
                 },
@@ -281,6 +290,9 @@ export default function EnrollmentKeysPage(props: PageProps) {
                 />
               </Col>
               <Col xs={12} md={6} style={{ textAlign: 'right' }}>
+                <Button size="large" style={{ marginRight: '0.5em' }} onClick={() => loadEnrollmentKeys()}>
+                  <ReloadOutlined /> Refresh keys
+                </Button>
                 <Button type="primary" size="large" onClick={() => setIsAddKeyModalOpen(true)}>
                   <PlusOutlined /> Create Key
                 </Button>
