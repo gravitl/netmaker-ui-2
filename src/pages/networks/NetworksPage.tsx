@@ -1,6 +1,6 @@
 import { Network } from '@/models/Network';
 import { AppRoutes } from '@/routes';
-import { PlusOutlined, SearchOutlined } from '@ant-design/icons';
+import { PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
 import { Button, Card, Col, Input, Layout, Row, Skeleton, Table, TableColumnsType, Typography } from 'antd';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -222,6 +222,9 @@ export default function NetworksPage(props: PageProps) {
                 />
               </Col>
               <Col xs={12} md={6} style={{ textAlign: 'right' }}>
+                <Button size="large" style={{ marginRight: '0.5em' }} onClick={() => loadNetworks()}>
+                  <ReloadOutlined /> Reload Networks
+                </Button>
                 <Button type="primary" size="large" onClick={() => setIsAddNetworkModalOpen(true)}>
                   <PlusOutlined /> Create Network
                 </Button>

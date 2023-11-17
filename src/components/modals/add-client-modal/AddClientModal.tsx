@@ -243,8 +243,8 @@ export default function AddClientModal({
                     <Button
                       danger
                       size="small"
-                      type="text"
                       icon={<CloseOutlined />}
+                      type="primary"
                       onClick={() => {
                         form.setFieldValue('gatewayId', '');
                         setSelectedGateway(null);

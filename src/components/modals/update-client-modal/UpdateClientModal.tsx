@@ -51,6 +51,11 @@ export default function UpdateClientModal({
     }
   };
 
+  const clientObj: ExternalClient = {
+    ...client,
+    extraallowedips: client.extraallowedips ?? [],
+  };
+
   return (
     <Modal
       title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Update Client</span>}
@@ -64,7 +69,7 @@ export default function UpdateClientModal({
       style={{ minWidth: '50vw' }}
     >
       <Divider style={{ margin: '0px 0px 2rem 0px' }} />
-      <Form name="update-client-form" form={form} layout="vertical" initialValues={client}>
+      <Form name="update-client-form" form={form} layout="vertical" initialValues={clientObj}>
         <div className="CustomModalBody">
           <Form.Item
             label="Client ID (Optional)"

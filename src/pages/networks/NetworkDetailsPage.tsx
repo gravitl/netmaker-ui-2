@@ -53,6 +53,7 @@ import {
   Row,
   Select,
   Skeleton,
+  Space,
   Switch,
   Table,
   TableColumnProps,
@@ -176,6 +177,8 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [targetNode, setTargetNode] = useState<Node | null>(null);
   const [showClientAcls, setShowClientAcls] = useState(false);
   const [isSubmittingAcls, setIsSubmittingAcls] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true); // used to set selected gateway on initial load
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const networkNodes = useMemo(
     () =>
@@ -192,11 +195,16 @@ export default function NetworkDetailsPage(props: PageProps) {
       .map((node) => getExtendedNode(node, store.hostsCommonDetails));
   }, [networkNodes, store.hostsCommonDetails]);
 
-  const filteredClientGateways = useMemo<ExtendedNode[]>(
-    () =>
-      clientGateways.filter((node) => node.name?.toLowerCase().includes(searchClientGateways.toLowerCase()) ?? false),
-    [clientGateways, searchClientGateways],
-  );
+  const filteredClientGateways = useMemo<ExtendedNode[]>(() => {
+    const filteredGateways = clientGateways.filter(
+      (node) => node.name?.toLowerCase().includes(searchClientGateways.toLowerCase()) ?? false,
+    );
+    if (isInitialLoad) {
+      setSelectedGateway(filteredGateways[0] ?? null);
+      setIsInitialLoad(false);
+    }
+    return filteredGateways;
+  }, [clientGateways, searchClientGateways, isInitialLoad]);
 
   const filteredClients = useMemo<ExternalClient[]>(
     () =>
@@ -219,10 +227,16 @@ export default function NetworkDetailsPage(props: PageProps) {
       .map((node) => getExtendedNode(node, store.hostsCommonDetails));
   }, [networkNodes, store.hostsCommonDetails]);
 
-  const filteredEgresses = useMemo<ExtendedNode[]>(
-    () => egresses.filter((egress) => egress.name?.toLowerCase().includes(searchEgress.toLowerCase()) ?? false),
-    [egresses, searchEgress],
-  );
+  const filteredEgresses = useMemo<ExtendedNode[]>(() => {
+    const filteredEgressesArray = egresses.filter(
+      (egress) => egress.name?.toLowerCase().includes(searchEgress.toLowerCase()) ?? false,
+    );
+    // if (isInitialLoad) {
+    //   setFilteredEgress(filteredEgressesArray[0] ?? null);
+    //   setIsInitialLoad(false);
+    // }
+    return filteredEgressesArray;
+  }, [egresses, searchEgress]);
 
   const filteredExternalRoutes = useMemo<ExternalRoutesTableData[]>(() => {
     if (filteredEgress) {
@@ -254,10 +268,16 @@ export default function NetworkDetailsPage(props: PageProps) {
     return networkNodes.filter((node) => isNodeRelay(node));
   }, [networkNodes, isServerEE]);
 
-  const filteredRelays = useMemo<ExtendedNode[]>(
-    () => relays.filter((relay) => relay.name?.toLowerCase().includes(searchRelay.toLowerCase()) ?? false),
-    [relays, searchRelay],
-  );
+  const filteredRelays = useMemo<ExtendedNode[]>(() => {
+    const filteredRelays = relays.filter(
+      (relay) => relay.name?.toLowerCase().includes(searchRelay.toLowerCase()) ?? false,
+    );
+    if (isInitialLoad) {
+      setSelectedRelay(filteredRelays[0] ?? null);
+      setIsInitialLoad(false);
+    }
+    return filteredRelays;
+  }, [relays, searchRelay]);
 
   const filteredRelayedNodes = useMemo<ExtendedNode[]>(() => {
     if (selectedRelay) {
@@ -665,27 +685,25 @@ export default function NetworkDetailsPage(props: PageProps) {
         {
           key: 'edit',
           label: (
-            <Typography.Text
-              onClick={() => {
-                setSelectedGateway(gateway);
-                setIsUpdateGatewayModalOpen(true);
-              }}
-            >
+            <Typography.Text>
               <EditOutlined /> Edit
             </Typography.Text>
           ),
           onClick: (info: any) => {
+            setSelectedGateway(gateway);
+            setIsUpdateGatewayModalOpen(true);
             info.domEvent.stopPropagation();
           },
         },
         {
           key: 'delete',
           label: (
-            <Typography.Text onClick={() => confirmDeleteGateway(gateway)}>
+            <Typography.Text>
               <DeleteOutlined /> Delete
             </Typography.Text>
           ),
           onClick: (info: any) => {
+            confirmDeleteGateway(gateway);
             info.domEvent.stopPropagation();
           },
         },
@@ -696,16 +714,13 @@ export default function NetworkDetailsPage(props: PageProps) {
           {
             key: 'addremove',
             label: (
-              <Typography.Text
-                onClick={() => {
-                  setSelectedGateway(gateway);
-                  setIsUpdateIngressUsersModalOpen(true);
-                }}
-              >
+              <Typography.Text>
                 <UserOutlined /> Add / Remove Users
               </Typography.Text>
             ),
             onClick: (info) => {
+              setSelectedGateway(gateway);
+              setIsUpdateIngressUsersModalOpen(true);
               info.domEvent.stopPropagation();
             },
           },
@@ -799,27 +814,25 @@ export default function NetworkDetailsPage(props: PageProps) {
                   {
                     key: 'update',
                     label: (
-                      <Typography.Text
-                        onClick={() => {
-                          setFilteredEgress(egress);
-                          setIsUpdateEgressModalOpen(true);
-                        }}
-                      >
+                      <Typography.Text>
                         <EditOutlined /> Update
                       </Typography.Text>
                     ),
                     onClick: (info) => {
+                      setFilteredEgress(egress);
+                      setIsUpdateEgressModalOpen(true);
                       info.domEvent.stopPropagation();
                     },
                   },
                   {
                     key: 'delete',
                     label: (
-                      <Typography.Text onClick={() => confirmDeleteEgress(egress)}>
+                      <Typography.Text>
                         <DeleteOutlined /> Delete
                       </Typography.Text>
                     ),
                     onClick: (info) => {
+                      confirmDeleteEgress(egress);
                       info.domEvent.stopPropagation();
                     },
                   },
@@ -858,10 +871,13 @@ export default function NetworkDetailsPage(props: PageProps) {
                   {
                     key: 'delete',
                     label: (
-                      <Typography.Text onClick={() => confirmDeleteRange(range)}>
+                      <Typography.Text>
                         <DeleteOutlined /> Delete
                       </Typography.Text>
                     ),
+                    onClick: (info: any) => {
+                      confirmDeleteRange(range);
+                    },
                   },
                 ] as MenuProps['items'],
               }}
@@ -943,23 +959,25 @@ export default function NetworkDetailsPage(props: PageProps) {
                   {
                     key: 'edit',
                     label: (
-                      <Typography.Text
-                        onClick={() => {
-                          setTargetClient(client);
-                          setIsUpdateClientModalOpen(true);
-                        }}
-                      >
+                      <Typography.Text>
                         <EditOutlined /> Edit
                       </Typography.Text>
                     ),
+                    onClick: (info: any) => {
+                      setTargetClient(client);
+                      setIsUpdateClientModalOpen(true);
+                    },
                   },
                   {
                     key: 'delete',
                     label: (
-                      <Typography.Text onClick={() => confirmDeleteClient(client)}>
+                      <Typography.Text>
                         <DeleteOutlined /> Delete
                       </Typography.Text>
                     ),
+                    onClick: (info: any) => {
+                      confirmDeleteClient(client);
+                    },
                   },
                 ] as MenuProps['items'],
               }}
@@ -1000,27 +1018,25 @@ export default function NetworkDetailsPage(props: PageProps) {
                   {
                     key: 'update',
                     label: (
-                      <Typography.Text
-                        onClick={() => {
-                          setSelectedRelay(relay);
-                          setIsUpdateRelayModalOpen(true);
-                        }}
-                      >
+                      <Typography.Text>
                         <EditOutlined /> Update
                       </Typography.Text>
                     ),
                     onClick: (info) => {
+                      setSelectedRelay(relay);
+                      setIsUpdateRelayModalOpen(true);
                       info.domEvent.stopPropagation();
                     },
                   },
                   {
                     key: 'delete',
                     label: (
-                      <Typography.Text onClick={() => confirmDeleteRelay(relay)}>
+                      <Typography.Text>
                         <DeleteOutlined /> Delete
                       </Typography.Text>
                     ),
                     onClick: (info) => {
+                      confirmDeleteRelay(relay);
                       info.domEvent.stopPropagation();
                     },
                   },
@@ -1067,18 +1083,15 @@ export default function NetworkDetailsPage(props: PageProps) {
                   {
                     key: 'delete',
                     label: (
-                      <Typography.Text
-                        onClick={() =>
-                          confirmRemoveRelayed(
-                            relayed,
-                            networkNodes.find((node) => node.id === relayed.relayedby) ?? NULL_NODE,
-                          )
-                        }
-                      >
+                      <Typography.Text>
                         <DeleteOutlined /> Stop being relayed
                       </Typography.Text>
                     ),
                     onClick: (info) => {
+                      confirmRemoveRelayed(
+                        relayed,
+                        networkNodes.find((node) => node.id === relayed.relayedby) ?? NULL_NODE,
+                      );
                       info.domEvent.stopPropagation();
                     },
                   },
@@ -1786,12 +1799,17 @@ export default function NetworkDetailsPage(props: PageProps) {
             />
           </Col>
           <Col xs={12} md={6} style={{ textAlign: 'right' }}>
-            <Dropdown.Button
-              type="primary"
-              style={{ justifyContent: 'end' }}
-              icon={<DownOutlined />}
+            <Dropdown
+              // icon={<DownOutlined />}
               menu={{
                 items: [
+                  {
+                    key: 'new-host',
+                    label: 'Add New Host',
+                    onClick() {
+                      setIsAddNewHostModalOpen(true);
+                    },
+                  },
                   {
                     key: 'existing-host',
                     label: 'Add Existing Host',
@@ -1801,10 +1819,14 @@ export default function NetworkDetailsPage(props: PageProps) {
                   },
                 ],
               }}
-              onClick={() => setIsAddNewHostModalOpen(true)}
             >
-              <PlusOutlined /> Add New Host
-            </Dropdown.Button>
+              <Button type="primary" style={{ width: '170px' }}>
+                <Space>
+                  Add Host
+                  <DownOutlined />
+                </Space>
+              </Button>
+            </Dropdown>
           </Col>
 
           <Col xs={24} style={{ paddingTop: '1rem' }}>
@@ -2125,15 +2147,9 @@ export default function NetworkDetailsPage(props: PageProps) {
                   </Typography.Title>
                 </Col>
                 <Col xs={12} style={{ textAlign: 'right' }}>
-                  {selectedGateway && (
-                    <Button
-                      type="primary"
-                      style={{ marginRight: '1rem' }}
-                      onClick={() => setIsAddClientModalOpen(true)}
-                    >
-                      <PlusOutlined /> Create Client
-                    </Button>
-                  )}
+                  <Button type="primary" style={{ marginRight: '1rem' }} onClick={() => setIsAddClientModalOpen(true)}>
+                    <PlusOutlined /> Create Client
+                  </Button>
                   Display All{' '}
                   <Switch
                     title="Display all clients. Click a gateway to filter clients specific to that gateway."
@@ -2793,37 +2809,37 @@ export default function NetworkDetailsPage(props: PageProps) {
       {
         key: 'overview',
         label: `Overview`,
-        children: network ? getOverviewContent() : <Skeleton active />,
+        children: network && !isRefreshing ? getOverviewContent() : <Skeleton active />,
       },
       {
         key: 'hosts',
         label: `Hosts (${networkHosts.length})`,
-        children: network ? getHostsContent() : <Skeleton active />,
+        children: network && !isRefreshing ? getHostsContent() : <Skeleton active />,
       },
       {
         key: 'clients',
         label: `Clients (${clients.length})`,
-        children: network ? getClientsContent() : <Skeleton active />,
+        children: network && !isRefreshing ? getClientsContent() : <Skeleton active />,
       },
       {
         key: 'egress',
         label: `Egress (${egresses.length})`,
-        children: network ? getEgressContent() : <Skeleton active />,
+        children: network && !isRefreshing ? getEgressContent() : <Skeleton active />,
       },
       {
         key: 'dns',
         label: `DNS`,
-        children: network ? getDnsContent() : <Skeleton active />,
+        children: network && !isRefreshing ? getDnsContent() : <Skeleton active />,
       },
       {
         key: 'access-control',
         label: `Access Control`,
-        children: network ? getAclsContent() : <Skeleton active />,
+        children: network && !isRefreshing ? getAclsContent() : <Skeleton active />,
       },
       {
         key: 'graph',
         label: `Graph`,
-        children: network ? getGraphContent() : <Skeleton active />,
+        children: network && !isRefreshing ? getGraphContent() : <Skeleton active />,
       },
     ].concat(
       isServerEE
@@ -2831,7 +2847,7 @@ export default function NetworkDetailsPage(props: PageProps) {
             {
               key: 'metrics',
               label: `Metrics`,
-              children: network ? getMetricsContent() : <Skeleton active />,
+              children: network && !isRefreshing ? getMetricsContent() : <Skeleton active />,
             },
           ]
         : [],
@@ -2841,7 +2857,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       tabs.splice(3, 0, {
         key: 'relays',
         label: `Relays (${relays.length})`,
-        children: network ? getRelayContent() : <Skeleton active />,
+        children: network && !isRefreshing ? getRelayContent() : <Skeleton active />,
       });
     }
 
@@ -2988,6 +3004,14 @@ export default function NetworkDetailsPage(props: PageProps) {
     });
   };
 
+  const reloadNetwork = async () => {
+    setIsRefreshing(true);
+    await storeFetchNodes();
+    await store.fetchHosts();
+    loadNetwork();
+    setIsRefreshing(false);
+  };
+
   useEffect(() => {
     loadNetwork();
   }, [loadNetwork]);
@@ -3041,6 +3065,9 @@ export default function NetworkDetailsPage(props: PageProps) {
                     </Button>
                   </>
                 )} */}
+                <Button style={{ marginRight: '1em' }} onClick={reloadNetwork}>
+                  <ReloadOutlined /> Reload
+                </Button>
                 <Dropdown
                   menu={{
                     items: [
