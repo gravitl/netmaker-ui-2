@@ -2,6 +2,7 @@ import { ArrowLeftOutlined, ArrowRightOutlined, SearchOutlined } from '@ant-desi
 import '../CustomModal.scss';
 import './NewHostModal.scss';
 import {
+  Alert,
   Button,
   Card,
   Col,
@@ -27,6 +28,9 @@ import { isEnrollmentKeyValid } from '@/utils/EnrollmentKeysUtils';
 import AddEnrollmentKeyModal from '../add-enrollment-key-modal/AddEnrollmentKeyModal';
 import { isSaasBuild } from '@/services/BaseService';
 import { ServerConfigService } from '@/services/ServerConfigService';
+import { getExtendedNode } from '@/utils/NodeUtils';
+import { ExtendedNode } from '@/models/Node';
+import { NULL_NODE, NULL_NODE_ID } from '@/constants/Types';
 
 interface NewHostModal {
   isOpen: boolean;
@@ -117,6 +121,19 @@ export default function NewHostModal({ isOpen, onCancel, onFinish, networkId }: 
     setSelectedOs('windows');
     setSelectedArch('amd64');
   };
+
+  const relayNode = useMemo<ExtendedNode>(() => {
+    // check if enrollment key is for relay node
+    if (selectedEnrollmentKey?.relay != NULL_NODE_ID) {
+      const relayNode = store.nodes
+        .map((node) => getExtendedNode(node, store.hostsCommonDetails))
+        .find((node) => node.id === selectedEnrollmentKey?.relay);
+      if (relayNode) {
+        return relayNode;
+      }
+    }
+    return NULL_NODE;
+  }, [selectedEnrollmentKey, store.nodes, store.hostsCommonDetails]);
 
   useEffect(() => {
     // reset arch on OS change
@@ -249,6 +266,14 @@ export default function NewHostModal({ isOpen, onCancel, onFinish, networkId }: 
         <div className="CustomModalBody">
           <Row justify="center">
             <Col xs={24}>
+              {selectedEnrollmentKey?.relay != NULL_NODE_ID && (
+                <Alert
+                  style={{ marginBottom: '1rem' }}
+                  type="warning"
+                  message={`This enrollment key is for a relay node named ${relayNode.name}. Your host will automatically be relayed`}
+                  showIcon
+                />
+              )}
               <Card>
                 <p>
                   Connect host to network(s){' '}
@@ -536,6 +561,23 @@ export default function NewHostModal({ isOpen, onCancel, onFinish, networkId }: 
                           {`sudo docker run -d --network host --privileged -e TOKEN=${selectedEnrollmentKey?.token} -v /etc/netclient:/etc/netclient --name netclient gravitl/netclient:${
                             store.serverConfig?.Version ?? '<version>'
                           }`}
+                        </Typography.Text>
+                      </li>
+                      <li>
+                        <Typography.Text>Compose</Typography.Text>
+                        <Typography.Text code copyable>
+                          {`
+version: '3.7'
+services:
+  netclient:
+    image: gravitl/netclient:${store.serverConfig?.Version ?? '<version>'}
+    network_mode: host
+    privileged: true
+    environment:
+      - TOKEN=${selectedEnrollmentKey?.token}
+    volumes:
+      - /etc/netclient:/etc/netclient
+`}
                         </Typography.Text>
                       </li>
                     </ol>

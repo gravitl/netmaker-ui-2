@@ -555,6 +555,17 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                   <Typography.Text>{host.debug ? 'Yes' : 'No'}</Typography.Text>
                 </Col>
               </Row>
+              <Row
+                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+                data-nmui-intercom="network-host-details_autoupdate"
+              >
+                <Col xs={12}>
+                  <Typography.Text disabled>Auto Update</Typography.Text>
+                </Col>
+                <Col xs={12}>
+                  <Typography.Text>{host.autoupdate ? 'Yes' : 'No'}</Typography.Text>
+                </Col>
+              </Row>
             </Collapse.Panel>
           </Collapse>
         </Card>
