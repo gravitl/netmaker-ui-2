@@ -21,8 +21,13 @@ function getUiVersion(): string {
   return `v${uiVersion}`;
 }
 
+async function restartTenant() {
+  return axiosService.get(ApiRoutes.RESTART_TENANT);
+}
+
 export const ServerConfigService = {
   getServerConfig,
   getServerStatus,
   getUiVersion,
+  restartTenant,
 };
