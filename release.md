@@ -1,6 +1,6 @@
 # Netmaker UI release notes
 
-## Netmaker UI v0.21.2
+## Netmaker UI v0.21.3
 
 ## Whats New
 - Introduced a toggle button for the host auto-update setting in the global host configuration.
