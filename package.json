@@ -30,7 +30,7 @@
     "graphology-layout-force": "^0.2.4",
     "graphology-layout-forceatlas2": "^0.10.1",
     "graphology-types": "^0.24.7",
-    "i18next": "^23.5.1",
+    "i18next": "^23.7.6",
     "immer": "^10.0.3",
     "lodash": "^4.17.21",
     "rc-virtual-list": "^3.10.8",
