@@ -1,9 +1,11 @@
 import '../CustomModal.scss';
 import { Col, Divider, Modal, Row, Tag, Typography } from 'antd';
 import { EnrollmentKey, TimeBoundEnrollmentKey, UsesBasedEnrollmentKey } from '@/models/EnrollmentKey';
-import { MouseEvent } from 'react';
+import { MouseEvent, useMemo } from 'react';
 import { isEnrollmentKeyValid, renderEnrollmentKeyType } from '@/utils/EnrollmentKeysUtils';
 import dayjs from 'dayjs';
+import { useStore } from '@/store/store';
+import { getExtendedNode, isNodeRelay } from '@/utils/NodeUtils';
 
 interface EnrollmentKeyDetailsModalProps {
   isOpen: boolean;
@@ -15,6 +17,21 @@ export default function EnrollmentKeyDetailsModal({ isOpen, enrollmentKey, onCan
   const shouldShowExpDate =
     enrollmentKey.type === TimeBoundEnrollmentKey ||
     (enrollmentKey.uses_remaining === 0 && enrollmentKey.unlimited === false);
+
+  const store = useStore();
+  const isServerEE = store.serverConfig?.IsEE === 'yes';
+
+  const relayName = useMemo<string>(() => {
+    const networkNodes = store.nodes
+      .filter((node) => enrollmentKey.relay === node.id)
+      .map((node) => getExtendedNode(node, store.hostsCommonDetails));
+
+    if (!isServerEE || networkNodes.length === 0) {
+      return '';
+    }
+
+    return networkNodes[0]?.name || '';
+  }, [isServerEE, enrollmentKey.relay, store.nodes, store.hostsCommonDetails, enrollmentKey.networks]);
 
   return (
     <Modal
@@ -94,6 +111,15 @@ export default function EnrollmentKeyDetailsModal({ isOpen, enrollmentKey, onCan
           </Col>
           <Col xs={16}>
             <Typography.Text>{enrollmentKey.networks.join(', ')}</Typography.Text>
+          </Col>
+        </Row>
+        <Divider style={{ margin: '1rem 0px 1rem 0px' }} />
+        <Row data-nmui-intercom="enrollment-key-details_relay">
+          <Col xs={8}>
+            <Typography.Text>Relay</Typography.Text>
+          </Col>
+          <Col xs={16}>
+            <Typography.Text>{relayName}</Typography.Text>
           </Col>
         </Row>
         <Divider style={{ margin: '1rem 0px 1rem 0px' }} />

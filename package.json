@@ -1,7 +1,7 @@
 {
   "name": "netmaker-dashboard",
   "private": true,
-  "version": "0.21.1",
+  "version": "0.21.2",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -17,11 +17,11 @@
     "prebuild": "node scripts/resolve-asset-path.cjs"
   },
   "dependencies": {
-    "@ant-design/icons": "^5.0.1",
+    "@ant-design/icons": "^5.2.6",
     "@react-sigma/core": "^3.4.2",
-    "antd": "^5.9.0",
+    "antd": "^5.10.2",
     "axios": "^1.5.0",
-    "axios-mock-adapter": "^1.21.5",
+    "axios-mock-adapter": "^1.22.0",
     "buffer": "^6.0.3",
     "classnames": "^2.3.2",
     "dayjs": "^1.11.10",
@@ -48,7 +48,7 @@
   "devDependencies": {
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^14.0.0",
-    "@types/react": "^18.2.22",
+    "@types/react": "^18.2.31",
     "@types/react-dom": "^18.2.8",
     "@types/react-window": "^1.8.5",
     "@typescript-eslint/eslint-plugin": "^5.61.0",
@@ -63,7 +63,7 @@
     "jsdom": "^22.1.0",
     "lint-staged": "^14.0.0",
     "prettier": "3.0.3",
-    "sass": "^1.68.0",
+    "sass": "^1.69.4",
     "typescript": "^5.2.2",
     "vite": "^4.4.9",
     "vitest": "^0.34.4"

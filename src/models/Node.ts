@@ -29,6 +29,8 @@ export interface Node {
   defaultacl: string;
   connected: boolean;
   failover: boolean;
+  isrelay: boolean;
+  isrelayed: boolean;
   relayedby: Node['id'];
   relaynodes?: Node['id'][];
   autoupdate: boolean;

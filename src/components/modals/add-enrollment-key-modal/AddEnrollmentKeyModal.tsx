@@ -21,6 +21,8 @@ import { EnrollmentKeysService } from '@/services/EnrollmentKeysService';
 import { useStore } from '@/store/store';
 import { Modify } from '@/types/react-app-env';
 import { Dayjs } from 'dayjs';
+import { ExtendedNode } from '@/models/Node';
+import { getExtendedNode, isNodeRelay } from '@/utils/NodeUtils';
 
 interface AddEnrollmentKeyModalProps {
   isOpen: boolean;
@@ -40,6 +42,8 @@ export default function AddEnrollmentKeyModal({
   const [form] = Form.useForm<AddEnrollmentKeyFormData>();
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
+  const isServerEE = store.serverConfig?.IsEE === 'yes';
+  const networksVal = Form.useWatch('networks', form);
 
   const networkOptions = useMemo(() => {
     if (networkId) {
@@ -53,6 +57,16 @@ export default function AddEnrollmentKeyModal({
   const resetModal = () => {
     form.resetFields();
   };
+
+  const relays = useMemo<ExtendedNode[]>(() => {
+    const relayNodes = store.nodes
+      .filter((node) => isNodeRelay(node) && networksVal?.includes(node.network))
+      .map((node) => getExtendedNode(node, store.hostsCommonDetails));
+    if (!isServerEE) {
+      return [];
+    }
+    return relayNodes;
+  }, [isServerEE, store.hostsCommonDetails, store.nodes]);
 
   const createEnrollmentKey = async () => {
     try {
@@ -149,6 +163,18 @@ export default function AddEnrollmentKeyModal({
               options={networkOptions}
             />
           </Form.Item>
+
+          {isServerEE && (
+            <Form.Item name="relay" label="Relay" data-nmui-intercom="add-enrollment-key-form_relays">
+              <Select
+                placeholder="Select relay to join with key"
+                allowClear
+                style={{ width: '100%' }}
+                options={relays.map((node) => ({ label: node.name, value: node.id }))}
+                disabled={networksVal?.length === 0}
+              />
+            </Form.Item>
+          )}
 
           <Row>
             <Col xs={24} style={{ textAlign: 'right' }}>

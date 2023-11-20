@@ -12,4 +12,5 @@ export interface EnrollmentKey {
   uses_remaining: number;
   unlimited: boolean;
   type: 0 | 1 | 2 | 3; // 0 = undefined, 1 = time expiration, 2 = uses, 3 = unlimited
+  relay: string;
 }
