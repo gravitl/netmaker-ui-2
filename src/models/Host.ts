@@ -21,6 +21,8 @@ export interface Host {
   nodes: Node['id'][];
   isdefault: boolean;
   nat_type: 'public' | 'symmetric' | 'asymmetric' | 'double' | '';
+  persistentkeepalive: number;
+  autoupdate: boolean;
 }
 
 export interface HostCommonDetails {

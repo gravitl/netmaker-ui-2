@@ -13,7 +13,7 @@ import {
   Row,
   Select,
 } from 'antd';
-import { MouseEvent, useState } from 'react';
+import { MouseEvent, useCallback, useMemo, useState } from 'react';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { EnrollmentKey } from '@/models/EnrollmentKey';
 import { CreateEnrollmentKeyReqDto } from '@/services/dtos/CreateEnrollmentKeyReqDto';
@@ -21,26 +21,52 @@ import { EnrollmentKeysService } from '@/services/EnrollmentKeysService';
 import { useStore } from '@/store/store';
 import { Modify } from '@/types/react-app-env';
 import { Dayjs } from 'dayjs';
+import { ExtendedNode } from '@/models/Node';
+import { getExtendedNode, isNodeRelay } from '@/utils/NodeUtils';
 
 interface AddEnrollmentKeyModalProps {
   isOpen: boolean;
   onCreateKey: (key: EnrollmentKey) => any;
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
+  networkId?: string;
 }
 
 type AddEnrollmentKeyFormData = Modify<CreateEnrollmentKeyReqDto, { expiration: Dayjs }>;
 
-export default function AddEnrollmentKeyModal({ isOpen, onCreateKey, onCancel }: AddEnrollmentKeyModalProps) {
+export default function AddEnrollmentKeyModal({
+  isOpen,
+  onCreateKey,
+  onCancel,
+  networkId,
+}: AddEnrollmentKeyModalProps) {
   const [form] = Form.useForm<AddEnrollmentKeyFormData>();
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
-  const networkOptions = store.networks.map((n) => ({ label: n.netid, value: n.netid }));
+  const isServerEE = store.serverConfig?.IsEE === 'yes';
+  const networksVal = Form.useWatch('networks', form);
+
+  const networkOptions = useMemo(() => {
+    if (networkId) {
+      return store.networks.filter((n) => n.netid === networkId).map((n) => ({ label: n.netid, value: n.netid }));
+    }
+    return store.networks.map((n) => ({ label: n.netid, value: n.netid }));
+  }, [networkId, store.networks]);
 
   const [type, setType] = useState<'unlimited' | 'uses' | 'time'>('unlimited');
 
   const resetModal = () => {
     form.resetFields();
   };
+
+  const relays = useMemo<ExtendedNode[]>(() => {
+    const relayNodes = store.nodes
+      .filter((node) => isNodeRelay(node) && networksVal?.includes(node.network))
+      .map((node) => getExtendedNode(node, store.hostsCommonDetails));
+    if (!isServerEE) {
+      return [];
+    }
+    return relayNodes;
+  }, [isServerEE, store.hostsCommonDetails, store.nodes]);
 
   const createEnrollmentKey = async () => {
     try {
@@ -137,6 +163,18 @@ export default function AddEnrollmentKeyModal({ isOpen, onCreateKey, onCancel }:
               options={networkOptions}
             />
           </Form.Item>
+
+          {isServerEE && (
+            <Form.Item name="relay" label="Relay" data-nmui-intercom="add-enrollment-key-form_relays">
+              <Select
+                placeholder="Select relay to join with key"
+                allowClear
+                style={{ width: '100%' }}
+                options={relays.map((node) => ({ label: node.name, value: node.id }))}
+                disabled={networksVal?.length === 0}
+              />
+            </Form.Item>
+          )}
 
           <Row>
             <Col xs={24} style={{ textAlign: 'right' }}>

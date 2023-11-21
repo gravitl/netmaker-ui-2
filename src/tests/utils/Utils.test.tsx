@@ -18,7 +18,6 @@ const testNode1: Node = {
   address: '',
   address6: '',
   localaddress: '',
-  persistentkeepalive: 0,
   interface: '',
   macaddress: '',
   lastmodified: 0,
@@ -44,6 +43,9 @@ const testNode1: Node = {
   failover: false,
   relayedby: '',
   relaynodes: [],
+  autoupdate: false,
+  isrelay: false,
+  isrelayed: false,
 };
 
 const testNode2 = { ...testNode1, lastcheckin: testNode1.lastcheckin - 400 };
@@ -68,6 +70,8 @@ const testHost1: Host = {
   nodes: [],
   isdefault: false,
   nat_type: '',
+  persistentkeepalive: 0,
+  autoupdate: false,
 };
 
 const testHost2: Host = { ...testHost1, nat_type: 'public' };

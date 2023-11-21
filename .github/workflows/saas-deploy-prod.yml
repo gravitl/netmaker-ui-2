@@ -1,4 +1,4 @@
-name: NMUI SaaS Deployment to Prod
+name: NMUI SaaS Deployment to SaaS Prod
 
 on:
   push:

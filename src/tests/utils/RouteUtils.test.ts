@@ -29,6 +29,8 @@ const testHost: Host = {
   nodes: [],
   isdefault: false,
   nat_type: '',
+  persistentkeepalive: 0,
+  autoupdate: false,
 };
 
 const testNetwork: Network = {
@@ -93,7 +95,12 @@ describe('RouteUtils', () => {
 
   it('returns url withour query params', () => {
     const testUrl = 'http://example.com';
+    const testUrl2 = 'http://example.com/v1';
+    const testUrl3 = 'http://example.com/v1/nets';
     expect(deriveUrlWithoutQueryParams(testUrl)).toEqual(testUrl);
+    expect(deriveUrlWithoutQueryParams(testUrl2)).toEqual(testUrl2);
+    expect(deriveUrlWithoutQueryParams(testUrl3)).toEqual(testUrl3);
+    expect(deriveUrlWithoutQueryParams(`${testUrl3}?hello=world`)).toEqual(testUrl3);
     expect(deriveUrlWithoutQueryParams(`${testUrl}?hello=world`)).toEqual(testUrl);
     expect(deriveUrlWithoutQueryParams(`${testUrl}?hello=world&foo=bar`)).toEqual(testUrl);
   });

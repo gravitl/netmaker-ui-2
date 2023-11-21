@@ -62,7 +62,7 @@ export default function NetworkGraph({ hosts, nodes, acl, clients }: NetworkGrap
     color: store.currentTheme === 'dark' ? themeToken.colorPrimary : themeToken.colorText,
   });
 
-  const canNodesCommunitcate = useCallback(
+  const canNodesCommunicate = useCallback(
     (a: Node, b: Node): boolean => {
       if (acl?.[a.id]?.[b.id] === 2 && acl?.[b.id]?.[a.id] === 2) {
         return true;
@@ -132,11 +132,46 @@ export default function NetworkGraph({ hosts, nodes, acl, clients }: NetworkGrap
       for (let i = 0; i < nodes.length; i++) {
         for (let j = 0; j < nodes.length; j++) {
           try {
-            graph.addEdge(nodes[i].id, nodes[j].id, {
-              color: canNodesCommunitcate(nodes[i], nodes[j]) ? HOST_EDGE_COLOR : DISCONNECTED_EDGE_COLOR,
-              size: HOST_EDGE_SIZE,
-              type: 'arrow',
-            });
+            if (nodes[i].relayedby === nodes[j].id) {
+              // check if node I is relayed by relayed J
+              graph.addEdge(nodes[i].id, nodes[j].id, {
+                color: HOST_EDGE_COLOR,
+                size: HOST_EDGE_SIZE,
+                type: 'arrow',
+              });
+            } else if (nodes[i].relayedby === '') {
+              const canCommunicate = canNodesCommunicate(nodes[i], nodes[j]);
+              const edgeColor = canCommunicate ? HOST_EDGE_COLOR : DISCONNECTED_EDGE_COLOR;
+              const edgeSize = HOST_EDGE_SIZE;
+              const edgeType = 'arrow';
+
+              // if node I is a relay node, check if j is in its relaynodes
+              if (nodes[i].relaynodes?.includes(nodes[j].id)) {
+                graph.addEdge(nodes[i].id, nodes[j].id, {
+                  color: edgeColor,
+                  size: edgeSize,
+                  type: edgeType,
+                });
+              }
+
+              // if node I is not a relay node, check if j is not a relay node
+              if (nodes[i].relaynodes === null && nodes[j].relayedby === '') {
+                graph.addEdge(nodes[i].id, nodes[j].id, {
+                  color: edgeColor,
+                  size: edgeSize,
+                  type: edgeType,
+                });
+              }
+
+              // if node I is a relay node, check if is not relayed
+              if (nodes[i].relaynodes && nodes[j].relayedby === '') {
+                graph.addEdge(nodes[i].id, nodes[j].id, {
+                  color: edgeColor,
+                  size: edgeSize,
+                  type: edgeType,
+                });
+              }
+            }
           } catch (err) {
             console.error(err);
             setGraphHasWarnings(true);
@@ -175,7 +210,7 @@ export default function NetworkGraph({ hosts, nodes, acl, clients }: NetworkGrap
         }
       });
     },
-    [canNodesCommunitcate],
+    [canNodesCommunicate],
   );
 
   const autoPositionGraphNodes = useCallback((graph: Graph, strategy: GraphPositioningStrategy) => {

@@ -508,6 +508,7 @@ export default function NetworkDetailsPage(props: PageProps) {
             await NodesService.deleteIngressNode(gateway.id, gateway.network);
             storeFetchNodes();
             loadClients();
+            notify.success({ message: 'Gateway deleted' });
           } catch (err) {
             if (err instanceof AxiosError) {
               notify.error({
@@ -531,6 +532,7 @@ export default function NetworkDetailsPage(props: PageProps) {
           try {
             await NodesService.deleteEgressNode(egress.id, egress.network);
             storeFetchNodes();
+            notify.success({ message: 'Egress deleted' });
           } catch (err) {
             if (err instanceof AxiosError) {
               notify.error({
@@ -3155,6 +3157,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         isOpen={isAddNewHostModalOpen}
         onFinish={() => setIsAddNewHostModalOpen(false)}
         onCancel={() => setIsAddNewHostModalOpen(false)}
+        networkId={networkId}
       />
       <AddIngressModal
         isOpen={isAddClientGatewayModalOpen}

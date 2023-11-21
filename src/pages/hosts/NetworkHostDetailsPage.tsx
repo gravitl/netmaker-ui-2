@@ -330,18 +330,6 @@ export default function NetworkHostDetailsPage(props: PageProps) {
 
           <Row
             style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
-            data-nmui-intercom="network-host-details_persistentkeepalive"
-          >
-            <Col xs={12}>
-              <Typography.Text disabled>Persistent Keepalive</Typography.Text>
-            </Col>
-            <Col xs={12}>
-              <Typography.Text>{node?.persistentkeepalive ?? ''}</Typography.Text>
-            </Col>
-          </Row>
-
-          <Row
-            style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
             data-nmui-intercom="network-host-details_defaultacl"
           >
             <Col xs={12}>
@@ -470,6 +458,17 @@ export default function NetworkHostDetailsPage(props: PageProps) {
               </Row>
               <Row
                 style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+                data-nmui-intercom="network-host-details_hostpersistentkeepalive"
+              >
+                <Col xs={12}>
+                  <Typography.Text disabled>Persistent Keepalive</Typography.Text>
+                </Col>
+                <Col xs={12}>
+                  <Typography.Text>{host.persistentkeepalive}</Typography.Text>
+                </Col>
+              </Row>
+              <Row
+                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
                 data-nmui-intercom="network-host-details_hostpublickey"
               >
                 <Col xs={12}>
@@ -554,6 +553,17 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                 </Col>
                 <Col xs={12}>
                   <Typography.Text>{host.debug ? 'Yes' : 'No'}</Typography.Text>
+                </Col>
+              </Row>
+              <Row
+                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+                data-nmui-intercom="network-host-details_autoupdate"
+              >
+                <Col xs={12}>
+                  <Typography.Text disabled>Auto Update</Typography.Text>
+                </Col>
+                <Col xs={12}>
+                  <Typography.Text>{host.autoupdate ? 'Yes' : 'No'}</Typography.Text>
                 </Col>
               </Row>
             </Collapse.Panel>

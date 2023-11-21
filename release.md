@@ -1,20 +1,15 @@
 # Netmaker UI release notes
 
-## Netmaker UI v0.20.5
+## Netmaker UI v0.21.2
 
 ## Whats New
-- New user management UI
-- UI/UX improvements
+- Introduced a toggle button for the host auto-update setting in the global host configuration.
+- Introduced functionality to designate a host as a relay for a specific enrollment key.
 
-## What's Fixed
-- Bug fixes for graph, copy DNS button and client DNS not updating properly
+## What's Fixed/Improvements
+- Resolved an issue with the notification message display following the deletion of a client and egress gateway.
+- Corrected the presentation of relayed clients on metrics.
+- Fixed an issue where it was not possible to re-add a relay after its removal.
 
-## known issues
-- Windows installer does not install WireGuard
-- netclient-gui (windows) will display an erroneous error dialog when joining a network (can be ignored)
-- netclient-gui will continously display error dialog if netmaker server is offline
-- Incorrect metrics against ext clients
-- Host ListenPorts set to 0 after migration from 0.17.1 -> 0.21.0
-- Mac IPv6 addresses/route issues
-- Docker client can not re-join after complete deletion
-- netclient-gui network tab blank after disconnect
+## Known Issues
+- Graph page crashed when WebGL is not enabled. WebGL is required for the graph page to work.

@@ -33,6 +33,7 @@ import { Network } from '@/models/Network';
 import { HostsService } from '@/services/HostsService';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import NewHostModal from '@/components/modals/new-host-modal/NewHostModal';
+import { lt } from 'semver';
 
 export default function HostsPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
@@ -51,6 +52,21 @@ export default function HostsPage(props: PageProps) {
   const [hasAdvicedHosts, setHasAdvicedHosts] = useState(false);
   const [isRefreshingHosts, setIsRefreshingHosts] = useState(false);
   const [isAddNewHostModalOpen, setIsAddNewHostModalOpen] = useState(false);
+
+  const checkIfUpgradeButtonShouldBeDisabled = useCallback(
+    (host: Host) => {
+      if (store.serverConfig?.Version === undefined) {
+        return true;
+      }
+
+      if (lt(host.version, store.serverConfig?.Version)) {
+        return false;
+      }
+
+      return true;
+    },
+    [store.serverConfig?.Version],
+  );
 
   const filteredNetworks = useMemo(() => {
     return store.networks;
@@ -207,6 +223,37 @@ export default function HostsPage(props: PageProps) {
     });
   }, [notify]);
 
+  const confirmUpgradeClient = useCallback(
+    async (host: Host) => {
+      Modal.confirm({
+        title: 'Upgrade host version',
+        content: (
+          <>
+            <Row>
+              <Col xs={24}>
+                <Typography.Text>
+                  Are you sure you want to upgrade the version of the host {host.name} to {store.serverConfig?.Version}
+                </Typography.Text>
+              </Col>
+            </Row>
+          </>
+        ),
+        onOk: async () => {
+          try {
+            await HostsService.upgradeClientVersion(host.id);
+            notify.success({ message: `The upgrade has been triggered and it may take a while` });
+          } catch (err) {
+            notify.error({
+              message: 'Failed to upgrade client version',
+              description: extractErrorMsg(err as any),
+            });
+          }
+        },
+      });
+    },
+    [notify, store.nodes],
+  );
+
   const hostsTableColumns: TableColumnsType<Host> = useMemo(
     () => [
       {
@@ -351,6 +398,15 @@ export default function HostsPage(props: PageProps) {
                     onClick: (ev) => {
                       ev.domEvent.stopPropagation();
                       onEditHost(host);
+                    },
+                  },
+                  {
+                    key: 'upgrade',
+                    label: 'Upgrade Version',
+                    disabled: checkIfUpgradeButtonShouldBeDisabled(host),
+                    onClick: (ev) => {
+                      ev.domEvent.stopPropagation();
+                      confirmUpgradeClient(host);
                     },
                   },
                   {

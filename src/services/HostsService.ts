@@ -37,6 +37,10 @@ function requestHostPull(hostId: Host['id']) {
   return axiosService.post<void>(`${ApiRoutes.HOSTS}/${hostId}/sync`);
 }
 
+function upgradeClientVersion(hostId: Host['id']) {
+  return axiosService.put<void>(`${ApiRoutes.HOSTS}/${hostId}/upgrade`);
+}
+
 export const HostsService = {
   getHosts,
   deleteHost,
@@ -45,4 +49,5 @@ export const HostsService = {
   refreshAllHostsKeys,
   refreshHostKeys,
   requestHostPull,
+  upgradeClientVersion,
 };
