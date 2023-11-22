@@ -1,4 +1,5 @@
 export class ApiRoutes {
+  static NODE = '/v1/node';
   static NODES = '/nodes';
   static EXTERNAL_CLIENTS = '/extclients';
   static HOSTS = '/hosts';

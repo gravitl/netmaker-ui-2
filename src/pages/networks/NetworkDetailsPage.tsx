@@ -670,6 +670,42 @@ export default function NetworkDetailsPage(props: PageProps) {
     [networkId, notify, storeFetchNodes],
   );
 
+  const confirmNodeFailoverStatusChange = useCallback(
+    (node: ExtendedNode, makeFailover: boolean) => {
+      let title = `Mark ${node.name} as a failover node`;
+      let content = `Are you sure you want to make this node a failover node?`;
+
+      if (!makeFailover) {
+        title = `Remove ${node.name} failover status`;
+        content = `Are you certain about removing the failover status from this node?`;
+      }
+
+      Modal.confirm({
+        title: title,
+        content: content,
+        okText: 'Yes',
+        cancelText: 'No',
+        onOk: async () => {
+          try {
+            if (makeFailover) {
+              await NodesService.setNodeAsFailover(node.id);
+            } else {
+              await NodesService.removeNodeFailoverStatus(node.id);
+            }
+            notify.success({ message: 'Node failover status updated' });
+            storeFetchNodes();
+          } catch (err) {
+            notify.error({
+              message: 'Error updating node failover status',
+              description: extractErrorMsg(err as any),
+            });
+          }
+        },
+      });
+    },
+    [storeFetchNodes, notify],
+  );
+
   const getGatewayDropdownOptions = useCallback(
     (gateway: Node) => {
       const defaultOptions: MenuProps['items'] = [
@@ -1547,6 +1583,10 @@ export default function NetworkDetailsPage(props: PageProps) {
     [networkNodes, store.hostsCommonDetails],
   );
 
+  const isFailoverNodePresentInNetwork = useMemo(() => {
+    return networkNodes.some((node) => node.is_fail_over);
+  }, [networkNodes]);
+
   const removeNodeFromNetwork = useCallback(
     (newStatus: boolean, node: ExtendedNode) => {
       let forceDelete = false;
@@ -1893,6 +1933,34 @@ export default function NetworkDetailsPage(props: PageProps) {
                     return getHostHealth(node.hostid, [node]);
                   },
                 },
+                isServerEE
+                  ? {
+                      title: 'Failover Node',
+                      render: (_: any, node) => {
+                        return (
+                          <>
+                            <Tooltip
+                              title={
+                                node.pendingdelete !== false || (isFailoverNodePresentInNetwork && !node.is_fail_over)
+                                  ? 'Host is being disconnected from network or failover node is already present in the network'
+                                  : ''
+                              }
+                            >
+                              <Switch
+                                checked={node.is_fail_over}
+                                onChange={() => {
+                                  confirmNodeFailoverStatusChange(node, !node.is_fail_over);
+                                }}
+                                disabled={
+                                  node.pendingdelete !== false || (isFailoverNodePresentInNetwork && !node.is_fail_over)
+                                }
+                              />
+                            </Tooltip>
+                          </>
+                        );
+                      },
+                    }
+                  : {},
                 {
                   width: '1rem',
                   align: 'right',
@@ -1913,6 +1981,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                               label: node.connected ? 'Disconnect host' : 'Connect host',
                               disabled: node.pendingdelete !== false,
                               title: node.pendingdelete !== false ? 'Host is being disconnected from network' : '',
+
                               onClick: () =>
                                 disconnectNodeFromNetwork(
                                   !node.connected,
@@ -1951,6 +2020,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     editNode,
     disconnectNodeFromNetwork,
     removeNodeFromNetwork,
+    isServerEE,
   ]);
 
   const getDnsContent = useCallback(() => {

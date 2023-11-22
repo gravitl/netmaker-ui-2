@@ -83,6 +83,14 @@ function deleteRelay(nodeId: Node['id'], networkId: Network['netid']) {
   return axiosService.delete<Node>(`${ApiRoutes.NODES}/${networkId}/${nodeId}/deleterelay`);
 }
 
+function setNodeAsFailover(nodeId: Node['id']) {
+  return axiosService.post<Node>(`${ApiRoutes.NODE}/${nodeId}/failover`);
+}
+
+function removeNodeFailoverStatus(nodeId: Node['id']) {
+  return axiosService.delete<Node>(`${ApiRoutes.NODE}/${nodeId}/failover`);
+}
+
 export const NodesService = {
   getNodes,
   approveNode,
@@ -100,4 +108,6 @@ export const NodesService = {
   updateNode,
   createRelay,
   deleteRelay,
+  setNodeAsFailover,
+  removeNodeFailoverStatus,
 };
