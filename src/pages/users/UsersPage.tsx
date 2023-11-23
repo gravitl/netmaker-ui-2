@@ -1,5 +1,5 @@
 import { useStore } from '@/store/store';
-import { MoreOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons';
+import { MoreOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
 import {
   Button,
   Card,
@@ -185,16 +185,12 @@ export default function UsersPage(props: PageProps) {
                       ? 'You cannot delete another admin user or the super admin'
                       : null,
                     label: (
-                      <Typography.Text
-                        disabled={checkIfCurrentUserCanEditOrDeleteUsers(user)}
-                        onClick={(ev) => {
-                          ev.stopPropagation();
-                          confirmDeleteUser(user);
-                        }}
-                      >
-                        Delete
-                      </Typography.Text>
+                      <Typography.Text disabled={checkIfCurrentUserCanEditOrDeleteUsers(user)}>Delete</Typography.Text>
                     ),
+                    onClick: (ev: any) => {
+                      ev.domEvent.stopPropagation();
+                      confirmDeleteUser(user);
+                    },
                   },
                 ].concat(
                   isServerEE && user.issuperadmin && store.username === user.username
@@ -254,6 +250,9 @@ export default function UsersPage(props: PageProps) {
             />
           </Col>
           <Col xs={24} md={16} style={{ textAlign: 'right' }}>
+            <Button size="large" onClick={() => loadUsers()} style={{ marginRight: '0.5em' }}>
+              <ReloadOutlined /> Reload users
+            </Button>
             <Button type="primary" size="large" onClick={onAddUser}>
               <PlusOutlined /> Add a User
             </Button>
