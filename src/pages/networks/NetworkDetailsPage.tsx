@@ -509,7 +509,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     (gateway: Node) => {
       Modal.confirm({
         title: `Delete gateway ${getExtendedNode(gateway, store.hostsCommonDetails).name}`,
-        content: `Are you sure you want to delete this gateway?`,
+        content: `Are you sure you want to delete this gateway? Any attached clients and remote users will be disconnected.`,
         onOk: async () => {
           try {
             await NodesService.deleteIngressNode(gateway.id, gateway.network);
