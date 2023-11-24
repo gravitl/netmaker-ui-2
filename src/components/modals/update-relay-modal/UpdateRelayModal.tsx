@@ -238,7 +238,7 @@ export default function UpdateRelayModal({ relay, isOpen, onUpdateRelay, onCance
                 <Button
                   danger
                   size="small"
-                  type="text"
+                  type="primary"
                   title="Unselect"
                   icon={<CloseOutlined />}
                   onClick={() => {

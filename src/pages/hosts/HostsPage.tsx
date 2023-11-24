@@ -15,6 +15,7 @@ import {
   notification,
   Row,
   Skeleton,
+  Space,
   Switch,
   Table,
   TableColumnsType,
@@ -504,13 +505,44 @@ export default function HostsPage(props: PageProps) {
         },
         defaultSortOrder: 'ascend',
       },
+      selectedHost
+        ? {
+            title: 'Host Network IP',
+            dataIndex: 'addressrange',
+            key: 'hostnetworkip',
+            render: (_: any, network: Network) => {
+              const node = store.nodes.find(
+                (node) => node.network === network.netid && node.hostid === selectedHost.id,
+              );
+              return node ? (
+                <div onClick={(ev) => ev.stopPropagation()}>
+                  <Space direction="vertical" size={0}>
+                    {node.address && <Typography.Text>{node.address}</Typography.Text>}
+                    {node.address6 && <Typography.Text>{node.address6}</Typography.Text>}
+                  </Space>
+                </div>
+              ) : (
+                <div onClick={(ev) => ev.stopPropagation()}>
+                  <Space direction="vertical" size={0}>
+                    <Typography.Text type="secondary">Not connected</Typography.Text>
+                  </Space>
+                </div>
+              );
+            },
+          }
+        : {},
       {
-        title: 'Address Range (IPv4)',
+        title: 'Address Range',
         dataIndex: 'addressrange',
-      },
-      {
-        title: 'Address Range (IPv6)',
-        dataIndex: 'addressrange6',
+        key: 'addressrange',
+        render: (adress: string, network: Network) => (
+          <div onClick={(ev) => ev.stopPropagation()}>
+            <Space direction="vertical" size={0}>
+              {network.addressrange && <Typography.Text>{network.addressrange}</Typography.Text>}
+              {network.addressrange6 && <Typography.Text>{network.addressrange6}</Typography.Text>}
+            </Space>
+          </div>
+        ),
       },
       selectedHost
         ? {
@@ -661,10 +693,14 @@ export default function HostsPage(props: PageProps) {
     [getOverviewContent, getNetworkAccessContent],
   );
 
-  useEffect(() => {
-    storeFetchHosts();
-    storeFetchNetworks();
+  const fetchHostsAndNetworks = async () => {
+    await storeFetchHosts();
+    await storeFetchNetworks();
     setHasLoaded(true);
+  };
+
+  useEffect(() => {
+    fetchHostsAndNetworks();
   }, [storeFetchHosts, storeFetchNetworks]);
 
   useEffect(() => {
@@ -788,7 +824,17 @@ export default function HostsPage(props: PageProps) {
                   prefix={<SearchOutlined />}
                 />
               </Col>
-              <Col xs={12} md={6} style={{ textAlign: 'right' }}>
+              <Col xs={12} md={10} style={{ textAlign: 'right' }}>
+                <Button
+                  size="large"
+                  style={{ marginRight: '1rem' }}
+                  onClick={() => {
+                    setHasLoaded(false);
+                    fetchHostsAndNetworks();
+                  }}
+                >
+                  <ReloadOutlined /> Reload
+                </Button>
                 <Button
                   size="large"
                   style={{ marginRight: '1rem' }}

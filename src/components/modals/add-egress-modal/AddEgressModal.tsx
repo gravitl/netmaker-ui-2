@@ -152,10 +152,11 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
 
   useEffect(() => {
     if (isInternetGatewayVal) {
+      const filterRangeValRemoveEmptyString = rangesVal?.filter((range) => range !== '');
       form.setFieldsValue({
         ranges: [
           ...new Set(
-            [...rangesVal, internetRangeIpv4],
+            [...filterRangeValRemoveEmptyString, internetRangeIpv4],
             // .concat(network?.isipv6 ? [internetRangeIpv6] : [])
           ),
         ],
@@ -241,8 +242,8 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
                       <Button
                         danger
                         size="small"
-                        type="text"
                         icon={<CloseOutlined />}
+                        type="primary"
                         onClick={() => {
                           form.setFieldValue(idFormField, '');
                           setSelectedEgress(null);
