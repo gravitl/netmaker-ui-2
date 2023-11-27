@@ -25,3 +25,6 @@ export const METRIC_LATENCY_DANGER_THRESHOLD = 500;
 export const METRIC_LATENCY_WARNING_THRESHOLD = 300;
 
 export const APP_UPDATE_POLL_INTERVAL = 10_000;
+
+export const INTERNET_RANGE_IPV4 = '0.0.0.0/0';
+export const INTERNET_RANGE_IPV6 = '::/0';

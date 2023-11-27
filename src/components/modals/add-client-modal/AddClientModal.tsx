@@ -310,7 +310,7 @@ export default function AddClientModal({
                 name="extraallowedips"
                 data-nmui-intercom="add-client-form_extraallowedips"
               >
-                <Select mode="tags" placeholder="Additional IP Addresses" clearIcon />
+                <Select mode="tags" placeholder="Additional IP Addresses" allowClear={true} />
               </Form.Item>
             </Collapse.Panel>
           </Collapse>

@@ -35,6 +35,7 @@ import { HostsService } from '@/services/HostsService';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import NewHostModal from '@/components/modals/new-host-modal/NewHostModal';
 import { lt } from 'semver';
+import { AddressType, ExtendedNode } from '@/models/Node';
 
 export default function HostsPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
@@ -517,8 +518,8 @@ export default function HostsPage(props: PageProps) {
               return node ? (
                 <div onClick={(ev) => ev.stopPropagation()}>
                   <Space direction="vertical" size={0}>
-                    {node.address && <Typography.Text>{node.address}</Typography.Text>}
-                    {node.address6 && <Typography.Text>{node.address6}</Typography.Text>}
+                    {node.address && <Typography.Text>{node.address?.split('/')[0] ?? ''}</Typography.Text>}
+                    {node.address6 && <Typography.Text>{node.address6?.split('/')[0] ?? ''}</Typography.Text>}
                   </Space>
                 </div>
               ) : (

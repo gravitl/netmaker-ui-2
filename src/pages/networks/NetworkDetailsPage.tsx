@@ -85,7 +85,6 @@ import UpdateNodeModal from '@/components/modals/update-node-modal/UpdateNodeMod
 import VirtualisedTable from '@/components/VirtualisedTable';
 import { NETWORK_GRAPH_SIGMA_CONTAINER_ID } from '@/constants/AppConstants';
 import UpdateIngressUsersModal from '@/components/modals/update-ingress-users-modal/UpdateIngressUsersModal';
-import { init } from 'i18next';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -537,6 +536,7 @@ export default function NetworkDetailsPage(props: PageProps) {
           try {
             await NodesService.deleteEgressNode(egress.id, egress.network);
             storeFetchNodes();
+            setFilteredEgress(null);
             notify.success({ message: 'Egress deleted' });
           } catch (err) {
             if (err instanceof AxiosError) {
@@ -560,17 +560,21 @@ export default function NetworkDetailsPage(props: PageProps) {
         onOk: async () => {
           try {
             if (!networkId) return;
+            let egressNode: Node;
             const newRanges = new Set(range.node.egressgatewayranges);
             const natEnabled = range.node.egressgatewaynatenabled;
             newRanges.delete(range.range);
-            await NodesService.deleteEgressNode(range.node.id, networkId);
+            egressNode = (await NodesService.deleteEgressNode(range.node.id, networkId)).data;
             if (newRanges.size > 0) {
-              await NodesService.createEgressNode(range.node.id, networkId, {
-                ranges: [...newRanges],
-                natEnabled: natEnabled ? 'yes' : 'no',
-              });
+              egressNode = (
+                await NodesService.createEgressNode(range.node.id, networkId, {
+                  ranges: [...newRanges],
+                  natEnabled: natEnabled ? 'yes' : 'no',
+                })
+              ).data;
             }
             store.fetchNodes();
+            setFilteredEgress(egressNode);
           } catch (err) {
             if (err instanceof AxiosError) {
               notify.error({
@@ -682,10 +686,11 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
         {
           key: 'delete',
+          danger: true,
           label: (
-            <Typography.Text>
+            <>
               <DeleteOutlined /> Delete
-            </Typography.Text>
+            </>
           ),
           onClick: (info: any) => {
             confirmDeleteGateway(gateway);
@@ -811,10 +816,11 @@ export default function NetworkDetailsPage(props: PageProps) {
                   },
                   {
                     key: 'delete',
+                    danger: true,
                     label: (
-                      <Typography.Text>
+                      <>
                         <DeleteOutlined /> Delete
-                      </Typography.Text>
+                      </>
                     ),
                     onClick: (info) => {
                       confirmDeleteEgress(egress);
@@ -855,12 +861,13 @@ export default function NetworkDetailsPage(props: PageProps) {
                 items: [
                   {
                     key: 'delete',
+                    danger: true,
                     label: (
-                      <Typography.Text>
+                      <>
                         <DeleteOutlined /> Delete
-                      </Typography.Text>
+                      </>
                     ),
-                    onClick: (info: any) => {
+                    onClick: () => {
                       confirmDeleteRange(range);
                     },
                   },
@@ -948,19 +955,20 @@ export default function NetworkDetailsPage(props: PageProps) {
                         <EditOutlined /> Edit
                       </Typography.Text>
                     ),
-                    onClick: (info: any) => {
+                    onClick: () => {
                       setTargetClient(client);
                       setIsUpdateClientModalOpen(true);
                     },
                   },
                   {
                     key: 'delete',
+                    danger: true,
                     label: (
-                      <Typography.Text>
+                      <>
                         <DeleteOutlined /> Delete
-                      </Typography.Text>
+                      </>
                     ),
-                    onClick: (info: any) => {
+                    onClick: () => {
                       confirmDeleteClient(client);
                     },
                   },
@@ -1015,10 +1023,11 @@ export default function NetworkDetailsPage(props: PageProps) {
                   },
                   {
                     key: 'delete',
+                    danger: true,
                     label: (
-                      <Typography.Text>
+                      <>
                         <DeleteOutlined /> Delete
-                      </Typography.Text>
+                      </>
                     ),
                     onClick: (info) => {
                       confirmDeleteRelay(relay);
@@ -1518,7 +1527,9 @@ export default function NetworkDetailsPage(props: PageProps) {
 
   const isDefaultDns = useCallback(
     (dns: DNS) => {
-      return networkNodes.some((node) => getExtendedNode(node, store.hostsCommonDetails).name === dns.name);
+      return networkNodes.some(
+        (node) => `${getExtendedNode(node, store.hostsCommonDetails).name}.${node.network}` === dns.name,
+      );
     },
     [networkNodes, store.hostsCommonDetails],
   );
@@ -1979,14 +1990,11 @@ export default function NetworkDetailsPage(props: PageProps) {
                           {
                             key: 'delete',
                             disabled: isDefaultDns(dns),
+                            onClick: () => (isDefaultDns(dns) ? undefined : confirmDeleteDns(dns)),
+                            danger: true,
                             label: (
                               <Tooltip title={isDefaultDns(dns) ? 'Cannot delete default DNS' : 'Delete DNS'}>
-                                <Typography.Text
-                                  disabled={isDefaultDns(dns)}
-                                  onClick={() => (isDefaultDns(dns) ? undefined : confirmDeleteDns(dns))}
-                                >
-                                  <DeleteOutlined /> Delete
-                                </Typography.Text>
+                                <DeleteOutlined /> Delete
                               </Tooltip>
                             ),
                           },
@@ -2849,6 +2857,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     return tabs;
   }, [
     network,
+    isRefreshingNetwork,
     getOverviewContent,
     networkHosts.length,
     getHostsContent,
@@ -2856,13 +2865,13 @@ export default function NetworkDetailsPage(props: PageProps) {
     getClientsContent,
     egresses.length,
     getEgressContent,
-    relays.length,
-    getRelayContent,
     getDnsContent,
     getAclsContent,
     getGraphContent,
     isServerEE,
     getMetricsContent,
+    relays.length,
+    getRelayContent,
   ]);
 
   const loadDnses = useCallback(async () => {
@@ -3014,7 +3023,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       setSelectedGateway(filteredClientGateways[0] ?? null);
       setIsInitialLoad(false);
     }
-  }, [filteredRelays, filteredEgresses, filteredClientGateways]);
+  }, [filteredRelays, filteredEgresses, isInitialLoad, filteredClientGateways]);
 
   if (!networkId) {
     navigate(resolveAppRoute(AppRoutes.NETWORKS_ROUTE));
@@ -3117,7 +3126,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       />
       {targetClient && (
         <ClientDetailsModal
-          key={`read-${targetClient.clientid}`}
+          key={`view-client-${targetClient.clientid}`}
           isOpen={isClientDetailsModalOpen}
           client={targetClient}
           // onDeleteClient={() => {
@@ -3132,12 +3141,13 @@ export default function NetworkDetailsPage(props: PageProps) {
       )}
       {filteredEgress && (
         <UpdateEgressModal
-          key={filteredEgress.id}
+          key={`update-egress-${filteredEgress.id}`}
           isOpen={isUpdateEgressModalOpen}
           networkId={networkId}
           egress={filteredEgress}
-          onUpdateEgress={() => {
+          onUpdateEgress={(node: Node) => {
             store.fetchNodes();
+            setFilteredEgress(node);
             setIsUpdateEgressModalOpen(false);
           }}
           onCancel={() => setIsUpdateEgressModalOpen(false)}
@@ -3154,12 +3164,12 @@ export default function NetworkDetailsPage(props: PageProps) {
       />
       {selectedRelay && (
         <UpdateRelayModal
-          key={selectedRelay.id}
+          key={`update-relay-${selectedRelay.id}`}
           isOpen={isUpdateRelayModalOpen}
           relay={selectedRelay}
           networkId={networkId}
           onUpdateRelay={() => {
-            // store.fetchHosts();
+            store.fetchNodes();
             setIsUpdateRelayModalOpen(false);
           }}
           onCancel={() => setIsUpdateRelayModalOpen(false)}
@@ -3210,7 +3220,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       )}
       {targetClient && (
         <UpdateClientModal
-          key={`update-${targetClient.clientid}`}
+          key={`update-client-${targetClient.clientid}`}
           isOpen={isUpdateClientModalOpen}
           client={targetClient}
           networkId={networkId}
