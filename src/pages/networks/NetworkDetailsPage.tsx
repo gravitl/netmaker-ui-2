@@ -85,6 +85,7 @@ import UpdateNodeModal from '@/components/modals/update-node-modal/UpdateNodeMod
 import VirtualisedTable from '@/components/VirtualisedTable';
 import { NETWORK_GRAPH_SIGMA_CONTAINER_ID } from '@/constants/AppConstants';
 import UpdateIngressUsersModal from '@/components/modals/update-ingress-users-modal/UpdateIngressUsersModal';
+import { init } from 'i18next';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -178,6 +179,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [showClientAcls, setShowClientAcls] = useState(false);
   const [isSubmittingAcls, setIsSubmittingAcls] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [isRefreshingNetwork, setIsRefreshingNetwork] = useState(false);
 
   const networkNodes = useMemo(
     () =>
@@ -198,12 +200,8 @@ export default function NetworkDetailsPage(props: PageProps) {
     const filteredGateways = clientGateways.filter(
       (node) => node.name?.toLowerCase().includes(searchClientGateways.toLowerCase()) ?? false,
     );
-    if (isInitialLoad) {
-      setSelectedGateway(filteredGateways[0] ?? null);
-      setIsInitialLoad(false);
-    }
     return filteredGateways;
-  }, [clientGateways, searchClientGateways, isInitialLoad]);
+  }, [clientGateways, searchClientGateways]);
 
   const filteredClients = useMemo<ExternalClient[]>(
     () =>
@@ -1807,7 +1805,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                 ],
               }}
             >
-              <Button type="primary">
+              <Button type="primary" style={{ width: '170px' }}>
                 <Space>
                   Add Host
                   <DownOutlined />
@@ -2796,37 +2794,37 @@ export default function NetworkDetailsPage(props: PageProps) {
       {
         key: 'overview',
         label: `Overview`,
-        children: network ? getOverviewContent() : <Skeleton active />,
+        children: network && !isRefreshingNetwork ? getOverviewContent() : <Skeleton active />,
       },
       {
         key: 'hosts',
         label: `Hosts (${networkHosts.length})`,
-        children: network ? getHostsContent() : <Skeleton active />,
+        children: network && !isRefreshingNetwork ? getHostsContent() : <Skeleton active />,
       },
       {
         key: 'clients',
         label: `Clients (${clients.length})`,
-        children: network ? getClientsContent() : <Skeleton active />,
+        children: network && !isRefreshingNetwork ? getClientsContent() : <Skeleton active />,
       },
       {
         key: 'egress',
         label: `Egress (${egresses.length})`,
-        children: network ? getEgressContent() : <Skeleton active />,
+        children: network && !isRefreshingNetwork ? getEgressContent() : <Skeleton active />,
       },
       {
         key: 'dns',
         label: `DNS`,
-        children: network ? getDnsContent() : <Skeleton active />,
+        children: network && !isRefreshingNetwork ? getDnsContent() : <Skeleton active />,
       },
       {
         key: 'access-control',
         label: `Access Control`,
-        children: network ? getAclsContent() : <Skeleton active />,
+        children: network && !isRefreshingNetwork ? getAclsContent() : <Skeleton active />,
       },
       {
         key: 'graph',
         label: `Graph`,
-        children: network ? getGraphContent() : <Skeleton active />,
+        children: network && !isRefreshingNetwork ? getGraphContent() : <Skeleton active />,
       },
     ].concat(
       isServerEE
@@ -2991,6 +2989,14 @@ export default function NetworkDetailsPage(props: PageProps) {
     });
   };
 
+  const reloadNetwork = async () => {
+    setIsRefreshingNetwork(true);
+    await store.fetchHosts();
+    await store.fetchNodes();
+    loadNetwork();
+    setIsRefreshingNetwork(false);
+  };
+
   useEffect(() => {
     loadNetwork();
   }, [loadNetwork]);
@@ -3000,6 +3006,15 @@ export default function NetworkDetailsPage(props: PageProps) {
     if (!network) return;
     form.setFieldsValue(network);
   }, [form, network]);
+
+  useEffect(() => {
+    if (isInitialLoad) {
+      setSelectedRelay(filteredRelays[0] ?? null);
+      setFilteredEgress(filteredEgresses[0] ?? null);
+      setSelectedGateway(filteredClientGateways[0] ?? null);
+      setIsInitialLoad(false);
+    }
+  }, [filteredRelays, filteredEgresses, filteredClientGateways]);
 
   if (!networkId) {
     navigate(resolveAppRoute(AppRoutes.NETWORKS_ROUTE));
@@ -3044,13 +3059,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                     </Button>
                   </>
                 )} */}
-                <Button
-                  style={{ marginRight: '1em' }}
-                  onClick={() => {
-                    store.fetchHosts();
-                    store.fetchNodes();
-                  }}
-                >
+                <Button style={{ marginRight: '1em' }} onClick={reloadNetwork}>
                   <ReloadOutlined /> Reload
                 </Button>
                 <Dropdown

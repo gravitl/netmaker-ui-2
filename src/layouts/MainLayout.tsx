@@ -342,6 +342,7 @@ export default function MainLayout() {
             items={sideNavItems}
             openKeys={openSidebarMenus}
             style={{ borderRight: 'none' }}
+            id="side-nav"
             onOpenChange={(keys: string[]) => {
               setOpenSidebarMenus(keys);
             }}
