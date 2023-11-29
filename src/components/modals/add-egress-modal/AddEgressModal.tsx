@@ -29,6 +29,7 @@ import { AxiosError } from 'axios';
 import { NodesService } from '@/services/NodesService';
 import { isValidIpCidr } from '@/utils/NetworkUtils';
 import { CreateEgressNodeDto } from '@/services/dtos/CreateEgressNodeDto';
+import { INTERNET_RANGE_IPV4, INTERNET_RANGE_IPV6 } from '@/constants/AppConstants';
 
 interface AddEgressModalProps {
   isOpen: boolean;
@@ -44,8 +45,8 @@ type AddEgressFormFields = CreateEgressNodeDto & {
   isInternetGateway: boolean;
 };
 
-const internetRangeIpv4 = '0.0.0.0/0';
-const internetRangeIpv6 = '::/0';
+const internetRangeIpv4 = INTERNET_RANGE_IPV4;
+const internetRangeIpv6 = INTERNET_RANGE_IPV6;
 
 export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, networkId }: AddEgressModalProps) {
   const [form] = Form.useForm<AddEgressFormFields>();
@@ -152,11 +153,10 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
 
   useEffect(() => {
     if (isInternetGatewayVal) {
-      const filterRangeValRemoveEmptyString = rangesVal?.filter((range) => range !== '');
       form.setFieldsValue({
         ranges: [
           ...new Set(
-            [...filterRangeValRemoveEmptyString, internetRangeIpv4],
+            [internetRangeIpv4],
             // .concat(network?.isipv6 ? [internetRangeIpv6] : [])
           ),
         ],
@@ -327,9 +327,16 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
                         <Input
                           placeholder="CIDR range (eg: 10.0.0.0/8 or a123:4567::/16)"
                           style={{ width: '100%' }}
+                          disabled={isInternetGatewayVal}
                           prefix={
                             <Tooltip title="Remove">
-                              <CloseOutlined onClick={() => remove(index)} />
+                              <Button
+                                danger
+                                type="link"
+                                icon={<CloseOutlined />}
+                                onClick={() => remove(index)}
+                                size="small"
+                              />
                             </Tooltip>
                           }
                         />
@@ -341,6 +348,7 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
                       onClick={() => add()}
                       icon={<PlusOutlined />}
                       data-nmui-intercom="add-egress-form_addrangebtn"
+                      disabled={isInternetGatewayVal}
                     >
                       Add range
                     </Button>

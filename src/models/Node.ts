@@ -36,4 +36,6 @@ export interface Node {
   autoupdate: boolean;
 }
 
+export type AddressType = 'address' | 'address6' | 'localaddress';
+
 export type ExtendedNode = Node & Partial<HostCommonDetails>;

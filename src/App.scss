@@ -55,3 +55,27 @@
   @extend .tabbed-page-row-padding-x;
   @extend .tabbed-page-row-padding-y;
 }
+
+#side-nav > li:nth-child(2) {
+  max-height: 180px;
+  overflow-y: auto;
+
+  /* For Webkit browsers like Chrome and Safari */
+  &::-webkit-scrollbar {
+    width: 5px; /* Adjust width for vertical scrollbar */
+    border-radius: 2.5px; /* Half of the scrollbar width */
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #888; /* Color of the scroll thumb */
+    border-radius: 2.5px; /* Half of the scrollbar width */
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: #555; /* Color of the scroll thumb on hover */
+  }
+
+  /* For Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: #888 #fff; /* Scroll thumb color, Track color */
+}
