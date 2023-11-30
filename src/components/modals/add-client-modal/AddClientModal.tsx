@@ -11,9 +11,11 @@ import {
   notification,
   Row,
   Select,
+  Switch,
   Table,
   TableColumnProps,
   theme,
+  Tooltip,
   Typography,
 } from 'antd';
 import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
@@ -23,7 +25,7 @@ import { Network } from '@/models/Network';
 import { ExtendedNode, Node } from '@/models/Node';
 import { CreateExternalClientReqDto } from '@/services/dtos/CreateExternalClientReqDto';
 import { getExtendedNode, getNodeConnectivityStatus, isHostNatted } from '@/utils/NodeUtils';
-import { CloseOutlined, SearchOutlined } from '@ant-design/icons';
+import { CloseOutlined, InfoCircleOutlined, SearchOutlined } from '@ant-design/icons';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { NodesService } from '@/services/NodesService';
 import { Host } from '@/models/Host';
@@ -41,6 +43,7 @@ interface AddClientModalProps {
 type AddClientFormFields = CreateExternalClientReqDto & {
   gatewayId: Node['id'];
   extclientdns: string;
+  is_internet_gw: boolean;
 };
 
 export default function AddClientModal({
@@ -58,7 +61,6 @@ export default function AddClientModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [gatewaySearch, setGatewaySearch] = useState('');
   const [selectedGateway, setSelectedGateway] = useState<ExtendedNode | null>(null);
-  const [isFailoverGateway, setIsFailoverGateway] = useState(false);
   const [isAutoselectionComplete, setIsAutoselectionComplete] = useState(false);
 
   const getNodeConnectivity = useCallback((node: Node) => {
@@ -135,8 +137,8 @@ export default function AddClientModal({
 
       if (!selectedGateway.isingressgateway) {
         await NodesService.createIngressNode(selectedGateway.id, networkId, {
-          failover: isFailoverGateway,
           extclientdns: formData.extclientdns,
+          is_internet_gw: formData.is_internet_gw,
         });
       }
 
@@ -173,7 +175,7 @@ export default function AddClientModal({
   // TODO: add autofill for fields
   return (
     <Modal
-      title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Create a Client</span>}
+      title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Create a Client Config</span>}
       open={isOpen}
       onCancel={(ev) => {
         resetModal();
@@ -275,9 +277,33 @@ export default function AddClientModal({
           </Form.Item>
 
           {selectedGateway && !selectedGateway.isingressgateway && (
-            <Form.Item name="extclientdns" label="Default Client DNS" data-nmui-intercom="add-client-form_extclientdns">
-              <Input placeholder="Default DNS for associated clients" />
-            </Form.Item>
+            <>
+              <Form.Item
+                name="extclientdns"
+                label="Default Client DNS"
+                data-nmui-intercom="add-client-form_extclientdns"
+              >
+                <Input placeholder="Default DNS for associated clients" />
+              </Form.Item>
+              <Form.Item
+                name="is_internet_gw"
+                label={
+                  <Typography.Text>
+                    Internet Gateway
+                    <Tooltip
+                      title="Internet gateways behave like traditional VPN servers: all traffic of connected clients would be routed through this host."
+                      placement="right"
+                    >
+                      <InfoCircleOutlined style={{ marginLeft: '0.5rem' }} />
+                    </Tooltip>
+                  </Typography.Text>
+                }
+                valuePropName="checked"
+                data-nmui-intercom="add-ingress-form_isInternetGateway"
+              >
+                <Switch />
+              </Form.Item>
+            </>
           )}
         </div>
 

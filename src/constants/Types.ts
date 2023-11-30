@@ -60,6 +60,7 @@ export const NULL_NODE: Node = {
   autoupdate: false,
   isrelay: false,
   isrelayed: false,
+  isinternetgateway: false,
 };
 
 export const NULL_NETWORK_PROSETTINGS: ProSettings = {

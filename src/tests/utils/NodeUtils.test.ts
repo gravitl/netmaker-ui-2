@@ -36,6 +36,7 @@ const testNode: Node = {
   autoupdate: false,
   isrelay: false,
   isrelayed: false,
+  isinternetgateway: false,
 };
 
 const hostRegistry: Record<Host['id'], HostCommonDetails> = {

@@ -10,8 +10,10 @@ import {
   notification,
   Row,
   Select,
+  Switch,
   Table,
   TableColumnProps,
+  Tooltip,
   Typography,
 } from 'antd';
 import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
@@ -20,10 +22,11 @@ import '../CustomModal.scss';
 import { Network } from '@/models/Network';
 import { ExtendedNode, Node } from '@/models/Node';
 import { getExtendedNode, getNodeConnectivityStatus, isHostNatted } from '@/utils/NodeUtils';
-import { CloseOutlined, SearchOutlined } from '@ant-design/icons';
+import { CloseOutlined, InfoCircleOutlined, SearchOutlined } from '@ant-design/icons';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { NodesService } from '@/services/NodesService';
 import { Host } from '@/models/Host';
+import { CreateIngressNodeDto } from '@/services/dtos/CreateIngressNodeDto';
 
 interface AddIngressModalProps {
   isOpen: boolean;
@@ -33,9 +36,8 @@ interface AddIngressModalProps {
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
 }
 
-interface AddIngressForm {
+interface AddIngressForm extends CreateIngressNodeDto {
   node: Node;
-  extclientdns: Node['ingressdns'];
 }
 
 export default function AddIngressModal({ isOpen, onCreateIngress, onCancel, networkId }: AddIngressModalProps) {
@@ -116,8 +118,8 @@ export default function AddIngressModal({ isOpen, onCreateIngress, onCancel, net
       const formData = await form.validateFields();
       setIsSubmitting(true);
       await NodesService.createIngressNode(formData.node.id, networkId, {
-        failover: false,
         extclientdns: formData.extclientdns,
+        is_internet_gw: formData.is_internet_gw,
       });
       resetModal();
       notify.success({ message: `Client gateway created` });
@@ -256,6 +258,25 @@ export default function AddIngressModal({ isOpen, onCreateIngress, onCancel, net
               data-nmui-intercom="add-ingress-form_extclientdns"
             >
               <Input placeholder="Default DNS for associated external clients" />
+            </Form.Item>
+
+            <Form.Item
+              name="is_internet_gw"
+              label={
+                <Typography.Text>
+                  Internet Gateway
+                  <Tooltip
+                    title="Internet gateways behave like traditional VPN servers: all traffic of connected clients would be routed through this host."
+                    placement="right"
+                  >
+                    <InfoCircleOutlined style={{ marginLeft: '0.5rem' }} />
+                  </Tooltip>
+                </Typography.Text>
+              }
+              valuePropName="checked"
+              data-nmui-intercom="add-ingress-form_isInternetGateway"
+            >
+              <Switch />
             </Form.Item>
           </div>
         </div>

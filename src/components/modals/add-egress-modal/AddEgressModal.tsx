@@ -17,7 +17,7 @@ import {
   Tooltip,
   Typography,
 } from 'antd';
-import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { MouseEvent, useCallback, useMemo, useState } from 'react';
 import { useStore } from '@/store/store';
 import '../CustomModal.scss';
 import { Network } from '@/models/Network';
@@ -29,7 +29,6 @@ import { AxiosError } from 'axios';
 import { NodesService } from '@/services/NodesService';
 import { isValidIpCidr } from '@/utils/NetworkUtils';
 import { CreateEgressNodeDto } from '@/services/dtos/CreateEgressNodeDto';
-import { INTERNET_RANGE_IPV4, INTERNET_RANGE_IPV6 } from '@/constants/AppConstants';
 
 interface AddEgressModalProps {
   isOpen: boolean;
@@ -45,9 +44,6 @@ type AddEgressFormFields = CreateEgressNodeDto & {
   isInternetGateway: boolean;
 };
 
-const internetRangeIpv4 = INTERNET_RANGE_IPV4;
-const internetRangeIpv6 = INTERNET_RANGE_IPV6;
-
 export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, networkId }: AddEgressModalProps) {
   const [form] = Form.useForm<AddEgressFormFields>();
   const [notify, notifyCtx] = notification.useNotification();
@@ -60,8 +56,6 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
   const idFormField = 'nodeId';
 
   const natEnabledVal = Form.useWatch('natEnabled', form);
-  const isInternetGatewayVal = Form.useWatch('isInternetGateway', form);
-  const rangesVal = Form.useWatch('ranges', form);
 
   const getNodeConnectivity = useCallback((node: Node) => {
     if (getNodeConnectivityStatus(node) === 'error') return <Badge status="error" text="Error" />;
@@ -69,11 +63,6 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
     else if (getNodeConnectivityStatus(node) === 'healthy') return <Badge status="success" text="Healthy" />;
     else return <Badge status="processing" text="Unknown" />;
   }, []);
-
-  const network = useMemo<Network | undefined>(
-    () => store.networks.find((net) => net.netid === networkId),
-    [networkId, store.networks],
-  );
 
   const networkHosts = useMemo<ExtendedNode[]>(() => {
     return store.nodes
@@ -150,23 +139,6 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
       setIsSubmitting(false);
     }
   };
-
-  useEffect(() => {
-    if (isInternetGatewayVal) {
-      form.setFieldsValue({
-        ranges: [
-          ...new Set(
-            [internetRangeIpv4],
-            // .concat(network?.isipv6 ? [internetRangeIpv6] : [])
-          ),
-        ],
-      });
-    } else {
-      form.setFieldsValue({
-        ranges: rangesVal?.filter((range) => ![internetRangeIpv4, internetRangeIpv6].includes(range)),
-      });
-    }
-  }, [form, isInternetGatewayVal, network?.isipv6, rangesVal]);
 
   // TODO: add autofill for fields
   return (
@@ -275,15 +247,6 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
 
             <Typography.Title level={4}>Select external ranges</Typography.Title>
 
-            <Form.Item
-              name="isInternetGateway"
-              label="Internet Gateway"
-              valuePropName="checked"
-              data-nmui-intercom="add-egress-form_isInternetGateway"
-            >
-              <Switch />
-            </Form.Item>
-
             <Form.List
               name="ranges"
               initialValue={['']}
@@ -327,7 +290,6 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
                         <Input
                           placeholder="CIDR range (eg: 10.0.0.0/8 or a123:4567::/16)"
                           style={{ width: '100%' }}
-                          disabled={isInternetGatewayVal}
                           prefix={
                             <Tooltip title="Remove">
                               <Button
@@ -348,7 +310,6 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
                       onClick={() => add()}
                       icon={<PlusOutlined />}
                       data-nmui-intercom="add-egress-form_addrangebtn"
-                      disabled={isInternetGatewayVal}
                     >
                       Add range
                     </Button>
