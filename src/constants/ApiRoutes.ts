@@ -14,4 +14,5 @@ export class ApiRoutes {
   static USER_GROUPS = '/usergroups';
   static METRICS = '/metrics';
   static METRICS_EXTERNAL_CLIENT = '/metrics-ext';
+  static RESTART_TENANT = '/server/shutdown';
 }
