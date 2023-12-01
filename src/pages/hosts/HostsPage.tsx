@@ -603,6 +603,7 @@ export default function HostsPage(props: PageProps) {
               columns={hostsTableColumns}
               dataSource={filteredHosts}
               rowKey="id"
+              scroll={{ x: true }}
               onRow={(host) => ({
                 onClick: () => {
                   navigate(getHostRoute(host));
@@ -620,7 +621,7 @@ export default function HostsPage(props: PageProps) {
       <Skeleton loading={!hasLoaded && store.isFetchingHosts} active title={true} className="page-padding">
         <>
           <Row className="" justify="space-between">
-            <Col xs={12}>
+            <Col xs={24} md={12}>
               <Row style={{ width: '100%' }}>
                 <Col xs={24}>
                   <Typography.Title style={{ marginTop: '0px' }} level={5}>
@@ -635,6 +636,7 @@ export default function HostsPage(props: PageProps) {
                     dataSource={filteredHosts}
                     rowKey="id"
                     size="small"
+                    scroll={{ x: true }}
                     rowClassName={(host) => {
                       return host.id === selectedHost?.id ? 'selected-row' : '';
                     }}
@@ -650,7 +652,7 @@ export default function HostsPage(props: PageProps) {
                 </Col>
               </Row>
             </Col>
-            <Col xs={12}>
+            <Col xs={24} md={12}>
               <Row style={{ width: '100%' }}>
                 <Col xs={12}>
                   <Typography.Title style={{ marginTop: '0px' }} level={5}>
@@ -660,7 +662,13 @@ export default function HostsPage(props: PageProps) {
               </Row>
               <Row style={{ marginTop: '1rem' }}>
                 <Col xs={24}>
-                  <Table columns={networksTableCols} dataSource={filteredNetworks} rowKey="netid" size="small" />
+                  <Table
+                    columns={networksTableCols}
+                    dataSource={filteredNetworks}
+                    scroll={{ x: true }}
+                    rowKey="netid"
+                    size="small"
+                  />
                 </Col>
               </Row>
             </Col>
@@ -816,7 +824,7 @@ export default function HostsPage(props: PageProps) {
             </Row>
 
             <Row className="page-row-padding" justify="space-between">
-              <Col xs={12} md={8}>
+              <Col xs={24} md={8}>
                 <Input
                   size="large"
                   placeholder="Search hosts"
@@ -825,7 +833,7 @@ export default function HostsPage(props: PageProps) {
                   prefix={<SearchOutlined />}
                 />
               </Col>
-              <Col xs={12} md={10} style={{ textAlign: 'right' }}>
+              <Col xs={24} md={14} className="hosts-table-button" style={{ textAlign: 'right' }}>
                 <Button
                   size="large"
                   style={{ marginRight: '1rem' }}

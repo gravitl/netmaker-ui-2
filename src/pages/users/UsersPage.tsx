@@ -249,7 +249,7 @@ export default function UsersPage(props: PageProps) {
               onChange={(ev) => setUsersSearch(ev.target.value)}
             />
           </Col>
-          <Col xs={24} md={16} style={{ textAlign: 'right' }}>
+          <Col xs={24} md={16} style={{ textAlign: 'right' }} className="user-table-button">
             <Button size="large" onClick={() => loadUsers()} style={{ marginRight: '0.5em' }}>
               <ReloadOutlined /> Reload users
             </Button>
@@ -260,7 +260,14 @@ export default function UsersPage(props: PageProps) {
         </Row>
         <Row className="" style={{ marginTop: '1rem' }}>
           <Col xs={24}>
-            <Table columns={usersTableColumns} dataSource={filteredUsers} rowKey="username" />
+            <Table
+              columns={usersTableColumns}
+              dataSource={filteredUsers}
+              rowKey="username"
+              scroll={{
+                x: true,
+              }}
+            />
           </Col>
         </Row>
       </>

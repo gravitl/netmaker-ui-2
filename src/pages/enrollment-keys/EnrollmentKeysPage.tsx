@@ -280,7 +280,7 @@ export default function EnrollmentKeysPage(props: PageProps) {
             </Row>
 
             <Row className="page-row-padding" justify="space-between">
-              <Col xs={12} md={8}>
+              <Col xs={24} md={8}>
                 <Input
                   size="large"
                   placeholder="Search keys"
@@ -289,7 +289,7 @@ export default function EnrollmentKeysPage(props: PageProps) {
                   prefix={<SearchOutlined />}
                 />
               </Col>
-              <Col xs={12} md={6} style={{ textAlign: 'right' }}>
+              <Col xs={24} md={12} style={{ textAlign: 'right' }} className="enrollment-keys-table-button">
                 <Button size="large" style={{ marginRight: '0.5em' }} onClick={() => loadEnrollmentKeys()}>
                   <ReloadOutlined /> Refresh keys
                 </Button>
@@ -305,6 +305,7 @@ export default function EnrollmentKeysPage(props: PageProps) {
                   columns={tableColumns}
                   dataSource={filteredKeys}
                   rowKey="value"
+                  scroll={{ x: true }}
                   onRow={(key) => {
                     return {
                       onClick: () => {

@@ -7,3 +7,31 @@
     }
   }
 }
+
+
+.user-table-button {
+  // Styles for larger screens here...
+
+  @media (max-width: 766px) { // 768px is a common breakpoint for tablets and below
+    margin-top: 10px;
+    display: flex;
+    justify-content: end;
+  }
+
+  @media screen and (max-width: 576px) { // 576px is a common breakpoint for phones and below
+    margin-top: 10px;
+    display: flex;
+    justify-content: end;
+  }
+
+  @media screen and (max-width: 428px) { // 480px is a common breakpoint for phones and below
+    display: flex;
+    // justify-content: end;
+    flex-wrap: wrap;
+
+    button {
+      margin-top: 10px;
+      width: 100%;
+    }
+  }
+}

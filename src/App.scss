@@ -16,6 +16,14 @@
 .page-padding {
   @extend .page-padding-y;
   @extend .page-padding-x;
+
+  @media screen and (max-width: 1050px) { 
+    flex-wrap: wrap;
+  }
+
+  @media (max-width: 768px) { // 768px is a common breakpoint for tablets and below
+    padding: 24px 15px 16px 15px;
+  }
 }
 
 .page-row-padding-x {
@@ -40,6 +48,14 @@
   @extend .page-row-padding-x;
   @extend .page-row-padding-y;
   @extend .page-row-padding-b;
+
+  @media screen and (max-width: 1362px) { 
+    flex-wrap: wrap;
+  }
+
+  @media (max-width: 768px) { // 768px is a common breakpoint for tablets and below
+    padding: 24px 10px 16px 10px;
+  }
 }
 
 .tabbed-page-row-padding-x {

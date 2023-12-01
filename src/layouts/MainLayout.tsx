@@ -314,6 +314,7 @@ export default function MainLayout() {
           onCollapse={(value) => setIsSidebarCollapsed(value)}
           width={SIDE_NAV_EXPANDED_WIDTH}
           theme="light"
+          breakpoint="lg"
           style={{
             overflow: 'auto',
             height: '100vh',

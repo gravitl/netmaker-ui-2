@@ -212,7 +212,7 @@ export default function NetworksPage(props: PageProps) {
             </Row>
 
             <Row className="page-row-padding" justify="space-between">
-              <Col xs={12} md={8}>
+              <Col xs={24} md={8}>
                 <Input
                   size="large"
                   placeholder="Search networks"
@@ -221,7 +221,7 @@ export default function NetworksPage(props: PageProps) {
                   prefix={<SearchOutlined />}
                 />
               </Col>
-              <Col xs={12} md={6} style={{ textAlign: 'right' }}>
+              <Col xs={24} md={16} style={{ textAlign: 'right' }} className="networks-table-button">
                 <Button size="large" style={{ marginRight: '0.5em' }} onClick={() => loadNetworks()}>
                   <ReloadOutlined /> Reload Networks
                 </Button>
@@ -237,6 +237,7 @@ export default function NetworksPage(props: PageProps) {
                   columns={tableColumns}
                   dataSource={filteredNetworks}
                   rowKey="netid"
+                  scroll={{ x: true }}
                   onRow={(network) => {
                     return {
                       onClick: () => {

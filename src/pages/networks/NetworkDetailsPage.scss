@@ -59,3 +59,74 @@
     height: 1rem;
   }
 }
+
+.network-details-table-buttons {
+  // Styles for larger screens here...
+
+  @media (max-width: 766px) { // 768px is a common breakpoint for tablets and below
+    // margin-top: 10px;
+    display: flex;
+    justify-content: end;
+  }
+
+  @media screen and (max-width: 576px) { // 576px is a common breakpoint for phones and below
+    display: flex;
+    justify-content: end;
+  }
+
+  @media screen and (max-width: 428px) { // 480px is a common breakpoint for phones and below
+    display: flex;
+    // justify-content: end;
+    flex-wrap: wrap;
+
+    button {
+      margin-top: 10px;
+      width: 100%;
+    }
+  }
+}
+
+.mt-10 {
+  @media screen and (max-width: 992px){
+    margin-top: 10px;
+  }
+}
+
+.search-acl-host-input {
+  width: 60%;
+  @media screen and (max-width: 630px){
+    width: 100%;
+    margin-bottom: 10px;
+  }
+}
+
+.show-clients-toggle {
+  margin-left: 2rem;
+
+  @media screen and (max-width: 630px){
+    margin-left: 0;
+  }
+}
+
+.acl-tab-buttons {
+  text-align: right;
+
+  @media screen and (max-width: 1200px){
+    text-align: left;
+  }
+
+  @media  screen and (max-width: 426px) {
+    button {
+      width: 100%;
+      margin-top: 10px;
+    }
+  }
+}
+
+.overview-card {
+  width: 50%;
+
+  @media screen and (max-width: 768px){
+    width: 90%;
+  }
+}
