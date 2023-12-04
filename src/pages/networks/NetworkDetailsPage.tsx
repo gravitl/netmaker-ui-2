@@ -788,7 +788,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         title: 'Addresses',
         dataIndex: 'address',
         render(_, node) {
-          const addrs = `${node.address}, ${node.address6}`;
+          const addrs = `${node.address}${node.address6 ? `, ${node.address6}` : ''}`;
           return <Tooltip title={addrs}>{addrs}</Tooltip>;
         },
       },
@@ -834,7 +834,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         title: 'Addresses',
         dataIndex: 'address',
         render(_, node) {
-          const addrs = `${node.address}, ${node.address6}`;
+          const addrs = `${node.address} ${node.address6 ? `, ${node.address6}` : ''}`;
           return <Tooltip title={addrs}>{addrs}</Tooltip>;
         },
       },
@@ -952,7 +952,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       {
         title: 'Addresses',
         render(_, client) {
-          const addrs = `${client.address}, ${client.address6}`;
+          const addrs = `${client.address}${client.address6 ? `, ${client.address6}` : ''}`;
           return <Tooltip title={addrs}>{addrs}</Tooltip>;
         },
       },
@@ -1045,7 +1045,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         title: 'Addresses',
         dataIndex: 'address',
         render(_, node) {
-          const addrs = `${node.address ?? ''}, ${node.address6 ?? ''}`;
+          const addrs = `${node.address ?? ''},${node.address6 ? `, ${node.address6}` : ''}`;
           return <Tooltip title={addrs}>{addrs}</Tooltip>;
         },
       },
@@ -1111,7 +1111,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         title: 'Addresses',
         dataIndex: 'address',
         render(_, node) {
-          const addrs = `${node.address ?? ''}, ${node.address6 ?? ''}`;
+          const addrs = `${node.address ?? ''}${node.address6 ? `, ${node.address6}` : ''}`;
           return <Tooltip title={addrs}>{addrs}</Tooltip>;
         },
       },
