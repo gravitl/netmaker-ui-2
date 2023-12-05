@@ -85,6 +85,7 @@ import UpdateNodeModal from '@/components/modals/update-node-modal/UpdateNodeMod
 import VirtualisedTable from '@/components/VirtualisedTable';
 import { NETWORK_GRAPH_SIGMA_CONTAINER_ID } from '@/constants/AppConstants';
 import UpdateIngressUsersModal from '@/components/modals/update-ingress-users-modal/UpdateIngressUsersModal';
+import getNodeImageProgram from 'sigma/rendering/webgl/programs/node.image';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -1295,11 +1296,11 @@ export default function NetworkDetailsPage(props: PageProps) {
             aclType === 'node'
               ? aclTableDataMap.get(aclEntry.nodeOrClientId)?.acls?.[aclData?.nodeOrClientId] ?? 0
               : aclEntry.nodeOrClientId === aclData.nodeOrClientId // check disable toggling ones own self
-              ? 0
-              : getExtClientAclStatus(
-                  aclEntry.nodeOrClientId,
-                  aclTableDataMap.get(aclData.nodeOrClientId)?.clientAcls ?? {},
-                ),
+                ? 0
+                : getExtClientAclStatus(
+                    aclEntry.nodeOrClientId,
+                    aclTableDataMap.get(aclData.nodeOrClientId)?.clientAcls ?? {},
+                  ),
             // node or client IDs
             aclEntry.nodeOrClientId,
             aclData.nodeOrClientId,
@@ -2666,6 +2667,9 @@ export default function NetworkDetailsPage(props: PageProps) {
           <Col xs={24} style={{ width: '100%', height: containerHeight }}>
             <SigmaContainer
               id={NETWORK_GRAPH_SIGMA_CONTAINER_ID}
+              settings={{
+                nodeProgramClasses: { image: getNodeImageProgram() },
+              }}
               style={{
                 backgroundColor: themeToken.colorBgContainer,
                 position: 'relative',
