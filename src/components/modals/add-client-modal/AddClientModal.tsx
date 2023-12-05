@@ -58,6 +58,7 @@ export default function AddClientModal({
   const store = useStore();
   const { token: themeToken } = theme.useToken();
 
+  const isServerEE = store.serverConfig?.IsEE === 'yes';
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [gatewaySearch, setGatewaySearch] = useState('');
   const [selectedGateway, setSelectedGateway] = useState<ExtendedNode | null>(null);
@@ -138,7 +139,7 @@ export default function AddClientModal({
       if (!selectedGateway.isingressgateway) {
         await NodesService.createIngressNode(selectedGateway.id, networkId, {
           extclientdns: formData.extclientdns,
-          is_internet_gw: formData.is_internet_gw,
+          is_internet_gw: isServerEE ? formData.is_internet_gw : false,
         });
       }
 
@@ -285,24 +286,26 @@ export default function AddClientModal({
               >
                 <Input placeholder="Default DNS for associated clients" />
               </Form.Item>
-              <Form.Item
-                name="is_internet_gw"
-                label={
-                  <Typography.Text>
-                    Internet Gateway
-                    <Tooltip
-                      title="Internet gateways behave like traditional VPN servers: all traffic of connected clients would be routed through this host."
-                      placement="right"
-                    >
-                      <InfoCircleOutlined style={{ marginLeft: '0.5rem' }} />
-                    </Tooltip>
-                  </Typography.Text>
-                }
-                valuePropName="checked"
-                data-nmui-intercom="add-ingress-form_isInternetGateway"
-              >
-                <Switch />
-              </Form.Item>
+              {isServerEE && (
+                <Form.Item
+                  name="is_internet_gw"
+                  label={
+                    <Typography.Text>
+                      Internet Gateway
+                      <Tooltip
+                        title="Internet gateways behave like traditional VPN servers: all traffic of connected clients would be routed through this host."
+                        placement="right"
+                      >
+                        <InfoCircleOutlined style={{ marginLeft: '0.5rem' }} />
+                      </Tooltip>
+                    </Typography.Text>
+                  }
+                  valuePropName="checked"
+                  data-nmui-intercom="add-ingress-form_isInternetGateway"
+                >
+                  <Switch />
+                </Form.Item>
+              )}
             </>
           )}
         </div>

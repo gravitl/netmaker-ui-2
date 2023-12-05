@@ -45,6 +45,7 @@ export default function AddIngressModal({ isOpen, onCreateIngress, onCancel, net
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
 
+  const isServerEE = store.serverConfig?.IsEE === 'yes';
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSelectOpen, setIsSelectOpen] = useState(false);
   const [selectedNode, setSelectedNode] = useState<ExtendedNode | null>(null);
@@ -119,7 +120,7 @@ export default function AddIngressModal({ isOpen, onCreateIngress, onCancel, net
       setIsSubmitting(true);
       await NodesService.createIngressNode(formData.node.id, networkId, {
         extclientdns: formData.extclientdns,
-        is_internet_gw: formData.is_internet_gw,
+        is_internet_gw: isServerEE ? formData.is_internet_gw : false,
       });
       resetModal();
       notify.success({ message: `Client gateway created` });
@@ -260,24 +261,26 @@ export default function AddIngressModal({ isOpen, onCreateIngress, onCancel, net
               <Input placeholder="Default DNS for associated external clients" />
             </Form.Item>
 
-            <Form.Item
-              name="is_internet_gw"
-              label={
-                <Typography.Text>
-                  Internet Gateway
-                  <Tooltip
-                    title="Internet gateways behave like traditional VPN servers: all traffic of connected clients would be routed through this host."
-                    placement="right"
-                  >
-                    <InfoCircleOutlined style={{ marginLeft: '0.5rem' }} />
-                  </Tooltip>
-                </Typography.Text>
-              }
-              valuePropName="checked"
-              data-nmui-intercom="add-ingress-form_isInternetGateway"
-            >
-              <Switch />
-            </Form.Item>
+            {isServerEE && (
+              <Form.Item
+                name="is_internet_gw"
+                label={
+                  <Typography.Text>
+                    Internet Gateway
+                    <Tooltip
+                      title="Internet gateways behave like traditional VPN servers: all traffic of connected clients would be routed through this host."
+                      placement="right"
+                    >
+                      <InfoCircleOutlined style={{ marginLeft: '0.5rem' }} />
+                    </Tooltip>
+                  </Typography.Text>
+                }
+                valuePropName="checked"
+                data-nmui-intercom="add-ingress-form_isInternetGateway"
+              >
+                <Switch />
+              </Form.Item>
+            )}
           </div>
         </div>
         <Divider style={{ margin: '0px 0px 2rem 0px' }} />

@@ -26,6 +26,7 @@ import {
   EditOutlined,
   // DownloadOutlined,
   ExclamationCircleFilled,
+  GlobalOutlined,
   LoadingOutlined,
   MoreOutlined,
   PlusOutlined,
@@ -730,8 +731,19 @@ export default function NetworkDetailsPage(props: PageProps) {
         title: 'Name',
         dataIndex: 'name',
         // width: 500,
-        render(name) {
-          return <Typography.Link>{name}</Typography.Link>;
+        render(name, node) {
+          return (
+            <>
+              <Typography.Link>{name}</Typography.Link>
+              {node.isinternetgateway && isServerEE && (
+                <GlobalOutlined
+                  title="This host serves as an internet gateway: all traffic of connected clients would be routed through this host just like a traditional VPN"
+                  style={{ color: branding.primaryColor }}
+                  className="internet-gw-icon"
+                />
+              )}
+            </>
+          );
         },
         sorter: (a, b) => a.name?.localeCompare(b.name ?? '') ?? 0,
         defaultSortOrder: 'ascend',
@@ -753,13 +765,6 @@ export default function NetworkDetailsPage(props: PageProps) {
         dataIndex: 'ingressdns',
       },
       {
-        title: 'Internet Gateway',
-        dataIndex: 'isinternetgateway',
-        render(val) {
-          return val ? <CheckOutlined /> : null;
-        },
-      },
-      {
         render(_, gateway) {
           return (
             <Dropdown
@@ -774,7 +779,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       },
     ],
-    [getGatewayDropdownOptions],
+    [branding.primaryColor, getGatewayDropdownOptions, isServerEE],
   );
 
   const egressTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(
