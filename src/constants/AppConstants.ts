@@ -28,3 +28,9 @@ export const APP_UPDATE_POLL_INTERVAL = 10_000;
 
 export const INTERNET_RANGE_IPV4 = '0.0.0.0/0';
 export const INTERNET_RANGE_IPV6 = '::/0';
+
+export const PUBLIC_DNS_RESOLVERS = [
+  { label: 'Google DNS (8.8.8.8)', value: '8.8.8.8' },
+  { label: 'Cloudflare DNA (1.1.1.1)', value: '1.1.1.1' },
+  { label: 'Quad9 DNS (9.9.9.9)', value: '9.9.9.9' },
+];

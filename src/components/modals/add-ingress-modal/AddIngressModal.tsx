@@ -1,5 +1,6 @@
 import {
   Alert,
+  AutoComplete,
   Badge,
   Button,
   Col,
@@ -27,6 +28,7 @@ import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { NodesService } from '@/services/NodesService';
 import { Host } from '@/models/Host';
 import { CreateIngressNodeDto } from '@/services/dtos/CreateIngressNodeDto';
+import { PUBLIC_DNS_RESOLVERS } from '@/constants/AppConstants';
 
 interface AddIngressModalProps {
   isOpen: boolean;
@@ -257,8 +259,14 @@ export default function AddIngressModal({ isOpen, onCreateIngress, onCancel, net
               name="extclientdns"
               style={{ marginTop: '1rem' }}
               data-nmui-intercom="add-ingress-form_extclientdns"
+              rules={[{ required: true }]}
             >
-              <Input placeholder="Default DNS for associated external clients" />
+              <AutoComplete
+                options={PUBLIC_DNS_RESOLVERS}
+                style={{ width: '100%' }}
+                placeholder="Default DNS for associated clients"
+                allowClear
+              />
             </Form.Item>
 
             {isServerEE && (

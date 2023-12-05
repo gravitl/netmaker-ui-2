@@ -1,5 +1,6 @@
 import {
   Alert,
+  AutoComplete,
   Badge,
   Button,
   Col,
@@ -29,6 +30,7 @@ import { CloseOutlined, InfoCircleOutlined, SearchOutlined } from '@ant-design/i
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { NodesService } from '@/services/NodesService';
 import { Host } from '@/models/Host';
+import { PUBLIC_DNS_RESOLVERS } from '@/constants/AppConstants';
 
 interface AddClientModalProps {
   isOpen: boolean;
@@ -281,10 +283,16 @@ export default function AddClientModal({
             <>
               <Form.Item
                 name="extclientdns"
-                label="Default Client DNS (Strongly recommended)"
+                label="Default Client DNS"
                 data-nmui-intercom="add-client-form_extclientdns"
+                rules={[{ required: true }]}
               >
-                <Input placeholder="Default DNS for associated clients" />
+                <AutoComplete
+                  options={PUBLIC_DNS_RESOLVERS}
+                  style={{ width: '100%' }}
+                  placeholder="Default DNS for associated clients"
+                  allowClear
+                />
               </Form.Item>
               {isServerEE && (
                 <Form.Item
