@@ -106,7 +106,7 @@ export default function AddClientModal({
         dataIndex: 'address',
       },
       {
-        title: 'Client Gateway',
+        title: 'Remote Access Gateway',
         // dataIndex: 'name',
         render(value, node) {
           if (node.isingressgateway) return <Badge status="success" text="Gateway" />;
@@ -158,7 +158,7 @@ export default function AddClientModal({
   };
 
   useEffect(() => {
-    // auto-select client gateway
+    // auto-select gateway
     if (isAutoselectionComplete) return;
     if (preferredGateway) {
       setSelectedGateway(getExtendedNode(preferredGateway, store.hostsCommonDetails));
@@ -190,7 +190,7 @@ export default function AddClientModal({
       <Form name="add-client-form" form={form} layout="vertical">
         <div className="CustomModalBody">
           <Form.Item
-            label="Client Gateway"
+            label="Remote Access Gateway"
             name="gatewayId"
             rules={[{ required: true }]}
             data-nmui-intercom="add-client-form_gatewayId"
@@ -281,7 +281,7 @@ export default function AddClientModal({
             <>
               <Form.Item
                 name="extclientdns"
-                label="Default Client DNS"
+                label="Default Client DNS (Strongly recommended)"
                 data-nmui-intercom="add-client-form_extclientdns"
               >
                 <Input placeholder="Default DNS for associated clients" />
