@@ -14,7 +14,9 @@
     "prepare": "husky install",
     "predev": "node scripts/resolve-asset-path.cjs",
     "postdev": "node scripts/reset-asset-path.cjs",
-    "prebuild": "node scripts/resolve-asset-path.cjs"
+    "prebuild": "node scripts/resolve-asset-path.cjs",
+    "e2e:setup": "playwright install --with-deps",
+    "e2e": "playwright test"
   },
   "dependencies": {
     "@ant-design/icons": "^5.2.6",
