@@ -135,6 +135,8 @@ export const stubNode1: Node = {
   autoupdate: false,
   isrelay: false,
   isrelayed: false,
+  isinternetgateway: false,
+  relaynodes: [],
 };
 
 export const stubNode2: Node = {
@@ -170,6 +172,7 @@ export const stubNode2: Node = {
   autoupdate: false,
   isrelay: false,
   isrelayed: false,
+  isinternetgateway: false,
 };
 
 export const stubNodes: Node[] = [stubNode1, stubNode2];

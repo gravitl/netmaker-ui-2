@@ -25,7 +25,6 @@ import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { NodesService } from '@/services/NodesService';
 import { isValidIpCidr } from '@/utils/NetworkUtils';
 import { CreateEgressNodeDto } from '@/services/dtos/CreateEgressNodeDto';
-import { INTERNET_RANGE_IPV4 } from '@/constants/AppConstants';
 
 interface UpdateEgressModalProps {
   isOpen: boolean;
@@ -100,11 +99,6 @@ export default function UpdateEgressModal({
     }
   };
 
-  const isEgressAnInternetGateway = useMemo(() => {
-    if (egress.egressgatewayranges.length > 1) return false;
-    return egress.egressgatewayranges[0] === INTERNET_RANGE_IPV4;
-  }, [egress.egressgatewayranges]);
-
   // TODO: add autofill for fields
   return (
     <Modal
@@ -167,17 +161,6 @@ export default function UpdateEgressModal({
             )}
 
             <Typography.Title level={4}>Select external ranges</Typography.Title>
-
-            {isEgressAnInternetGateway && (
-              <Alert
-                type="warning"
-                message="Adding extra ranges may be unnecessary, as this node is dedicated as an internet gateway.
-                Alternatively, you can disable this by removing the 0.0.0.0/0 range."
-                style={{
-                  margin: '1rem 0rem',
-                }}
-              />
-            )}
 
             <Form.List
               name="ranges"

@@ -1,5 +1,5 @@
 import { Button, Col, Collapse, Divider, Form, Input, Modal, notification, Row, Select, Typography } from 'antd';
-import { MouseEvent, useEffect, useState } from 'react';
+import { MouseEvent, useState } from 'react';
 import '../CustomModal.scss';
 import { Network } from '@/models/Network';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
@@ -58,7 +58,7 @@ export default function UpdateClientModal({
 
   return (
     <Modal
-      title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Update Client</span>}
+      title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Update Client Config</span>}
       open={isOpen}
       onCancel={(ev) => {
         resetModal();

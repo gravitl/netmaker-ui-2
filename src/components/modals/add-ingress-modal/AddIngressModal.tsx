@@ -1,5 +1,6 @@
 import {
   Alert,
+  AutoComplete,
   Badge,
   Button,
   Col,
@@ -10,8 +11,10 @@ import {
   notification,
   Row,
   Select,
+  Switch,
   Table,
   TableColumnProps,
+  Tooltip,
   Typography,
 } from 'antd';
 import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
@@ -20,10 +23,12 @@ import '../CustomModal.scss';
 import { Network } from '@/models/Network';
 import { ExtendedNode, Node } from '@/models/Node';
 import { getExtendedNode, getNodeConnectivityStatus, isHostNatted } from '@/utils/NodeUtils';
-import { CloseOutlined, SearchOutlined } from '@ant-design/icons';
+import { CloseOutlined, InfoCircleOutlined, SearchOutlined } from '@ant-design/icons';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { NodesService } from '@/services/NodesService';
 import { Host } from '@/models/Host';
+import { CreateIngressNodeDto } from '@/services/dtos/CreateIngressNodeDto';
+import { PUBLIC_DNS_RESOLVERS } from '@/constants/AppConstants';
 
 interface AddIngressModalProps {
   isOpen: boolean;
@@ -33,9 +38,8 @@ interface AddIngressModalProps {
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
 }
 
-interface AddIngressForm {
+interface AddIngressForm extends CreateIngressNodeDto {
   node: Node;
-  extclientdns: Node['ingressdns'];
 }
 
 export default function AddIngressModal({ isOpen, onCreateIngress, onCancel, networkId }: AddIngressModalProps) {
@@ -43,6 +47,7 @@ export default function AddIngressModal({ isOpen, onCreateIngress, onCancel, net
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
 
+  const isServerEE = store.serverConfig?.IsEE === 'yes';
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSelectOpen, setIsSelectOpen] = useState(false);
   const [selectedNode, setSelectedNode] = useState<ExtendedNode | null>(null);
@@ -116,8 +121,8 @@ export default function AddIngressModal({ isOpen, onCreateIngress, onCancel, net
       const formData = await form.validateFields();
       setIsSubmitting(true);
       await NodesService.createIngressNode(formData.node.id, networkId, {
-        failover: false,
         extclientdns: formData.extclientdns,
+        is_internet_gw: isServerEE ? formData.is_internet_gw : false,
       });
       resetModal();
       notify.success({ message: `Client gateway created` });
@@ -254,9 +259,36 @@ export default function AddIngressModal({ isOpen, onCreateIngress, onCancel, net
               name="extclientdns"
               style={{ marginTop: '1rem' }}
               data-nmui-intercom="add-ingress-form_extclientdns"
+              rules={[{ required: true }]}
             >
-              <Input placeholder="Default DNS for associated external clients" />
+              <AutoComplete
+                options={PUBLIC_DNS_RESOLVERS}
+                style={{ width: '100%' }}
+                placeholder="Default DNS for associated clients"
+                allowClear
+              />
             </Form.Item>
+
+            {isServerEE && (
+              <Form.Item
+                name="is_internet_gw"
+                label={
+                  <Typography.Text>
+                    Internet Gateway
+                    <Tooltip
+                      title="Internet gateways behave like traditional VPN servers: all traffic of connected clients would be routed through this host."
+                      placement="right"
+                    >
+                      <InfoCircleOutlined style={{ marginLeft: '0.5rem' }} />
+                    </Tooltip>
+                  </Typography.Text>
+                }
+                valuePropName="checked"
+                data-nmui-intercom="add-ingress-form_isInternetGateway"
+              >
+                <Switch />
+              </Form.Item>
+            )}
           </div>
         </div>
         <Divider style={{ margin: '0px 0px 2rem 0px' }} />

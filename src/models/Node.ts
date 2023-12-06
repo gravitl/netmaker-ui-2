@@ -26,6 +26,7 @@ export interface Node {
   islocal: boolean;
   server: string;
   internetgateway: string;
+  isinternetgateway: boolean;
   defaultacl: string;
   connected: boolean;
   failover: boolean;

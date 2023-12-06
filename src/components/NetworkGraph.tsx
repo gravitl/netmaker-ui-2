@@ -87,6 +87,8 @@ export default function NetworkGraph({ hosts, nodes, acl, clients }: NetworkGrap
             size: node.isegressgateway ? EGRESS_NODE_SIZE : HOST_NODE_SIZE,
             label: nodeLabel,
             color: HOST_COLOR,
+            type: 'image',
+            image: node.isinternetgateway ? '/icons/internet.png' : undefined,
           });
 
           // add egress ranges

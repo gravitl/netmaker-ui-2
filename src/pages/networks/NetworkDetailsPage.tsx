@@ -26,6 +26,7 @@ import {
   EditOutlined,
   // DownloadOutlined,
   ExclamationCircleFilled,
+  GlobalOutlined,
   LoadingOutlined,
   MoreOutlined,
   PlusOutlined,
@@ -85,6 +86,7 @@ import UpdateNodeModal from '@/components/modals/update-node-modal/UpdateNodeMod
 import VirtualisedTable from '@/components/VirtualisedTable';
 import { NETWORK_GRAPH_SIGMA_CONTAINER_ID } from '@/constants/AppConstants';
 import UpdateIngressUsersModal from '@/components/modals/update-ingress-users-modal/UpdateIngressUsersModal';
+import getNodeImageProgram from 'sigma/rendering/webgl/programs/node.image';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -726,11 +728,22 @@ export default function NetworkDetailsPage(props: PageProps) {
   const gatewaysTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(
     () => [
       {
-        title: 'Host name',
+        title: 'Name',
         dataIndex: 'name',
         // width: 500,
-        render(name) {
-          return <Typography.Link>{name}</Typography.Link>;
+        render(name, node) {
+          return (
+            <>
+              <Typography.Link>{name}</Typography.Link>
+              {node.isinternetgateway && isServerEE && (
+                <GlobalOutlined
+                  title="This host serves as an internet gateway: all traffic of connected clients would be routed through this host just like a traditional VPN"
+                  style={{ color: branding.primaryColor }}
+                  className="internet-gw-icon"
+                />
+              )}
+            </>
+          );
         },
         sorter: (a, b) => a.name?.localeCompare(b.name ?? '') ?? 0,
         defaultSortOrder: 'ascend',
@@ -766,7 +779,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       },
     ],
-    [getGatewayDropdownOptions],
+    [branding.primaryColor, getGatewayDropdownOptions, isServerEE],
   );
 
   const egressTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(
@@ -885,7 +898,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const clientsTableCols = useMemo<TableColumnProps<ExternalClient>[]>(
     () => [
       {
-        title: 'Client ID',
+        title: 'ID',
         dataIndex: 'clientid',
         width: 500,
         render(value, client) {
@@ -893,7 +906,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       },
       {
-        title: 'Owner ID',
+        title: 'Owner',
         dataIndex: 'ownerid',
         width: 500,
         render(value) {
@@ -901,7 +914,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       },
       {
-        title: 'Allowed IPs',
+        title: 'Addresses',
         render(_, client) {
           const addrs = `${client.address}, ${client.address6}`;
           return <Tooltip title={addrs}>{addrs}</Tooltip>;
@@ -1288,11 +1301,11 @@ export default function NetworkDetailsPage(props: PageProps) {
             aclType === 'node'
               ? aclTableDataMap.get(aclEntry.nodeOrClientId)?.acls?.[aclData?.nodeOrClientId] ?? 0
               : aclEntry.nodeOrClientId === aclData.nodeOrClientId // check disable toggling ones own self
-              ? 0
-              : getExtClientAclStatus(
-                  aclEntry.nodeOrClientId,
-                  aclTableDataMap.get(aclData.nodeOrClientId)?.clientAcls ?? {},
-                ),
+                ? 0
+                : getExtClientAclStatus(
+                    aclEntry.nodeOrClientId,
+                    aclTableDataMap.get(aclData.nodeOrClientId)?.clientAcls ?? {},
+                  ),
             // node or client IDs
             aclEntry.nodeOrClientId,
             aclData.nodeOrClientId,
@@ -2031,14 +2044,15 @@ export default function NetworkDetailsPage(props: PageProps) {
           >
             <Col xs={(24 * 2) / 3}>
               <Typography.Title level={3} style={{ color: 'white ' }}>
-                Clients
+                Remote Access
               </Typography.Title>
               <Typography.Text style={{ color: 'white ' }}>
-                Client Gateways enable secure access to your network via Clients. The Gateway forwards traffic from the
-                clients into the network, and from the network back to the clients. Clients are simple WireGuard config
-                files, supported on most devices. To use Clients, you must configure a Client Gateway, which is
-                typically deployed in a public cloud environment, e.g. on a server with a public IP, so that it is
-                easily reachable from the Clients.{' '}
+                Remote Access Gateways enable secure access to your network via Clients. The Gateway forwards traffic
+                from the clients into the network, and from the network back to the clients. Clients are simple
+                WireGuard config files, supported on most devices. To use Clients, you must configure a Client Gateway,
+                which is typically deployed in a public cloud environment, e.g. on a server with a public IP, so that it
+                is easily reachable from the Clients. Clients are configured on this dashboard primary via client
+                configs{' '}
                 <a href="https://www.netmaker.io/features/ingress" target="_blank" rel="noreferrer">
                   Learn More
                 </a>
@@ -2046,7 +2060,7 @@ export default function NetworkDetailsPage(props: PageProps) {
             </Col>
             <Col xs={(24 * 1) / 3} style={{ position: 'relative' }}>
               <Card className="header-card" style={{ position: 'absolute', width: '100%' }}>
-                <Typography.Title level={3}>Create Client</Typography.Title>
+                <Typography.Title level={3}>Create Client Config</Typography.Title>
                 <Typography.Text>
                   Enable remote access to your network with a Client. A Client is a simple config file that runs on any
                   device that supports{' '}
@@ -2068,7 +2082,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                 <Row style={{ marginTop: '1rem' }}>
                   <Col>
                     <Button type="primary" size="large" onClick={() => setIsAddClientModalOpen(true)}>
-                      <PlusOutlined /> Create Client
+                      <PlusOutlined /> Create Client Config
                     </Button>
                   </Col>
                 </Row>
@@ -2136,12 +2150,12 @@ export default function NetworkDetailsPage(props: PageProps) {
               <Row style={{ width: '100%' }}>
                 <Col xs={12}>
                   <Typography.Title style={{ marginTop: '0px' }} level={5}>
-                    Clients
+                    VPN Config Files
                   </Typography.Title>
                 </Col>
                 <Col xs={12} style={{ textAlign: 'right' }}>
                   <Button type="primary" style={{ marginRight: '1rem' }} onClick={() => setIsAddClientModalOpen(true)}>
-                    <PlusOutlined /> Create Client
+                    <PlusOutlined /> Create Config
                   </Button>
                   Display All{' '}
                   <Switch
@@ -2658,6 +2672,9 @@ export default function NetworkDetailsPage(props: PageProps) {
           <Col xs={24} style={{ width: '100%', height: containerHeight }}>
             <SigmaContainer
               id={NETWORK_GRAPH_SIGMA_CONTAINER_ID}
+              settings={{
+                nodeProgramClasses: { image: getNodeImageProgram() },
+              }}
               style={{
                 backgroundColor: themeToken.colorBgContainer,
                 position: 'relative',
@@ -2811,7 +2828,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       },
       {
         key: 'clients',
-        label: `Clients (${clients.length})`,
+        label: `Remote Access (${clientGateways.length})`,
         children: network && !isRefreshingNetwork ? getClientsContent() : <Skeleton active />,
       },
       {
