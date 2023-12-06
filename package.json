@@ -14,7 +14,9 @@
     "prepare": "husky install",
     "predev": "node scripts/resolve-asset-path.cjs",
     "postdev": "node scripts/reset-asset-path.cjs",
-    "prebuild": "node scripts/resolve-asset-path.cjs"
+    "prebuild": "node scripts/resolve-asset-path.cjs",
+    "e2e:setup": "playwright install --with-deps",
+    "e2e": "playwright test"
   },
   "dependencies": {
     "@ant-design/icons": "^5.2.6",
@@ -46,14 +48,17 @@
     "zustand": "^4.4.6"
   },
   "devDependencies": {
+    "@playwright/test": "^1.40.1",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^14.0.0",
+    "@types/node": "^20.10.1",
     "@types/react": "^18.2.31",
     "@types/react-dom": "^18.2.15",
     "@types/react-window": "^1.8.8",
     "@typescript-eslint/eslint-plugin": "^5.61.0",
     "@typescript-eslint/parser": "^5.62.0",
     "@vitejs/plugin-react": "^4.0.4",
+    "dotenv": "^16.3.1",
     "eslint": "^8.46.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
