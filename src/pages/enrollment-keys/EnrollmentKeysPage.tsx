@@ -205,7 +205,7 @@ export default function EnrollmentKeysPage(props: PageProps) {
                 background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
               }}
             >
-              <Col xs={(24 * 2) / 3}>
+              <Col xs={24} xl={(24 * 2) / 3}>
                 <Typography.Title level={3} style={{ color: 'white ' }}>
                   Enrollment Keys
                 </Typography.Title>
@@ -214,7 +214,7 @@ export default function EnrollmentKeysPage(props: PageProps) {
                   control access by defining expiration, number of uses, or making an infinitely usable key.
                 </Typography.Text>
               </Col>
-              <Col xs={(24 * 1) / 3} style={{ position: 'relative' }}>
+              <Col xs={24} xl={(24 * 1) / 3} style={{ position: 'relative' }}>
                 <Card className="header-card" style={{ height: '20rem', position: 'absolute', width: '100%' }}>
                   <Typography.Title level={3}>Add a Key</Typography.Title>
                   <Typography.Text>
@@ -232,12 +232,12 @@ export default function EnrollmentKeysPage(props: PageProps) {
               </Col>
             </Row>
 
-            <Row style={{ marginTop: '8rem', padding: '0px 5.125rem' }} gutter={[0, 20]}>
+            <Row className="card-con" gutter={[0, 20]}>
               <Col xs={24}>
                 <Typography.Title level={3}>Add a Key</Typography.Title>
               </Col>
 
-              <Col xs={7} style={{ marginRight: '1rem' }}>
+              <Col xs={24} xl={7} style={{ marginRight: '1rem' }}>
                 <Card>
                   <Typography.Title level={4} style={{ marginTop: '0px' }}>
                     Time-bound keys
@@ -247,7 +247,7 @@ export default function EnrollmentKeysPage(props: PageProps) {
                   </Typography.Text>
                 </Card>
               </Col>
-              <Col xs={7} style={{ marginRight: '1rem' }}>
+              <Col xs={24} xl={7} style={{ marginRight: '1rem' }}>
                 <Card>
                   <Typography.Title level={4} style={{ marginTop: '0px' }}>
                     Usage-based keys
@@ -258,7 +258,7 @@ export default function EnrollmentKeysPage(props: PageProps) {
                   </Typography.Text>
                 </Card>
               </Col>
-              <Col xs={7}>
+              <Col xs={24} xl={7}>
                 <Card>
                   <Typography.Title level={4} style={{ marginTop: '0px' }}>
                     Unlimited keys

@@ -286,8 +286,8 @@ export default function NewHostModal({ isOpen, onCancel, onFinish, networkId }: 
 
                 {/* os selection */}
                 <Divider />
-                <Row style={{ height: '4rem' }} justify="center">
-                  <Col xs={4} style={{ textAlign: 'center' }}>
+                <Row style={{ height: 'auto' }} justify="center" wrap={true}>
+                  <Col xs={8} md={4} style={{ textAlign: 'center' }}>
                     <div
                       className={`os-button ${selectedOs === 'windows' ? 'active' : ''}`}
                       onClick={(ev) => onShowInstallGuide(ev, 'windows')}
@@ -302,7 +302,7 @@ export default function NewHostModal({ isOpen, onCancel, onFinish, networkId }: 
                       <p>Windows</p>
                     </div>
                   </Col>
-                  <Col xs={4} style={{ textAlign: 'center' }}>
+                  <Col xs={8} md={4} style={{ textAlign: 'center' }}>
                     <div
                       className={`os-button ${selectedOs === 'macos' ? 'active' : ''}`}
                       onClick={(ev) => onShowInstallGuide(ev, 'macos')}
@@ -315,7 +315,7 @@ export default function NewHostModal({ isOpen, onCancel, onFinish, networkId }: 
                       <p>Mac</p>
                     </div>
                   </Col>
-                  <Col xs={4} style={{ textAlign: 'center' }}>
+                  <Col xs={8} md={4} style={{ textAlign: 'center' }}>
                     <div
                       className={`os-button ${selectedOs === 'linux' ? 'active' : ''}`}
                       onClick={(ev) => onShowInstallGuide(ev, 'linux')}
@@ -328,7 +328,7 @@ export default function NewHostModal({ isOpen, onCancel, onFinish, networkId }: 
                       <p>Linux</p>
                     </div>
                   </Col>
-                  <Col xs={4} style={{ textAlign: 'center' }}>
+                  <Col xs={8} md={4} style={{ textAlign: 'center' }}>
                     <div
                       className={`os-button ${
                         selectedOs === 'freebsd13' || selectedOs === 'freebsd14' ? 'active' : ''
@@ -345,7 +345,7 @@ export default function NewHostModal({ isOpen, onCancel, onFinish, networkId }: 
                       <p>FreeBSD</p>
                     </div>
                   </Col>
-                  <Col xs={4} style={{ textAlign: 'center' }}>
+                  <Col xs={8} md={4} style={{ textAlign: 'center' }}>
                     <div
                       className={`os-button ${selectedOs === 'docker' ? 'active' : ''}`}
                       onClick={(ev) => onShowInstallGuide(ev, 'docker')}

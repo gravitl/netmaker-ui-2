@@ -130,3 +130,31 @@
     width: 90%;
   }
 }
+
+.add-host-dropdown-button {
+  text-align: right;
+
+  @media screen and (max-width: 768px){
+    margin-top: 10px;
+    text-align: left;
+     
+    button {
+      width: 100% !important;
+    }
+  }
+}
+
+.full-width-button-xs {
+  @media screen and (max-width: 768px){
+    width: 100% !important;
+  }
+}
+
+.display-all-container-switch {
+  display: inline;
+  @media screen and (max-width: 768px){
+    display: block;
+    text-align: left;
+    margin-top: 10px;
+  }
+}
