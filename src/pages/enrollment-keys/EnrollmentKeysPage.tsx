@@ -135,8 +135,8 @@ export default function EnrollmentKeysPage(props: PageProps) {
                     </Typography.Text>
                   ),
                   onClick: (info) => {
-                    openEditKeyModal(key);
                     info.domEvent.stopPropagation();
+                    openEditKeyModal(key);
                   },
                 },
                 {
@@ -147,14 +147,20 @@ export default function EnrollmentKeysPage(props: PageProps) {
                     </Typography.Text>
                   ),
                   onClick: (info) => {
-                    confirmRemoveKey(key);
                     info.domEvent.stopPropagation();
+                    confirmRemoveKey(key);
                   },
                 },
               ] as MenuProps['items'],
             }}
           >
-            <Button type="text" icon={<MoreOutlined />} />
+            <Button
+              type="text"
+              icon={<MoreOutlined />}
+              onClick={(ev) => {
+                ev.stopPropagation();
+              }}
+            />
           </Dropdown>
         );
       },
@@ -334,7 +340,7 @@ export default function EnrollmentKeysPage(props: PageProps) {
       {isKeyDetailsModalOpen && selectedKey && (
         <EnrollmentKeyDetailsModal
           isOpen={isKeyDetailsModalOpen}
-          key={selectedKey.value}
+          key={`enrollment-key-detail-${selectedKey.value}`}
           enrollmentKey={selectedKey}
           onCancel={closeKeyDetails}
         />
@@ -343,7 +349,7 @@ export default function EnrollmentKeysPage(props: PageProps) {
       {isEditKeyModalOpen && selectedKey && (
         <UpdateEnrollmentKeyModal
           isOpen={isEditKeyModalOpen}
-          key={selectedKey.value}
+          key={`enrollment-key-update-${selectedKey.value}`}
           enrollmentKey={selectedKey}
           onUpdateKey={(key: EnrollmentKey) => {
             setIsEditKeyModalOpen(false);
