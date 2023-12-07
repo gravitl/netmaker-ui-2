@@ -3,7 +3,7 @@ import { AuthService } from '@/services/AuthService';
 import { LoginDto } from '@/services/dtos/LoginDto';
 import { useStore } from '@/store/store';
 import { LockOutlined, MailOutlined } from '@ant-design/icons';
-import { Button, Checkbox, Col, Divider, Form, Image, Input, Layout, notification, Row, Typography } from 'antd';
+import { Alert, Button, Checkbox, Col, Divider, Form, Image, Input, Layout, notification, Row, Typography } from 'antd';
 import { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -19,6 +19,8 @@ import { useBranding } from '@/utils/Utils';
 interface LoginPageProps {
   isFullScreen?: boolean;
 }
+
+const USER_ERROR_MESSAGE = 'only admins can access dashboard';
 
 export default function LoginPage(props: LoginPageProps) {
   const [form] = Form.useForm<LoginDto>();
@@ -37,6 +39,7 @@ export default function LoginPage(props: LoginPageProps) {
   const oauthUser = query.get('user');
   const [shouldRemember, setShouldRemember] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isUserLoggingIn, setIsUserLoggingIn] = useState(false);
 
   const getUserAndUpdateInStore = async (username: User['username']) => {
     try {
@@ -52,6 +55,14 @@ export default function LoginPage(props: LoginPageProps) {
     }
   };
 
+  const checkLoginErrorMessage = (err: string) => {
+    if (err.toLowerCase() === USER_ERROR_MESSAGE.toLowerCase()) {
+      setIsUserLoggingIn(true);
+      return;
+    }
+    setIsUserLoggingIn(false);
+  };
+
   const onLogin = async () => {
     try {
       const formData = await form.validateFields();
@@ -61,7 +72,9 @@ export default function LoginPage(props: LoginPageProps) {
       await storeFetchServerConfig();
       await getUserAndUpdateInStore(data.Response.UserName);
     } catch (err) {
-      notify.error({ message: 'Failed to login', description: extractErrorMsg(err as any) });
+      const errorMessage = extractErrorMsg(err as any);
+      notify.error({ message: 'Failed to login', description: errorMessage });
+      checkLoginErrorMessage(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -135,6 +148,21 @@ export default function LoginPage(props: LoginPageProps) {
           </Row>
 
           <Row style={{ marginTop: '4rem' }}>
+            {isUserLoggingIn && (
+              <Alert
+                description={
+                  <>
+                    User not authorized for dashboard access. Only admins can access the dashboard. Users should use the
+                    remote access client.{' '}
+                    <a href="https://docs.netmaker.io/pro/rac.html" target="_blank" rel="noopener noreferrer">
+                      Click here for more details.
+                    </a>
+                  </>
+                }
+                type="error"
+                showIcon
+              />
+            )}
             <Col xs={24}>
               <Typography.Title level={2}>{t('signin.signin')}</Typography.Title>
             </Col>
