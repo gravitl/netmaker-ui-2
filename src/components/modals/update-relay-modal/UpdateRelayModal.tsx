@@ -86,7 +86,7 @@ export default function UpdateRelayModal({ relay, isOpen, onUpdateRelay, onCance
         title: 'Address',
         dataIndex: 'address',
         render(_, node) {
-          const addrs = `${node.address ?? ''}, ${node.address6 ?? ''}`;
+          const addrs = `${node.address ?? ''} ${node.address6 ? `(${node.address6})` : ''}`;
           return <Tooltip title={addrs}>{addrs}</Tooltip>;
         },
       },

@@ -35,6 +35,9 @@ export interface Node {
   relayedby: Node['id'];
   relaynodes?: Node['id'][];
   autoupdate: boolean;
+  is_fail_over: boolean;
+  failed_over_by: Node['id'];
+  fail_over_peers: Node['id'][]; // temporary don't know the type
 }
 
 export type AddressType = 'address' | 'address6' | 'localaddress';
