@@ -24,7 +24,7 @@ import {
   Tag,
   Typography,
 } from 'antd';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { PageProps } from '../../models/Page';
@@ -36,6 +36,7 @@ import { extractErrorMsg } from '@/utils/ServiceUtils';
 import NewHostModal from '@/components/modals/new-host-modal/NewHostModal';
 import { lt } from 'semver';
 import { AddressType, ExtendedNode } from '@/models/Node';
+import { HOST_HEALTH_STATUS } from '@/models/NodeConnectivityStatus';
 
 export default function HostsPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
@@ -256,6 +257,31 @@ export default function HostsPage(props: PageProps) {
     [notify, store.nodes],
   );
 
+  const filterByHostHealthStatus = useCallback(
+    (value: React.Key | boolean, record: Host): boolean => {
+      // return false if value is boolean or undefined or number
+      if (typeof value === 'boolean' || value === undefined || typeof value === 'number') {
+        return false;
+      }
+
+      const node = store.nodes.find((n) => n.hostid === record.id);
+
+      // return true if node is undefined and value is unknown
+      if (!node && value === HOST_HEALTH_STATUS.unknown) {
+        return true;
+      }
+
+      // return false if node is undefined and value is not unknown
+      if (!node) {
+        return false;
+      }
+
+      const nodeHealth = getNodeConnectivityStatus(node as ExtendedNode);
+      return nodeHealth === value;
+    },
+    [store.nodes],
+  );
+
   const hostsTableColumns: TableColumnsType<Host> = useMemo(
     () => [
       {
@@ -318,6 +344,25 @@ export default function HostsPage(props: PageProps) {
       // },
       {
         title: 'Health Status',
+        filters: [
+          {
+            text: 'Healthy',
+            value: HOST_HEALTH_STATUS.healthy,
+          },
+          {
+            text: 'Warning',
+            value: HOST_HEALTH_STATUS.warning,
+          },
+          {
+            text: 'Error',
+            value: HOST_HEALTH_STATUS.error,
+          },
+          {
+            text: 'Unknown',
+            value: HOST_HEALTH_STATUS.unknown,
+          },
+        ],
+        onFilter: (value: React.Key | boolean, record: any) => filterByHostHealthStatus(value, record),
         render(_, host) {
           const nodeHealths = store.nodes
             .filter((n) => n.hostid === host.id)
