@@ -15,7 +15,7 @@ import { HostsService } from '@/services/HostsService';
 import { NetworksService } from '@/services/NetworksService';
 import { NodesService } from '@/services/NodesService';
 import { useStore } from '@/store/store';
-import { getExtendedNode, isNodeRelay } from '@/utils/NodeUtils';
+import { getExtendedNode, getNodeConnectivityStatus, isNodeRelay } from '@/utils/NodeUtils';
 import { getNetworkHostRoute, resolveAppRoute } from '@/utils/RouteUtils';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import {
@@ -87,6 +87,7 @@ import VirtualisedTable from '@/components/VirtualisedTable';
 import { NETWORK_GRAPH_SIGMA_CONTAINER_ID } from '@/constants/AppConstants';
 import UpdateIngressUsersModal from '@/components/modals/update-ingress-users-modal/UpdateIngressUsersModal';
 import getNodeImageProgram from 'sigma/rendering/webgl/programs/node.image';
+import { HOST_HEALTH_STATUS } from '@/models/NodeConnectivityStatus';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -1337,11 +1338,11 @@ export default function NetworkDetailsPage(props: PageProps) {
             aclType === 'node'
               ? aclTableDataMap.get(aclEntry.nodeOrClientId)?.acls?.[aclData?.nodeOrClientId] ?? 0
               : aclEntry.nodeOrClientId === aclData.nodeOrClientId // check disable toggling ones own self
-                ? 0
-                : getExtClientAclStatus(
-                    aclEntry.nodeOrClientId,
-                    aclTableDataMap.get(aclData.nodeOrClientId)?.clientAcls ?? {},
-                  ),
+              ? 0
+              : getExtClientAclStatus(
+                  aclEntry.nodeOrClientId,
+                  aclTableDataMap.get(aclData.nodeOrClientId)?.clientAcls ?? {},
+                ),
             // node or client IDs
             aclEntry.nodeOrClientId,
             aclData.nodeOrClientId,
@@ -1697,6 +1698,21 @@ export default function NetworkDetailsPage(props: PageProps) {
     loadClients();
   }, [clientAcls, clients, isServerEE, loadClients, networkId]);
 
+  const filterByHostHealthStatus = (value: React.Key | boolean, record: Node): boolean => {
+    // return false if value is boolean or undefined or number
+    if (typeof value === 'boolean' || value === undefined || typeof value === 'number') {
+      return false;
+    }
+
+    // return true if node is undefined and value is unknown
+    if (!record && value === HOST_HEALTH_STATUS.unknown) {
+      return true;
+    }
+
+    const nodeHealth = getNodeConnectivityStatus(record as ExtendedNode);
+    return nodeHealth === value;
+  };
+
   // ui components
   const getOverviewContent = useCallback(() => {
     if (!network) return <Skeleton active />;
@@ -1933,6 +1949,25 @@ export default function NetworkDetailsPage(props: PageProps) {
                   render(_, node) {
                     return getHostHealth(node.hostid, [node]);
                   },
+                  filters: [
+                    {
+                      text: 'Healthy',
+                      value: HOST_HEALTH_STATUS.healthy,
+                    },
+                    {
+                      text: 'Warning',
+                      value: HOST_HEALTH_STATUS.warning,
+                    },
+                    {
+                      text: 'Error',
+                      value: HOST_HEALTH_STATUS.error,
+                    },
+                    {
+                      text: 'Unknown',
+                      value: HOST_HEALTH_STATUS.unknown,
+                    },
+                  ],
+                  onFilter: (value: React.Key | boolean, record: any) => filterByHostHealthStatus(value, record),
                 },
                 isServerEE
                   ? {
