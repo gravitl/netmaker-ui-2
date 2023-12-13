@@ -16,6 +16,14 @@
 .page-padding {
   @extend .page-padding-y;
   @extend .page-padding-x;
+
+  @media screen and (max-width: 1050px) { 
+    flex-wrap: wrap;
+  }
+
+  @media (max-width: 768px) { // 768px is a common breakpoint for tablets and below
+    padding: 24px 15px 16px 15px;
+  }
 }
 
 .page-row-padding-x {
@@ -40,6 +48,14 @@
   @extend .page-row-padding-x;
   @extend .page-row-padding-y;
   @extend .page-row-padding-b;
+
+  @media screen and (max-width: 1362px) { 
+    flex-wrap: wrap;
+  }
+
+  @media (max-width: 768px) { // 768px is a common breakpoint for tablets and below
+    padding: 24px 10px 16px 10px;
+  }
 }
 
 .tabbed-page-row-padding-x {
@@ -78,4 +94,58 @@
   /* For Firefox */
   scrollbar-width: thin;
   scrollbar-color: #888 #fff; /* Scroll thumb color, Track color */
+}
+
+.auth-page-container {
+  margin-top: 15vh;
+  position: relative;
+  height: fit-content;
+  width: 40%;
+
+  @media (max-width: 768px) { // 768px is a common breakpoint for tablets and below
+    width: 70%;
+    // margin-top: 5vh;
+  }
+
+  @media screen and (max-width: 480px) { 
+    width: 90%;
+  }
+
+  @media screen and (max-width: 375px) { 
+    width: 100%;
+  }
+}
+
+.dashboard-page-row {
+  @media screen and (max-width: 425px) { 
+    margin-top: 10px;
+  }
+}
+
+.dashboard-page-row-2 {
+  @media screen and (max-width: 425px) { 
+    margin-top: 90px;
+  }
+}
+
+.dashboard-page-row-space {
+  @media screen and (max-width: 425px) { 
+    row-gap: 0px;
+  }
+}
+
+.card-con {
+  margin-top: 8rem; 
+  margin-bottom: 4rem; 
+  padding: 0px 5.125rem;
+
+  @media screen and (max-width: 1200px) { 
+    margin-top: 15rem;
+    padding: 0px 5.125rem;
+  }
+
+  @media screen and (max-width: 768px) { 
+    margin-top: 18rem;
+    padding: 0px 1.125rem;
+  }
 }

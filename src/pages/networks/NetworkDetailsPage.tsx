@@ -1702,7 +1702,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     if (!network) return <Skeleton active />;
     return (
       <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-        <Card style={{ width: '50%' }}>
+        <Card className="overview-card">
           <Form
             name="network-details-form"
             form={form}
@@ -1838,7 +1838,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     return (
       <div className="network-hosts-tab-content" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
         <Row justify="space-between" style={{ marginBottom: '1rem', width: '100%' }}>
-          <Col xs={12} md={8}>
+          <Col xs={24} md={8}>
             <Input
               size="large"
               placeholder="Search hosts"
@@ -1847,7 +1847,7 @@ export default function NetworkDetailsPage(props: PageProps) {
               prefix={<SearchOutlined />}
             />
           </Col>
-          <Col xs={12} md={6} style={{ textAlign: 'right' }}>
+          <Col xs={24} md={6} className="add-host-dropdown-button">
             <Dropdown
               // icon={<DownOutlined />}
               menu={{
@@ -1880,6 +1880,7 @@ export default function NetworkDetailsPage(props: PageProps) {
 
           <Col xs={24} style={{ paddingTop: '1rem' }}>
             <Table
+              scroll={{ x: true }}
               columns={[
                 {
                   title: 'Host Name',
@@ -2027,7 +2028,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     return (
       <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
         <Row justify="space-between" style={{ marginBottom: '1rem', width: '100%' }}>
-          <Col xs={12} md={8}>
+          <Col xs={24} md={8}>
             <Input
               size="large"
               placeholder="Search DNS"
@@ -2036,14 +2037,20 @@ export default function NetworkDetailsPage(props: PageProps) {
               prefix={<SearchOutlined />}
             />
           </Col>
-          <Col xs={12} md={6} style={{ textAlign: 'right' }}>
-            <Button type="primary" size="large" onClick={() => setIsAddDnsModalOpen(true)}>
+          <Col xs={24} md={6} style={{ textAlign: 'right' }}>
+            <Button
+              type="primary"
+              size="large"
+              onClick={() => setIsAddDnsModalOpen(true)}
+              className="full-width-button-xs mt-10"
+            >
               <PlusOutlined /> Add DNS
             </Button>
           </Col>
 
           <Col xs={24} style={{ paddingTop: '1rem' }}>
             <Table
+              scroll={{ x: true }}
               columns={[
                 {
                   title: 'DNS Entry',
@@ -2112,7 +2119,7 @@ export default function NetworkDetailsPage(props: PageProps) {
               width: '100%',
             }}
           >
-            <Col xs={(24 * 2) / 3}>
+            <Col xs={24} xl={(24 * 2) / 3}>
               <Typography.Title level={3} style={{ color: 'white ' }}>
                 Remote Access
               </Typography.Title>
@@ -2128,7 +2135,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                 </a>
               </Typography.Text>
             </Col>
-            <Col xs={(24 * 1) / 3} style={{ position: 'relative' }}>
+            <Col xs={24} xl={(24 * 1) / 3} style={{ position: 'relative' }}>
               <Card className="header-card" style={{ position: 'absolute', width: '100%' }}>
                 <Typography.Title level={3}>Create Client Config</Typography.Title>
                 <Typography.Text>
@@ -2163,7 +2170,7 @@ export default function NetworkDetailsPage(props: PageProps) {
 
         {!isEmpty && (
           <Row style={{ width: '100%' }}>
-            <Col xs={12} style={{ marginBottom: '2rem' }}>
+            <Col xs={24} xl={12} style={{ marginBottom: '2rem' }}>
               <Input
                 placeholder="Search gateways"
                 value={searchClientGateways}
@@ -2172,7 +2179,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                 style={{ width: '60%' }}
               />
             </Col>
-            <Col xs={12} style={{ marginBottom: '2rem' }}>
+            <Col xs={24} xl={12} style={{ marginBottom: '2rem' }}>
               <Input
                 placeholder="Search clients"
                 value={searchClients}
@@ -2181,15 +2188,19 @@ export default function NetworkDetailsPage(props: PageProps) {
                 style={{ width: '60%' }}
               />
             </Col>
-            <Col xs={12}>
+            <Col xs={24} xl={12}>
               <Row style={{ width: '100%' }}>
-                <Col xs={12}>
+                <Col xs={24} md={12}>
                   <Typography.Title style={{ marginTop: '0px' }} level={5}>
                     Gateways
                   </Typography.Title>
                 </Col>
-                <Col xs={11} style={{ textAlign: 'right' }}>
-                  <Button type="primary" onClick={() => setIsAddClientGatewayModalOpen(true)}>
+                <Col xs={23} md={11} style={{ textAlign: 'right' }}>
+                  <Button
+                    type="primary"
+                    onClick={() => setIsAddClientGatewayModalOpen(true)}
+                    className="full-width-button-xs"
+                  >
                     <PlusOutlined /> Create Gateway
                   </Button>
                 </Col>
@@ -2201,6 +2212,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                     dataSource={filteredClientGateways}
                     rowKey="id"
                     size="small"
+                    scroll={{ x: true }}
                     rowClassName={(gateway) => {
                       return gateway.id === selectedGateway?.id ? 'selected-row' : '';
                     }}
@@ -2216,30 +2228,38 @@ export default function NetworkDetailsPage(props: PageProps) {
                 </Col>
               </Row>
             </Col>
-            <Col xs={12}>
+            <Col xs={24} xl={12}>
               <Row style={{ width: '100%' }}>
-                <Col xs={12}>
+                <Col xs={24} md={12}>
                   <Typography.Title style={{ marginTop: '0px' }} level={5}>
                     VPN Config Files
                   </Typography.Title>
                 </Col>
-                <Col xs={12} style={{ textAlign: 'right' }}>
-                  <Button type="primary" style={{ marginRight: '1rem' }} onClick={() => setIsAddClientModalOpen(true)}>
+                <Col xs={24} md={12} style={{ textAlign: 'right' }}>
+                  <Button type="primary" style={{ marginRight: '1rem' }} onClick={() => setIsAddClientModalOpen(true)} className="full-width-button-xs">
                     <PlusOutlined /> Create Config
                   </Button>
-                  Display All{' '}
-                  <Switch
-                    title="Display all clients. Click a gateway to filter clients specific to that gateway."
-                    checked={selectedGateway === null}
-                    onClick={() => {
-                      setSelectedGateway(null);
-                    }}
-                  />
+                  <div className="display-all-container-switch">
+                    Display All{' '}
+                    <Switch
+                      title="Display all clients. Click a gateway to filter clients specific to that gateway."
+                      checked={selectedGateway === null}
+                      onClick={() => {
+                        setSelectedGateway(null);
+                      }}
+                    />
+                  </div>
                 </Col>
               </Row>
               <Row style={{ marginTop: '1rem' }}>
                 <Col xs={24}>
-                  <Table columns={clientsTableCols} dataSource={filteredClients} rowKey="clientid" size="small" />
+                  <Table
+                    columns={clientsTableCols}
+                    dataSource={filteredClients}
+                    rowKey="clientid"
+                    size="small"
+                    scroll={{ x: true }}
+                  />
                 </Col>
               </Row>
             </Col>
@@ -2270,7 +2290,7 @@ export default function NetworkDetailsPage(props: PageProps) {
               width: '100%',
             }}
           >
-            <Col xs={16}>
+            <Col xs={24} xl={16}>
               <Typography.Title level={3} style={{ color: 'white ' }}>
                 Egress
               </Typography.Title>
@@ -2284,7 +2304,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                 .
               </Typography.Text>
             </Col>
-            <Col xs={8} style={{ position: 'relative' }}>
+            <Col xs={24} xl={8} style={{ position: 'relative' }}>
               <Card className="header-card" style={{ position: 'absolute', width: '100%' }}>
                 <Typography.Title level={3}>Create Egress</Typography.Title>
                 <Typography.Text>
@@ -2314,15 +2334,15 @@ export default function NetworkDetailsPage(props: PageProps) {
                 style={{ width: '30%' }}
               />
             </Col>
-            <Col xs={12}>
+            <Col xl={12} xs={24}>
               <Row style={{ width: '100%' }}>
-                <Col xs={12}>
+                <Col xs={24} md={12}>
                   <Typography.Title style={{ marginTop: '0px' }} level={5}>
                     Egress Gateways
                   </Typography.Title>
                 </Col>
-                <Col xs={11} style={{ textAlign: 'right' }}>
-                  <Button type="primary" onClick={() => setIsAddEgressModalOpen(true)}>
+                <Col xs={24} md={11} style={{ textAlign: 'right' }}>
+                  <Button type="primary" onClick={() => setIsAddEgressModalOpen(true)} className="full-width-button-xs">
                     <PlusOutlined /> Create Egress
                   </Button>
                 </Col>
@@ -2334,6 +2354,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                     dataSource={filteredEgresses}
                     rowKey="id"
                     size="small"
+                    scroll={{ x: true }}
                     rowClassName={(egress) => {
                       return egress.id === filteredEgress?.id ? 'selected-row' : '';
                     }}
@@ -2349,31 +2370,34 @@ export default function NetworkDetailsPage(props: PageProps) {
                 </Col>
               </Row>
             </Col>
-            <Col xs={12}>
+            <Col xl={12} xs={24}>
               <Row style={{ width: '100%' }}>
-                <Col xs={12}>
+                <Col xs={24} md={12}>
                   <Typography.Title style={{ marginTop: '0px' }} level={5}>
                     External routes
                   </Typography.Title>
                 </Col>
-                <Col xs={12} style={{ textAlign: 'right' }}>
+                <Col xs={24} md={12} style={{ textAlign: 'right' }}>
                   {filteredEgress && (
                     <Button
                       type="primary"
                       style={{ marginRight: '1rem' }}
                       onClick={() => setIsUpdateEgressModalOpen(true)}
+                      className="full-width-button-xs"
                     >
                       <PlusOutlined /> Add external route
                     </Button>
                   )}
-                  Display All{' '}
-                  <Switch
-                    title="Display all routes. Click an egress to filter routes specific to that egress."
-                    checked={filteredEgress === null}
-                    onClick={() => {
-                      setFilteredEgress(null);
-                    }}
-                  />
+                  <div className="display-all-container-switch">
+                    Display All{' '}
+                    <Switch
+                      title="Display all routes. Click an egress to filter routes specific to that egress."
+                      checked={filteredEgress === null}
+                      onClick={() => {
+                        setFilteredEgress(null);
+                      }}
+                    />
+                  </div>
                 </Col>
               </Row>
               <Row style={{ marginTop: '1rem' }}>
@@ -2382,6 +2406,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                     columns={externalRoutesTableCols}
                     dataSource={filteredExternalRoutes}
                     rowKey={(range) => `${range.node?.name ?? ''}-${range.range}`}
+                    scroll={{ x: true }}
                     size="small"
                   />
                 </Col>
@@ -2412,7 +2437,7 @@ export default function NetworkDetailsPage(props: PageProps) {
               width: '100%',
             }}
           >
-            <Col xs={16}>
+            <Col xs={24} xl={16}>
               <Typography.Title level={3} style={{ color: 'white ' }}>
                 Relays
               </Typography.Title>
@@ -2426,7 +2451,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                 .
               </Typography.Text>
             </Col>
-            <Col xs={8} style={{ position: 'relative' }}>
+            <Col xs={24} xl={8} style={{ position: 'relative' }}>
               <Card className="header-card" style={{ position: 'absolute', width: '100%' }}>
                 <Typography.Title level={3}>Create Relay</Typography.Title>
                 <Typography.Text>
@@ -2456,15 +2481,15 @@ export default function NetworkDetailsPage(props: PageProps) {
                 style={{ width: '30%' }}
               />
             </Col>
-            <Col xs={12}>
+            <Col xs={24} xl={12}>
               <Row style={{ width: '100%' }}>
-                <Col xs={12}>
+                <Col xs={24} md={12}>
                   <Typography.Title style={{ marginTop: '0px' }} level={5}>
                     Relays
                   </Typography.Title>
                 </Col>
-                <Col xs={11} style={{ textAlign: 'right' }}>
-                  <Button type="primary" onClick={() => setIsAddRelayModalOpen(true)}>
+                <Col xs={24} md={11} style={{ textAlign: 'right' }}>
+                  <Button type="primary" onClick={() => setIsAddRelayModalOpen(true)} className="full-width-button-xs">
                     <PlusOutlined /> Create Relay
                   </Button>
                 </Col>
@@ -2487,40 +2512,50 @@ export default function NetworkDetailsPage(props: PageProps) {
                         },
                       };
                     }}
+                    scroll={{ x: true }}
                   />
                 </Col>
               </Row>
             </Col>
-            <Col xs={12}>
+            <Col xs={24} xl={12}>
               <Row style={{ width: '100%' }}>
-                <Col xs={12}>
+                <Col xs={24} md={12}>
                   <Typography.Title style={{ marginTop: '0px' }} level={5}>
                     Relayed Hosts
                   </Typography.Title>
                 </Col>
-                <Col xs={12} style={{ textAlign: 'right' }}>
+                <Col xs={24} md={12} style={{ textAlign: 'right' }}>
                   {selectedRelay && (
                     <Button
                       type="primary"
                       style={{ marginRight: '1rem' }}
                       onClick={() => setIsUpdateRelayModalOpen(true)}
+                      className="full-width-button-xs"
                     >
                       <PlusOutlined /> Add relayed host
                     </Button>
                   )}
-                  Display All{' '}
-                  <Switch
-                    title="Display all relayed hosts. Click a relay to filter hosts relayed only by that relay."
-                    checked={selectedRelay === null}
-                    onClick={() => {
-                      setSelectedRelay(null);
-                    }}
-                  />
+                  <div className="display-all-container-switch">
+                    Display All{' '}
+                    <Switch
+                      title="Display all relayed hosts. Click a relay to filter hosts relayed only by that relay."
+                      checked={selectedRelay === null}
+                      onClick={() => {
+                        setSelectedRelay(null);
+                      }}
+                    />
+                  </div>
                 </Col>
               </Row>
               <Row style={{ marginTop: '1rem' }}>
                 <Col xs={24}>
-                  <Table columns={relayedTableCols} dataSource={filteredRelayedNodes} rowKey="id" size="small" />
+                  <Table
+                    columns={relayedTableCols}
+                    dataSource={filteredRelayedNodes}
+                    rowKey="id"
+                    size="small"
+                    scroll={{ x: true }}
+                  />
                 </Col>
               </Row>
             </Col>
@@ -2543,17 +2578,17 @@ export default function NetworkDetailsPage(props: PageProps) {
     return (
       <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
         <Row style={{ width: '100%' }}>
-          <Col xs={12}>
+          <Col xl={12} xs={24}>
             <Input
               allowClear
               placeholder="Search host"
               value={searchAclHost}
               onChange={(ev) => setSearchAclHost(ev.target.value)}
               prefix={<SearchOutlined />}
-              style={{ width: '60%' }}
+              className="search-acl-host-input"
             />
             {isServerEE && (
-              <span style={{ marginLeft: '2rem' }} data-nmui-intercom="network-details-acls_showclientstoggle">
+              <span className="show-clients-toggle" data-nmui-intercom="network-details-acls_showclientstoggle">
                 <label style={{ marginRight: '1rem' }} htmlFor="show-clients-acl-switch">
                   Show Clients
                 </label>
@@ -2565,7 +2600,7 @@ export default function NetworkDetailsPage(props: PageProps) {
               </span>
             )}
           </Col>
-          <Col xs={12} style={{ textAlign: 'right' }}>
+          <Col xl={12} xs={24} className="mt-10 acl-tab-buttons">
             <Button
               title="Allow All"
               style={{ marginRight: '1rem', color: '#3C8618', borderColor: '#274916' }}
@@ -2814,6 +2849,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   rowKey="nodeId"
                   size="small"
                   pagination={{ pageSize: 100 }}
+                  scroll={{ x: true }}
                 />
               )}
               {currentMetric === 'latency' && (
@@ -2824,6 +2860,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   rowKey="nodeId"
                   size="small"
                   pagination={{ pageSize: 100 }}
+                  scroll={{ x: true }}
                 />
               )}
               {currentMetric === 'bytes-sent' && (
@@ -2834,6 +2871,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   rowKey="nodeId"
                   size="small"
                   pagination={{ pageSize: 100 }}
+                  scroll={{ x: true }}
                 />
               )}
               {currentMetric === 'bytes-received' && (
@@ -2844,6 +2882,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   rowKey="nodeId"
                   size="small"
                   pagination={{ pageSize: 100 }}
+                  scroll={{ x: true }}
                 />
               )}
               {currentMetric === 'uptime' && (
@@ -2854,6 +2893,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   rowKey="nodeId"
                   size="small"
                   pagination={{ pageSize: 100 }}
+                  scroll={{ x: true }}
                 />
               )}
               {currentMetric === 'clients' && (
@@ -2864,6 +2904,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   rowKey="node_name"
                   size="small"
                   pagination={{ pageSize: 100 }}
+                  scroll={{ x: true }}
                 />
               )}
             </div>
@@ -3129,12 +3170,12 @@ export default function NetworkDetailsPage(props: PageProps) {
           <Col xs={24}>
             <Link to={resolveAppRoute(AppRoutes.NETWORKS_ROUTE)}>View All Networks</Link>
             <Row>
-              <Col xs={18}>
+              <Col xs={18} lg={14}>
                 <Typography.Title level={2} style={{ marginTop: '.5rem', marginBottom: '2rem' }}>
                   {network?.netid}
                 </Typography.Title>
               </Col>
-              <Col xs={6} style={{ textAlign: 'right' }}>
+              <Col xs={24} lg={10} style={{ textAlign: 'right' }} className="network-details-table-buttons">
                 {/* {!isEditingNetwork && (
                   <Button type="default" style={{ marginRight: '.5rem' }} onClick={() => setIsEditingNetwork(true)}>
                     Edit

@@ -603,6 +603,7 @@ export default function HostsPage(props: PageProps) {
               columns={hostsTableColumns}
               dataSource={filteredHosts}
               rowKey="id"
+              scroll={{ x: true }}
               onRow={(host) => ({
                 onClick: () => {
                   navigate(getHostRoute(host));
@@ -620,7 +621,7 @@ export default function HostsPage(props: PageProps) {
       <Skeleton loading={!hasLoaded && store.isFetchingHosts} active title={true} className="page-padding">
         <>
           <Row className="" justify="space-between">
-            <Col xs={12}>
+            <Col xs={24} md={12}>
               <Row style={{ width: '100%' }}>
                 <Col xs={24}>
                   <Typography.Title style={{ marginTop: '0px' }} level={5}>
@@ -635,6 +636,7 @@ export default function HostsPage(props: PageProps) {
                     dataSource={filteredHosts}
                     rowKey="id"
                     size="small"
+                    scroll={{ x: true }}
                     rowClassName={(host) => {
                       return host.id === selectedHost?.id ? 'selected-row' : '';
                     }}
@@ -650,7 +652,7 @@ export default function HostsPage(props: PageProps) {
                 </Col>
               </Row>
             </Col>
-            <Col xs={12}>
+            <Col xs={24} md={12}>
               <Row style={{ width: '100%' }}>
                 <Col xs={12}>
                   <Typography.Title style={{ marginTop: '0px' }} level={5}>
@@ -660,7 +662,13 @@ export default function HostsPage(props: PageProps) {
               </Row>
               <Row style={{ marginTop: '1rem' }}>
                 <Col xs={24}>
-                  <Table columns={networksTableCols} dataSource={filteredNetworks} rowKey="netid" size="small" />
+                  <Table
+                    columns={networksTableCols}
+                    dataSource={filteredNetworks}
+                    scroll={{ x: true }}
+                    rowKey="netid"
+                    size="small"
+                  />
                 </Col>
               </Row>
             </Col>
@@ -736,7 +744,7 @@ export default function HostsPage(props: PageProps) {
                 background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
               }}
             >
-              <Col xs={(24 * 2) / 3}>
+              <Col xs={24} xl={(24 * 2) / 3}>
                 <Typography.Title level={3} style={{ color: 'white ' }}>
                   Hosts
                 </Typography.Title>
@@ -746,7 +754,7 @@ export default function HostsPage(props: PageProps) {
                   networks to give them secure access to other hosts and resources.
                 </Typography.Text>
               </Col>
-              <Col xs={(24 * 1) / 3} style={{ position: 'relative' }}>
+              <Col xs={24} xl={(24 * 1) / 3} style={{ position: 'relative' }}>
                 <Card className="header-card" style={{ height: '20rem', position: 'absolute', width: '100%' }}>
                   <Typography.Title level={3}>Add a Key</Typography.Title>
                   <Typography.Text>
@@ -764,12 +772,16 @@ export default function HostsPage(props: PageProps) {
               </Col>
             </Row>
 
-            <Row style={{ marginTop: '8rem', marginBottom: '4rem', padding: '0px 5.125rem' }} gutter={[0, 20]}>
+            <Row
+              className="card-con"
+              style={{ marginTop: '8rem', marginBottom: '4rem', padding: '0px 5.125rem' }}
+              gutter={[0, 20]}
+            >
               <Col xs={24}>
                 <Typography.Title level={3}>Connect a Host</Typography.Title>
               </Col>
 
-              <Col xs={7} style={{ marginRight: '1rem' }}>
+              <Col xs={24} xl={7} style={{ marginRight: '1rem' }}>
                 <Card>
                   <Typography.Title level={4} style={{ marginTop: '0px' }}>
                     Connect via Enrollment Keys
@@ -781,7 +793,7 @@ export default function HostsPage(props: PageProps) {
                   </Typography.Text>
                 </Card>
               </Col>
-              <Col xs={7} style={{ marginRight: '1rem' }}>
+              <Col xs={24} xl={7} style={{ marginRight: '1rem' }}>
                 <Card>
                   <Typography.Title level={4} style={{ marginTop: '0px' }}>
                     Connect via user auth
@@ -792,7 +804,7 @@ export default function HostsPage(props: PageProps) {
                   </Typography.Text>
                 </Card>
               </Col>
-              <Col xs={7}>
+              <Col xs={24} xl={7}>
                 <Card>
                   <Typography.Title level={4} style={{ marginTop: '0px' }}>
                     Add host directly
@@ -816,7 +828,7 @@ export default function HostsPage(props: PageProps) {
             </Row>
 
             <Row className="page-row-padding" justify="space-between">
-              <Col xs={12} md={8}>
+              <Col xs={24} md={8}>
                 <Input
                   size="large"
                   placeholder="Search hosts"
@@ -825,7 +837,7 @@ export default function HostsPage(props: PageProps) {
                   prefix={<SearchOutlined />}
                 />
               </Col>
-              <Col xs={12} md={10} style={{ textAlign: 'right' }}>
+              <Col xs={24} md={14} className="hosts-table-button" style={{ textAlign: 'right' }}>
                 <Button
                   size="large"
                   style={{ marginRight: '1rem' }}

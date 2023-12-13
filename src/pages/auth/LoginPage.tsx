@@ -117,12 +117,9 @@ export default function LoginPage(props: LoginPageProps) {
       <Layout style={{ height: '100%', minHeight: '100vh', justifyContent: 'center', alignItems: 'center' }}>
         <Layout.Content
           style={{
-            marginTop: '15vh',
-            position: 'relative',
-            height: 'fit-content',
-            width: '40%',
             padding: props.isFullScreen ? 0 : 24,
           }}
+          className="auth-page-container"
         >
           <Row>
             <Col xs={24} style={{ textAlign: 'center' }}>

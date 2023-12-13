@@ -40,6 +40,7 @@ export default function MainLayout() {
   const storeLogout = useStore((state) => state.logout);
   const location = useLocation();
   const branding = useBranding();
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [openSidebarMenus, setOpenSidebarMenus] = useState(['networks']);
@@ -301,6 +302,22 @@ export default function MainLayout() {
     }
   }, [location.pathname]);
 
+  const contentMarginLeft = useMemo(() => {
+    if (isSidebarCollapsed) {
+      if (isSmallScreen) {
+        return 0;
+      }
+      return SIDE_NAV_COLLAPSED_WIDTH;
+    }
+    return SIDE_NAV_EXPANDED_WIDTH;
+  }, [isSidebarCollapsed, isSmallScreen]);
+
+  const hideContent = useMemo(() => {
+    // get the current page size using window.innerWidth
+    const width = window.innerWidth;
+    return width < 576 && !isSidebarCollapsed;
+  }, [isSidebarCollapsed, window.innerWidth]);
+
   useEffect(() => {
     storeFetchNetworks();
   }, [storeFetchNetworks]);
@@ -312,17 +329,27 @@ export default function MainLayout() {
           collapsible
           collapsed={isSidebarCollapsed}
           onCollapse={(value) => setIsSidebarCollapsed(value)}
+          collapsedWidth={isSmallScreen ? 0 : SIDE_NAV_COLLAPSED_WIDTH}
           width={SIDE_NAV_EXPANDED_WIDTH}
           theme="light"
+          breakpoint="lg"
           style={{
-            overflow: 'auto',
             height: '100vh',
             position: 'fixed',
             left: 0,
             top: 0,
             bottom: 0,
             borderRight: `1px solid ${themeToken.colorBorder}`,
+            zIndex: 1000,
           }}
+          zeroWidthTriggerStyle={{
+            border: `2px solid ${branding.primaryColor}`,
+            background: 'transparent',
+            borderLeft: 'none',
+            color: branding.primaryColor,
+            top: 0,
+          }}
+          onBreakpoint={(broken: boolean) => setIsSmallScreen(broken)}
         >
           {/* logo */}
           <Link to={resolveAppRoute(AppRoutes.DASHBOARD_ROUTE)}>
@@ -409,9 +436,11 @@ export default function MainLayout() {
 
         {/* main content */}
         <Layout
+          className="site-layout"
           style={{
             transition: 'all 200ms',
-            marginLeft: isSidebarCollapsed ? SIDE_NAV_COLLAPSED_WIDTH : SIDE_NAV_EXPANDED_WIDTH,
+            marginLeft: contentMarginLeft,
+            display: hideContent ? 'none' : 'block',
           }}
         >
           <Content style={{ background: themeToken.colorBgContainer, overflow: 'initial', minHeight: '100vh' }}>
