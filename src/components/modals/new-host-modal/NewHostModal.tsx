@@ -227,9 +227,9 @@ export default function NewHostModal({ isOpen, onCancel, onFinish, networkId }: 
                   }}
                   columns={[
                     {
-                      title: 'Name',
+                      title: 'Available Keys',
                       render(_, key: EnrollmentKey) {
-                        return key.tags.join(', ');
+                        return <a href="#">{key.tags.join(', ')}</a>;
                       },
                       sorter(a, b) {
                         return a.tags.join(', ').localeCompare(b.tags.join(', '));
@@ -254,6 +254,13 @@ export default function NewHostModal({ isOpen, onCancel, onFinish, networkId }: 
                   rowClassName={(key) => {
                     return key.value === selectedEnrollmentKey?.value ? 'selected-row' : '';
                   }}
+                  // rowSelection={{
+                  //   type: "checkbox",
+                  //   hideSelectAll: true,
+                  //   onChange: (selectedRowKeys, selectedRows) => {
+                  //     console.log(selectedRowKeys, selectedRows);
+                  //   }
+                  // }}
                 />
               </Card>
             </Col>

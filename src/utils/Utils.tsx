@@ -5,7 +5,7 @@ import { Col, FormInstance, Progress, Row, Space, Tag, Tooltip, Typography } fro
 import { getNodeConnectivityStatus } from './NodeUtils';
 import { ExtClientAcls, ExternalClient } from '@/models/ExternalClient';
 import { ACL_ALLOWED, ACL_DENIED, AclStatus, ACL_UNDEFINED } from '@/models/Acl';
-import { CloseOutlined } from '@ant-design/icons';
+import { CloseOutlined, FieldTimeOutlined } from '@ant-design/icons';
 import { MetricCategories, UptimeNodeMetrics } from '@/models/Metrics';
 import { ReactNode, useEffect, useState } from 'react';
 import {
@@ -256,7 +256,14 @@ export function renderMetricValue(metricType: MetricCategories, value: unknown):
                 : undefined,
           }}
         >
-          {value as number} ms
+          {(value as number) === 999 ? (
+            <Tooltip title="Latency is 999ms">
+              {' '}
+              <FieldTimeOutlined />{' '}
+            </Tooltip>
+          ) : (
+            `${value as number}ms`
+          )}
         </Typography.Text>
       );
       break;
