@@ -249,8 +249,20 @@ export default function NetworkHostDetailsPage(props: PageProps) {
       >
         <Card style={{ width: '50%', marginTop: '2rem' }}>
           <Typography.Title level={5} style={{ marginTop: '0rem' }}>
-            Network settings
+            Host Network settings
           </Typography.Title>
+
+          <Row
+            style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+            data-nmui-intercom="network-host-details_nodeid"
+          >
+            <Col xs={12}>
+              <Typography.Text disabled>Host Network ID</Typography.Text>
+            </Col>
+            <Col xs={12}>
+              <Typography.Text>{node?.id ?? ''}</Typography.Text>
+            </Col>
+          </Row>
 
           <Row
             style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
@@ -643,7 +655,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
         {/* top bar */}
         <Row className="tabbed-page-row-padding">
           <Col xs={24}>
-            <Link to={getNetworkRoute(networkId || '')}>View Network</Link>
+            <Link to={getNetworkRoute(networkId || '')}>Back to Network ({networkId})</Link>
             <Row>
               <Col xs={18}>
                 <Typography.Title level={2} style={{ marginTop: '.5rem', marginBottom: '2rem' }}>

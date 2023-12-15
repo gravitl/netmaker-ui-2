@@ -1904,7 +1904,9 @@ export default function NetworkDetailsPage(props: PageProps) {
                     const hostName = getExtendedNode(node, store.hostsCommonDetails).name;
                     return (
                       <>
-                        <Link to={getNetworkHostRoute(node.hostid, node.network)}>{hostName}</Link>
+                        <Link to={getNetworkHostRoute(node.hostid, node.network)} title={node.id}>
+                          {hostName}
+                        </Link>
                         {node.pendingdelete && (
                           <Badge style={{ marginLeft: '1rem' }} status="processing" color="red" text="Removing..." />
                         )}
@@ -2051,12 +2053,14 @@ export default function NetworkDetailsPage(props: PageProps) {
   }, [
     searchHost,
     network?.isipv6,
+    isServerEE,
     networkNodes,
     store.hostsCommonDetails,
+    isFailoverNodePresentInNetwork,
+    confirmNodeFailoverStatusChange,
     editNode,
     disconnectNodeFromNetwork,
     removeNodeFromNetwork,
-    isServerEE,
   ]);
 
   const getDnsContent = useCallback(() => {
@@ -2271,7 +2275,12 @@ export default function NetworkDetailsPage(props: PageProps) {
                   </Typography.Title>
                 </Col>
                 <Col xs={24} md={12} style={{ textAlign: 'right' }}>
-                  <Button type="primary" style={{ marginRight: '1rem' }} onClick={() => setIsAddClientModalOpen(true)} className="full-width-button-xs">
+                  <Button
+                    type="primary"
+                    style={{ marginRight: '1rem' }}
+                    onClick={() => setIsAddClientModalOpen(true)}
+                    className="full-width-button-xs"
+                  >
                     <PlusOutlined /> Create Config
                   </Button>
                   <div className="display-all-container-switch">
