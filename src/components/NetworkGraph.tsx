@@ -148,7 +148,7 @@ export default function NetworkGraph({ hosts, nodes, acl, clients }: NetworkGrap
                 size: HOST_EDGE_SIZE,
                 type: 'arrow',
               });
-            } else if (nodes[i].fail_over_peers?.includes(nodes[j].id)) {
+            } else if (nodes[i].fail_over_peers?.includes?.(nodes[j].id)) {
               // check if node I is failover peer of node J
               graph.addEdge(nodes[i].id, nodes[j].id, {
                 color: HOST_EDGE_COLOR,
@@ -162,7 +162,7 @@ export default function NetworkGraph({ hosts, nodes, acl, clients }: NetworkGrap
               const edgeType = 'arrow';
 
               // if node I is a relay node, check if j is in its relaynodes
-              if (nodes[i].relaynodes?.includes(nodes[j].id)) {
+              if (nodes[i].relaynodes?.includes?.(nodes[j].id)) {
                 graph.addEdge(nodes[i].id, nodes[j].id, {
                   color: edgeColor,
                   size: edgeSize,
