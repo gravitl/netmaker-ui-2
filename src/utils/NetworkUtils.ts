@@ -106,47 +106,14 @@ export function isValidIpv6OrCidr(addr: string): boolean {
   return isValidIpv6(addr) || isValidIpv6Cidr(addr);
 }
 
-const validNetworkNames = [
-  'network',
-  'netty',
-  'dev',
-  'dev-net',
-  'office',
-  'office-vpn',
-  'netmaker-vpn',
-  'securoserv',
-  'quick',
-  'long',
-  'lite',
-  'inet',
-  'vnet',
-  'mesh',
-  'site',
-  'lan-party',
-  'skynet',
-  'short',
-  'private',
-  'my-net',
-  'it-dept',
-  'test-net',
-  'kube-net',
-  'mynet',
-  'wg-net',
-  'wireguard-1',
-  'mesh-vpn',
-  'mesh-virt',
-  'virt-net',
-  'wg-vnet',
-];
-
-export const generateRandomNumber = (size: number, inclusive: boolean) => {
+export function generateRandomNumber(size: number, inclusive: boolean) {
   if (inclusive) {
     return Math.floor(Math.random() * size + 1);
   }
   return Math.floor(Math.random() * size);
-};
+}
 
-const generateRandomHex = (size: number) => {
+function generateRandomHex(size: number) {
   const result = [];
   const hexRef = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'];
 
@@ -154,10 +121,69 @@ const generateRandomHex = (size: number) => {
     result.push(hexRef[Math.floor(Math.random() * 16)]);
   }
   return result.join('');
-};
+}
 
-export const generateCIDR = () => `10.${generateRandomNumber(254, true)}.${generateRandomNumber(254, true)}.0/24`;
+export function generateCIDR() {
+  return `10.${generateRandomNumber(254, true)}.${generateRandomNumber(254, true)}.0/24`;
+}
 
-export const generateCIDR6 = () => `${generateRandomHex(4)}:4206:9753:2021::/64`;
+export function generateCIDR6() {
+  return `${generateRandomHex(4)}:4206:9753:2021::/64`;
+}
 
-export const generateNetworkName = () => validNetworkNames[generateRandomNumber(validNetworkNames.length, false)];
+export function generateNetworkName() {
+  const validNetworkNames = [
+    'network',
+    'netty',
+    'dev',
+    'dev-net',
+    'office',
+    'office-vpn',
+    'netmaker-vpn',
+    'securoserv',
+    'quick',
+    'long',
+    'lite',
+    'inet',
+    'vnet',
+    'mesh',
+    'site',
+    'lan-party',
+    'skynet',
+    'short',
+    'private',
+    'my-net',
+    'it-dept',
+    'test-net',
+    'kube-net',
+    'mynet',
+    'wg-net',
+    'wireguard-1',
+    'mesh-vpn',
+    'mesh-virt',
+    'virt-net',
+    'wg-vnet',
+  ];
+  return validNetworkNames[generateRandomNumber(validNetworkNames.length, false)];
+}
+
+/**
+ * Checks if the given IP range is a private or not, based on the RFC 1918 standard (Classful Private Address Space).
+ *
+ * @param ipCidr IP Address CIDR to check
+ * @returns whether the IP is a private IP or not
+ */
+export function isPrivateIpCidr(ipCidr: string): boolean {
+  const ip = truncateIpFromCidr(ipCidr).toLowerCase();
+  if (isValidIpv4(ip)) {
+    const parts = ip.split('.');
+    return (
+      parts[0] === '10' ||
+      (parts[0] === '172' && parseInt(parts[1], 10) >= 16 && parseInt(parts[1], 10) <= 31) ||
+      (parts[0] === '192' && parts[1] === '168')
+    );
+  } else if (isValidIpv6(ip)) {
+    return ip.startsWith('fc00') || ip.startsWith('fd00');
+  }
+  return false;
+}
