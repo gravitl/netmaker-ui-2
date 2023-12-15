@@ -2,6 +2,8 @@ import { Network } from '@/models/Network';
 import {
   convertNetworkPayloadToUiNetwork,
   convertUiNetworkToNetworkPayload,
+  generateCIDR,
+  generateCIDR6,
   isPrivateIpCidr,
   isValidIp,
   isValidIpCidr,
@@ -103,5 +105,17 @@ describe('NetworkUtils', () => {
 
     publicIpRanges.forEach((ip) => expect(isPrivateIpCidr(ip)).toEqual(false));
     privateIpRanges.forEach((ip) => expect(isPrivateIpCidr(ip)).toEqual(true));
+  });
+
+  it('generates only private network addresses', () => {
+    for (let i = 0; i < 100; i++) {
+      const cidr = generateCIDR();
+      expect(isValidIpCidr(cidr)).toEqual(true);
+      expect(isPrivateIpCidr(cidr)).toEqual(true);
+
+      const cidr6 = generateCIDR6();
+      expect(isValidIpCidr(cidr6)).toEqual(true);
+      expect(isPrivateIpCidr(cidr6)).toEqual(true);
+    }
   });
 });
