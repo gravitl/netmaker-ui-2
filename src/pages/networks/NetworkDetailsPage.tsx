@@ -29,6 +29,8 @@ import {
   ExclamationCircleFilled,
   EyeOutlined,
   GlobalOutlined,
+  InfoCircleOutlined,
+  InfoOutlined,
   LoadingOutlined,
   MoreOutlined,
   PlusOutlined,
@@ -65,10 +67,13 @@ import {
   Tag,
   theme,
   Tooltip,
+  Tour,
+  TourProps,
+  TourStepProps,
   Typography,
 } from 'antd';
 import { AxiosError } from 'axios';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { PageProps } from '../../models/Page';
 import '@react-sigma/core/lib/react-sigma.min.css';
@@ -92,6 +97,8 @@ import getNodeImageProgram from 'sigma/rendering/webgl/programs/node.image';
 import { HOST_HEALTH_STATUS } from '@/models/NodeConnectivityStatus';
 import ClientConfigModal from '@/components/modals/client-config-modal/ClientConfigModal';
 import { isSaasBuild } from '@/services/BaseService';
+import { NetworkDetailTourStep } from '@/utils/Types';
+import TourComponent from '@/pages/networks/TourComponent';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -187,6 +194,65 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [isSubmittingAcls, setIsSubmittingAcls] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [isRefreshingNetwork, setIsRefreshingNetwork] = useState(false);
+  const [isTourOpen, setIsTourOpen] = useState(false);
+  const [tourStep, setTourStep] = useState(0);
+  const [activeTabKey, setActiveTabKey] = useState('overview');
+  {
+    /** Refs */
+  }
+  const overviewTabContainerRef = useRef(null);
+  const hostsTabContainerTableRef = useRef(null);
+  const hostsTabContainerAddHostsRef = useRef(null);
+  const connectHostModalEnrollmentKeysTabRef = useRef(null);
+  const connectHostModalSelectOSTabRef = useRef(null);
+  const connectHostModalJoinNetworkTabRef = useRef(null);
+  const remoteAccessTabGatewayTableRef = useRef(null);
+  const remoteAccessTabAddGatewayRef = useRef(null);
+  const addClientGatewayModalHostRef = useRef(null);
+  const addClientGatewayModalDefaultClientDNSRef = useRef(null);
+  const addClientGatewayModalIsInternetGatewayRef = useRef(null);
+  const remoteAccessTabVPNConfigTableRef = useRef(null);
+  const remoteAccessTabDisplayAllVPNConfigsRef = useRef(null);
+  const remoteAccessTabVPNConfigCreateConfigRef = useRef(null);
+  const createClientConfigModalSelectGatewayRef = useRef(null);
+  const createClientConfigModalClientIDRef = useRef(null);
+  const createClientConfigModalPublicKeyRef = useRef(null);
+  const createClientConfigModalDNSRef = useRef(null);
+  const createClientConfigModalAdditionalAddressesRef = useRef(null);
+  const createClientConfigModalPostDownRef = useRef(null);
+  const createClientConfigModalPostUpRef = useRef(null);
+  const relaysTabRelayTableRef = useRef(null);
+  const relaysTabAddRelayRef = useRef(null);
+  const createRelayModalSelectHostRef = useRef(null);
+  const relaysTabRelayedHostsTableRef = useRef(null);
+  const relaysTabAddRelayedNodesRef = useRef(null);
+  const relaysTabDisplayAllRelayedHostsRef = useRef(null);
+  const addRelayedHostModalSelectHostRef = useRef(null);
+  const egressTabEgressTableRef = useRef(null);
+  const egressTabAddEgressRef = useRef(null);
+  const createEgressModalSelectHostRef = useRef(null);
+  const createEgressModalEnableNATRef = useRef(null);
+  const createEgressModalSelectExternalRangesRef = useRef(null);
+  const egressTabExternalRoutesTableRef = useRef(null);
+  const egressTabAddExternalRouteRef = useRef(null);
+  const egressTabDisplayAllExternalRoutesRef = useRef(null);
+  const dnsTabDNSTableRef = useRef(null);
+  const dnsTabAddDNSRef = useRef(null);
+  const addDNSModalDNSNameRef = useRef(null);
+  const addDNSModalAddressToAliasRef = useRef(null);
+  const aclTabTableRef = useRef(null);
+  const aclTabShowClientAclsRef = useRef(null);
+  const aclTabAllowAllRef = useRef(null);
+  const aclTabDenyAllRef = useRef(null);
+  const aclTabResetRef = useRef(null);
+  const aclTabSubmitRef = useRef(null);
+  const graphTabContainerRef = useRef(null);
+  const metricsTabConnectivityStatusTableRef = useRef(null);
+  const metricsTabLatencyTableRef = useRef(null);
+  const metricsTabBytesSentTableRef = useRef(null);
+  const metricsTabBytesReceivedTableRef = useRef(null);
+  const metricsTabUptimeTableRef = useRef(null);
+  const metricsTabClientsTableRef = useRef(null);
 
   const networkNodes = useMemo(
     () =>
@@ -1771,13 +1837,60 @@ export default function NetworkDetailsPage(props: PageProps) {
     const isManagedHostLoaded = store.hosts.some((host) => isManagedHost(host.name));
     return isSaasBuild && isNewTenant && !isManagedHostLoaded;
   }, [store.isNewTenant, store.hosts]);
+  const jumpToTourStep = (step: NetworkDetailTourStep) => {
+    switch (step) {
+      case 'hosts':
+        setIsTourOpen(true);
+        setTourStep(1);
+        break;
+      case 'remote-access':
+        setIsTourOpen(true);
+        setTourStep(6);
+        break;
+      case 'egress':
+        setIsTourOpen(true);
+        if (isServerEE) {
+          setTourStep(28);
+        } else {
+          setTourStep(9);
+        }
+        break;
+      case 'relays':
+        setIsTourOpen(true);
+        setTourStep(21);
+        break;
+      case 'dns':
+        setIsTourOpen(true);
+        if (isServerEE) {
+          setTourStep(36);
+        } else {
+          setTourStep(24);
+        }
+        break;
+      case 'acls':
+        setIsTourOpen(true);
+        if (isServerEE) {
+          setTourStep(40);
+        } else {
+          setTourStep(30);
+        }
+        break;
+      case 'metrics':
+        setCurrentMetric('connectivity-status');
+        setIsTourOpen(true);
+        setTourStep(47);
+        break;
+      default:
+        break;
+    }
+  };
 
   // ui components
   const getOverviewContent = useCallback(() => {
     if (!network) return <Skeleton active />;
     return (
       <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-        <Card className="overview-card">
+        <Card className="overview-card" ref={overviewTabContainerRef}>
           <Form
             name="network-details-form"
             form={form}
@@ -1944,13 +2057,20 @@ export default function NetworkDetailsPage(props: PageProps) {
                 ],
               }}
             >
-              <Button type="primary" style={{ width: '170px' }}>
+              <Button type="primary" style={{ width: '170px' }} ref={hostsTabContainerAddHostsRef}>
                 <Space>
                   Add Host
                   <DownOutlined />
                 </Space>
               </Button>
             </Dropdown>
+            <Button
+              style={{ marginLeft: '1rem' }}
+              onClick={() => jumpToTourStep('hosts')}
+              icon={<InfoCircleOutlined />}
+            >
+              Tour Hosts
+            </Button>
           </Col>
 
           <Col xs={24} style={{ paddingTop: '1rem' }}>
@@ -2113,6 +2233,7 @@ export default function NetworkDetailsPage(props: PageProps) {
               dataSource={networkNodes}
               rowKey="id"
               size="small"
+              ref={hostsTabContainerTableRef}
             />
           </Col>
         </Row>
@@ -2150,8 +2271,12 @@ export default function NetworkDetailsPage(props: PageProps) {
               size="large"
               onClick={() => setIsAddDnsModalOpen(true)}
               className="full-width-button-xs mt-10"
+              ref={dnsTabAddDNSRef}
             >
               <PlusOutlined /> Add DNS
+            </Button>
+            <Button style={{ marginLeft: '1rem' }} onClick={() => jumpToTourStep('dns')} icon={<InfoCircleOutlined />}>
+              Take Tour
             </Button>
           </Col>
 
@@ -2206,6 +2331,7 @@ export default function NetworkDetailsPage(props: PageProps) {
               dataSource={dnses.filter((dns) => dns.name.toLocaleLowerCase().includes(searchDns.toLocaleLowerCase()))}
               rowKey="name"
               size="small"
+              ref={dnsTabDNSTableRef}
             />
           </Col>
         </Row>
@@ -2307,8 +2433,16 @@ export default function NetworkDetailsPage(props: PageProps) {
                     type="primary"
                     onClick={() => setIsAddClientGatewayModalOpen(true)}
                     className="full-width-button-xs"
+                    ref={remoteAccessTabAddGatewayRef}
                   >
                     <PlusOutlined /> Create Gateway
+                  </Button>
+                  <Button
+                    style={{ marginLeft: '1rem' }}
+                    onClick={() => jumpToTourStep('remote-access')}
+                    icon={<InfoCircleOutlined />}
+                  >
+                    Take Tour
                   </Button>
                 </Col>
               </Row>
@@ -2331,6 +2465,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                         },
                       };
                     }}
+                    ref={remoteAccessTabGatewayTableRef}
                   />
                 </Col>
               </Row>
@@ -2348,10 +2483,11 @@ export default function NetworkDetailsPage(props: PageProps) {
                     style={{ marginRight: '1rem' }}
                     onClick={() => setIsAddClientModalOpen(true)}
                     className="full-width-button-xs"
+                    ref={remoteAccessTabVPNConfigCreateConfigRef}
                   >
                     <PlusOutlined /> Create Config
                   </Button>
-                  <div className="display-all-container-switch">
+                  <div className="display-all-container-switch" ref={remoteAccessTabDisplayAllVPNConfigsRef}>
                     Display All{' '}
                     <Switch
                       title="Display all clients. Click a gateway to filter clients specific to that gateway."
@@ -2371,6 +2507,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                     rowKey="clientid"
                     size="small"
                     scroll={{ x: true }}
+                    ref={remoteAccessTabVPNConfigTableRef}
                   />
                 </Col>
               </Row>
@@ -2454,8 +2591,20 @@ export default function NetworkDetailsPage(props: PageProps) {
                   </Typography.Title>
                 </Col>
                 <Col xs={24} md={11} style={{ textAlign: 'right' }}>
-                  <Button type="primary" onClick={() => setIsAddEgressModalOpen(true)} className="full-width-button-xs">
+                  <Button
+                    type="primary"
+                    ref={egressTabAddEgressRef}
+                    onClick={() => setIsAddEgressModalOpen(true)}
+                    className="full-width-button-xs"
+                  >
                     <PlusOutlined /> Create Egress
+                  </Button>
+                  <Button
+                    style={{ marginLeft: '1rem' }}
+                    onClick={() => jumpToTourStep('egress')}
+                    icon={<InfoCircleOutlined />}
+                  >
+                    Take Tour
                   </Button>
                 </Col>
               </Row>
@@ -2478,6 +2627,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                         },
                       };
                     }}
+                    ref={egressTabEgressTableRef}
                   />
                 </Col>
               </Row>
@@ -2496,11 +2646,12 @@ export default function NetworkDetailsPage(props: PageProps) {
                       style={{ marginRight: '1rem' }}
                       onClick={() => setIsUpdateEgressModalOpen(true)}
                       className="full-width-button-xs"
+                      ref={egressTabAddExternalRouteRef}
                     >
                       <PlusOutlined /> Add external route
                     </Button>
                   )}
-                  <div className="display-all-container-switch">
+                  <div className="display-all-container-switch" ref={egressTabDisplayAllExternalRoutesRef}>
                     Display All{' '}
                     <Switch
                       title="Display all routes. Click an egress to filter routes specific to that egress."
@@ -2520,6 +2671,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                     rowKey={(range) => `${range.node?.name ?? ''}-${range.range}`}
                     scroll={{ x: true }}
                     size="small"
+                    ref={egressTabExternalRoutesTableRef}
                   />
                 </Col>
               </Row>
@@ -2601,8 +2753,20 @@ export default function NetworkDetailsPage(props: PageProps) {
                   </Typography.Title>
                 </Col>
                 <Col xs={24} md={11} style={{ textAlign: 'right' }}>
-                  <Button type="primary" onClick={() => setIsAddRelayModalOpen(true)} className="full-width-button-xs">
+                  <Button
+                    type="primary"
+                    ref={relaysTabAddRelayRef}
+                    onClick={() => setIsAddRelayModalOpen(true)}
+                    className="full-width-button-xs"
+                  >
                     <PlusOutlined /> Create Relay
+                  </Button>
+                  <Button
+                    style={{ marginLeft: '1rem' }}
+                    onClick={() => jumpToTourStep('relays')}
+                    icon={<InfoCircleOutlined />}
+                  >
+                    Take Tour
                   </Button>
                 </Col>
               </Row>
@@ -2625,6 +2789,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                       };
                     }}
                     scroll={{ x: true }}
+                    ref={relaysTabRelayTableRef}
                   />
                 </Col>
               </Row>
@@ -2643,11 +2808,12 @@ export default function NetworkDetailsPage(props: PageProps) {
                       style={{ marginRight: '1rem' }}
                       onClick={() => setIsUpdateRelayModalOpen(true)}
                       className="full-width-button-xs"
+                      ref={relaysTabAddRelayedNodesRef}
                     >
                       <PlusOutlined /> Add relayed host
                     </Button>
                   )}
-                  <div className="display-all-container-switch">
+                  <div className="display-all-container-switch" ref={relaysTabDisplayAllRelayedHostsRef}>
                     Display All{' '}
                     <Switch
                       title="Display all relayed hosts. Click a relay to filter hosts relayed only by that relay."
@@ -2667,6 +2833,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                     rowKey="id"
                     size="small"
                     scroll={{ x: true }}
+                    ref={relaysTabRelayedHostsTableRef}
                   />
                 </Col>
               </Row>
@@ -2700,7 +2867,11 @@ export default function NetworkDetailsPage(props: PageProps) {
               className="search-acl-host-input"
             />
             {isServerEE && (
-              <span className="show-clients-toggle" data-nmui-intercom="network-details-acls_showclientstoggle">
+              <span
+                className="show-clients-toggle"
+                data-nmui-intercom="network-details-acls_showclientstoggle"
+                ref={aclTabShowClientAclsRef}
+              >
                 <label style={{ marginRight: '1rem' }} htmlFor="show-clients-acl-switch">
                   Show Clients
                 </label>
@@ -2745,6 +2916,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   return newAcls;
                 });
               }}
+              ref={aclTabAllowAllRef}
             />
             <Button
               danger
@@ -2787,6 +2959,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   return newAcls;
                 });
               }}
+              ref={aclTabDenyAllRef}
             />
             <Button
               title="Reset"
@@ -2797,6 +2970,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                 setClientAcls(originalClientAcls);
               }}
               disabled={!hasAclsBeenEdited}
+              ref={aclTabResetRef}
             />
             <Button
               type="primary"
@@ -2822,8 +2996,12 @@ export default function NetworkDetailsPage(props: PageProps) {
               }}
               disabled={!hasAclsBeenEdited}
               loading={isSubmittingAcls}
+              ref={aclTabSubmitRef}
             >
               Submit Changes
+            </Button>
+            <Button style={{ marginLeft: '1rem' }} onClick={() => jumpToTourStep('acls')} icon={<InfoCircleOutlined />}>
+              Take Tour
             </Button>
           </Col>
 
@@ -2839,6 +3017,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                 scroll={{
                   x: '100%',
                 }}
+                ref={aclTabTableRef}
               />
             </div>
           </Col>
@@ -2886,7 +3065,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     return (
       <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
         <Row style={{ width: '100%' }}>
-          <Col xs={24} style={{ width: '100%', height: containerHeight }}>
+          <Col xs={24} style={{ width: '100%', height: containerHeight }} ref={graphTabContainerRef}>
             <SigmaContainer
               id={NETWORK_GRAPH_SIGMA_CONTAINER_ID}
               settings={{
@@ -2949,6 +3128,9 @@ export default function NetworkDetailsPage(props: PageProps) {
               <DownloadOutlined />
               Download Metrics
             </Button> */}
+            <Button onClick={() => jumpToTourStep('metrics')} icon={<InfoCircleOutlined />}>
+              Take Tour
+            </Button>
           </Col>
 
           <Col xs={24} style={{ paddingTop: '1rem' }}>
@@ -2962,6 +3144,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   size="small"
                   pagination={{ pageSize: 100 }}
                   scroll={{ x: true }}
+                  ref={metricsTabConnectivityStatusTableRef}
                 />
               )}
               {currentMetric === 'latency' && (
@@ -2973,6 +3156,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   size="small"
                   pagination={{ pageSize: 100 }}
                   scroll={{ x: true }}
+                  ref={metricsTabLatencyTableRef}
                 />
               )}
               {currentMetric === 'bytes-sent' && (
@@ -2984,6 +3168,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   size="small"
                   pagination={{ pageSize: 100 }}
                   scroll={{ x: true }}
+                  ref={metricsTabBytesSentTableRef}
                 />
               )}
               {currentMetric === 'bytes-received' && (
@@ -2995,6 +3180,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   size="small"
                   pagination={{ pageSize: 100 }}
                   scroll={{ x: true }}
+                  ref={metricsTabBytesReceivedTableRef}
                 />
               )}
               {currentMetric === 'uptime' && (
@@ -3006,6 +3192,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   size="small"
                   pagination={{ pageSize: 100 }}
                   scroll={{ x: true }}
+                  ref={metricsTabUptimeTableRef}
                 />
               )}
               {currentMetric === 'clients' && (
@@ -3017,6 +3204,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   size="small"
                   pagination={{ pageSize: 100 }}
                   scroll={{ x: true }}
+                  ref={metricsTabClientsTableRef}
                 />
               )}
             </div>
@@ -3249,7 +3437,19 @@ export default function NetworkDetailsPage(props: PageProps) {
   };
 
   useEffect(() => {
+    // Select the element with the class 'ant-tour'
+    const element: HTMLDivElement | null = document.querySelector('.ant-tour');
+
+    // Change the width of the element to 70%
+    if (element) {
+      element.style.maxWidth = 'auto';
+      element.style.width = '900px';
+    }
+  }, [isTourOpen]);
+
+  useEffect(() => {
     loadNetwork();
+    // setIsTourOpen(true);
   }, [loadNetwork]);
 
   // refresh form to prevent stick network data across different network details pages
@@ -3310,6 +3510,15 @@ export default function NetworkDetailsPage(props: PageProps) {
                     </Button>
                   </>
                 )} */}
+                <Button
+                  style={{ marginRight: '1em' }}
+                  onClick={() => {
+                    setTourStep(0);
+                    setIsTourOpen(true);
+                  }}
+                >
+                  <InfoCircleOutlined /> Take Tour
+                </Button>
                 <Button style={{ marginRight: '1em' }} onClick={reloadNetwork}>
                   <ReloadOutlined /> Reload
                 </Button>
@@ -3333,10 +3542,90 @@ export default function NetworkDetailsPage(props: PageProps) {
               </Col>
             </Row>
 
-            <Tabs items={networkTabs} />
+            <Tabs items={networkTabs} activeKey={activeTabKey} onChange={(active: string) => setActiveTabKey(active)} />
           </Col>
         </Row>
       </Skeleton>
+
+      {/* tour */}
+      <TourComponent
+        isTourOpen={isTourOpen}
+        setIsTourOpen={setIsTourOpen}
+        tourStep={tourStep}
+        setTourStep={setTourStep}
+        setIsAddClientGatewayModalOpen={setIsAddClientGatewayModalOpen}
+        setIsAddClientModalOpen={setIsAddClientModalOpen}
+        setIsAddNewHostModalOpen={setIsAddNewHostModalOpen}
+        setIsAddEgressModalOpen={setIsAddEgressModalOpen}
+        setIsAddDnsModalOpen={setIsAddDnsModalOpen}
+        setIsAddRelayModalOpen={setIsAddRelayModalOpen}
+        setIsUpdateRelayModalOpen={setIsUpdateRelayModalOpen}
+        setActiveTabKey={setActiveTabKey}
+        setCurrentMetric={setCurrentMetric}
+        clientGateways={clientGateways}
+        relays={relays}
+        egresses={egresses}
+        overviewTabContainerRef={overviewTabContainerRef}
+        hostsTabContainerTableRef={hostsTabContainerTableRef}
+        hostsTabContainerAddHostsRef={hostsTabContainerAddHostsRef}
+        connectHostModalEnrollmentKeysTabRef={connectHostModalEnrollmentKeysTabRef}
+        connectHostModalSelectOSTabRef={connectHostModalSelectOSTabRef}
+        connectHostModalJoinNetworkTabRef={connectHostModalJoinNetworkTabRef}
+        remoteAccessTabGatewayTableRef={remoteAccessTabGatewayTableRef}
+        remoteAccessTabAddGatewayRef={remoteAccessTabAddGatewayRef}
+        addClientGatewayModalHostRef={addClientGatewayModalHostRef}
+        addClientGatewayModalDefaultClientDNSRef={addClientGatewayModalDefaultClientDNSRef}
+        addClientGatewayModalIsInternetGatewayRef={addClientGatewayModalIsInternetGatewayRef}
+        remoteAccessTabVPNConfigTableRef={remoteAccessTabVPNConfigTableRef}
+        remoteAccessTabDisplayAllVPNConfigsRef={remoteAccessTabDisplayAllVPNConfigsRef}
+        remoteAccessTabVPNConfigCreateConfigRef={remoteAccessTabVPNConfigCreateConfigRef}
+        createClientConfigModalSelectGatewayRef={createClientConfigModalSelectGatewayRef}
+        createClientConfigModalClientIDRef={createClientConfigModalClientIDRef}
+        createClientConfigModalPublicKeyRef={createClientConfigModalPublicKeyRef}
+        createClientConfigModalDNSRef={createClientConfigModalDNSRef}
+        createClientConfigModalAdditionalAddressesRef={createClientConfigModalAdditionalAddressesRef}
+        createClientConfigModalPostDownRef={createClientConfigModalPostDownRef}
+        createClientConfigModalPostUpRef={createClientConfigModalPostUpRef}
+        relaysTabRelayTableRef={relaysTabRelayTableRef}
+        relaysTabAddRelayRef={relaysTabAddRelayRef}
+        createRelayModalSelectHostRef={createRelayModalSelectHostRef}
+        relaysTabRelayedHostsTableRef={relaysTabRelayedHostsTableRef}
+        relaysTabDisplayAllRelayedHostsRef={relaysTabDisplayAllRelayedHostsRef}
+        relaysTabAddRelayedNodesRef={relaysTabAddRelayedNodesRef}
+        addRelayedHostModalSelectHostRef={addRelayedHostModalSelectHostRef}
+        egressTabEgressTableRef={egressTabEgressTableRef}
+        egressTabAddEgressRef={egressTabAddEgressRef}
+        createEgressModalSelectHostRef={createEgressModalSelectHostRef}
+        createEgressModalEnableNATRef={createEgressModalEnableNATRef}
+        createEgressModalSelectExternalRangesRef={createEgressModalSelectExternalRangesRef}
+        egressTabExternalRoutesTableRef={egressTabExternalRoutesTableRef}
+        egressTabDisplayAllExternalRoutesRef={egressTabDisplayAllExternalRoutesRef}
+        egressTabAddExternalRouteRef={egressTabAddExternalRouteRef}
+        dnsTabDNSTableRef={dnsTabDNSTableRef}
+        dnsTabAddDNSRef={dnsTabAddDNSRef}
+        addDNSModalDNSNameRef={addDNSModalDNSNameRef}
+        addDNSModalAddressToAliasRef={addDNSModalAddressToAliasRef}
+        aclTabTableRef={aclTabTableRef}
+        aclTabShowClientAclsRef={aclTabShowClientAclsRef}
+        aclTabAllowAllRef={aclTabAllowAllRef}
+        aclTabDenyAllRef={aclTabDenyAllRef}
+        aclTabResetRef={aclTabResetRef}
+        aclTabSubmitRef={aclTabSubmitRef}
+        graphTabContainerRef={graphTabContainerRef}
+        metricsTabConnectivityStatusTableRef={metricsTabConnectivityStatusTableRef}
+        metricsTabLatencyTableRef={metricsTabLatencyTableRef}
+        metricsTabBytesSentTableRef={metricsTabBytesSentTableRef}
+        metricsTabBytesReceivedTableRef={metricsTabBytesReceivedTableRef}
+        metricsTabUptimeTableRef={metricsTabUptimeTableRef}
+        metricsTabClientsTableRef={metricsTabClientsTableRef}
+      />
+      {/* <Tour
+        open={isTourOpen}
+        steps={networkDetailsTourStep}
+        onClose={() => setIsTourOpen(false)}
+        onChange={handleTourOnChange}
+        current={tourStep}
+      /> */}
 
       {/* misc */}
       {notifyCtx}
@@ -3345,6 +3634,8 @@ export default function NetworkDetailsPage(props: PageProps) {
         networkId={networkId}
         onCreateDns={onCreateDns}
         onCancel={() => setIsAddDnsModalOpen(false)}
+        addDNSModalDNSNameRef={addDNSModalDNSNameRef}
+        addDNSModalAddressToAliasRef={addDNSModalAddressToAliasRef}
       />
       <AddClientModal
         isOpen={isAddClientModalOpen}
@@ -3356,6 +3647,14 @@ export default function NetworkDetailsPage(props: PageProps) {
           setIsAddClientModalOpen(false);
         }}
         onCancel={() => setIsAddClientModalOpen(false)}
+        createClientConfigModalSelectGatewayRef={createClientConfigModalSelectGatewayRef}
+        createClientConfigModalClientIDRef={createClientConfigModalClientIDRef}
+        createClientConfigModalPublicKeyRef={createClientConfigModalPublicKeyRef}
+        createClientConfigModalDNSRef={createClientConfigModalDNSRef}
+        createClientConfigModalAdditionalAddressesRef={createClientConfigModalAdditionalAddressesRef}
+        createClientConfigModalPostDownRef={createClientConfigModalPostDownRef}
+        createClientConfigModalPostUpRef={createClientConfigModalPostUpRef}
+        isTourOpen={isTourOpen}
       />
       <AddEgressModal
         isOpen={isAddEgressModalOpen}
@@ -3365,6 +3664,9 @@ export default function NetworkDetailsPage(props: PageProps) {
           setIsAddEgressModalOpen(false);
         }}
         onCancel={() => setIsAddEgressModalOpen(false)}
+        createEgressModalSelectHostRef={createEgressModalSelectHostRef}
+        createEgressModalEnableNATRef={createEgressModalEnableNATRef}
+        createEgressModalSelectExternalRangesRef={createEgressModalSelectExternalRangesRef}
       />
       {targetClient && (
         <ClientDetailsModal
@@ -3411,6 +3713,7 @@ export default function NetworkDetailsPage(props: PageProps) {
           setIsAddRelayModalOpen(false);
         }}
         onCancel={() => setIsAddRelayModalOpen(false)}
+        createRelayModalSelectHostRef={createRelayModalSelectHostRef}
       />
       {selectedRelay && (
         <UpdateRelayModal
@@ -3423,6 +3726,7 @@ export default function NetworkDetailsPage(props: PageProps) {
             setIsUpdateRelayModalOpen(false);
           }}
           onCancel={() => setIsUpdateRelayModalOpen(false)}
+          addRelayedHostModalSelectHostRef={addRelayedHostModalSelectHostRef}
         />
       )}
       <AddHostsToNetworkModal
@@ -3439,6 +3743,12 @@ export default function NetworkDetailsPage(props: PageProps) {
         onFinish={() => setIsAddNewHostModalOpen(false)}
         onCancel={() => setIsAddNewHostModalOpen(false)}
         networkId={networkId}
+        connectHostModalEnrollmentKeysTabRef={connectHostModalEnrollmentKeysTabRef}
+        connectHostModalSelectOSTabRef={connectHostModalSelectOSTabRef}
+        connectHostModalJoinNetworkTabRef={connectHostModalJoinNetworkTabRef}
+        isTourOpen={isTourOpen}
+        tourStep={tourStep}
+        page="network-details"
       />
       <AddIngressModal
         isOpen={isAddClientGatewayModalOpen}
@@ -3448,6 +3758,9 @@ export default function NetworkDetailsPage(props: PageProps) {
           setIsAddClientGatewayModalOpen(false);
         }}
         onCancel={() => setIsAddClientGatewayModalOpen(false)}
+        addClientGatewayModalHostRef={addClientGatewayModalHostRef}
+        addClientGatewayModalDefaultClientDNSRef={addClientGatewayModalDefaultClientDNSRef}
+        addClientGatewayModalIsInternetGatewayRef={addClientGatewayModalIsInternetGatewayRef}
       />
       {selectedGateway && (
         <UpdateIngressModal

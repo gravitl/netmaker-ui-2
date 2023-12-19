@@ -1,5 +1,5 @@
 import { useStore } from '@/store/store';
-import { MoreOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
+import { InfoCircleOutlined, MoreOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
 import {
   Button,
   Card,
@@ -17,9 +17,11 @@ import {
   Tabs,
   TabsProps,
   Tag,
+  Tour,
+  TourProps,
   Typography,
 } from 'antd';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PageProps } from '../../models/Page';
 import './UsersPage.scss';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
@@ -45,6 +47,13 @@ export default function UsersPage(props: PageProps) {
   const [isUpdateUserModalOpen, setIsUpdateUserModalOpen] = useState(false);
   const [isTransferSuperAdminRightsModalOpen, setIsTransferSuperAdminRightsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [isTourOpen, setIsTourOpen] = useState(false);
+  const [tourStep, setTourStep] = useState(0);
+  const usersTableRef = useRef(null);
+  const addUserButtonRef = useRef(null);
+  const addUserNameInputRef = useRef(null);
+  const addUserPasswordInputRef = useRef(null);
+  const addUserSetAsAdminCheckboxRef = useRef(null);
 
   const loadUsers = useCallback(async () => {
     try {
@@ -250,10 +259,20 @@ export default function UsersPage(props: PageProps) {
             />
           </Col>
           <Col xs={24} md={16} style={{ textAlign: 'right' }} className="user-table-button">
+            <Button
+              size="large"
+              onClick={() => {
+                setIsTourOpen(true);
+                setTourStep(0);
+              }}
+              style={{ marginRight: '0.5em' }}
+            >
+              <InfoCircleOutlined /> Start Tour
+            </Button>
             <Button size="large" onClick={() => loadUsers()} style={{ marginRight: '0.5em' }}>
               <ReloadOutlined /> Reload users
             </Button>
-            <Button type="primary" size="large" onClick={onAddUser}>
+            <Button type="primary" size="large" onClick={onAddUser} ref={addUserButtonRef}>
               <PlusOutlined /> Add a User
             </Button>
           </Col>
@@ -267,6 +286,7 @@ export default function UsersPage(props: PageProps) {
               scroll={{
                 x: true,
               }}
+              ref={usersTableRef}
             />
           </Col>
         </Row>
@@ -284,6 +304,53 @@ export default function UsersPage(props: PageProps) {
     ],
     [getUsersContent],
   );
+
+  const userTourSteps: TourProps['steps'] = [
+    {
+      title: 'Users',
+      description: 'View users and their roles, you can also edit or delete users and transfer super admin rights',
+      target: () => usersTableRef.current,
+      placement: 'bottom',
+    },
+    {
+      title: 'Add a User',
+      description: 'Click here to add a user',
+      target: () => addUserButtonRef.current,
+      placement: 'bottom',
+    },
+    {
+      title: 'Username',
+      description: 'Enter a username for the user',
+      target: () => addUserNameInputRef.current,
+      placement: 'bottom',
+    },
+    {
+      title: 'Password',
+      description: 'Enter a password for the user',
+      target: () => addUserPasswordInputRef.current,
+      placement: 'bottom',
+    },
+    {
+      title: 'Set as Admin',
+      description: 'Check this box to set the user as admin',
+      target: () => addUserSetAsAdminCheckboxRef.current,
+      placement: 'bottom',
+    },
+  ];
+
+  const handleTourOnChange = (current: number) => {
+    setTourStep(current);
+    switch (current) {
+      case 1:
+        setIsAddUserModalOpen(false);
+        break;
+      case 2:
+        setIsAddUserModalOpen(true);
+        break;
+      default:
+        break;
+    }
+  };
 
   useEffect(() => {
     loadUsers();
@@ -391,6 +458,14 @@ export default function UsersPage(props: PageProps) {
         )}
       </Skeleton>
 
+      <Tour
+        steps={userTourSteps}
+        open={isTourOpen}
+        onClose={() => setIsTourOpen(false)}
+        onChange={handleTourOnChange}
+        current={tourStep}
+      />
+
       {/* misc */}
       {notifyCtx}
       <AddUserModal
@@ -402,6 +477,10 @@ export default function UsersPage(props: PageProps) {
         onCancel={() => {
           setIsAddUserModalOpen(false);
         }}
+        addUserButtonRef={addUserButtonRef}
+        addUserNameInputRef={addUserNameInputRef}
+        addUserPasswordInputRef={addUserPasswordInputRef}
+        addUserSetAsAdminCheckboxRef={addUserSetAsAdminCheckboxRef}
       />
       {selectedUser && (
         <UpdateUserModal

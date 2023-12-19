@@ -15,7 +15,7 @@ import {
   Tooltip,
   Typography,
 } from 'antd';
-import { MouseEvent, useCallback, useMemo, useState } from 'react';
+import { MouseEvent, Ref, useCallback, useMemo, useState } from 'react';
 import { useStore } from '@/store/store';
 import '../CustomModal.scss';
 import './UpdateRelayModal.styles.scss';
@@ -36,11 +36,19 @@ interface UpdateRelayModalProps {
   onUpdateRelay: (relay: Node) => any;
   onOk?: (e: MouseEvent<HTMLButtonElement>) => void;
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
+  addRelayedHostModalSelectHostRef?: Ref<HTMLDivElement>;
 }
 
 type UpdateRelayFormFields = CreateNodeRelayDto;
 
-export default function UpdateRelayModal({ relay, isOpen, onUpdateRelay, onCancel, networkId }: UpdateRelayModalProps) {
+export default function UpdateRelayModal({
+  relay,
+  isOpen,
+  onUpdateRelay,
+  onCancel,
+  networkId,
+  addRelayedHostModalSelectHostRef,
+}: UpdateRelayModalProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
   const { token: themeToken } = theme.useToken();
@@ -162,66 +170,69 @@ export default function UpdateRelayModal({ relay, isOpen, onUpdateRelay, onCance
             <Col span={6}>{extendedRelay?.endpointip ?? ''}</Col>
             <Col span={6}>{extendedRelay && getNodeConnectivity(extendedRelay)}</Col>
           </Row>
-
-          <Form.Item
-            label="Select hosts to relay"
-            required
-            style={{ marginTop: '1rem' }}
-            data-nmui-intercom="update-relay-form_relayed"
-          >
-            <Select
-              placeholder="Select hosts to relay"
-              dropdownRender={() => (
-                <div style={{ padding: '.5rem' }}>
-                  <Row style={{ marginBottom: '1rem' }}>
-                    <Col span={8}>
-                      <Input
-                        placeholder="Search host..."
-                        value={relayedSearch}
-                        onChange={(e) => setRelayedSearch(e.target.value)}
-                        prefix={<SearchOutlined />}
-                      />
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col span={24}>
-                      <Table
-                        size="small"
-                        columns={relayedTableCols}
-                        rowKey="id"
-                        dataSource={[...filteredNetworkNodes.filter((h) => h.id !== relay.id)].sort((a, b) =>
-                          // sort non-relayed hosts to the top
-                          isNodeRelay(a) === isNodeRelay(b) ? 0 : isNodeRelay(a) ? 1 : -1,
-                        )}
-                        onRow={(node) => {
-                          return {
-                            onClick: () => {
-                              if (!isNodeSelectable(node)) return;
-                              setSelectedRelayedIds((prev) => {
-                                const relayedHostIds = new Set(prev);
-                                if (relayedHostIds.has(node.id)) {
-                                  relayedHostIds.delete(node.id);
-                                } else {
-                                  relayedHostIds.add(node.id);
-                                }
-                                return [...relayedHostIds];
-                              });
-                            },
-                          };
-                        }}
-                        rowClassName={(node) => {
-                          if (!isNodeSelectable(node)) return 'unavailable-row';
-                          return selectedRelayedIds.includes(node.id) ? 'selected-row' : '';
-                        }}
-                      />
-                    </Col>
-                  </Row>
-                </div>
-              )}
-              onDropdownVisibleChange={(open) => setIsDropDownOpen(open)}
-              suffixIcon={isDropDownOpen ? <UpOutlined /> : <DownOutlined />}
-            />
-          </Form.Item>
+          <Row>
+            <Col span={24} ref={addRelayedHostModalSelectHostRef}>
+              <Form.Item
+                label="Select hosts to relay"
+                required
+                style={{ marginTop: '1rem' }}
+                data-nmui-intercom="update-relay-form_relayed"
+              >
+                <Select
+                  placeholder="Select hosts to relay"
+                  dropdownRender={() => (
+                    <div style={{ padding: '.5rem' }}>
+                      <Row style={{ marginBottom: '1rem' }}>
+                        <Col span={8}>
+                          <Input
+                            placeholder="Search host..."
+                            value={relayedSearch}
+                            onChange={(e) => setRelayedSearch(e.target.value)}
+                            prefix={<SearchOutlined />}
+                          />
+                        </Col>
+                      </Row>
+                      <Row>
+                        <Col span={24}>
+                          <Table
+                            size="small"
+                            columns={relayedTableCols}
+                            rowKey="id"
+                            dataSource={[...filteredNetworkNodes.filter((h) => h.id !== relay.id)].sort((a, b) =>
+                              // sort non-relayed hosts to the top
+                              isNodeRelay(a) === isNodeRelay(b) ? 0 : isNodeRelay(a) ? 1 : -1,
+                            )}
+                            onRow={(node) => {
+                              return {
+                                onClick: () => {
+                                  if (!isNodeSelectable(node)) return;
+                                  setSelectedRelayedIds((prev) => {
+                                    const relayedHostIds = new Set(prev);
+                                    if (relayedHostIds.has(node.id)) {
+                                      relayedHostIds.delete(node.id);
+                                    } else {
+                                      relayedHostIds.add(node.id);
+                                    }
+                                    return [...relayedHostIds];
+                                  });
+                                },
+                              };
+                            }}
+                            rowClassName={(node) => {
+                              if (!isNodeSelectable(node)) return 'unavailable-row';
+                              return selectedRelayedIds.includes(node.id) ? 'selected-row' : '';
+                            }}
+                          />
+                        </Col>
+                      </Row>
+                    </div>
+                  )}
+                  onDropdownVisibleChange={(open) => setIsDropDownOpen(open)}
+                  suffixIcon={isDropDownOpen ? <UpOutlined /> : <DownOutlined />}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
 
           {selectedRelayedIds.map((id) => (
             <Row
