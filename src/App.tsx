@@ -31,6 +31,7 @@ function App() {
 
   const [hasFetchedServerConfig, setHasFetchedServerConfig] = useState(false);
   const [isAppReady, setIsAppReady] = useState(false);
+  const [showServerMalfunctionModal, setShowServerMalfunctionModal] = useState(false);
 
   const isIntercomReady = useMemo(() => {
     // TODO: add other params like tenant/server and user data loaded
@@ -171,6 +172,23 @@ function App() {
     }
   }, [isAppReady]);
 
+  useEffect(() => {
+    let timerId: NodeJS.Timeout;
+    if (!store.serverStatus.isHealthy) {
+      timerId = setTimeout(() => {
+        setShowServerMalfunctionModal(true);
+      }, 5000); // 5000 milliseconds = 5 seconds
+    } else {
+      setShowServerMalfunctionModal(false);
+    }
+
+    return () => {
+      if (timerId) {
+        clearTimeout(timerId); // Clear the timeout if the component is unmounted before the timeout finishes
+      }
+    };
+  }, [store.serverStatus.isHealthy]);
+
   return (
     <div className="App">
       <ConfigProvider
@@ -188,7 +206,7 @@ function App() {
         <RouterProvider router={router} />
       </ConfigProvider>
 
-      <ServerMalfunctionModal isOpen={!store.serverStatus.isHealthy} />
+      <ServerMalfunctionModal isOpen={showServerMalfunctionModal} />
     </div>
   );
 }

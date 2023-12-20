@@ -17,15 +17,17 @@ import { NodesService } from '@/services/NodesService';
 import { useStore } from '@/store/store';
 import { getExtendedNode, getNodeConnectivityStatus, isNodeRelay } from '@/utils/NodeUtils';
 import { getNetworkHostRoute, resolveAppRoute } from '@/utils/RouteUtils';
-import { extractErrorMsg } from '@/utils/ServiceUtils';
+import { download, extractErrorMsg } from '@/utils/ServiceUtils';
 import {
   CheckOutlined,
   DashOutlined,
   DeleteOutlined,
   DownOutlined,
+  DownloadOutlined,
   EditOutlined,
   // DownloadOutlined,
   ExclamationCircleFilled,
+  EyeOutlined,
   GlobalOutlined,
   LoadingOutlined,
   MoreOutlined,
@@ -88,6 +90,7 @@ import { NETWORK_GRAPH_SIGMA_CONTAINER_ID } from '@/constants/AppConstants';
 import UpdateIngressUsersModal from '@/components/modals/update-ingress-users-modal/UpdateIngressUsersModal';
 import getNodeImageProgram from 'sigma/rendering/webgl/programs/node.image';
 import { HOST_HEALTH_STATUS } from '@/models/NodeConnectivityStatus';
+import ClientConfigModal from '@/components/modals/client-config-modal/ClientConfigModal';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -150,6 +153,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [isAddClientModalOpen, setIsAddClientModalOpen] = useState(false);
   const [clients, setClients] = useState<ExternalClient[]>([]);
   const [isClientDetailsModalOpen, setIsClientDetailsModalOpen] = useState(false);
+  const [isClientConfigModalOpen, setIsClientConfigModalOpen] = useState(false);
   const [targetClient, setTargetClient] = useState<ExternalClient | null>(null);
   const [selectedGateway, setSelectedGateway] = useState<Node | null>(null);
   const [searchClientGateways, setSearchClientGateways] = useState('');
@@ -707,6 +711,20 @@ export default function NetworkDetailsPage(props: PageProps) {
     [storeFetchNodes, notify],
   );
 
+  const downloadClientData = async (client: ExternalClient) => {
+    try {
+      notify.info({ message: 'Downloading...' });
+      const qrData = (await NodesService.getExternalClientConfig(client.clientid, client.network, 'file'))
+        .data as string;
+      download(`${client.clientid}.conf`, qrData);
+    } catch (err) {
+      notify.error({
+        message: 'Failed to download client config',
+        description: extractErrorMsg(err as any),
+      });
+    }
+  };
+
   const getGatewayDropdownOptions = useCallback(
     (gateway: Node) => {
       const defaultOptions: MenuProps['items'] = [
@@ -1008,6 +1026,29 @@ export default function NetworkDetailsPage(props: PageProps) {
                     onClick: () => {
                       setTargetClient(client);
                       setIsUpdateClientModalOpen(true);
+                    },
+                  },
+                  {
+                    key: 'view',
+                    label: (
+                      <Typography.Text>
+                        <EyeOutlined /> View Config
+                      </Typography.Text>
+                    ),
+                    onClick: () => {
+                      setTargetClient(client);
+                      setIsClientConfigModalOpen(true);
+                    },
+                  },
+                  {
+                    key: 'download',
+                    label: (
+                      <Typography.Text>
+                        <DownloadOutlined /> Download
+                      </Typography.Text>
+                    ),
+                    onClick: () => {
+                      downloadClientData(client);
                     },
                   },
                   {
@@ -3309,6 +3350,14 @@ export default function NetworkDetailsPage(props: PageProps) {
             setTargetClient(updatedClient);
           }}
           onCancel={() => setIsClientDetailsModalOpen(false)}
+        />
+      )}
+      {targetClient && (
+        <ClientConfigModal
+          key={`view-client-config-${targetClient.clientid}`}
+          isOpen={isClientConfigModalOpen}
+          client={targetClient}
+          onCancel={() => setIsClientConfigModalOpen(false)}
         />
       )}
       {filteredEgress && (

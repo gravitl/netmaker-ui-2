@@ -32,9 +32,10 @@ export const de: LanguageResource = {
   },
   error: {
     servermalfunction: 'Fehler Serverstörung',
-    contactyourserveradmin: 'Wenden Sie sich an Ihren Server-Administrator oder überprüfen Sie Ihre Netzwerkeinstellungen',
+    contactyourserveradmin:
+      'Wenden Sie sich an Ihren Server-Administrator oder überprüfen Sie Ihre Netzwerkeinstellungen',
     billingerroroccured: 'Fehler bei der Abrechnung/Zahlung aufgetreten',
-    checkbillingsetting: "Überprüfen Sie die Abrechnungseinstellungen Ihres Tenants in der",
+    checkbillingsetting: 'Überprüfen Sie die Abrechnungseinstellungen Ihres Tenants in der',
   },
   info: {
     connectmultiplehosts: 'Mehrere Hosts verbinden',
