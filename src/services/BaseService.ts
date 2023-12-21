@@ -1,5 +1,6 @@
 // import { ApiRoutes } from '@/constants/ApiRoutes';
 // import { User } from '@/models/User';
+import { ApiRoutes } from '@/constants/ApiRoutes';
 import { useStore } from '@/store/store';
 import { truncateQueryParamsFromCurrentUrl } from '@/utils/RouteUtils';
 import axios from 'axios';
@@ -83,8 +84,9 @@ axiosService.interceptors.response.use(
     return res;
   },
   (err) => {
-    // Check if the error is a 401 response
-    if (err.response?.status === 401) {
+    const errReqUrl = err.config.url;
+    // Check if the error is a 401 response and if the original request was not a login request
+    if (err.response?.status === 401 && errReqUrl !== ApiRoutes.LOGIN) {
       useStore.getState().logout();
       // Full redirect the user to the login page or display a message
       window.location.href = '/login';
