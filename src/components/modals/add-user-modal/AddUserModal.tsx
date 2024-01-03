@@ -1,4 +1,4 @@
-import { Button, Col, Divider, Form, Input, Modal, notification, Row, Select, Switch } from 'antd';
+import { Button, Col, Divider, Form, Input, Modal, notification, Row, Switch } from 'antd';
 import { MouseEvent, useCallback, useEffect, useState } from 'react';
 import { useStore } from '@/store/store';
 import '../CustomModal.scss';
@@ -46,8 +46,8 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
     }
   };
 
-  const checkIfSwitchShouldBeDisabled = () => {
-    if (store.user?.issuperadmin) {
+  const checkIfSwitchShouldBeDisabled = useCallback(() => {
+    if (store.user?.issuperadmin && isServerEE) {
       setIsSwitchDisabled(false);
     } else if (!isServerEE && !isSaasBuild) {
       setIsAdmin(true);
@@ -55,11 +55,11 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
     } else {
       setIsSwitchDisabled(true);
     }
-  };
+  }, [store.user, isServerEE]);
 
   useEffect(() => {
     checkIfSwitchShouldBeDisabled();
-  }, [store.user]);
+  }, [store.user, checkIfSwitchShouldBeDisabled]);
 
   return (
     <Modal
