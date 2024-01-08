@@ -3464,6 +3464,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       )}
       {targetNode && (
         <UpdateNodeModal
+          key={`update-node-${targetNode.id}`}
           isOpen={isUpdateNodeModalOpen}
           node={targetNode}
           onUpdateNode={() => {

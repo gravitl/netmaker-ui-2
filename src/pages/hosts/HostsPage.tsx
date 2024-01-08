@@ -35,7 +35,7 @@ import { HostsService } from '@/services/HostsService';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import NewHostModal from '@/components/modals/new-host-modal/NewHostModal';
 import { lt } from 'semver';
-import { AddressType, ExtendedNode } from '@/models/Node';
+import { ExtendedNode } from '@/models/Node';
 import { HOST_HEALTH_STATUS } from '@/models/NodeConnectivityStatus';
 
 export default function HostsPage(props: PageProps) {
@@ -254,7 +254,7 @@ export default function HostsPage(props: PageProps) {
         },
       });
     },
-    [notify, store.nodes],
+    [notify, store.serverConfig?.Version],
   );
 
   const filterByHostHealthStatus = useCallback(
@@ -474,7 +474,17 @@ export default function HostsPage(props: PageProps) {
         },
       },
     ],
-    [confirmToggleHostDefaultness, confirmDeleteHost, onEditHost, refreshHostKeys, store.nodes],
+    [
+      filterByHostHealthStatus,
+      store.nodes,
+      requestHostPull,
+      checkIfUpgradeButtonShouldBeDisabled,
+      confirmToggleHostDefaultness,
+      refreshHostKeys,
+      onEditHost,
+      confirmUpgradeClient,
+      confirmDeleteHost,
+    ],
   );
 
   const namHostsTableCols: TableColumnsType<Host> = useMemo(
