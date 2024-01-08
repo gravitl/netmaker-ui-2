@@ -711,19 +711,22 @@ export default function NetworkDetailsPage(props: PageProps) {
     [storeFetchNodes, notify],
   );
 
-  const downloadClientData = async (client: ExternalClient) => {
-    try {
-      notify.info({ message: 'Downloading...' });
-      const qrData = (await NodesService.getExternalClientConfig(client.clientid, client.network, 'file'))
-        .data as string;
-      download(`${client.clientid}.conf`, qrData);
-    } catch (err) {
-      notify.error({
-        message: 'Failed to download client config',
-        description: extractErrorMsg(err as any),
-      });
-    }
-  };
+  const downloadClientData = useCallback(
+    async (client: ExternalClient) => {
+      try {
+        notify.info({ message: 'Downloading...' });
+        const qrData = (await NodesService.getExternalClientConfig(client.clientid, client.network, 'file'))
+          .data as string;
+        download(`${client.clientid}.conf`, qrData);
+      } catch (err) {
+        notify.error({
+          message: 'Failed to download client config',
+          description: extractErrorMsg(err as any),
+        });
+      }
+    },
+    [notify],
+  );
 
   const getGatewayDropdownOptions = useCallback(
     (gateway: Node) => {
@@ -1072,7 +1075,14 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       },
     ],
-    [confirmDeleteClient, networkNodes, openClientDetails, store.hostsCommonDetails, toggleClientStatus],
+    [
+      confirmDeleteClient,
+      downloadClientData,
+      networkNodes,
+      openClientDetails,
+      store.hostsCommonDetails,
+      toggleClientStatus,
+    ],
   );
 
   const relayTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(
@@ -1379,11 +1389,11 @@ export default function NetworkDetailsPage(props: PageProps) {
             aclType === 'node'
               ? aclTableDataMap.get(aclEntry.nodeOrClientId)?.acls?.[aclData?.nodeOrClientId] ?? 0
               : aclEntry.nodeOrClientId === aclData.nodeOrClientId // check disable toggling ones own self
-              ? 0
-              : getExtClientAclStatus(
-                  aclEntry.nodeOrClientId,
-                  aclTableDataMap.get(aclData.nodeOrClientId)?.clientAcls ?? {},
-                ),
+                ? 0
+                : getExtClientAclStatus(
+                    aclEntry.nodeOrClientId,
+                    aclTableDataMap.get(aclData.nodeOrClientId)?.clientAcls ?? {},
+                  ),
             // node or client IDs
             aclEntry.nodeOrClientId,
             aclData.nodeOrClientId,
@@ -3074,7 +3084,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     getOverviewContent,
     networkHosts.length,
     getHostsContent,
-    clients.length,
+    clientGateways.length,
     getClientsContent,
     egresses.length,
     getEgressContent,
