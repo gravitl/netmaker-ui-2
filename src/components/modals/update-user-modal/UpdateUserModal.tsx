@@ -1,5 +1,5 @@
-import { Button, Col, Collapse, Divider, Form, Input, Modal, notification, Row, Select, Switch } from 'antd';
-import { MouseEvent, useCallback, useEffect } from 'react';
+import { Button, Col, Collapse, Divider, Form, Input, Modal, notification, Row, Switch } from 'antd';
+import { MouseEvent, useCallback } from 'react';
 import '../CustomModal.scss';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { User } from '@/models/User';
@@ -68,7 +68,7 @@ export default function UpdateUserModal({ isOpen, user, onUpdateUser, onCancel }
       return true;
     }
     return false;
-  }, [store.user?.issuperadmin, user.username, store.username]);
+  }, [store.user?.issuperadmin, store.username, user.isadmin, user.username]);
 
   const checkIfSwitchShouldBeDisabled = useCallback(() => {
     if (store.user?.issuperadmin) {
@@ -78,7 +78,7 @@ export default function UpdateUserModal({ isOpen, user, onUpdateUser, onCancel }
     } else {
       return true;
     }
-  }, [isServerEE, isSaasBuild, store.user?.issuperadmin]);
+  }, [isServerEE, store.user?.issuperadmin]);
 
   return (
     <Modal

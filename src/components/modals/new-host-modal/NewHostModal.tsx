@@ -501,6 +501,29 @@ export default function NewHostModal({ isOpen, onCancel, onFinish, networkId }: 
                     </Row>
                   </>
                 )}
+
+                {selectedOs === 'docker' && (
+                  <>
+                    <Row>
+                      <Col xs={24}>
+                        <h4 style={{ marginBottom: '.5rem' }}>Installation steps on next page</h4>
+                        {/* <Typography.Title level={5}>FreeBSD 13</Typography.Title>
+                        <Typography.Text code copyable>
+                          {`fetch -o /tmp/netclient ${
+                            getNetclientDownloadLink('freebsd13', 'amd64', 'cli')[0]
+                          } && chmod +x /tmp/netclient && sudo /tmp/netclient install`}
+                        </Typography.Text>
+                        <br />
+                        <Typography.Title level={5}>FreeBSD 14</Typography.Title>
+                        <Typography.Text code copyable>
+                          {`fetch -o /tmp/netclient ${
+                            getNetclientDownloadLink('freebsd14', 'amd64', 'cli')[0]
+                          } && chmod +x /tmp/netclient && sudo /tmp/netclient install`}
+                        </Typography.Text> */}
+                      </Col>
+                    </Row>
+                  </>
+                )}
               </Card>
             </Col>
           </Row>
@@ -561,8 +584,9 @@ export default function NewHostModal({ isOpen, onCancel, onFinish, networkId }: 
 
                 {selectedOs === 'docker' && (
                   <div>
-                    <ol>
+                    <ul>
                       <li>
+                        <Typography.Title level={5}>Docker</Typography.Title>
                         <Typography.Text>Run</Typography.Text>
                         <Typography.Text code copyable>
                           {`sudo docker run -d --network host --privileged -e TOKEN=${selectedEnrollmentKey?.token} -v /etc/netclient:/etc/netclient --name netclient gravitl/netclient:${
@@ -571,11 +595,9 @@ export default function NewHostModal({ isOpen, onCancel, onFinish, networkId }: 
                         </Typography.Text>
                       </li>
                       <li>
-                        <Typography.Text>Compose</Typography.Text>
-                        <Typography.Text code copyable>
-                          {`
-version: '3.7'
-services:
+                        <Typography.Title level={5}>Docker Compose</Typography.Title>
+                        <pre className="code-bg">
+                          {`services:
   netclient:
     image: gravitl/netclient:${store.serverConfig?.Version ?? '<version>'}
     network_mode: host
@@ -585,9 +607,9 @@ services:
     volumes:
       - /etc/netclient:/etc/netclient
 `}
-                        </Typography.Text>
+                        </pre>
                       </li>
-                    </ol>
+                    </ul>
                     <small>Note: It might take a few minutes for the host to show up in the network(s)</small>
                   </div>
                 )}
