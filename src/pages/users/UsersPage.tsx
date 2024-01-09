@@ -193,7 +193,7 @@ export default function UsersPage(props: PageProps) {
                     },
                   },
                 ].concat(
-                  isServerEE && user.issuperadmin && store.username === user.username
+                  user.issuperadmin && store.username === user.username
                     ? [
                         {
                           key: 'transfer',
