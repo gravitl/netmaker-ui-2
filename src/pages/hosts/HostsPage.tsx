@@ -468,7 +468,7 @@ export default function HostsPage(props: PageProps) {
                 ] as MenuProps['items'],
               }}
             >
-              <Button type="text" icon={<MoreOutlined />} />
+              <Button type="text" icon={<MoreOutlined />} onClick={(ev) => ev.stopPropagation()} />
             </Dropdown>
           );
         },
