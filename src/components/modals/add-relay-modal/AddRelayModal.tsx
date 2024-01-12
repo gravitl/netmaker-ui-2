@@ -252,7 +252,7 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
                             columns={relayedTableCols}
                             rowKey="id"
                             dataSource={[
-                              ...filteredNetworkNodes
+                              ...networkNodes
                                 .filter(
                                   (node) => node.name?.toLocaleLowerCase().includes(relayedSearch.toLocaleLowerCase()),
                                 )
