@@ -3,13 +3,16 @@
 ## Netmaker UI v0.22.0
 
 ## Whats New
-- Introduced a toggle button for the host auto-update setting in the global host configuration.
-- Introduced functionality to designate a host as a relay for a specific enrollment key.
+- Internet gateways
 
 ## What's Fixed/Improvements
-- Resolved an issue with the notification message display following the deletion of a client and egress gateway.
-- Corrected the presentation of relayed clients on metrics.
-- Fixed an issue where it was not possible to re-add a relay after its removal.
+- Bug with relayed host search during creation
+- Incorrect docker/docker-compose installation instructions
+- Allow transferrence of superadmin role in CE
+- Enforce private address ranges in network creation
+- Edge cases with network graph
+- Enrollment key validation
+- Minor UI/UX bug fixes and improvements
 
 ## Known Issues
 - Graph page crashed when WebGL is not enabled. WebGL is required for the graph page to work.
