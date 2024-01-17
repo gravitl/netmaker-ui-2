@@ -252,8 +252,8 @@ export function renderMetricValue(metricType: MetricCategories, value: unknown):
               (value as number) > METRIC_LATENCY_DANGER_THRESHOLD
                 ? '#D32029'
                 : (value as number) > METRIC_LATENCY_WARNING_THRESHOLD
-                ? '#D8BD14'
-                : undefined,
+                  ? '#D8BD14'
+                  : undefined,
           }}
         >
           {(value as number) === 999 ? (
@@ -348,6 +348,25 @@ const validateName = (fieldName: string): Rule[] => [
   },
 ];
 
+const validateExtClientName = (fieldName: string): Rule[] => [
+  {
+    required: true,
+    message: `Please enter a ${fieldName}, with a minimum of 5 characters and a maximum of 32 characters.`,
+    min: 5,
+    max: 32,
+  },
+  {
+    validator: (_: any, value: string) => {
+      const regex = /^[^\s]+$/;
+      if (regex.test(value)) {
+        return Promise.resolve();
+      } else {
+        return Promise.reject(`The ${fieldName} should not have spaces`);
+      }
+    },
+  },
+];
+
 const validateSpecialCharactersWithNumbers = (_: any, value: string) => {
   const regex = /^[a-zA-Z0-9\s]+$/; // Regular expression to allow only alphabetic characters, numbers and spaces
 
@@ -370,6 +389,7 @@ export const validateEmailField: Rule[] = [
 
 export const validateLastNameField = validateName('last name');
 export const validateFirstNameField = validateName('first name');
+export const validateExtClientNameField = validateExtClientName('client id');
 
 /**
  * Hook to get app branding configuration.

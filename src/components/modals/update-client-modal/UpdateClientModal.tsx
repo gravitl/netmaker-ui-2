@@ -5,6 +5,7 @@ import { Network } from '@/models/Network';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { NodesService } from '@/services/NodesService';
 import { ExternalClient } from '@/models/ExternalClient';
+import { validateExtClientNameField } from '@/utils/Utils';
 
 interface UpdateClientModalProps {
   isOpen: boolean;
@@ -74,7 +75,7 @@ export default function UpdateClientModal({
           <Form.Item
             label="Client ID (Optional)"
             name="clientid"
-            rules={[{ min: 5, max: 32 }]}
+            rules={validateExtClientNameField}
             data-nmui-intercom="update-client-form_clientid"
           >
             <Input placeholder="Unique name of client" />
