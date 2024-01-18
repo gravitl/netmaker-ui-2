@@ -1,5 +1,5 @@
 import { Button, Col, Collapse, Divider, Form, Input, Modal, notification, Row, Select, Typography } from 'antd';
-import { MouseEvent, useEffect, useState } from 'react';
+import { MouseEvent, useState } from 'react';
 import '../CustomModal.scss';
 import { Network } from '@/models/Network';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
@@ -51,9 +51,14 @@ export default function UpdateClientModal({
     }
   };
 
+  const clientObj: ExternalClient = {
+    ...client,
+    extraallowedips: client.extraallowedips ?? [],
+  };
+
   return (
     <Modal
-      title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Update Client</span>}
+      title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Update Client Config</span>}
       open={isOpen}
       onCancel={(ev) => {
         resetModal();
@@ -64,7 +69,7 @@ export default function UpdateClientModal({
       style={{ minWidth: '50vw' }}
     >
       <Divider style={{ margin: '0px 0px 2rem 0px' }} />
-      <Form name="update-client-form" form={form} layout="vertical" initialValues={client}>
+      <Form name="update-client-form" form={form} layout="vertical" initialValues={clientObj}>
         <div className="CustomModalBody">
           <Form.Item
             label="Client ID (Optional)"

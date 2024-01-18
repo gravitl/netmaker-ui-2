@@ -76,7 +76,7 @@ export default function UpdateIngressModal({
           <div className="CustomModalBody">
             <Form.Item
               name="ingressdns"
-              label="Default External client DNS"
+              label="Default Client config DNS"
               data-nmui-intercom="update-ingress-form_ingressdns"
             >
               <Input placeholder="DNS" />

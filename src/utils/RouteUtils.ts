@@ -104,7 +104,7 @@ export function getNetmakerSupportEmail() {
 export function getNetclientDownloadLink(
   os: AvailableOses,
   arch: AvailableArchs,
-  appType: 'gui' | 'cli' = 'gui'
+  appType: 'gui' | 'cli' = 'gui',
 ): [string, string] {
   const fileNamePlaceholder = ':fileName';
   const verisonPlaceholder = ':version';
@@ -161,7 +161,7 @@ export function openInNewTab(url: string) {
 // Function to file a bug report for the UI
 export function fileBugReport(body: string) {
   openInNewTab(
-    BUG_REPORT_URL.replace(':body', `Describe what happened...%0A%0A Error log: %0A\`${encodeURIComponent(body)}\``)
+    BUG_REPORT_URL.replace(':body', `Describe what happened...%0A%0A Error log: %0A\`${encodeURIComponent(body)}\``),
   );
 }
 

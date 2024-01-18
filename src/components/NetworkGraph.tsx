@@ -87,6 +87,8 @@ export default function NetworkGraph({ hosts, nodes, acl, clients }: NetworkGrap
             size: node.isegressgateway ? EGRESS_NODE_SIZE : HOST_NODE_SIZE,
             label: nodeLabel,
             color: HOST_COLOR,
+            type: 'image',
+            image: node.isinternetgateway ? '/icons/internet.png' : undefined,
           });
 
           // add egress ranges
@@ -139,6 +141,20 @@ export default function NetworkGraph({ hosts, nodes, acl, clients }: NetworkGrap
                 size: HOST_EDGE_SIZE,
                 type: 'arrow',
               });
+            } else if (nodes[i].failed_over_by === nodes[j].id) {
+              // check if node I is failoverfor node J
+              graph.addEdge(nodes[i].id, nodes[j].id, {
+                color: HOST_EDGE_COLOR,
+                size: HOST_EDGE_SIZE,
+                type: 'arrow',
+              });
+            } else if (nodes[i].fail_over_peers?.includes?.(nodes[j].id)) {
+              // check if node I is failover peer of node J
+              graph.addEdge(nodes[i].id, nodes[j].id, {
+                color: HOST_EDGE_COLOR,
+                size: HOST_EDGE_SIZE,
+                type: 'arrow',
+              });
             } else if (nodes[i].relayedby === '') {
               const canCommunicate = canNodesCommunicate(nodes[i], nodes[j]);
               const edgeColor = canCommunicate ? HOST_EDGE_COLOR : DISCONNECTED_EDGE_COLOR;
@@ -146,7 +162,7 @@ export default function NetworkGraph({ hosts, nodes, acl, clients }: NetworkGrap
               const edgeType = 'arrow';
 
               // if node I is a relay node, check if j is in its relaynodes
-              if (nodes[i].relaynodes?.includes(nodes[j].id)) {
+              if (nodes[i].relaynodes?.includes?.(nodes[j].id)) {
                 graph.addEdge(nodes[i].id, nodes[j].id, {
                   color: edgeColor,
                   size: edgeSize,

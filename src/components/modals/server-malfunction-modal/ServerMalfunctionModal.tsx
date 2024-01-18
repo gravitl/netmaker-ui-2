@@ -1,4 +1,15 @@
-import { Button, Col, Collapse, CollapseProps, ConfigProvider, Modal, Row, theme, Typography } from 'antd';
+import {
+  Button,
+  Col,
+  Collapse,
+  CollapseProps,
+  ConfigProvider,
+  Modal,
+  Row,
+  theme,
+  Typography,
+  notification,
+} from 'antd';
 import { Fragment, MouseEvent, useMemo } from 'react';
 import '../CustomModal.scss';
 import { useTranslation } from 'react-i18next';
@@ -6,6 +17,8 @@ import { ExclamationCircleOutlined, LoadingOutlined } from '@ant-design/icons';
 import { useStore } from '@/store/store';
 import { getAmuiUrl, getLicenseDashboardUrl, getNetmakerSupportEmail } from '@/utils/RouteUtils';
 import { isSaasBuild } from '@/services/BaseService';
+import { ServerConfigService } from '@/services/ServerConfigService';
+import { extractErrorMsg } from '@/utils/ServiceUtils';
 
 interface ServerMalfunctionModalProps {
   isOpen: boolean;
@@ -96,6 +109,27 @@ export default function ServerMalfunctionModal({ isOpen, onCancel }: ServerMalfu
     return reasons;
   }, [getServerMalfunctions, t]);
 
+  const confirmServerRestart = () => {
+    Modal.confirm({
+      title: 'Restart server',
+      content: 'Confirm to restart server?',
+      async onOk() {
+        try {
+          await ServerConfigService.restartTenant();
+          notification.success({
+            message: 'Server restarted',
+            description: 'The server is restarting. This may take some seconds to reflect.',
+          });
+        } catch (err) {
+          notification.error({
+            message: 'Failed to restart server',
+            description: extractErrorMsg(err as any),
+          });
+        }
+      },
+    });
+  };
+
   return (
     // TODO: find a way to DRY the theme config provider
     <ConfigProvider
@@ -142,7 +176,10 @@ export default function ServerMalfunctionModal({ isOpen, onCancel }: ServerMalfu
           </Col>
 
           <Col span={24} style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2rem' }}>
-            <Typography.Text>Dashboard will become responsive once the issue(s) is resolved</Typography.Text>
+            <Typography.Text>
+              Dashboard will become responsive once the issue(s) is resolved, you can
+              <Typography.Link onClick={confirmServerRestart}> try restarting </Typography.Link> to resolve the issue
+            </Typography.Text>
             <LoadingOutlined />
           </Col>
         </Row>

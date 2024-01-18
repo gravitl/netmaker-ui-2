@@ -7,8 +7,8 @@ const version = packageJson.version;
 const isSaasBuild = process.env.VITE_IS_SAAS_BUILD === 'true';
 const assetBasePath = isSaasBuild ? `/v${version}` : '';
 
-const viteConfigPath = path.join(__dirname,'..' ,'vite.config.ts');
-const indexHtmlPath = path.join(__dirname,'..' ,'index.html');
+const viteConfigPath = path.join(__dirname, '..', 'vite.config.ts');
+const indexHtmlPath = path.join(__dirname, '..', 'index.html');
 
 fs.readFile(viteConfigPath, 'utf8', (err, data) => {
   if (err) throw err;

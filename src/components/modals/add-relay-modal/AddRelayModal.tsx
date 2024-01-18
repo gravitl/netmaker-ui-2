@@ -213,8 +213,8 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
                     <Button
                       danger
                       size="small"
-                      type="text"
                       title="Unselect"
+                      type="primary"
                       icon={<CloseOutlined />}
                       onClick={() => {
                         form.setFieldValue(nodeIdFormName, '');
@@ -252,7 +252,7 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
                             columns={relayedTableCols}
                             rowKey="id"
                             dataSource={[
-                              ...filteredNetworkNodes
+                              ...networkNodes
                                 .filter(
                                   (node) => node.name?.toLocaleLowerCase().includes(relayedSearch.toLocaleLowerCase()),
                                 )
@@ -308,8 +308,8 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
                     <Button
                       danger
                       size="small"
-                      type="text"
                       title="Unselect"
+                      type="primary"
                       icon={<CloseOutlined />}
                       onClick={() => {
                         setSelectedRelayedIds((prev) => prev.filter((i) => i !== id));

@@ -1,4 +1,5 @@
 export class ApiRoutes {
+  static NODE = '/v1/node';
   static NODES = '/nodes';
   static EXTERNAL_CLIENTS = '/extclients';
   static HOSTS = '/hosts';
@@ -14,4 +15,5 @@ export class ApiRoutes {
   static USER_GROUPS = '/usergroups';
   static METRICS = '/metrics';
   static METRICS_EXTERNAL_CLIENT = '/metrics-ext';
+  static RESTART_TENANT = '/server/shutdown';
 }

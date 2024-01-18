@@ -13,14 +13,14 @@ import {
   Row,
   Select,
 } from 'antd';
-import { MouseEvent, useCallback, useMemo, useState } from 'react';
+import { MouseEvent, useMemo, useState } from 'react';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { EnrollmentKey } from '@/models/EnrollmentKey';
 import { CreateEnrollmentKeyReqDto } from '@/services/dtos/CreateEnrollmentKeyReqDto';
 import { EnrollmentKeysService } from '@/services/EnrollmentKeysService';
 import { useStore } from '@/store/store';
 import { Modify } from '@/types/react-app-env';
-import { Dayjs } from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 import { ExtendedNode } from '@/models/Node';
 import { getExtendedNode, isNodeRelay } from '@/utils/NodeUtils';
 
@@ -66,15 +66,20 @@ export default function AddEnrollmentKeyModal({
       return [];
     }
     return relayNodes;
-  }, [isServerEE, store.hostsCommonDetails, store.nodes]);
+  }, [isServerEE, networksVal, store.hostsCommonDetails, store.nodes]);
 
   const createEnrollmentKey = async () => {
     try {
-      const formData = await form.validateFields();
+      let formData: AddEnrollmentKeyFormData;
+      try {
+        formData = await form.validateFields();
+      } catch (err) {
+        return;
+      }
 
       // reformat payload for backend
       // type is automatically determined by backend
-      formData.tags = [form.getFieldValue('tags')];
+      formData.tags = [String(form.getFieldValue('tags')).trim()];
       formData.type = 0;
 
       const payload: CreateEnrollmentKeyReqDto = {
@@ -113,7 +118,10 @@ export default function AddEnrollmentKeyModal({
           <Form.Item
             label="Name"
             name="tags"
-            rules={[{ required: true }]}
+            rules={[
+              { required: true, min: 3, max: 32 },
+              { whitespace: true, pattern: /^[a-zA-Z0-9- ]+$/ },
+            ]}
             data-nmui-intercom="add-enrollment-key-form_tags"
           >
             {/* <Select mode="tags" style={{ width: '100%' }} placeholder="Tags" /> */}
@@ -150,7 +158,13 @@ export default function AddEnrollmentKeyModal({
               rules={[{ required: true }]}
               data-nmui-intercom="add-enrollment-key-form_expiration"
             >
-              <DatePicker style={{ width: '100%' }} showTime />
+              <DatePicker
+                style={{ width: '100%' }}
+                showTime
+                disabledDate={(d) => {
+                  return dayjs().isAfter(d);
+                }}
+              />
             </Form.Item>
           )}
 

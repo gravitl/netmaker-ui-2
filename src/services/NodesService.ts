@@ -7,7 +7,6 @@ import { CreateEgressNodeDto } from './dtos/CreateEgressNodeDto';
 import { CreateExternalClientReqDto } from './dtos/CreateExternalClientReqDto';
 import { CreateIngressNodeDto } from './dtos/CreateIngressNodeDto';
 import { CreateNodeRelayDto } from './dtos/CreateNodeRelayDto';
-import { GatewayUsersResDto } from './dtos/GatewayUsersResDto';
 import { UpdateExternalClientDto } from './dtos/UpdateExternalClientDto';
 
 function getNodes() {
@@ -84,6 +83,14 @@ function deleteRelay(nodeId: Node['id'], networkId: Network['netid']) {
   return axiosService.delete<Node>(`${ApiRoutes.NODES}/${networkId}/${nodeId}/deleterelay`);
 }
 
+function setNodeAsFailover(nodeId: Node['id']) {
+  return axiosService.post<Node>(`${ApiRoutes.NODE}/${nodeId}/failover`);
+}
+
+function removeNodeFailoverStatus(nodeId: Node['id']) {
+  return axiosService.delete<Node>(`${ApiRoutes.NODE}/${nodeId}/failover`);
+}
+
 export const NodesService = {
   getNodes,
   approveNode,
@@ -101,4 +108,6 @@ export const NodesService = {
   updateNode,
   createRelay,
   deleteRelay,
+  setNodeAsFailover,
+  removeNodeFailoverStatus,
 };

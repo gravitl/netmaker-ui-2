@@ -51,4 +51,12 @@
       border-left: 4px solid $bg-color;
     }
   }
+
+  .code-bg {
+    background-color: rgba(128, 128, 128, 0.1);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    overflow-x: auto;
+  }
 }

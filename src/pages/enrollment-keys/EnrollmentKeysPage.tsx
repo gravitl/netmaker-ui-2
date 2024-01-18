@@ -4,7 +4,14 @@ import { EnrollmentKey } from '@/models/EnrollmentKey';
 import { EnrollmentKeysService } from '@/services/EnrollmentKeysService';
 import { isEnrollmentKeyValid } from '@/utils/EnrollmentKeysUtils';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
-import { DeleteOutlined, EditOutlined, MoreOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons';
+import {
+  DeleteOutlined,
+  EditOutlined,
+  MoreOutlined,
+  PlusOutlined,
+  ReloadOutlined,
+  SearchOutlined,
+} from '@ant-design/icons';
 import {
   Button,
   Card,
@@ -123,29 +130,37 @@ export default function EnrollmentKeysPage(props: PageProps) {
                 {
                   key: 'edit',
                   label: (
-                    <Typography.Text onClick={() => openEditKeyModal(key)}>
+                    <Typography.Text>
                       <EditOutlined /> Edit Key
                     </Typography.Text>
                   ),
                   onClick: (info) => {
                     info.domEvent.stopPropagation();
+                    openEditKeyModal(key);
                   },
                 },
                 {
                   key: 'delete',
                   label: (
-                    <Typography.Text onClick={() => confirmRemoveKey(key)}>
+                    <Typography.Text>
                       <DeleteOutlined /> Delete Key
                     </Typography.Text>
                   ),
                   onClick: (info) => {
                     info.domEvent.stopPropagation();
+                    confirmRemoveKey(key);
                   },
                 },
               ] as MenuProps['items'],
             }}
           >
-            <Button type="text" icon={<MoreOutlined />} />
+            <Button
+              type="text"
+              icon={<MoreOutlined />}
+              onClick={(ev) => {
+                ev.stopPropagation();
+              }}
+            />
           </Dropdown>
         );
       },
@@ -196,7 +211,7 @@ export default function EnrollmentKeysPage(props: PageProps) {
                 background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
               }}
             >
-              <Col xs={(24 * 2) / 3}>
+              <Col xs={24} xl={(24 * 2) / 3}>
                 <Typography.Title level={3} style={{ color: 'white ' }}>
                   Enrollment Keys
                 </Typography.Title>
@@ -205,7 +220,7 @@ export default function EnrollmentKeysPage(props: PageProps) {
                   control access by defining expiration, number of uses, or making an infinitely usable key.
                 </Typography.Text>
               </Col>
-              <Col xs={(24 * 1) / 3} style={{ position: 'relative' }}>
+              <Col xs={24} xl={(24 * 1) / 3} style={{ position: 'relative' }}>
                 <Card className="header-card" style={{ height: '20rem', position: 'absolute', width: '100%' }}>
                   <Typography.Title level={3}>Add a Key</Typography.Title>
                   <Typography.Text>
@@ -223,12 +238,12 @@ export default function EnrollmentKeysPage(props: PageProps) {
               </Col>
             </Row>
 
-            <Row style={{ marginTop: '8rem', padding: '0px 5.125rem' }} gutter={[0, 20]}>
+            <Row className="card-con" gutter={[0, 20]}>
               <Col xs={24}>
                 <Typography.Title level={3}>Add a Key</Typography.Title>
               </Col>
 
-              <Col xs={7} style={{ marginRight: '1rem' }}>
+              <Col xs={24} xl={7} style={{ marginRight: '1rem' }}>
                 <Card>
                   <Typography.Title level={4} style={{ marginTop: '0px' }}>
                     Time-bound keys
@@ -238,7 +253,7 @@ export default function EnrollmentKeysPage(props: PageProps) {
                   </Typography.Text>
                 </Card>
               </Col>
-              <Col xs={7} style={{ marginRight: '1rem' }}>
+              <Col xs={24} xl={7} style={{ marginRight: '1rem' }}>
                 <Card>
                   <Typography.Title level={4} style={{ marginTop: '0px' }}>
                     Usage-based keys
@@ -249,7 +264,7 @@ export default function EnrollmentKeysPage(props: PageProps) {
                   </Typography.Text>
                 </Card>
               </Col>
-              <Col xs={7}>
+              <Col xs={24} xl={7}>
                 <Card>
                   <Typography.Title level={4} style={{ marginTop: '0px' }}>
                     Unlimited keys
@@ -271,7 +286,7 @@ export default function EnrollmentKeysPage(props: PageProps) {
             </Row>
 
             <Row className="page-row-padding" justify="space-between">
-              <Col xs={12} md={8}>
+              <Col xs={24} md={8}>
                 <Input
                   size="large"
                   placeholder="Search keys"
@@ -280,7 +295,10 @@ export default function EnrollmentKeysPage(props: PageProps) {
                   prefix={<SearchOutlined />}
                 />
               </Col>
-              <Col xs={12} md={6} style={{ textAlign: 'right' }}>
+              <Col xs={24} md={12} style={{ textAlign: 'right' }} className="enrollment-keys-table-button">
+                <Button size="large" style={{ marginRight: '0.5em' }} onClick={() => loadEnrollmentKeys()}>
+                  <ReloadOutlined /> Refresh keys
+                </Button>
                 <Button type="primary" size="large" onClick={() => setIsAddKeyModalOpen(true)}>
                   <PlusOutlined /> Create Key
                 </Button>
@@ -293,6 +311,7 @@ export default function EnrollmentKeysPage(props: PageProps) {
                   columns={tableColumns}
                   dataSource={filteredKeys}
                   rowKey="value"
+                  scroll={{ x: true }}
                   onRow={(key) => {
                     return {
                       onClick: () => {
@@ -321,7 +340,7 @@ export default function EnrollmentKeysPage(props: PageProps) {
       {isKeyDetailsModalOpen && selectedKey && (
         <EnrollmentKeyDetailsModal
           isOpen={isKeyDetailsModalOpen}
-          key={selectedKey.value}
+          key={`enrollment-key-detail-${selectedKey.value}`}
           enrollmentKey={selectedKey}
           onCancel={closeKeyDetails}
         />
@@ -330,7 +349,7 @@ export default function EnrollmentKeysPage(props: PageProps) {
       {isEditKeyModalOpen && selectedKey && (
         <UpdateEnrollmentKeyModal
           isOpen={isEditKeyModalOpen}
-          key={selectedKey.value}
+          key={`enrollment-key-update-${selectedKey.value}`}
           enrollmentKey={selectedKey}
           onUpdateKey={(key: EnrollmentKey) => {
             setIsEditKeyModalOpen(false);

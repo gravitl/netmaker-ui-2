@@ -4,7 +4,11 @@ import { LoginDto } from './dtos/LoginDto';
 import { LoginResDto } from './dtos/LoginResDto';
 
 function login(payload: LoginDto) {
-  return axiosService.post<LoginResDto>(ApiRoutes.LOGIN, payload);
+  const headers = {
+    'From-Ui': true,
+  };
+
+  return axiosService.post<LoginResDto>(ApiRoutes.LOGIN, payload, { headers });
 }
 
 export const AuthService = {

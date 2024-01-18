@@ -25,12 +25,13 @@ import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { NodesService } from '@/services/NodesService';
 import { isValidIpCidr } from '@/utils/NetworkUtils';
 import { CreateEgressNodeDto } from '@/services/dtos/CreateEgressNodeDto';
+import { INTERNET_RANGE_IPV4, INTERNET_RANGE_IPV6 } from '@/constants/AppConstants';
 
 interface UpdateEgressModalProps {
   isOpen: boolean;
   networkId: Network['netid'];
   egress: Node;
-  onUpdateEgress: () => any;
+  onUpdateEgress: (nodeId: Node) => any;
   closeModal?: () => void;
   onOk?: (e: MouseEvent<HTMLButtonElement>) => void;
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
@@ -74,17 +75,20 @@ export default function UpdateEgressModal({
 
   const updateEgress = async () => {
     try {
+      let egressNode: Node;
       const formData = await form.validateFields();
       setIsSubmitting(true);
       const newRanges = new Set(formData.ranges);
-      await NodesService.deleteEgressNode(egress.id, networkId);
+      egressNode = (await NodesService.deleteEgressNode(egress.id, networkId)).data;
       if (newRanges.size > 0) {
-        await NodesService.createEgressNode(egress.id, networkId, {
-          ranges: [...newRanges],
-          natEnabled: formData.natEnabled ? 'yes' : 'no',
-        });
+        egressNode = (
+          await NodesService.createEgressNode(egress.id, networkId, {
+            ranges: [...newRanges],
+            natEnabled: formData.natEnabled ? 'yes' : 'no',
+          })
+        ).data;
       }
-      onUpdateEgress();
+      onUpdateEgress(egressNode);
       notify.success({ message: `Egress gateway updated` });
     } catch (err) {
       notify.error({
@@ -110,6 +114,7 @@ export default function UpdateEgressModal({
       style={{ minWidth: '50vw' }}
     >
       <Divider style={{ margin: '0px 0px 2rem 0px' }} />
+
       <Form
         name="update-egress-form"
         form={form}
@@ -145,6 +150,7 @@ export default function UpdateEgressModal({
               name="natEnabled"
               label="Enable NAT for egress traffic"
               data-nmui-intercom="update-egress-form_natEnabled"
+              valuePropName="checked"
             >
               <Switch defaultChecked={egress.egressgatewaynatenabled} />
             </Form.Item>
@@ -181,6 +187,9 @@ export default function UpdateEgressModal({
                               if (!isValidIpCidr(value)) {
                                 return Promise.reject('Invalid CIDR');
                               } else {
+                                if (value.includes(INTERNET_RANGE_IPV4) || value.includes(INTERNET_RANGE_IPV6)) {
+                                  return Promise.reject('Visit the Remote Access tab to create an internet gateway');
+                                }
                                 return Promise.resolve();
                               }
                             },
@@ -193,7 +202,13 @@ export default function UpdateEgressModal({
                           style={{ width: '100%' }}
                           prefix={
                             <Tooltip title="Remove">
-                              <CloseOutlined onClick={() => remove(index)} />
+                              <Button
+                                danger
+                                type="link"
+                                icon={<CloseOutlined />}
+                                onClick={() => remove(index)}
+                                size="small"
+                              />
                             </Tooltip>
                           }
                         />
