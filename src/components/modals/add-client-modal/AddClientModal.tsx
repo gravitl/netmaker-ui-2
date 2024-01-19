@@ -31,6 +31,7 @@ import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { NodesService } from '@/services/NodesService';
 import { Host } from '@/models/Host';
 import { PUBLIC_DNS_RESOLVERS } from '@/constants/AppConstants';
+import { validateExtClientNameField } from '@/utils/Utils';
 
 interface AddClientModalProps {
   isOpen: boolean;
@@ -323,7 +324,7 @@ export default function AddClientModal({
           <Form.Item
             label="Client ID (Optional)"
             name="clientid"
-            rules={[{ min: 5, max: 32 }]}
+            rules={validateExtClientNameField}
             data-nmui-intercom="add-client-form_clientid"
           >
             <Input placeholder="Unique name of client" />
