@@ -52,6 +52,7 @@ export default function AddIngressModal({ isOpen, onCreateIngress, onCancel, net
   const [isSelectOpen, setIsSelectOpen] = useState(false);
   const [selectedNode, setSelectedNode] = useState<ExtendedNode | null>(null);
   const [gatewaySearch, setGatewaySearch] = useState('');
+  const isInternetGatewayVal = Form.useWatch('is_internet_gw', form);
 
   const networkHosts = useMemo<ExtendedNode[]>(() => {
     return store.nodes
@@ -259,7 +260,7 @@ export default function AddIngressModal({ isOpen, onCreateIngress, onCancel, net
               name="extclientdns"
               style={{ marginTop: '1rem' }}
               data-nmui-intercom="add-ingress-form_extclientdns"
-              rules={[{ required: true }]}
+              rules={[{ required: isInternetGatewayVal, message: 'This field is required for internet gateways' }]}
             >
               <AutoComplete
                 options={PUBLIC_DNS_RESOLVERS}
