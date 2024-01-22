@@ -65,6 +65,7 @@ export default function AddClientModal({
   const [gatewaySearch, setGatewaySearch] = useState('');
   const [selectedGateway, setSelectedGateway] = useState<ExtendedNode | null>(null);
   const [isAutoselectionComplete, setIsAutoselectionComplete] = useState(false);
+  const isInternetGatewayVal = Form.useWatch('is_internet_gw', form);
 
   const getNodeConnectivity = useCallback((node: Node) => {
     if (getNodeConnectivityStatus(node) === 'error') return <Badge status="error" text="Error" />;
@@ -285,7 +286,7 @@ export default function AddClientModal({
                 name="extclientdns"
                 label="Default Client DNS"
                 data-nmui-intercom="add-client-form_extclientdns"
-                rules={[{ required: true }]}
+                rules={[{ required: isInternetGatewayVal, message: 'This field is required for internet gateways' }]}
               >
                 <AutoComplete
                   options={PUBLIC_DNS_RESOLVERS}
