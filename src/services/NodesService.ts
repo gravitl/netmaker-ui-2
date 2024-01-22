@@ -14,35 +14,35 @@ function getNodes() {
 }
 
 function approveNode(nodeId: Node['id'], networkId: Network['netid']) {
-  return axiosService.post<void>(`${ApiRoutes.NODES}/${networkId}/${nodeId}/approve`);
+  return axiosService.post<void>(`${ApiRoutes.NODES}/${encodeURIComponent(networkId)}/${encodeURIComponent(nodeId)}/approve`);
 }
 
 function createEgressNode(nodeId: Node['id'], networkId: Network['netid'], payload: CreateEgressNodeDto) {
-  return axiosService.post<Node>(`${ApiRoutes.NODES}/${networkId}/${nodeId}/creategateway`, payload);
+  return axiosService.post<Node>(`${ApiRoutes.NODES}/${encodeURIComponent(networkId)}/${encodeURIComponent(nodeId)}/creategateway`, payload);
 }
 
 function createExternalClient(nodeId: Node['id'], networkId: Network['netid'], payload?: CreateExternalClientReqDto) {
-  return axiosService.post<void>(`${ApiRoutes.EXTERNAL_CLIENTS}/${networkId}/${nodeId}`, payload);
+  return axiosService.post<void>(`${ApiRoutes.EXTERNAL_CLIENTS}/${encodeURIComponent(networkId)}/${encodeURIComponent(nodeId)}`, payload);
 }
 
 function createIngressNode(nodeId: Node['id'], networkId: Network['netid'], payload: CreateIngressNodeDto) {
-  return axiosService.post<void>(`${ApiRoutes.NODES}/${networkId}/${nodeId}/createingress`, payload);
+  return axiosService.post<void>(`${ApiRoutes.NODES}/${encodeURIComponent(networkId)}/${encodeURIComponent(nodeId)}/createingress`, payload);
 }
 
 function deleteEgressNode(nodeId: Node['id'], networkId: Network['netid']) {
-  return axiosService.delete<Node>(`${ApiRoutes.NODES}/${networkId}/${nodeId}/deletegateway`);
+  return axiosService.delete<Node>(`${ApiRoutes.NODES}/${encodeURIComponent(networkId)}/${encodeURIComponent(nodeId)}/deletegateway`);
 }
 
 function deleteExternalClient(extClientId: ExternalClient['clientid'], networkId: Network['netid']) {
-  return axiosService.delete<void>(`${ApiRoutes.EXTERNAL_CLIENTS}/${networkId}/${extClientId}`);
+  return axiosService.delete<void>(`${ApiRoutes.EXTERNAL_CLIENTS}/${encodeURIComponent(networkId)}/${encodeURIComponent(extClientId)}`);
 }
 
 function deleteIngressNode(nodeId: Node['id'], networkId: Network['netid']) {
-  return axiosService.delete<Node>(`${ApiRoutes.NODES}/${networkId}/${nodeId}/deleteingress`);
+  return axiosService.delete<Node>(`${ApiRoutes.NODES}/${encodeURIComponent(networkId)}/${encodeURIComponent(nodeId)}/deleteingress`);
 }
 
 function deleteNode(nodeId: Node['id'], networkId: Network['netid'], forceDelete = false) {
-  return axiosService.delete<Node>(`${ApiRoutes.NODES}/${networkId}/${nodeId}?force=${forceDelete}`);
+  return axiosService.delete<Node>(`${ApiRoutes.NODES}/${encodeURIComponent(networkId)}/${encodeURIComponent(nodeId)}?force=${forceDelete}`);
 }
 
 function getExternalClientConfig(
@@ -50,7 +50,7 @@ function getExternalClientConfig(
   networkId: Network['netid'],
   type: 'qr' | 'file',
 ) {
-  return axiosService.get<string | ArrayBuffer>(`${ApiRoutes.EXTERNAL_CLIENTS}/${networkId}/${extClientId}/${type}`, {
+  return axiosService.get<string | ArrayBuffer>(`${ApiRoutes.EXTERNAL_CLIENTS}/${encodeURIComponent(networkId)}/${encodeURIComponent(extClientId)}/${encodeURIComponent(type)}`, {
     responseType: type === 'qr' ? 'arraybuffer' : undefined,
   });
 }
@@ -60,7 +60,7 @@ function getAllExternalClients() {
 }
 
 function getNetworkExternalClients(network: Network['netid']) {
-  return axiosService.get<ExternalClient[]>(`${ApiRoutes.EXTERNAL_CLIENTS}/${network}`);
+  return axiosService.get<ExternalClient[]>(`${ApiRoutes.EXTERNAL_CLIENTS}/${encodeURIComponent(network)}`);
 }
 
 function updateExternalClient(
@@ -68,27 +68,27 @@ function updateExternalClient(
   networkId: Network['netid'],
   payload: UpdateExternalClientDto,
 ) {
-  return axiosService.put<ExternalClient>(`${ApiRoutes.EXTERNAL_CLIENTS}/${networkId}/${extClientId}`, payload);
+  return axiosService.put<ExternalClient>(`${ApiRoutes.EXTERNAL_CLIENTS}/${encodeURIComponent(networkId)}/${encodeURIComponent(extClientId)}`, payload);
 }
 
 function updateNode(nodeId: ExternalClient['clientid'], networkId: Network['netid'], payload: Node) {
-  return axiosService.put<Node>(`${ApiRoutes.NODES}/${networkId}/${nodeId}`, payload);
+  return axiosService.put<Node>(`${ApiRoutes.NODES}/${encodeURIComponent(networkId)}/${encodeURIComponent(nodeId)}`, payload);
 }
 
 function createRelay(nodeId: Node['id'], networkId: Network['netid'], payload: CreateNodeRelayDto) {
-  return axiosService.post<Node>(`${ApiRoutes.NODES}/${networkId}/${nodeId}/createrelay`, payload);
+  return axiosService.post<Node>(`${ApiRoutes.NODES}/${encodeURIComponent(networkId)}/${encodeURIComponent(nodeId)}/createrelay`, payload);
 }
 
 function deleteRelay(nodeId: Node['id'], networkId: Network['netid']) {
-  return axiosService.delete<Node>(`${ApiRoutes.NODES}/${networkId}/${nodeId}/deleterelay`);
+  return axiosService.delete<Node>(`${ApiRoutes.NODES}/${encodeURIComponent(networkId)}/${encodeURIComponent(nodeId)}/deleterelay`);
 }
 
 function setNodeAsFailover(nodeId: Node['id']) {
-  return axiosService.post<Node>(`${ApiRoutes.NODE}/${nodeId}/failover`);
+  return axiosService.post<Node>(`${ApiRoutes.NODE}/${encodeURIComponent(nodeId)}/failover`);
 }
 
 function removeNodeFailoverStatus(nodeId: Node['id']) {
-  return axiosService.delete<Node>(`${ApiRoutes.NODE}/${nodeId}/failover`);
+  return axiosService.delete<Node>(`${ApiRoutes.NODE}/${encodeURIComponent(nodeId)}/failover`);
 }
 
 export const NodesService = {
