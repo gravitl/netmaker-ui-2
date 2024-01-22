@@ -15,6 +15,7 @@ import {
   notification,
   Row,
   Skeleton,
+  Space,
   Switch,
   Table,
   TableColumnsType,
@@ -23,7 +24,7 @@ import {
   Tag,
   Typography,
 } from 'antd';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { PageProps } from '../../models/Page';
@@ -34,6 +35,8 @@ import { HostsService } from '@/services/HostsService';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import NewHostModal from '@/components/modals/new-host-modal/NewHostModal';
 import { lt } from 'semver';
+import { ExtendedNode } from '@/models/Node';
+import { HOST_HEALTH_STATUS } from '@/models/NodeConnectivityStatus';
 
 export default function HostsPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
@@ -251,7 +254,32 @@ export default function HostsPage(props: PageProps) {
         },
       });
     },
-    [notify, store.nodes],
+    [notify, store.serverConfig?.Version],
+  );
+
+  const filterByHostHealthStatus = useCallback(
+    (value: React.Key | boolean, record: Host): boolean => {
+      // return false if value is boolean or undefined or number
+      if (typeof value === 'boolean' || value === undefined || typeof value === 'number') {
+        return false;
+      }
+
+      const node = store.nodes.find((n) => n.hostid === record.id);
+
+      // return true if node is undefined and value is unknown
+      if (!node && value === HOST_HEALTH_STATUS.unknown) {
+        return true;
+      }
+
+      // return false if node is undefined and value is not unknown
+      if (!node) {
+        return false;
+      }
+
+      const nodeHealth = getNodeConnectivityStatus(node as ExtendedNode);
+      return nodeHealth === value;
+    },
+    [store.nodes],
   );
 
   const hostsTableColumns: TableColumnsType<Host> = useMemo(
@@ -316,6 +344,25 @@ export default function HostsPage(props: PageProps) {
       // },
       {
         title: 'Health Status',
+        filters: [
+          {
+            text: 'Healthy',
+            value: HOST_HEALTH_STATUS.healthy,
+          },
+          {
+            text: 'Warning',
+            value: HOST_HEALTH_STATUS.warning,
+          },
+          {
+            text: 'Error',
+            value: HOST_HEALTH_STATUS.error,
+          },
+          {
+            text: 'Unknown',
+            value: HOST_HEALTH_STATUS.unknown,
+          },
+        ],
+        onFilter: (value: React.Key | boolean, record: any) => filterByHostHealthStatus(value, record),
         render(_, host) {
           const nodeHealths = store.nodes
             .filter((n) => n.hostid === host.id)
@@ -421,13 +468,23 @@ export default function HostsPage(props: PageProps) {
                 ] as MenuProps['items'],
               }}
             >
-              <Button type="text" icon={<MoreOutlined />} />
+              <Button type="text" icon={<MoreOutlined />} onClick={(ev) => ev.stopPropagation()} />
             </Dropdown>
           );
         },
       },
     ],
-    [confirmToggleHostDefaultness, confirmDeleteHost, onEditHost, refreshHostKeys, store.nodes],
+    [
+      filterByHostHealthStatus,
+      store.nodes,
+      requestHostPull,
+      checkIfUpgradeButtonShouldBeDisabled,
+      confirmToggleHostDefaultness,
+      refreshHostKeys,
+      onEditHost,
+      confirmUpgradeClient,
+      confirmDeleteHost,
+    ],
   );
 
   const namHostsTableCols: TableColumnsType<Host> = useMemo(
@@ -504,13 +561,44 @@ export default function HostsPage(props: PageProps) {
         },
         defaultSortOrder: 'ascend',
       },
+      selectedHost
+        ? {
+            title: 'Host Network IP',
+            dataIndex: 'addressrange',
+            key: 'hostnetworkip',
+            render: (_: any, network: Network) => {
+              const node = store.nodes.find(
+                (node) => node.network === network.netid && node.hostid === selectedHost.id,
+              );
+              return node ? (
+                <div onClick={(ev) => ev.stopPropagation()}>
+                  <Space direction="vertical" size={0}>
+                    {node.address && <Typography.Text>{node.address?.split('/')[0] ?? ''}</Typography.Text>}
+                    {node.address6 && <Typography.Text>{node.address6?.split('/')[0] ?? ''}</Typography.Text>}
+                  </Space>
+                </div>
+              ) : (
+                <div onClick={(ev) => ev.stopPropagation()}>
+                  <Space direction="vertical" size={0}>
+                    <Typography.Text type="secondary">Not connected</Typography.Text>
+                  </Space>
+                </div>
+              );
+            },
+          }
+        : {},
       {
-        title: 'Address Range (IPv4)',
+        title: 'Address Range',
         dataIndex: 'addressrange',
-      },
-      {
-        title: 'Address Range (IPv6)',
-        dataIndex: 'addressrange6',
+        key: 'addressrange',
+        render: (adress: string, network: Network) => (
+          <div onClick={(ev) => ev.stopPropagation()}>
+            <Space direction="vertical" size={0}>
+              {network.addressrange && <Typography.Text>{network.addressrange}</Typography.Text>}
+              {network.addressrange6 && <Typography.Text>{network.addressrange6}</Typography.Text>}
+            </Space>
+          </div>
+        ),
       },
       selectedHost
         ? {
@@ -570,6 +658,7 @@ export default function HostsPage(props: PageProps) {
               columns={hostsTableColumns}
               dataSource={filteredHosts}
               rowKey="id"
+              scroll={{ x: true }}
               onRow={(host) => ({
                 onClick: () => {
                   navigate(getHostRoute(host));
@@ -587,7 +676,7 @@ export default function HostsPage(props: PageProps) {
       <Skeleton loading={!hasLoaded && store.isFetchingHosts} active title={true} className="page-padding">
         <>
           <Row className="" justify="space-between">
-            <Col xs={12}>
+            <Col xs={24} md={12}>
               <Row style={{ width: '100%' }}>
                 <Col xs={24}>
                   <Typography.Title style={{ marginTop: '0px' }} level={5}>
@@ -602,6 +691,7 @@ export default function HostsPage(props: PageProps) {
                     dataSource={filteredHosts}
                     rowKey="id"
                     size="small"
+                    scroll={{ x: true }}
                     rowClassName={(host) => {
                       return host.id === selectedHost?.id ? 'selected-row' : '';
                     }}
@@ -617,7 +707,7 @@ export default function HostsPage(props: PageProps) {
                 </Col>
               </Row>
             </Col>
-            <Col xs={12}>
+            <Col xs={24} md={12}>
               <Row style={{ width: '100%' }}>
                 <Col xs={12}>
                   <Typography.Title style={{ marginTop: '0px' }} level={5}>
@@ -627,7 +717,13 @@ export default function HostsPage(props: PageProps) {
               </Row>
               <Row style={{ marginTop: '1rem' }}>
                 <Col xs={24}>
-                  <Table columns={networksTableCols} dataSource={filteredNetworks} rowKey="netid" size="small" />
+                  <Table
+                    columns={networksTableCols}
+                    dataSource={filteredNetworks}
+                    scroll={{ x: true }}
+                    rowKey="netid"
+                    size="small"
+                  />
                 </Col>
               </Row>
             </Col>
@@ -661,10 +757,14 @@ export default function HostsPage(props: PageProps) {
     [getOverviewContent, getNetworkAccessContent],
   );
 
-  useEffect(() => {
-    storeFetchHosts();
-    storeFetchNetworks();
+  const fetchHostsAndNetworks = async () => {
+    await storeFetchHosts();
+    await storeFetchNetworks();
     setHasLoaded(true);
+  };
+
+  useEffect(() => {
+    fetchHostsAndNetworks();
   }, [storeFetchHosts, storeFetchNetworks]);
 
   useEffect(() => {
@@ -699,7 +799,7 @@ export default function HostsPage(props: PageProps) {
                 background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
               }}
             >
-              <Col xs={(24 * 2) / 3}>
+              <Col xs={24} xl={(24 * 2) / 3}>
                 <Typography.Title level={3} style={{ color: 'white ' }}>
                   Hosts
                 </Typography.Title>
@@ -709,7 +809,7 @@ export default function HostsPage(props: PageProps) {
                   networks to give them secure access to other hosts and resources.
                 </Typography.Text>
               </Col>
-              <Col xs={(24 * 1) / 3} style={{ position: 'relative' }}>
+              <Col xs={24} xl={(24 * 1) / 3} style={{ position: 'relative' }}>
                 <Card className="header-card" style={{ height: '20rem', position: 'absolute', width: '100%' }}>
                   <Typography.Title level={3}>Add a Key</Typography.Title>
                   <Typography.Text>
@@ -727,12 +827,16 @@ export default function HostsPage(props: PageProps) {
               </Col>
             </Row>
 
-            <Row style={{ marginTop: '8rem', marginBottom: '4rem', padding: '0px 5.125rem' }} gutter={[0, 20]}>
+            <Row
+              className="card-con"
+              style={{ marginTop: '8rem', marginBottom: '4rem', padding: '0px 5.125rem' }}
+              gutter={[0, 20]}
+            >
               <Col xs={24}>
                 <Typography.Title level={3}>Connect a Host</Typography.Title>
               </Col>
 
-              <Col xs={7} style={{ marginRight: '1rem' }}>
+              <Col xs={24} xl={7} style={{ marginRight: '1rem' }}>
                 <Card>
                   <Typography.Title level={4} style={{ marginTop: '0px' }}>
                     Connect via Enrollment Keys
@@ -744,7 +848,7 @@ export default function HostsPage(props: PageProps) {
                   </Typography.Text>
                 </Card>
               </Col>
-              <Col xs={7} style={{ marginRight: '1rem' }}>
+              <Col xs={24} xl={7} style={{ marginRight: '1rem' }}>
                 <Card>
                   <Typography.Title level={4} style={{ marginTop: '0px' }}>
                     Connect via user auth
@@ -755,7 +859,7 @@ export default function HostsPage(props: PageProps) {
                   </Typography.Text>
                 </Card>
               </Col>
-              <Col xs={7}>
+              <Col xs={24} xl={7}>
                 <Card>
                   <Typography.Title level={4} style={{ marginTop: '0px' }}>
                     Add host directly
@@ -779,7 +883,7 @@ export default function HostsPage(props: PageProps) {
             </Row>
 
             <Row className="page-row-padding" justify="space-between">
-              <Col xs={12} md={8}>
+              <Col xs={24} md={8}>
                 <Input
                   size="large"
                   placeholder="Search hosts"
@@ -788,7 +892,17 @@ export default function HostsPage(props: PageProps) {
                   prefix={<SearchOutlined />}
                 />
               </Col>
-              <Col xs={12} md={6} style={{ textAlign: 'right' }}>
+              <Col xs={24} md={14} className="hosts-table-button" style={{ textAlign: 'right' }}>
+                <Button
+                  size="large"
+                  style={{ marginRight: '1rem' }}
+                  onClick={() => {
+                    setHasLoaded(false);
+                    fetchHostsAndNetworks();
+                  }}
+                >
+                  <ReloadOutlined /> Reload
+                </Button>
                 <Button
                   size="large"
                   style={{ marginRight: '1rem' }}

@@ -39,10 +39,10 @@ export default function DashboardPage(props: PageProps) {
 
   return (
     <Layout.Content style={{ padding: props.isFullScreen ? 0 : 24 }}>
-      <Row>
+      <Row className="dashboard-page-row">
         <Layout.Header style={{ width: '100%', padding: '0px', backgroundColor: 'transparent' }}>
           <Row>
-            <Col xs={12}>
+            <Col xs={24} lg={9} xl={12}>
               {showUpgradeAlert && (
                 <Alert
                   message="You are on the free plan"
@@ -65,8 +65,8 @@ export default function DashboardPage(props: PageProps) {
               )}
             </Col>
             {/* <Col xs={6}></Col> */}
-            <Col xs={12} style={{ textAlign: 'right' }}>
-              <Space direction="horizontal" size="large" align="end">
+            <Col xs={24} lg={15} xl={12} style={{ textAlign: 'right' }}>
+              <Space direction="horizontal" size="large" align="end" wrap className="dashboard-page-row-space">
                 <Input
                   placeholder="Search..."
                   prefix={<SearchOutlined />}
@@ -118,7 +118,7 @@ export default function DashboardPage(props: PageProps) {
           </Row>
         </Layout.Header>
       </Row>
-      <Row>
+      <Row className="dashboard-page-row-2">
         <Col>
           <Space direction="vertical" size="middle">
             <Card>

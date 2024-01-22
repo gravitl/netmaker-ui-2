@@ -12,6 +12,9 @@ import {
   generateCIDR,
   generateCIDR6,
   generateNetworkName,
+  isPrivateIpCidr,
+  isValidIpv4Cidr,
+  isValidIpv6Cidr,
 } from '@/utils/NetworkUtils';
 import { convertUiNetworkToNetworkPayload } from '@/utils/NetworkUtils';
 
@@ -123,6 +126,21 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
                       name="addressrange"
                       style={{ marginBottom: '0px' }}
                       data-nmui-intercom="add-network-form_addressrange"
+                      rules={[
+                        {
+                          validator: (_: any, ipv4: string) => {
+                            if (isValidIpv4Cidr(ipv4)) {
+                              if (isPrivateIpCidr(ipv4)) {
+                                return Promise.resolve();
+                              } else {
+                                return Promise.reject('Address range must be a valid private IPv4 CIDR');
+                              }
+                            } else {
+                              return Promise.reject('Address range must be a valid IPv4 CIDR');
+                            }
+                          },
+                        },
+                      ]}
                     >
                       <Input placeholder="Enter address CIDR (eg: 192.168.1.0/24)" />
                     </Form.Item>
@@ -153,11 +171,27 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
               {isIpv6Val && (
                 <Row>
                   <Col xs={24}>
-                    <Form.Item name="addressrange6" style={{ marginBottom: '0px' }}>
-                      <Input
-                        placeholder="Enter address CIDR (eg: 2002::1234:abcd:ffff:c0a8:101/64)"
-                        data-nmui-intercom="add-network-form_addressrange6"
-                      />
+                    <Form.Item
+                      name="addressrange6"
+                      data-nmui-intercom="add-network-form_addressrange6"
+                      style={{ marginBottom: '0px' }}
+                      rules={[
+                        {
+                          validator: (_: any, ipv6: string) => {
+                            if (isValidIpv6Cidr(ipv6)) {
+                              if (isPrivateIpCidr(ipv6)) {
+                                return Promise.resolve();
+                              } else {
+                                return Promise.reject('Address range must be a valid private IPv6 CIDR');
+                              }
+                            } else {
+                              return Promise.reject('Address range must be a valid IPv6 CIDR');
+                            }
+                          },
+                        },
+                      ]}
+                    >
+                      <Input placeholder="Enter address CIDR (eg: 2002::1234:abcd:ffff:c0a8:101/64)" />
                     </Form.Item>
                   </Col>
                 </Row>

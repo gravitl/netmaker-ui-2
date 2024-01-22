@@ -1,6 +1,6 @@
 import { Network } from '@/models/Network';
 import { AppRoutes } from '@/routes';
-import { PlusOutlined, SearchOutlined } from '@ant-design/icons';
+import { PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
 import { Button, Card, Col, Input, Layout, Row, Skeleton, Table, TableColumnsType, Typography } from 'antd';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -112,7 +112,7 @@ export default function NetworksPage(props: PageProps) {
                 background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
               }}
             >
-              <Col xs={(24 * 2) / 3}>
+              <Col xs={24} xl={(24 * 2) / 3}>
                 <Typography.Title level={3} style={{ color: 'white ' }}>
                   Networks
                 </Typography.Title>
@@ -123,7 +123,7 @@ export default function NetworksPage(props: PageProps) {
                   networks and manage multiple secure domains for your devices!
                 </Typography.Text>
               </Col>
-              <Col xs={(24 * 1) / 3} style={{ position: 'relative' }}>
+              <Col xs={24} xl={(24 * 1) / 3} style={{ position: 'relative' }}>
                 <Card className="header-card" style={{ height: '20rem', position: 'absolute', width: '100%' }}>
                   <Typography.Title level={3}>Add a Network</Typography.Title>
                   <Typography.Text>
@@ -140,12 +140,12 @@ export default function NetworksPage(props: PageProps) {
               </Col>
             </Row>
 
-            <Row style={{ marginTop: '8rem', marginBottom: '4rem', padding: '0px 5.125rem' }} gutter={[0, 20]}>
+            <Row className="card-con" gutter={[0, 20]}>
               <Col xs={24}>
                 <Typography.Title level={3}>Add a Network</Typography.Title>
               </Col>
 
-              <Col xs={7} style={{ marginRight: '1rem' }}>
+              <Col xs={24} xl={7} style={{ marginRight: '1rem' }}>
                 <Card>
                   <Typography.Title level={4} style={{ marginTop: '0px' }}>
                     Define a subnet
@@ -165,7 +165,7 @@ export default function NetworksPage(props: PageProps) {
                   </Typography.Text>
                 </Card>
               </Col>
-              <Col xs={7} style={{ marginRight: '1rem' }}>
+              <Col xs={24} xl={7} style={{ marginRight: '1rem' }}>
                 <Card>
                   <Typography.Title level={4} style={{ marginTop: '0px' }}>
                     Define a default ACL policy
@@ -178,7 +178,7 @@ export default function NetworksPage(props: PageProps) {
                   </Typography.Text>
                 </Card>
               </Col>
-              <Col xs={7}>
+              <Col xs={24} xl={7}>
                 <Card>
                   <Typography.Title level={4} style={{ marginTop: '0px' }}>
                     After Creation
@@ -212,7 +212,7 @@ export default function NetworksPage(props: PageProps) {
             </Row>
 
             <Row className="page-row-padding" justify="space-between">
-              <Col xs={12} md={8}>
+              <Col xs={24} md={8}>
                 <Input
                   size="large"
                   placeholder="Search networks"
@@ -221,7 +221,10 @@ export default function NetworksPage(props: PageProps) {
                   prefix={<SearchOutlined />}
                 />
               </Col>
-              <Col xs={12} md={6} style={{ textAlign: 'right' }}>
+              <Col xs={24} md={16} style={{ textAlign: 'right' }} className="networks-table-button">
+                <Button size="large" style={{ marginRight: '0.5em' }} onClick={() => loadNetworks()}>
+                  <ReloadOutlined /> Reload Networks
+                </Button>
                 <Button type="primary" size="large" onClick={() => setIsAddNetworkModalOpen(true)}>
                   <PlusOutlined /> Create Network
                 </Button>
@@ -234,6 +237,7 @@ export default function NetworksPage(props: PageProps) {
                   columns={tableColumns}
                   dataSource={filteredNetworks}
                   rowKey="netid"
+                  scroll={{ x: true }}
                   onRow={(network) => {
                     return {
                       onClick: () => {

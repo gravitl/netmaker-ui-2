@@ -34,6 +34,12 @@ const testNode: Node = {
   relayedby: '',
   relaynodes: [],
   autoupdate: false,
+  isrelay: false,
+  isrelayed: false,
+  isinternetgateway: false,
+  is_fail_over: false,
+  failed_over_by: '',
+  fail_over_peers: [],
 };
 
 const hostRegistry: Record<Host['id'], HostCommonDetails> = {

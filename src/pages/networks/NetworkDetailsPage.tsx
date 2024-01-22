@@ -15,17 +15,20 @@ import { HostsService } from '@/services/HostsService';
 import { NetworksService } from '@/services/NetworksService';
 import { NodesService } from '@/services/NodesService';
 import { useStore } from '@/store/store';
-import { getExtendedNode, isNodeRelay } from '@/utils/NodeUtils';
+import { getExtendedNode, getNodeConnectivityStatus, isNodeRelay } from '@/utils/NodeUtils';
 import { getNetworkHostRoute, resolveAppRoute } from '@/utils/RouteUtils';
-import { extractErrorMsg } from '@/utils/ServiceUtils';
+import { download, extractErrorMsg } from '@/utils/ServiceUtils';
 import {
   CheckOutlined,
   DashOutlined,
   DeleteOutlined,
   DownOutlined,
+  DownloadOutlined,
   EditOutlined,
   // DownloadOutlined,
   ExclamationCircleFilled,
+  EyeOutlined,
+  GlobalOutlined,
   LoadingOutlined,
   MoreOutlined,
   PlusOutlined,
@@ -53,6 +56,7 @@ import {
   Row,
   Select,
   Skeleton,
+  Space,
   Switch,
   Table,
   TableColumnProps,
@@ -84,6 +88,9 @@ import UpdateNodeModal from '@/components/modals/update-node-modal/UpdateNodeMod
 import VirtualisedTable from '@/components/VirtualisedTable';
 import { NETWORK_GRAPH_SIGMA_CONTAINER_ID } from '@/constants/AppConstants';
 import UpdateIngressUsersModal from '@/components/modals/update-ingress-users-modal/UpdateIngressUsersModal';
+import getNodeImageProgram from 'sigma/rendering/webgl/programs/node.image';
+import { HOST_HEALTH_STATUS } from '@/models/NodeConnectivityStatus';
+import ClientConfigModal from '@/components/modals/client-config-modal/ClientConfigModal';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -146,6 +153,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [isAddClientModalOpen, setIsAddClientModalOpen] = useState(false);
   const [clients, setClients] = useState<ExternalClient[]>([]);
   const [isClientDetailsModalOpen, setIsClientDetailsModalOpen] = useState(false);
+  const [isClientConfigModalOpen, setIsClientConfigModalOpen] = useState(false);
   const [targetClient, setTargetClient] = useState<ExternalClient | null>(null);
   const [selectedGateway, setSelectedGateway] = useState<Node | null>(null);
   const [searchClientGateways, setSearchClientGateways] = useState('');
@@ -176,6 +184,8 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [targetNode, setTargetNode] = useState<Node | null>(null);
   const [showClientAcls, setShowClientAcls] = useState(false);
   const [isSubmittingAcls, setIsSubmittingAcls] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [isRefreshingNetwork, setIsRefreshingNetwork] = useState(false);
 
   const networkNodes = useMemo(
     () =>
@@ -192,11 +202,12 @@ export default function NetworkDetailsPage(props: PageProps) {
       .map((node) => getExtendedNode(node, store.hostsCommonDetails));
   }, [networkNodes, store.hostsCommonDetails]);
 
-  const filteredClientGateways = useMemo<ExtendedNode[]>(
-    () =>
-      clientGateways.filter((node) => node.name?.toLowerCase().includes(searchClientGateways.toLowerCase()) ?? false),
-    [clientGateways, searchClientGateways],
-  );
+  const filteredClientGateways = useMemo<ExtendedNode[]>(() => {
+    const filteredGateways = clientGateways.filter(
+      (node) => node.name?.toLowerCase().includes(searchClientGateways.toLowerCase()) ?? false,
+    );
+    return filteredGateways;
+  }, [clientGateways, searchClientGateways]);
 
   const filteredClients = useMemo<ExternalClient[]>(
     () =>
@@ -502,12 +513,13 @@ export default function NetworkDetailsPage(props: PageProps) {
     (gateway: Node) => {
       Modal.confirm({
         title: `Delete gateway ${getExtendedNode(gateway, store.hostsCommonDetails).name}`,
-        content: `Are you sure you want to delete this gateway?`,
+        content: `Are you sure you want to delete this gateway? Any attached clients and remote users will be disconnected.`,
         onOk: async () => {
           try {
             await NodesService.deleteIngressNode(gateway.id, gateway.network);
             storeFetchNodes();
             loadClients();
+            notify.success({ message: 'Gateway deleted' });
           } catch (err) {
             if (err instanceof AxiosError) {
               notify.error({
@@ -531,6 +543,8 @@ export default function NetworkDetailsPage(props: PageProps) {
           try {
             await NodesService.deleteEgressNode(egress.id, egress.network);
             storeFetchNodes();
+            setFilteredEgress(null);
+            notify.success({ message: 'Egress deleted' });
           } catch (err) {
             if (err instanceof AxiosError) {
               notify.error({
@@ -553,17 +567,21 @@ export default function NetworkDetailsPage(props: PageProps) {
         onOk: async () => {
           try {
             if (!networkId) return;
+            let egressNode: Node;
             const newRanges = new Set(range.node.egressgatewayranges);
             const natEnabled = range.node.egressgatewaynatenabled;
             newRanges.delete(range.range);
-            await NodesService.deleteEgressNode(range.node.id, networkId);
+            egressNode = (await NodesService.deleteEgressNode(range.node.id, networkId)).data;
             if (newRanges.size > 0) {
-              await NodesService.createEgressNode(range.node.id, networkId, {
-                ranges: [...newRanges],
-                natEnabled: natEnabled ? 'yes' : 'no',
-              });
+              egressNode = (
+                await NodesService.createEgressNode(range.node.id, networkId, {
+                  ranges: [...newRanges],
+                  natEnabled: natEnabled ? 'yes' : 'no',
+                })
+              ).data;
             }
             store.fetchNodes();
+            setFilteredEgress(egressNode);
           } catch (err) {
             if (err instanceof AxiosError) {
               notify.error({
@@ -657,33 +675,85 @@ export default function NetworkDetailsPage(props: PageProps) {
     [networkId, notify, storeFetchNodes],
   );
 
+  const confirmNodeFailoverStatusChange = useCallback(
+    (node: ExtendedNode, makeFailover: boolean) => {
+      let title = `Mark ${node.name} as a failover node`;
+      let content = `Are you sure you want to make this node a failover node?`;
+
+      if (!makeFailover) {
+        title = `Remove ${node.name} failover status`;
+        content = `Are you certain about removing the failover status from this node?`;
+      }
+
+      Modal.confirm({
+        title: title,
+        content: content,
+        okText: 'Yes',
+        cancelText: 'No',
+        onOk: async () => {
+          try {
+            if (makeFailover) {
+              await NodesService.setNodeAsFailover(node.id);
+            } else {
+              await NodesService.removeNodeFailoverStatus(node.id);
+            }
+            notify.success({ message: 'Node failover status updated' });
+            storeFetchNodes();
+          } catch (err) {
+            notify.error({
+              message: 'Error updating node failover status',
+              description: extractErrorMsg(err as any),
+            });
+          }
+        },
+      });
+    },
+    [storeFetchNodes, notify],
+  );
+
+  const downloadClientData = useCallback(
+    async (client: ExternalClient) => {
+      try {
+        notify.info({ message: 'Downloading...' });
+        const qrData = (await NodesService.getExternalClientConfig(client.clientid, client.network, 'file'))
+          .data as string;
+        download(`${client.clientid}.conf`, qrData);
+      } catch (err) {
+        notify.error({
+          message: 'Failed to download client config',
+          description: extractErrorMsg(err as any),
+        });
+      }
+    },
+    [notify],
+  );
+
   const getGatewayDropdownOptions = useCallback(
     (gateway: Node) => {
       const defaultOptions: MenuProps['items'] = [
         {
           key: 'edit',
           label: (
-            <Typography.Text
-              onClick={() => {
-                setSelectedGateway(gateway);
-                setIsUpdateGatewayModalOpen(true);
-              }}
-            >
+            <Typography.Text>
               <EditOutlined /> Edit
             </Typography.Text>
           ),
           onClick: (info: any) => {
+            setSelectedGateway(gateway);
+            setIsUpdateGatewayModalOpen(true);
             info.domEvent.stopPropagation();
           },
         },
         {
           key: 'delete',
+          danger: true,
           label: (
-            <Typography.Text onClick={() => confirmDeleteGateway(gateway)}>
+            <>
               <DeleteOutlined /> Delete
-            </Typography.Text>
+            </>
           ),
           onClick: (info: any) => {
+            confirmDeleteGateway(gateway);
             info.domEvent.stopPropagation();
           },
         },
@@ -694,16 +764,13 @@ export default function NetworkDetailsPage(props: PageProps) {
           {
             key: 'addremove',
             label: (
-              <Typography.Text
-                onClick={() => {
-                  setSelectedGateway(gateway);
-                  setIsUpdateIngressUsersModalOpen(true);
-                }}
-              >
+              <Typography.Text>
                 <UserOutlined /> Add / Remove Users
               </Typography.Text>
             ),
             onClick: (info) => {
+              setSelectedGateway(gateway);
+              setIsUpdateIngressUsersModalOpen(true);
               info.domEvent.stopPropagation();
             },
           },
@@ -719,11 +786,22 @@ export default function NetworkDetailsPage(props: PageProps) {
   const gatewaysTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(
     () => [
       {
-        title: 'Host name',
+        title: 'Name',
         dataIndex: 'name',
         // width: 500,
-        render(name) {
-          return <Typography.Link>{name}</Typography.Link>;
+        render(name, node) {
+          return (
+            <>
+              <Typography.Link>{name}</Typography.Link>
+              {node.isinternetgateway && isServerEE && (
+                <GlobalOutlined
+                  title="This host serves as an internet gateway: all traffic of connected clients would be routed through this host just like a traditional VPN"
+                  style={{ color: branding.primaryColor }}
+                  className="internet-gw-icon"
+                />
+              )}
+            </>
+          );
         },
         sorter: (a, b) => a.name?.localeCompare(b.name ?? '') ?? 0,
         defaultSortOrder: 'ascend',
@@ -732,7 +810,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         title: 'Addresses',
         dataIndex: 'address',
         render(_, node) {
-          const addrs = `${node.address}, ${node.address6}`;
+          const addrs = `${node.address}${node.address6 ? `, ${node.address6}` : ''}`;
           return <Tooltip title={addrs}>{addrs}</Tooltip>;
         },
       },
@@ -759,7 +837,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       },
     ],
-    [getGatewayDropdownOptions],
+    [branding.primaryColor, getGatewayDropdownOptions, isServerEE],
   );
 
   const egressTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(
@@ -778,7 +856,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         title: 'Addresses',
         dataIndex: 'address',
         render(_, node) {
-          const addrs = `${node.address}, ${node.address6}`;
+          const addrs = `${node.address} ${node.address6 ? `, ${node.address6}` : ''}`;
           return <Tooltip title={addrs}>{addrs}</Tooltip>;
         },
       },
@@ -797,27 +875,26 @@ export default function NetworkDetailsPage(props: PageProps) {
                   {
                     key: 'update',
                     label: (
-                      <Typography.Text
-                        onClick={() => {
-                          setFilteredEgress(egress);
-                          setIsUpdateEgressModalOpen(true);
-                        }}
-                      >
+                      <Typography.Text>
                         <EditOutlined /> Update
                       </Typography.Text>
                     ),
                     onClick: (info) => {
+                      setFilteredEgress(egress);
+                      setIsUpdateEgressModalOpen(true);
                       info.domEvent.stopPropagation();
                     },
                   },
                   {
                     key: 'delete',
+                    danger: true,
                     label: (
-                      <Typography.Text onClick={() => confirmDeleteEgress(egress)}>
+                      <>
                         <DeleteOutlined /> Delete
-                      </Typography.Text>
+                      </>
                     ),
                     onClick: (info) => {
+                      confirmDeleteEgress(egress);
                       info.domEvent.stopPropagation();
                     },
                   },
@@ -855,11 +932,15 @@ export default function NetworkDetailsPage(props: PageProps) {
                 items: [
                   {
                     key: 'delete',
+                    danger: true,
                     label: (
-                      <Typography.Text onClick={() => confirmDeleteRange(range)}>
+                      <>
                         <DeleteOutlined /> Delete
-                      </Typography.Text>
+                      </>
                     ),
+                    onClick: () => {
+                      confirmDeleteRange(range);
+                    },
                   },
                 ] as MenuProps['items'],
               }}
@@ -875,7 +956,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const clientsTableCols = useMemo<TableColumnProps<ExternalClient>[]>(
     () => [
       {
-        title: 'Client ID',
+        title: 'ID',
         dataIndex: 'clientid',
         width: 500,
         render(value, client) {
@@ -883,7 +964,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       },
       {
-        title: 'Owner ID',
+        title: 'Owner',
         dataIndex: 'ownerid',
         width: 500,
         render(value) {
@@ -891,9 +972,9 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       },
       {
-        title: 'Allowed IPs',
+        title: 'Addresses',
         render(_, client) {
-          const addrs = `${client.address}, ${client.address6}`;
+          const addrs = `${client.address}${client.address6 ? `, ${client.address6}` : ''}`;
           return <Tooltip title={addrs}>{addrs}</Tooltip>;
         },
       },
@@ -941,23 +1022,49 @@ export default function NetworkDetailsPage(props: PageProps) {
                   {
                     key: 'edit',
                     label: (
-                      <Typography.Text
-                        onClick={() => {
-                          setTargetClient(client);
-                          setIsUpdateClientModalOpen(true);
-                        }}
-                      >
+                      <Typography.Text>
                         <EditOutlined /> Edit
                       </Typography.Text>
                     ),
+                    onClick: () => {
+                      setTargetClient(client);
+                      setIsUpdateClientModalOpen(true);
+                    },
+                  },
+                  {
+                    key: 'view',
+                    label: (
+                      <Typography.Text>
+                        <EyeOutlined /> View Config
+                      </Typography.Text>
+                    ),
+                    onClick: () => {
+                      setTargetClient(client);
+                      setIsClientConfigModalOpen(true);
+                    },
+                  },
+                  {
+                    key: 'download',
+                    label: (
+                      <Typography.Text>
+                        <DownloadOutlined /> Download
+                      </Typography.Text>
+                    ),
+                    onClick: () => {
+                      downloadClientData(client);
+                    },
                   },
                   {
                     key: 'delete',
+                    danger: true,
                     label: (
-                      <Typography.Text onClick={() => confirmDeleteClient(client)}>
+                      <>
                         <DeleteOutlined /> Delete
-                      </Typography.Text>
+                      </>
                     ),
+                    onClick: () => {
+                      confirmDeleteClient(client);
+                    },
                   },
                 ] as MenuProps['items'],
               }}
@@ -968,7 +1075,14 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       },
     ],
-    [confirmDeleteClient, networkNodes, openClientDetails, store.hostsCommonDetails, toggleClientStatus],
+    [
+      confirmDeleteClient,
+      downloadClientData,
+      networkNodes,
+      openClientDetails,
+      store.hostsCommonDetails,
+      toggleClientStatus,
+    ],
   );
 
   const relayTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(
@@ -983,7 +1097,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         title: 'Addresses',
         dataIndex: 'address',
         render(_, node) {
-          const addrs = `${node.address ?? ''}, ${node.address6 ?? ''}`;
+          const addrs = `${node.address ?? ''},${node.address6 ? `, ${node.address6}` : ''}`;
           return <Tooltip title={addrs}>{addrs}</Tooltip>;
         },
       },
@@ -998,27 +1112,26 @@ export default function NetworkDetailsPage(props: PageProps) {
                   {
                     key: 'update',
                     label: (
-                      <Typography.Text
-                        onClick={() => {
-                          setSelectedRelay(relay);
-                          setIsUpdateRelayModalOpen(true);
-                        }}
-                      >
+                      <Typography.Text>
                         <EditOutlined /> Update
                       </Typography.Text>
                     ),
                     onClick: (info) => {
+                      setSelectedRelay(relay);
+                      setIsUpdateRelayModalOpen(true);
                       info.domEvent.stopPropagation();
                     },
                   },
                   {
                     key: 'delete',
+                    danger: true,
                     label: (
-                      <Typography.Text onClick={() => confirmDeleteRelay(relay)}>
+                      <>
                         <DeleteOutlined /> Delete
-                      </Typography.Text>
+                      </>
                     ),
                     onClick: (info) => {
+                      confirmDeleteRelay(relay);
                       info.domEvent.stopPropagation();
                     },
                   },
@@ -1050,7 +1163,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         title: 'Addresses',
         dataIndex: 'address',
         render(_, node) {
-          const addrs = `${node.address ?? ''}, ${node.address6 ?? ''}`;
+          const addrs = `${node.address ?? ''}${node.address6 ? `, ${node.address6}` : ''}`;
           return <Tooltip title={addrs}>{addrs}</Tooltip>;
         },
       },
@@ -1065,18 +1178,15 @@ export default function NetworkDetailsPage(props: PageProps) {
                   {
                     key: 'delete',
                     label: (
-                      <Typography.Text
-                        onClick={() =>
-                          confirmRemoveRelayed(
-                            relayed,
-                            networkNodes.find((node) => node.id === relayed.relayedby) ?? NULL_NODE,
-                          )
-                        }
-                      >
+                      <Typography.Text>
                         <DeleteOutlined /> Stop being relayed
                       </Typography.Text>
                     ),
                     onClick: (info) => {
+                      confirmRemoveRelayed(
+                        relayed,
+                        networkNodes.find((node) => node.id === relayed.relayedby) ?? NULL_NODE,
+                      );
                       info.domEvent.stopPropagation();
                     },
                   },
@@ -1279,11 +1389,11 @@ export default function NetworkDetailsPage(props: PageProps) {
             aclType === 'node'
               ? aclTableDataMap.get(aclEntry.nodeOrClientId)?.acls?.[aclData?.nodeOrClientId] ?? 0
               : aclEntry.nodeOrClientId === aclData.nodeOrClientId // check disable toggling ones own self
-              ? 0
-              : getExtClientAclStatus(
-                  aclEntry.nodeOrClientId,
-                  aclTableDataMap.get(aclData.nodeOrClientId)?.clientAcls ?? {},
-                ),
+                ? 0
+                : getExtClientAclStatus(
+                    aclEntry.nodeOrClientId,
+                    aclTableDataMap.get(aclData.nodeOrClientId)?.clientAcls ?? {},
+                  ),
             // node or client IDs
             aclEntry.nodeOrClientId,
             aclData.nodeOrClientId,
@@ -1518,10 +1628,16 @@ export default function NetworkDetailsPage(props: PageProps) {
 
   const isDefaultDns = useCallback(
     (dns: DNS) => {
-      return networkNodes.some((node) => getExtendedNode(node, store.hostsCommonDetails).name === dns.name);
+      return networkNodes.some(
+        (node) => `${getExtendedNode(node, store.hostsCommonDetails).name}.${node.network}` === dns.name,
+      );
     },
     [networkNodes, store.hostsCommonDetails],
   );
+
+  const isFailoverNodePresentInNetwork = useMemo(() => {
+    return networkNodes.some((node) => node.is_fail_over);
+  }, [networkNodes]);
 
   const removeNodeFromNetwork = useCallback(
     (newStatus: boolean, node: ExtendedNode) => {
@@ -1633,12 +1749,27 @@ export default function NetworkDetailsPage(props: PageProps) {
     loadClients();
   }, [clientAcls, clients, isServerEE, loadClients, networkId]);
 
+  const filterByHostHealthStatus = (value: React.Key | boolean, record: Node): boolean => {
+    // return false if value is boolean or undefined or number
+    if (typeof value === 'boolean' || value === undefined || typeof value === 'number') {
+      return false;
+    }
+
+    // return true if node is undefined and value is unknown
+    if (!record && value === HOST_HEALTH_STATUS.unknown) {
+      return true;
+    }
+
+    const nodeHealth = getNodeConnectivityStatus(record as ExtendedNode);
+    return nodeHealth === value;
+  };
+
   // ui components
   const getOverviewContent = useCallback(() => {
     if (!network) return <Skeleton active />;
     return (
       <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-        <Card style={{ width: '50%' }}>
+        <Card className="overview-card">
           <Form
             name="network-details-form"
             form={form}
@@ -1774,7 +1905,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     return (
       <div className="network-hosts-tab-content" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
         <Row justify="space-between" style={{ marginBottom: '1rem', width: '100%' }}>
-          <Col xs={12} md={8}>
+          <Col xs={24} md={8}>
             <Input
               size="large"
               placeholder="Search hosts"
@@ -1783,13 +1914,18 @@ export default function NetworkDetailsPage(props: PageProps) {
               prefix={<SearchOutlined />}
             />
           </Col>
-          <Col xs={12} md={6} style={{ textAlign: 'right' }}>
-            <Dropdown.Button
-              type="primary"
-              style={{ justifyContent: 'end' }}
-              icon={<DownOutlined />}
+          <Col xs={24} md={6} className="add-host-dropdown-button">
+            <Dropdown
+              // icon={<DownOutlined />}
               menu={{
                 items: [
+                  {
+                    key: 'new-host',
+                    label: 'Add New Host',
+                    onClick() {
+                      setIsAddNewHostModalOpen(true);
+                    },
+                  },
                   {
                     key: 'existing-host',
                     label: 'Add Existing Host',
@@ -1799,14 +1935,19 @@ export default function NetworkDetailsPage(props: PageProps) {
                   },
                 ],
               }}
-              onClick={() => setIsAddNewHostModalOpen(true)}
             >
-              <PlusOutlined /> Add New Host
-            </Dropdown.Button>
+              <Button type="primary" style={{ width: '170px' }}>
+                <Space>
+                  Add Host
+                  <DownOutlined />
+                </Space>
+              </Button>
+            </Dropdown>
           </Col>
 
           <Col xs={24} style={{ paddingTop: '1rem' }}>
             <Table
+              scroll={{ x: true }}
               columns={[
                 {
                   title: 'Host Name',
@@ -1814,7 +1955,9 @@ export default function NetworkDetailsPage(props: PageProps) {
                     const hostName = getExtendedNode(node, store.hostsCommonDetails).name;
                     return (
                       <>
-                        <Link to={getNetworkHostRoute(node.hostid, node.network)}>{hostName}</Link>
+                        <Link to={getNetworkHostRoute(node.hostid, node.network)} title={node.id}>
+                          {hostName}
+                        </Link>
                         {node.pendingdelete && (
                           <Badge style={{ marginLeft: '1rem' }} status="processing" color="red" text="Removing..." />
                         )}
@@ -1859,7 +2002,54 @@ export default function NetworkDetailsPage(props: PageProps) {
                   render(_, node) {
                     return getHostHealth(node.hostid, [node]);
                   },
+                  filters: [
+                    {
+                      text: 'Healthy',
+                      value: HOST_HEALTH_STATUS.healthy,
+                    },
+                    {
+                      text: 'Warning',
+                      value: HOST_HEALTH_STATUS.warning,
+                    },
+                    {
+                      text: 'Error',
+                      value: HOST_HEALTH_STATUS.error,
+                    },
+                    {
+                      text: 'Unknown',
+                      value: HOST_HEALTH_STATUS.unknown,
+                    },
+                  ],
+                  onFilter: (value: React.Key | boolean, record: any) => filterByHostHealthStatus(value, record),
                 },
+                isServerEE
+                  ? {
+                      title: 'Failover Node',
+                      render: (_: any, node) => {
+                        return (
+                          <>
+                            <Tooltip
+                              title={
+                                node.pendingdelete !== false || (isFailoverNodePresentInNetwork && !node.is_fail_over)
+                                  ? 'Host is being disconnected from network or failover node is already present in the network'
+                                  : ''
+                              }
+                            >
+                              <Switch
+                                checked={node.is_fail_over}
+                                onChange={() => {
+                                  confirmNodeFailoverStatusChange(node, !node.is_fail_over);
+                                }}
+                                disabled={
+                                  node.pendingdelete !== false || (isFailoverNodePresentInNetwork && !node.is_fail_over)
+                                }
+                              />
+                            </Tooltip>
+                          </>
+                        );
+                      },
+                    }
+                  : {},
                 {
                   width: '1rem',
                   align: 'right',
@@ -1880,6 +2070,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                               label: node.connected ? 'Disconnect host' : 'Connect host',
                               disabled: node.pendingdelete !== false,
                               title: node.pendingdelete !== false ? 'Host is being disconnected from network' : '',
+
                               onClick: () =>
                                 disconnectNodeFromNetwork(
                                   !node.connected,
@@ -1913,8 +2104,11 @@ export default function NetworkDetailsPage(props: PageProps) {
   }, [
     searchHost,
     network?.isipv6,
+    isServerEE,
     networkNodes,
     store.hostsCommonDetails,
+    isFailoverNodePresentInNetwork,
+    confirmNodeFailoverStatusChange,
     editNode,
     disconnectNodeFromNetwork,
     removeNodeFromNetwork,
@@ -1924,7 +2118,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     return (
       <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
         <Row justify="space-between" style={{ marginBottom: '1rem', width: '100%' }}>
-          <Col xs={12} md={8}>
+          <Col xs={24} md={8}>
             <Input
               size="large"
               placeholder="Search DNS"
@@ -1933,14 +2127,20 @@ export default function NetworkDetailsPage(props: PageProps) {
               prefix={<SearchOutlined />}
             />
           </Col>
-          <Col xs={12} md={6} style={{ textAlign: 'right' }}>
-            <Button type="primary" size="large" onClick={() => setIsAddDnsModalOpen(true)}>
+          <Col xs={24} md={6} style={{ textAlign: 'right' }}>
+            <Button
+              type="primary"
+              size="large"
+              onClick={() => setIsAddDnsModalOpen(true)}
+              className="full-width-button-xs mt-10"
+            >
               <PlusOutlined /> Add DNS
             </Button>
           </Col>
 
           <Col xs={24} style={{ paddingTop: '1rem' }}>
             <Table
+              scroll={{ x: true }}
               columns={[
                 {
                   title: 'DNS Entry',
@@ -1970,14 +2170,11 @@ export default function NetworkDetailsPage(props: PageProps) {
                           {
                             key: 'delete',
                             disabled: isDefaultDns(dns),
+                            onClick: () => (isDefaultDns(dns) ? undefined : confirmDeleteDns(dns)),
+                            danger: true,
                             label: (
                               <Tooltip title={isDefaultDns(dns) ? 'Cannot delete default DNS' : 'Delete DNS'}>
-                                <Typography.Text
-                                  disabled={isDefaultDns(dns)}
-                                  onClick={() => (isDefaultDns(dns) ? undefined : confirmDeleteDns(dns))}
-                                >
-                                  <DeleteOutlined /> Delete
-                                </Typography.Text>
+                                <DeleteOutlined /> Delete
                               </Tooltip>
                             ),
                           },
@@ -2012,24 +2209,25 @@ export default function NetworkDetailsPage(props: PageProps) {
               width: '100%',
             }}
           >
-            <Col xs={(24 * 2) / 3}>
+            <Col xs={24} xl={(24 * 2) / 3}>
               <Typography.Title level={3} style={{ color: 'white ' }}>
-                Clients
+                Remote Access
               </Typography.Title>
               <Typography.Text style={{ color: 'white ' }}>
-                Client Gateways enable secure access to your network via Clients. The Gateway forwards traffic from the
-                clients into the network, and from the network back to the clients. Clients are simple WireGuard config
-                files, supported on most devices. To use Clients, you must configure a Client Gateway, which is
-                typically deployed in a public cloud environment, e.g. on a server with a public IP, so that it is
-                easily reachable from the Clients.{' '}
+                Remote Access Gateways enable secure access to your network via Clients. The Gateway forwards traffic
+                from the clients into the network, and from the network back to the clients. Clients are simple
+                WireGuard config files, supported on most devices. To use Clients, you must configure a Client Gateway,
+                which is typically deployed in a public cloud environment, e.g. on a server with a public IP, so that it
+                is easily reachable from the Clients. Clients are configured on this dashboard primary via client
+                configs{' '}
                 <a href="https://www.netmaker.io/features/ingress" target="_blank" rel="noreferrer">
                   Learn More
                 </a>
               </Typography.Text>
             </Col>
-            <Col xs={(24 * 1) / 3} style={{ position: 'relative' }}>
+            <Col xs={24} xl={(24 * 1) / 3} style={{ position: 'relative' }}>
               <Card className="header-card" style={{ position: 'absolute', width: '100%' }}>
-                <Typography.Title level={3}>Create Client</Typography.Title>
+                <Typography.Title level={3}>Create Client Config</Typography.Title>
                 <Typography.Text>
                   Enable remote access to your network with a Client. A Client is a simple config file that runs on any
                   device that supports{' '}
@@ -2051,7 +2249,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                 <Row style={{ marginTop: '1rem' }}>
                   <Col>
                     <Button type="primary" size="large" onClick={() => setIsAddClientModalOpen(true)}>
-                      <PlusOutlined /> Create Client
+                      <PlusOutlined /> Create Client Config
                     </Button>
                   </Col>
                 </Row>
@@ -2062,7 +2260,7 @@ export default function NetworkDetailsPage(props: PageProps) {
 
         {!isEmpty && (
           <Row style={{ width: '100%' }}>
-            <Col xs={12} style={{ marginBottom: '2rem' }}>
+            <Col xs={24} xl={12} style={{ marginBottom: '2rem' }}>
               <Input
                 placeholder="Search gateways"
                 value={searchClientGateways}
@@ -2071,7 +2269,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                 style={{ width: '60%' }}
               />
             </Col>
-            <Col xs={12} style={{ marginBottom: '2rem' }}>
+            <Col xs={24} xl={12} style={{ marginBottom: '2rem' }}>
               <Input
                 placeholder="Search clients"
                 value={searchClients}
@@ -2080,15 +2278,19 @@ export default function NetworkDetailsPage(props: PageProps) {
                 style={{ width: '60%' }}
               />
             </Col>
-            <Col xs={12}>
+            <Col xs={24} xl={12}>
               <Row style={{ width: '100%' }}>
-                <Col xs={12}>
+                <Col xs={24} md={12}>
                   <Typography.Title style={{ marginTop: '0px' }} level={5}>
                     Gateways
                   </Typography.Title>
                 </Col>
-                <Col xs={11} style={{ textAlign: 'right' }}>
-                  <Button type="primary" onClick={() => setIsAddClientGatewayModalOpen(true)}>
+                <Col xs={23} md={11} style={{ textAlign: 'right' }}>
+                  <Button
+                    type="primary"
+                    onClick={() => setIsAddClientGatewayModalOpen(true)}
+                    className="full-width-button-xs"
+                  >
                     <PlusOutlined /> Create Gateway
                   </Button>
                 </Col>
@@ -2100,6 +2302,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                     dataSource={filteredClientGateways}
                     rowKey="id"
                     size="small"
+                    scroll={{ x: true }}
                     rowClassName={(gateway) => {
                       return gateway.id === selectedGateway?.id ? 'selected-row' : '';
                     }}
@@ -2115,36 +2318,43 @@ export default function NetworkDetailsPage(props: PageProps) {
                 </Col>
               </Row>
             </Col>
-            <Col xs={12}>
+            <Col xs={24} xl={12}>
               <Row style={{ width: '100%' }}>
-                <Col xs={12}>
+                <Col xs={24} md={12}>
                   <Typography.Title style={{ marginTop: '0px' }} level={5}>
-                    Clients
+                    VPN Config Files
                   </Typography.Title>
                 </Col>
-                <Col xs={12} style={{ textAlign: 'right' }}>
-                  {selectedGateway && (
-                    <Button
-                      type="primary"
-                      style={{ marginRight: '1rem' }}
-                      onClick={() => setIsAddClientModalOpen(true)}
-                    >
-                      <PlusOutlined /> Create Client
-                    </Button>
-                  )}
-                  Display All{' '}
-                  <Switch
-                    title="Display all clients. Click a gateway to filter clients specific to that gateway."
-                    checked={selectedGateway === null}
-                    onClick={() => {
-                      setSelectedGateway(null);
-                    }}
-                  />
+                <Col xs={24} md={12} style={{ textAlign: 'right' }}>
+                  <Button
+                    type="primary"
+                    style={{ marginRight: '1rem' }}
+                    onClick={() => setIsAddClientModalOpen(true)}
+                    className="full-width-button-xs"
+                  >
+                    <PlusOutlined /> Create Config
+                  </Button>
+                  <div className="display-all-container-switch">
+                    Display All{' '}
+                    <Switch
+                      title="Display all clients. Click a gateway to filter clients specific to that gateway."
+                      checked={selectedGateway === null}
+                      onClick={() => {
+                        setSelectedGateway(null);
+                      }}
+                    />
+                  </div>
                 </Col>
               </Row>
               <Row style={{ marginTop: '1rem' }}>
                 <Col xs={24}>
-                  <Table columns={clientsTableCols} dataSource={filteredClients} rowKey="clientid" size="small" />
+                  <Table
+                    columns={clientsTableCols}
+                    dataSource={filteredClients}
+                    rowKey="clientid"
+                    size="small"
+                    scroll={{ x: true }}
+                  />
                 </Col>
               </Row>
             </Col>
@@ -2175,7 +2385,7 @@ export default function NetworkDetailsPage(props: PageProps) {
               width: '100%',
             }}
           >
-            <Col xs={16}>
+            <Col xs={24} xl={16}>
               <Typography.Title level={3} style={{ color: 'white ' }}>
                 Egress
               </Typography.Title>
@@ -2189,7 +2399,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                 .
               </Typography.Text>
             </Col>
-            <Col xs={8} style={{ position: 'relative' }}>
+            <Col xs={24} xl={8} style={{ position: 'relative' }}>
               <Card className="header-card" style={{ position: 'absolute', width: '100%' }}>
                 <Typography.Title level={3}>Create Egress</Typography.Title>
                 <Typography.Text>
@@ -2219,15 +2429,15 @@ export default function NetworkDetailsPage(props: PageProps) {
                 style={{ width: '30%' }}
               />
             </Col>
-            <Col xs={12}>
+            <Col xl={12} xs={24}>
               <Row style={{ width: '100%' }}>
-                <Col xs={12}>
+                <Col xs={24} md={12}>
                   <Typography.Title style={{ marginTop: '0px' }} level={5}>
                     Egress Gateways
                   </Typography.Title>
                 </Col>
-                <Col xs={11} style={{ textAlign: 'right' }}>
-                  <Button type="primary" onClick={() => setIsAddEgressModalOpen(true)}>
+                <Col xs={24} md={11} style={{ textAlign: 'right' }}>
+                  <Button type="primary" onClick={() => setIsAddEgressModalOpen(true)} className="full-width-button-xs">
                     <PlusOutlined /> Create Egress
                   </Button>
                 </Col>
@@ -2239,6 +2449,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                     dataSource={filteredEgresses}
                     rowKey="id"
                     size="small"
+                    scroll={{ x: true }}
                     rowClassName={(egress) => {
                       return egress.id === filteredEgress?.id ? 'selected-row' : '';
                     }}
@@ -2254,31 +2465,34 @@ export default function NetworkDetailsPage(props: PageProps) {
                 </Col>
               </Row>
             </Col>
-            <Col xs={12}>
+            <Col xl={12} xs={24}>
               <Row style={{ width: '100%' }}>
-                <Col xs={12}>
+                <Col xs={24} md={12}>
                   <Typography.Title style={{ marginTop: '0px' }} level={5}>
                     External routes
                   </Typography.Title>
                 </Col>
-                <Col xs={12} style={{ textAlign: 'right' }}>
+                <Col xs={24} md={12} style={{ textAlign: 'right' }}>
                   {filteredEgress && (
                     <Button
                       type="primary"
                       style={{ marginRight: '1rem' }}
                       onClick={() => setIsUpdateEgressModalOpen(true)}
+                      className="full-width-button-xs"
                     >
                       <PlusOutlined /> Add external route
                     </Button>
                   )}
-                  Display All{' '}
-                  <Switch
-                    title="Display all routes. Click an egress to filter routes specific to that egress."
-                    checked={filteredEgress === null}
-                    onClick={() => {
-                      setFilteredEgress(null);
-                    }}
-                  />
+                  <div className="display-all-container-switch">
+                    Display All{' '}
+                    <Switch
+                      title="Display all routes. Click an egress to filter routes specific to that egress."
+                      checked={filteredEgress === null}
+                      onClick={() => {
+                        setFilteredEgress(null);
+                      }}
+                    />
+                  </div>
                 </Col>
               </Row>
               <Row style={{ marginTop: '1rem' }}>
@@ -2287,6 +2501,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                     columns={externalRoutesTableCols}
                     dataSource={filteredExternalRoutes}
                     rowKey={(range) => `${range.node?.name ?? ''}-${range.range}`}
+                    scroll={{ x: true }}
                     size="small"
                   />
                 </Col>
@@ -2317,7 +2532,7 @@ export default function NetworkDetailsPage(props: PageProps) {
               width: '100%',
             }}
           >
-            <Col xs={16}>
+            <Col xs={24} xl={16}>
               <Typography.Title level={3} style={{ color: 'white ' }}>
                 Relays
               </Typography.Title>
@@ -2331,7 +2546,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                 .
               </Typography.Text>
             </Col>
-            <Col xs={8} style={{ position: 'relative' }}>
+            <Col xs={24} xl={8} style={{ position: 'relative' }}>
               <Card className="header-card" style={{ position: 'absolute', width: '100%' }}>
                 <Typography.Title level={3}>Create Relay</Typography.Title>
                 <Typography.Text>
@@ -2361,15 +2576,15 @@ export default function NetworkDetailsPage(props: PageProps) {
                 style={{ width: '30%' }}
               />
             </Col>
-            <Col xs={12}>
+            <Col xs={24} xl={12}>
               <Row style={{ width: '100%' }}>
-                <Col xs={12}>
+                <Col xs={24} md={12}>
                   <Typography.Title style={{ marginTop: '0px' }} level={5}>
                     Relays
                   </Typography.Title>
                 </Col>
-                <Col xs={11} style={{ textAlign: 'right' }}>
-                  <Button type="primary" onClick={() => setIsAddRelayModalOpen(true)}>
+                <Col xs={24} md={11} style={{ textAlign: 'right' }}>
+                  <Button type="primary" onClick={() => setIsAddRelayModalOpen(true)} className="full-width-button-xs">
                     <PlusOutlined /> Create Relay
                   </Button>
                 </Col>
@@ -2392,40 +2607,50 @@ export default function NetworkDetailsPage(props: PageProps) {
                         },
                       };
                     }}
+                    scroll={{ x: true }}
                   />
                 </Col>
               </Row>
             </Col>
-            <Col xs={12}>
+            <Col xs={24} xl={12}>
               <Row style={{ width: '100%' }}>
-                <Col xs={12}>
+                <Col xs={24} md={12}>
                   <Typography.Title style={{ marginTop: '0px' }} level={5}>
                     Relayed Hosts
                   </Typography.Title>
                 </Col>
-                <Col xs={12} style={{ textAlign: 'right' }}>
+                <Col xs={24} md={12} style={{ textAlign: 'right' }}>
                   {selectedRelay && (
                     <Button
                       type="primary"
                       style={{ marginRight: '1rem' }}
                       onClick={() => setIsUpdateRelayModalOpen(true)}
+                      className="full-width-button-xs"
                     >
                       <PlusOutlined /> Add relayed host
                     </Button>
                   )}
-                  Display All{' '}
-                  <Switch
-                    title="Display all relayed hosts. Click a relay to filter hosts relayed only by that relay."
-                    checked={selectedRelay === null}
-                    onClick={() => {
-                      setSelectedRelay(null);
-                    }}
-                  />
+                  <div className="display-all-container-switch">
+                    Display All{' '}
+                    <Switch
+                      title="Display all relayed hosts. Click a relay to filter hosts relayed only by that relay."
+                      checked={selectedRelay === null}
+                      onClick={() => {
+                        setSelectedRelay(null);
+                      }}
+                    />
+                  </div>
                 </Col>
               </Row>
               <Row style={{ marginTop: '1rem' }}>
                 <Col xs={24}>
-                  <Table columns={relayedTableCols} dataSource={filteredRelayedNodes} rowKey="id" size="small" />
+                  <Table
+                    columns={relayedTableCols}
+                    dataSource={filteredRelayedNodes}
+                    rowKey="id"
+                    size="small"
+                    scroll={{ x: true }}
+                  />
                 </Col>
               </Row>
             </Col>
@@ -2448,17 +2673,17 @@ export default function NetworkDetailsPage(props: PageProps) {
     return (
       <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
         <Row style={{ width: '100%' }}>
-          <Col xs={12}>
+          <Col xl={12} xs={24}>
             <Input
               allowClear
               placeholder="Search host"
               value={searchAclHost}
               onChange={(ev) => setSearchAclHost(ev.target.value)}
               prefix={<SearchOutlined />}
-              style={{ width: '60%' }}
+              className="search-acl-host-input"
             />
             {isServerEE && (
-              <span style={{ marginLeft: '2rem' }} data-nmui-intercom="network-details-acls_showclientstoggle">
+              <span className="show-clients-toggle" data-nmui-intercom="network-details-acls_showclientstoggle">
                 <label style={{ marginRight: '1rem' }} htmlFor="show-clients-acl-switch">
                   Show Clients
                 </label>
@@ -2470,7 +2695,7 @@ export default function NetworkDetailsPage(props: PageProps) {
               </span>
             )}
           </Col>
-          <Col xs={12} style={{ textAlign: 'right' }}>
+          <Col xl={12} xs={24} className="mt-10 acl-tab-buttons">
             <Button
               title="Allow All"
               style={{ marginRight: '1rem', color: '#3C8618', borderColor: '#274916' }}
@@ -2647,6 +2872,9 @@ export default function NetworkDetailsPage(props: PageProps) {
           <Col xs={24} style={{ width: '100%', height: containerHeight }}>
             <SigmaContainer
               id={NETWORK_GRAPH_SIGMA_CONTAINER_ID}
+              settings={{
+                nodeProgramClasses: { image: getNodeImageProgram() },
+              }}
               style={{
                 backgroundColor: themeToken.colorBgContainer,
                 position: 'relative',
@@ -2716,6 +2944,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   rowKey="nodeId"
                   size="small"
                   pagination={{ pageSize: 100 }}
+                  scroll={{ x: true }}
                 />
               )}
               {currentMetric === 'latency' && (
@@ -2726,6 +2955,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   rowKey="nodeId"
                   size="small"
                   pagination={{ pageSize: 100 }}
+                  scroll={{ x: true }}
                 />
               )}
               {currentMetric === 'bytes-sent' && (
@@ -2736,6 +2966,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   rowKey="nodeId"
                   size="small"
                   pagination={{ pageSize: 100 }}
+                  scroll={{ x: true }}
                 />
               )}
               {currentMetric === 'bytes-received' && (
@@ -2746,6 +2977,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   rowKey="nodeId"
                   size="small"
                   pagination={{ pageSize: 100 }}
+                  scroll={{ x: true }}
                 />
               )}
               {currentMetric === 'uptime' && (
@@ -2756,6 +2988,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   rowKey="nodeId"
                   size="small"
                   pagination={{ pageSize: 100 }}
+                  scroll={{ x: true }}
                 />
               )}
               {currentMetric === 'clients' && (
@@ -2766,6 +2999,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   rowKey="node_name"
                   size="small"
                   pagination={{ pageSize: 100 }}
+                  scroll={{ x: true }}
                 />
               )}
             </div>
@@ -2791,37 +3025,37 @@ export default function NetworkDetailsPage(props: PageProps) {
       {
         key: 'overview',
         label: `Overview`,
-        children: network ? getOverviewContent() : <Skeleton active />,
+        children: network && !isRefreshingNetwork ? getOverviewContent() : <Skeleton active />,
       },
       {
         key: 'hosts',
         label: `Hosts (${networkHosts.length})`,
-        children: network ? getHostsContent() : <Skeleton active />,
+        children: network && !isRefreshingNetwork ? getHostsContent() : <Skeleton active />,
       },
       {
         key: 'clients',
-        label: `Clients (${clients.length})`,
-        children: network ? getClientsContent() : <Skeleton active />,
+        label: `Remote Access (${clientGateways.length})`,
+        children: network && !isRefreshingNetwork ? getClientsContent() : <Skeleton active />,
       },
       {
         key: 'egress',
         label: `Egress (${egresses.length})`,
-        children: network ? getEgressContent() : <Skeleton active />,
+        children: network && !isRefreshingNetwork ? getEgressContent() : <Skeleton active />,
       },
       {
         key: 'dns',
         label: `DNS`,
-        children: network ? getDnsContent() : <Skeleton active />,
+        children: network && !isRefreshingNetwork ? getDnsContent() : <Skeleton active />,
       },
       {
         key: 'access-control',
         label: `Access Control`,
-        children: network ? getAclsContent() : <Skeleton active />,
+        children: network && !isRefreshingNetwork ? getAclsContent() : <Skeleton active />,
       },
       {
         key: 'graph',
         label: `Graph`,
-        children: network ? getGraphContent() : <Skeleton active />,
+        children: network && !isRefreshingNetwork ? getGraphContent() : <Skeleton active />,
       },
     ].concat(
       isServerEE
@@ -2846,20 +3080,21 @@ export default function NetworkDetailsPage(props: PageProps) {
     return tabs;
   }, [
     network,
+    isRefreshingNetwork,
     getOverviewContent,
     networkHosts.length,
     getHostsContent,
-    clients.length,
+    clientGateways.length,
     getClientsContent,
     egresses.length,
     getEgressContent,
-    relays.length,
-    getRelayContent,
     getDnsContent,
     getAclsContent,
     getGraphContent,
     isServerEE,
     getMetricsContent,
+    relays.length,
+    getRelayContent,
   ]);
 
   const loadDnses = useCallback(async () => {
@@ -2986,6 +3221,14 @@ export default function NetworkDetailsPage(props: PageProps) {
     });
   };
 
+  const reloadNetwork = async () => {
+    setIsRefreshingNetwork(true);
+    await store.fetchHosts();
+    await store.fetchNodes();
+    loadNetwork();
+    setIsRefreshingNetwork(false);
+  };
+
   useEffect(() => {
     loadNetwork();
   }, [loadNetwork]);
@@ -2995,6 +3238,15 @@ export default function NetworkDetailsPage(props: PageProps) {
     if (!network) return;
     form.setFieldsValue(network);
   }, [form, network]);
+
+  useEffect(() => {
+    if (isInitialLoad) {
+      setSelectedRelay(filteredRelays[0] ?? null);
+      setFilteredEgress(filteredEgresses[0] ?? null);
+      setSelectedGateway(filteredClientGateways[0] ?? null);
+      setIsInitialLoad(false);
+    }
+  }, [filteredRelays, filteredEgresses, isInitialLoad, filteredClientGateways]);
 
   if (!networkId) {
     navigate(resolveAppRoute(AppRoutes.NETWORKS_ROUTE));
@@ -3013,12 +3265,12 @@ export default function NetworkDetailsPage(props: PageProps) {
           <Col xs={24}>
             <Link to={resolveAppRoute(AppRoutes.NETWORKS_ROUTE)}>View All Networks</Link>
             <Row>
-              <Col xs={18}>
+              <Col xs={18} lg={14}>
                 <Typography.Title level={2} style={{ marginTop: '.5rem', marginBottom: '2rem' }}>
                   {network?.netid}
                 </Typography.Title>
               </Col>
-              <Col xs={6} style={{ textAlign: 'right' }}>
+              <Col xs={24} lg={10} style={{ textAlign: 'right' }} className="network-details-table-buttons">
                 {/* {!isEditingNetwork && (
                   <Button type="default" style={{ marginRight: '.5rem' }} onClick={() => setIsEditingNetwork(true)}>
                     Edit
@@ -3039,6 +3291,9 @@ export default function NetworkDetailsPage(props: PageProps) {
                     </Button>
                   </>
                 )} */}
+                <Button style={{ marginRight: '1em' }} onClick={reloadNetwork}>
+                  <ReloadOutlined /> Reload
+                </Button>
                 <Dropdown
                   menu={{
                     items: [
@@ -3094,7 +3349,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       />
       {targetClient && (
         <ClientDetailsModal
-          key={`read-${targetClient.clientid}`}
+          key={`view-client-${targetClient.clientid}`}
           isOpen={isClientDetailsModalOpen}
           client={targetClient}
           // onDeleteClient={() => {
@@ -3107,14 +3362,23 @@ export default function NetworkDetailsPage(props: PageProps) {
           onCancel={() => setIsClientDetailsModalOpen(false)}
         />
       )}
+      {targetClient && (
+        <ClientConfigModal
+          key={`view-client-config-${targetClient.clientid}`}
+          isOpen={isClientConfigModalOpen}
+          client={targetClient}
+          onCancel={() => setIsClientConfigModalOpen(false)}
+        />
+      )}
       {filteredEgress && (
         <UpdateEgressModal
-          key={filteredEgress.id}
+          key={`update-egress-${filteredEgress.id}`}
           isOpen={isUpdateEgressModalOpen}
           networkId={networkId}
           egress={filteredEgress}
-          onUpdateEgress={() => {
+          onUpdateEgress={(node: Node) => {
             store.fetchNodes();
+            setFilteredEgress(node);
             setIsUpdateEgressModalOpen(false);
           }}
           onCancel={() => setIsUpdateEgressModalOpen(false)}
@@ -3131,12 +3395,12 @@ export default function NetworkDetailsPage(props: PageProps) {
       />
       {selectedRelay && (
         <UpdateRelayModal
-          key={selectedRelay.id}
+          key={`update-relay-${selectedRelay.id}`}
           isOpen={isUpdateRelayModalOpen}
           relay={selectedRelay}
           networkId={networkId}
           onUpdateRelay={() => {
-            // store.fetchHosts();
+            store.fetchNodes();
             setIsUpdateRelayModalOpen(false);
           }}
           onCancel={() => setIsUpdateRelayModalOpen(false)}
@@ -3187,7 +3451,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       )}
       {targetClient && (
         <UpdateClientModal
-          key={`update-${targetClient.clientid}`}
+          key={`update-client-${targetClient.clientid}`}
           isOpen={isUpdateClientModalOpen}
           client={targetClient}
           networkId={networkId}
@@ -3200,6 +3464,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       )}
       {targetNode && (
         <UpdateNodeModal
+          key={`update-node-${targetNode.id}`}
           isOpen={isUpdateNodeModalOpen}
           node={targetNode}
           onUpdateNode={() => {

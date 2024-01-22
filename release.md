@@ -1,19 +1,19 @@
 # Netmaker UI release notes
 
-## Netmaker UI v0.21.0
+## Netmaker UI v0.22.0
 
 ## Whats New
-
+- Internet gateways
 
 ## What's Fixed/Improvements
+- Bug with relayed host search during creation
+- Incorrect docker/docker-compose installation instructions
+- Allow transferrence of superadmin role in CE
+- Enforce private address ranges in network creation
+- Edge cases with network graph
+- Enrollment key validation
+- Minor UI/UX bug fixes and improvements
 
 
-## known issues
-- Windows installer does not install WireGuard
-- netclient-gui (windows) will display an erroneous error dialog when joining a network (can be ignored)
-- netclient-gui will continously display error dialog if netmaker server is offline
-- Incorrect metrics against ext clients
-- Host ListenPorts set to 0 after migration from 0.17.1 -> 0.21.0
-- Mac IPv6 addresses/route issues
-- Docker client can not re-join after complete deletion
-- netclient-gui network tab blank after disconnect
+## Known issues
+- Graph page crashed when WebGL is not enabled. WebGL is required for the graph page to work.

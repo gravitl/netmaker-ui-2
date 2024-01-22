@@ -2,6 +2,7 @@ import { ArrowLeftOutlined, ArrowRightOutlined, SearchOutlined } from '@ant-desi
 import '../CustomModal.scss';
 import './NewHostModal.scss';
 import {
+  Alert,
   Button,
   Card,
   Col,
@@ -27,6 +28,9 @@ import { isEnrollmentKeyValid } from '@/utils/EnrollmentKeysUtils';
 import AddEnrollmentKeyModal from '../add-enrollment-key-modal/AddEnrollmentKeyModal';
 import { isSaasBuild } from '@/services/BaseService';
 import { ServerConfigService } from '@/services/ServerConfigService';
+import { getExtendedNode } from '@/utils/NodeUtils';
+import { ExtendedNode } from '@/models/Node';
+import { NULL_NODE, NULL_NODE_ID } from '@/constants/Types';
 
 interface NewHostModal {
   isOpen: boolean;
@@ -117,6 +121,19 @@ export default function NewHostModal({ isOpen, onCancel, onFinish, networkId }: 
     setSelectedOs('windows');
     setSelectedArch('amd64');
   };
+
+  const relayNode = useMemo<ExtendedNode>(() => {
+    // check if enrollment key is for relay node
+    if (selectedEnrollmentKey?.relay != NULL_NODE_ID) {
+      const relayNode = store.nodes
+        .map((node) => getExtendedNode(node, store.hostsCommonDetails))
+        .find((node) => node.id === selectedEnrollmentKey?.relay);
+      if (relayNode) {
+        return relayNode;
+      }
+    }
+    return NULL_NODE;
+  }, [selectedEnrollmentKey, store.nodes, store.hostsCommonDetails]);
 
   useEffect(() => {
     // reset arch on OS change
@@ -210,9 +227,9 @@ export default function NewHostModal({ isOpen, onCancel, onFinish, networkId }: 
                   }}
                   columns={[
                     {
-                      title: 'Name',
+                      title: 'Available Keys',
                       render(_, key: EnrollmentKey) {
-                        return key.tags.join(', ');
+                        return <a href="#">{key.tags.join(', ')}</a>;
                       },
                       sorter(a, b) {
                         return a.tags.join(', ').localeCompare(b.tags.join(', '));
@@ -237,6 +254,13 @@ export default function NewHostModal({ isOpen, onCancel, onFinish, networkId }: 
                   rowClassName={(key) => {
                     return key.value === selectedEnrollmentKey?.value ? 'selected-row' : '';
                   }}
+                  // rowSelection={{
+                  //   type: "checkbox",
+                  //   hideSelectAll: true,
+                  //   onChange: (selectedRowKeys, selectedRows) => {
+                  //     console.log(selectedRowKeys, selectedRows);
+                  //   }
+                  // }}
                 />
               </Card>
             </Col>
@@ -249,6 +273,14 @@ export default function NewHostModal({ isOpen, onCancel, onFinish, networkId }: 
         <div className="CustomModalBody">
           <Row justify="center">
             <Col xs={24}>
+              {selectedEnrollmentKey?.relay != NULL_NODE_ID && (
+                <Alert
+                  style={{ marginBottom: '1rem' }}
+                  type="warning"
+                  message={`This enrollment key is for a relay node named ${relayNode.name}. Your host will automatically be relayed`}
+                  showIcon
+                />
+              )}
               <Card>
                 <p>
                   Connect host to network(s){' '}
@@ -261,8 +293,8 @@ export default function NewHostModal({ isOpen, onCancel, onFinish, networkId }: 
 
                 {/* os selection */}
                 <Divider />
-                <Row style={{ height: '4rem' }} justify="center">
-                  <Col xs={4} style={{ textAlign: 'center' }}>
+                <Row style={{ height: 'auto' }} justify="center" wrap={true}>
+                  <Col xs={8} md={4} style={{ textAlign: 'center' }}>
                     <div
                       className={`os-button ${selectedOs === 'windows' ? 'active' : ''}`}
                       onClick={(ev) => onShowInstallGuide(ev, 'windows')}
@@ -277,7 +309,7 @@ export default function NewHostModal({ isOpen, onCancel, onFinish, networkId }: 
                       <p>Windows</p>
                     </div>
                   </Col>
-                  <Col xs={4} style={{ textAlign: 'center' }}>
+                  <Col xs={8} md={4} style={{ textAlign: 'center' }}>
                     <div
                       className={`os-button ${selectedOs === 'macos' ? 'active' : ''}`}
                       onClick={(ev) => onShowInstallGuide(ev, 'macos')}
@@ -290,7 +322,7 @@ export default function NewHostModal({ isOpen, onCancel, onFinish, networkId }: 
                       <p>Mac</p>
                     </div>
                   </Col>
-                  <Col xs={4} style={{ textAlign: 'center' }}>
+                  <Col xs={8} md={4} style={{ textAlign: 'center' }}>
                     <div
                       className={`os-button ${selectedOs === 'linux' ? 'active' : ''}`}
                       onClick={(ev) => onShowInstallGuide(ev, 'linux')}
@@ -303,7 +335,7 @@ export default function NewHostModal({ isOpen, onCancel, onFinish, networkId }: 
                       <p>Linux</p>
                     </div>
                   </Col>
-                  <Col xs={4} style={{ textAlign: 'center' }}>
+                  <Col xs={8} md={4} style={{ textAlign: 'center' }}>
                     <div
                       className={`os-button ${
                         selectedOs === 'freebsd13' || selectedOs === 'freebsd14' ? 'active' : ''
@@ -320,7 +352,7 @@ export default function NewHostModal({ isOpen, onCancel, onFinish, networkId }: 
                       <p>FreeBSD</p>
                     </div>
                   </Col>
-                  <Col xs={4} style={{ textAlign: 'center' }}>
+                  <Col xs={8} md={4} style={{ textAlign: 'center' }}>
                     <div
                       className={`os-button ${selectedOs === 'docker' ? 'active' : ''}`}
                       onClick={(ev) => onShowInstallGuide(ev, 'docker')}
@@ -469,6 +501,29 @@ export default function NewHostModal({ isOpen, onCancel, onFinish, networkId }: 
                     </Row>
                   </>
                 )}
+
+                {selectedOs === 'docker' && (
+                  <>
+                    <Row>
+                      <Col xs={24}>
+                        <h4 style={{ marginBottom: '.5rem' }}>Installation steps on next page</h4>
+                        {/* <Typography.Title level={5}>FreeBSD 13</Typography.Title>
+                        <Typography.Text code copyable>
+                          {`fetch -o /tmp/netclient ${
+                            getNetclientDownloadLink('freebsd13', 'amd64', 'cli')[0]
+                          } && chmod +x /tmp/netclient && sudo /tmp/netclient install`}
+                        </Typography.Text>
+                        <br />
+                        <Typography.Title level={5}>FreeBSD 14</Typography.Title>
+                        <Typography.Text code copyable>
+                          {`fetch -o /tmp/netclient ${
+                            getNetclientDownloadLink('freebsd14', 'amd64', 'cli')[0]
+                          } && chmod +x /tmp/netclient && sudo /tmp/netclient install`}
+                        </Typography.Text> */}
+                      </Col>
+                    </Row>
+                  </>
+                )}
               </Card>
             </Col>
           </Row>
@@ -529,8 +584,9 @@ export default function NewHostModal({ isOpen, onCancel, onFinish, networkId }: 
 
                 {selectedOs === 'docker' && (
                   <div>
-                    <ol>
+                    <ul>
                       <li>
+                        <Typography.Title level={5}>Docker</Typography.Title>
                         <Typography.Text>Run</Typography.Text>
                         <Typography.Text code copyable>
                           {`sudo docker run -d --network host --privileged -e TOKEN=${selectedEnrollmentKey?.token} -v /etc/netclient:/etc/netclient --name netclient gravitl/netclient:${
@@ -538,7 +594,22 @@ export default function NewHostModal({ isOpen, onCancel, onFinish, networkId }: 
                           }`}
                         </Typography.Text>
                       </li>
-                    </ol>
+                      <li>
+                        <Typography.Title level={5}>Docker Compose</Typography.Title>
+                        <pre className="code-bg">
+                          {`services:
+  netclient:
+    image: gravitl/netclient:${store.serverConfig?.Version ?? '<version>'}
+    network_mode: host
+    privileged: true
+    environment:
+      - TOKEN=${selectedEnrollmentKey?.token}
+    volumes:
+      - /etc/netclient:/etc/netclient
+`}
+                        </pre>
+                      </li>
+                    </ul>
                     <small>Note: It might take a few minutes for the host to show up in the network(s)</small>
                   </div>
                 )}
