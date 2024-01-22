@@ -14,5 +14,6 @@
 - Enrollment key validation
 - Minor UI/UX bug fixes and improvements
 
-## Known Issues
+
+## Known issues
 - Graph page crashed when WebGL is not enabled. WebGL is required for the graph page to work.
