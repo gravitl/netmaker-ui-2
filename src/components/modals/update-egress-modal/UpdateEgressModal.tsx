@@ -25,6 +25,7 @@ import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { NodesService } from '@/services/NodesService';
 import { isValidIpCidr } from '@/utils/NetworkUtils';
 import { CreateEgressNodeDto } from '@/services/dtos/CreateEgressNodeDto';
+import { INTERNET_RANGE_IPV4, INTERNET_RANGE_IPV6 } from '@/constants/AppConstants';
 
 interface UpdateEgressModalProps {
   isOpen: boolean;
@@ -186,6 +187,9 @@ export default function UpdateEgressModal({
                               if (!isValidIpCidr(value)) {
                                 return Promise.reject('Invalid CIDR');
                               } else {
+                                if (value.includes(INTERNET_RANGE_IPV4) || value.includes(INTERNET_RANGE_IPV6)) {
+                                  return Promise.reject('Visit the Remote Access tab to create an internet gateway');
+                                }
                                 return Promise.resolve();
                               }
                             },

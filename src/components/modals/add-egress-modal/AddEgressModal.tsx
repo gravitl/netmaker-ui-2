@@ -29,6 +29,7 @@ import { AxiosError } from 'axios';
 import { NodesService } from '@/services/NodesService';
 import { isValidIpCidr } from '@/utils/NetworkUtils';
 import { CreateEgressNodeDto } from '@/services/dtos/CreateEgressNodeDto';
+import { INTERNET_RANGE_IPV4, INTERNET_RANGE_IPV6 } from '@/constants/AppConstants';
 
 interface AddEgressModalProps {
   isOpen: boolean;
@@ -41,7 +42,6 @@ interface AddEgressModalProps {
 
 type AddEgressFormFields = CreateEgressNodeDto & {
   nodeId: Node['id'];
-  isInternetGateway: boolean;
 };
 
 export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, networkId }: AddEgressModalProps) {
@@ -252,7 +252,7 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
               initialValue={['']}
               rules={[
                 {
-                  validator: async (_, ranges) => {
+                  validator: async (_, ranges: Array<string>) => {
                     if (!ranges || ranges.length < 1) {
                       return Promise.reject(new Error('Enter at least one address range'));
                     }
@@ -276,10 +276,13 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
                         rules={[
                           {
                             required: true,
-                            validator(_, value) {
+                            validator(_, value: string) {
                               if (!isValidIpCidr(value)) {
                                 return Promise.reject('Invalid CIDR');
                               } else {
+                                if (value.includes(INTERNET_RANGE_IPV4) || value.includes(INTERNET_RANGE_IPV6)) {
+                                  return Promise.reject('Visit the Remote Access tab to create an internet gateway');
+                                }
                                 return Promise.resolve();
                               }
                             },
