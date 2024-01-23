@@ -80,6 +80,8 @@ describe('ServerConfigService', () => {
       healthyNetwork: false,
       license_error: 'error',
       is_pro: false,
+      is_on_trial_license: false,
+      trial_end_date: '',
     };
     mock.onGet(ApiRoutes.SERVER_STATUS).replyOnce(200, mockRes);
 
