@@ -1,4 +1,4 @@
-import { Button, Col, Divider, Image, Input, Modal, notification, Row, Select, Switch, Typography } from 'antd';
+import { Button, Col, Divider, Image, Input, Modal, notification, Row, Select, Spin, Switch, Typography } from 'antd';
 import { MouseEvent, useCallback, useEffect, useState } from 'react';
 import '../CustomModal.scss';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
@@ -18,24 +18,27 @@ interface ClientConfigModalProps {
 export default function ClientConfigModal({ client, isOpen, onCancel }: ClientConfigModalProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const [config, setConfig] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const downloadClientData = async () => {
     try {
-      notify.info({ message: 'Loading...' });
+      setIsLoading(true);
       const qrData = (await NodesService.getExternalClientConfig(client.clientid, client.network, 'file'))
         .data as string;
       setConfig(qrData);
+      setIsLoading(false);
     } catch (err) {
       notify.error({
         message: 'Failed to load client config',
         description: extractErrorMsg(err as any),
       });
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
     downloadClientData();
-  }, []);
+  }, [isOpen]);
 
   return (
     <Modal
@@ -49,6 +52,7 @@ export default function ClientConfigModal({ client, isOpen, onCancel }: ClientCo
         <>
           <Button
             icon={<CopyOutlined />}
+            disabled={isLoading}
             onClick={() => {
               navigator.clipboard.writeText(config);
               notify.success({ message: 'Copied to clipboard' });
@@ -64,7 +68,11 @@ export default function ClientConfigModal({ client, isOpen, onCancel }: ClientCo
       <div className="CustomModalBody">
         <Row>
           <Col span={24}>
-            <TextArea value={config} style={{ fontFamily: 'monospace' }} autoSize={true} disabled />
+            {isLoading ? (
+              <Spin />
+            ) : (
+              <TextArea value={config} style={{ fontFamily: 'monospace' }} autoSize={true} disabled />
+            )}
           </Col>
         </Row>
       </div>
