@@ -15,7 +15,12 @@ import '../CustomModal.scss';
 import { useTranslation } from 'react-i18next';
 import { ExclamationCircleOutlined, LoadingOutlined } from '@ant-design/icons';
 import { useStore } from '@/store/store';
-import { getAmuiUrl, getLicenseDashboardUrl, getNetmakerSupportEmail } from '@/utils/RouteUtils';
+import {
+  getAmuiUrl,
+  getLicenseDashboardUrl,
+  getNetmakerSupportEmail,
+  getNetmakerTrialPeriodDocs,
+} from '@/utils/RouteUtils';
 import { isSaasBuild } from '@/services/BaseService';
 import { ServerConfigService } from '@/services/ServerConfigService';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
@@ -27,6 +32,7 @@ interface ServerMalfunctionModalProps {
 }
 
 type ServerMalfunctionType = 'billing' | 'db' | 'broker' | 'network';
+const LICENSE_ERROR = 'your trial has ended';
 
 export default function ServerMalfunctionModal({ isOpen, onCancel }: ServerMalfunctionModalProps) {
   const { t } = useTranslation();
@@ -130,6 +136,13 @@ export default function ServerMalfunctionModal({ isOpen, onCancel }: ServerMalfu
     });
   };
 
+  const hasTrialPeriodExpired = useMemo(() => {
+    if (store.serverStatus?.status?.license_error === LICENSE_ERROR) {
+      return true;
+    }
+    return false;
+  }, [store.serverStatus]);
+
   return (
     // TODO: find a way to DRY the theme config provider
     <ConfigProvider
@@ -147,42 +160,64 @@ export default function ServerMalfunctionModal({ isOpen, onCancel }: ServerMalfu
             />
           </Col>
         </Row>
+        {!hasTrialPeriodExpired && (
+          <Row>
+            <Col span={24}>
+              <Typography.Title level={4}>Netmaker is not functioning properly</Typography.Title>
+            </Col>
+            <Col span={24}>
+              <Typography.Text strong>
+                Contact your server admin, check your network settings or{' '}
+                <a href={`mailto:${getNetmakerSupportEmail()}`} target="_blank" rel="noreferrer">
+                  email us
+                </a>
+              </Typography.Text>
+            </Col>
 
-        <Row>
-          <Col span={24}>
-            <Typography.Title level={4}>Netmaker is not functioning properly</Typography.Title>
-          </Col>
-          <Col span={24}>
-            <Typography.Text strong>
-              Contact your server admin, check your network settings or{' '}
-              <a href={`mailto:${getNetmakerSupportEmail()}`} target="_blank" rel="noreferrer">
-                email us
-              </a>
-            </Typography.Text>
-          </Col>
+            <Col span={24} style={{ marginTop: '1rem' }}>
+              <Typography.Text>Possible reasons:</Typography.Text>
+              <br />
+              <Collapse size="small" defaultActiveKey={[]} ghost items={reasons} />
+              {isSaasBuild && (
+                <Fragment>
+                  <br />
+                  <Button type="primary" size="small" href={getAmuiUrl()}>
+                    Go to Account Management
+                  </Button>
+                </Fragment>
+              )}
+            </Col>
 
-          <Col span={24} style={{ marginTop: '1rem' }}>
-            <Typography.Text>Possible reasons:</Typography.Text>
-            <br />
-            <Collapse size="small" defaultActiveKey={[]} ghost items={reasons} />
-            {isSaasBuild && (
-              <Fragment>
-                <br />
-                <Button type="primary" size="small" href={getAmuiUrl()}>
-                  Go to Account Management
-                </Button>
-              </Fragment>
-            )}
-          </Col>
+            <Col span={24} style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2rem' }}>
+              <Typography.Text>
+                Dashboard will become responsive once the issue(s) is resolved, you can
+                <Typography.Link onClick={confirmServerRestart}> try restarting </Typography.Link> to resolve the issue
+              </Typography.Text>
+              <LoadingOutlined />
+            </Col>
+          </Row>
+        )}
+        {hasTrialPeriodExpired && (
+          <Row>
+            <Col span={24}>
+              <Typography.Title level={4}>Your Pro trial has ended</Typography.Title>
+            </Col>
+            <Col span={24}>
+              <Typography.Text>
+                Please go to {` `}
+                <a href={getNetmakerTrialPeriodDocs()} target="_blank" rel="noreferrer">
+                  our docs
+                </a>
+                {` `} for next steps.
+              </Typography.Text>
+            </Col>
 
-          <Col span={24} style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2rem' }}>
-            <Typography.Text>
-              Dashboard will become responsive once the issue(s) is resolved, you can
-              <Typography.Link onClick={confirmServerRestart}> try restarting </Typography.Link> to resolve the issue
-            </Typography.Text>
-            <LoadingOutlined />
-          </Col>
-        </Row>
+            <Col span={24} style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2rem' }}>
+              <Typography.Text>Dashboard will become responsive once the issue(s) is resolved.</Typography.Text>
+              <LoadingOutlined />
+            </Col>
+          </Row>
+        )}
       </Modal>
     </ConfigProvider>
   );
