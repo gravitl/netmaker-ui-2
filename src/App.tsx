@@ -56,6 +56,8 @@ function App() {
             license_error: store.serverStatus?.status?.license_error || '',
             healthyNetwork: true,
             is_pro: store.serverStatus?.status?.is_pro ?? false,
+            trial_end_date: store.serverStatus?.status?.trial_end_date ?? '',
+            is_on_trial_license: store.serverStatus?.status?.is_on_trial_license ?? false,
           });
         } else if (err.request) {
           // request was made but no response was received
@@ -65,6 +67,8 @@ function App() {
             license_error: store.serverStatus?.status?.license_error || '',
             healthyNetwork: false,
             is_pro: store.serverStatus?.status?.is_pro ?? false,
+            trial_end_date: store.serverStatus?.status?.trial_end_date ?? '',
+            is_on_trial_license: store.serverStatus?.status?.is_on_trial_license ?? false,
           });
         } else {
           // something bad happened when the request was being made
@@ -74,6 +78,8 @@ function App() {
             license_error: store.serverStatus?.status?.license_error || '',
             healthyNetwork: false,
             is_pro: store.serverStatus?.status?.is_pro ?? false,
+            trial_end_date: store.serverStatus?.status?.trial_end_date ?? '',
+            is_on_trial_license: store.serverStatus?.status?.is_on_trial_license ?? false,
           });
         }
       } else {
@@ -83,6 +89,8 @@ function App() {
           license_error: '',
           healthyNetwork: false,
           is_pro: store.serverStatus?.status?.is_pro ?? false,
+          trial_end_date: store.serverStatus?.status?.trial_end_date ?? '',
+          is_on_trial_license: store.serverStatus?.status?.is_on_trial_license ?? false,
         });
       }
     }
@@ -91,6 +99,8 @@ function App() {
     store.serverStatus?.status?.db_connected,
     store.serverStatus?.status?.license_error,
     store.serverStatus?.status?.is_pro,
+    store.serverStatus?.status?.trial_end_date,
+    store.serverStatus?.status?.is_on_trial_license,
     storeFetchHosts,
     storeFetchNodes,
     storeIsLoggedIn,
@@ -145,6 +155,8 @@ function App() {
         license_error: '',
         healthyNetwork: true,
         is_pro: store.serverStatus?.status?.is_pro ?? false,
+        trial_end_date: store.serverStatus?.status?.trial_end_date ?? '',
+        is_on_trial_license: store.serverStatus?.status?.is_on_trial_license ?? false,
       });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -44,6 +44,7 @@ export default function MainLayout() {
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [openSidebarMenus, setOpenSidebarMenus] = useState(['networks']);
+  const [trialEndDate, setTrialEndDate] = useState<Date | null>(null);
 
   const recentNetworks = useMemo(
     // TODO: implement most recent ranking
@@ -319,6 +320,29 @@ export default function MainLayout() {
   }, [isSidebarCollapsed, window.innerWidth]);
 
   useEffect(() => {
+    if (store.serverStatus?.status?.trial_end_date) {
+      const endDate = new Date(store.serverStatus.status.trial_end_date);
+      setTrialEndDate(endDate);
+    }
+  }, [store.serverStatus]);
+
+  const getTrialDaysRemainingText = useMemo(() => {
+    let getTrialDaysRemaining = 0;
+    if (trialEndDate) {
+      const currentDate = new Date();
+      const timeDifference = trialEndDate.getTime() - currentDate.getTime();
+      getTrialDaysRemaining = Math.ceil(timeDifference / (1000 * 3600 * 24));
+    }
+    if (getTrialDaysRemaining === 1) {
+      return `Your Pro trial ends on ${trialEndDate?.toDateString()} at ${trialEndDate?.toLocaleTimeString()}, you have less than a day left on your trial.`;
+    } else if (getTrialDaysRemaining > 1) {
+      return `Your Pro trial ends on ${trialEndDate?.toDateString()}, you have ${getTrialDaysRemaining} days left on your trial.`;
+    } else {
+      return `Your Pro trial ended on ${trialEndDate?.toDateString()} at ${trialEndDate?.toLocaleTimeString()}, please contact your administrator to renew your license.`;
+    }
+  }, [trialEndDate]);
+
+  useEffect(() => {
     storeFetchNetworks();
   }, [storeFetchNetworks]);
 
@@ -444,6 +468,20 @@ export default function MainLayout() {
           }}
         >
           <Content style={{ background: themeToken.colorBgContainer, overflow: 'initial', minHeight: '100vh' }}>
+            {/* license status indicator */}
+            {store.serverStatus?.status?.is_on_trial_license && (
+              <Row>
+                <Col xs={24}>
+                  <Alert
+                    type="warning"
+                    showIcon
+                    style={{ border: 'none', height: '3rem', fontSize: '1rem', color: '#D4B106' }}
+                    message={getTrialDaysRemainingText}
+                  />
+                </Col>
+              </Row>
+            )}
+
             {/* server status indicator */}
             {!store.serverStatus.isHealthy && (
               <Row>
