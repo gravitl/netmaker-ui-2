@@ -194,6 +194,15 @@ export default function UpdateNodeModal({ isOpen, node, onUpdateNode, onCancel }
             >
               <Switch />
             </Form.Item>
+
+            <Form.Item
+              label="Metadata"
+              name="metadata"
+              data-nmui-intercom="update-node-form_metadata"
+              rules={[{ max: 255 }]}
+            >
+              <Input placeholder="Metadata" />
+            </Form.Item>
           </div>
         </div>
         <Divider style={{ margin: '0px 0px 2rem 0px' }} />
