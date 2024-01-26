@@ -19,7 +19,8 @@ export class BaseModel {
   async filloutForm(instance = 0, skipProps = []) {
     for (const f of Object.entries(this).filter((f) => TestHelper.hasValue(f[1]) && TestHelper.hasValue(f[1].form))) {
       if (skipProps.includes(f[0])) continue;
-      await FormHelper.genericSetFieldVal(f[1].form, f[1].value, instance);
+      if (f[1].value === null) continue;
+      await FormHelper.genericSetFieldVal(this.page, f[1].form, f[1].value, instance);
     }
   }
 }

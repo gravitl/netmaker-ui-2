@@ -12,6 +12,7 @@ const __dirname = path.dirname(__filename);
 const BASE_FOLDER = './e2e';
 const TEMP_FOLDER = `${BASE_FOLDER}/temp`;
 dotenv.config({ path: path.resolve(__dirname, `${BASE_FOLDER}/`, 'e2e.env') });
+export const STORAGE_STATE = path.join(__dirname, `${BASE_FOLDER}/.auth/user.json`);
 
 /**
  * @see https://playwright.dev/docs/test-configuration
@@ -19,6 +20,10 @@ dotenv.config({ path: path.resolve(__dirname, `${BASE_FOLDER}/`, 'e2e.env') });
 export default defineConfig({
   testDir: BASE_FOLDER,
   outputDir: `${TEMP_FOLDER}/test-results`,
+
+  expect: {
+    timeout: 10000,
+  },
 
   /* Run tests in files in parallel */
   fullyParallel: true,
@@ -42,24 +47,47 @@ export default defineConfig({
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
+
+    viewport: { width: 1920, height: 1080 },
   },
 
   /* Configure projects for major browsers */
   projects: [
+    // Setup project
+    //{ name: 'saas-smoke-setup', testMatch: 'saas.smoke.setup.js' },
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      name: 'saas-smoke',
+      testMatch: 'saas.smoke.spec.js',
+      use: {
+        ...devices['Desktop Chrome'],
+      },
     },
-
+    /*     { name: 'login-setup', testMatch: 'auth.setup.js' }, */
+    /*     {
+      name: 'chromium',
+      testMatch: /.*\.spec\.js/,
+      use: { 
+        ...devices['Desktop Chrome'],
+        storageState: STORAGE_STATE
+      },
+      dependencies: ['login-setup']
+    }, */
+    /* 
     {
       name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
+      use: { 
+        ...devices['Desktop Firefox'],
+        storageState: STORAGE_STATE
+      },
     },
 
     {
       name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
+      use: { 
+        ...devices['Desktop Safari'],
+        storageState: STORAGE_STATE
+      },
+    }, */
 
     /* Test against mobile viewports. */
     // {

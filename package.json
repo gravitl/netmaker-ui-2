@@ -35,6 +35,8 @@
     "i18next": "^23.7.6",
     "immer": "^10.0.3",
     "lodash": "^4.17.21",
+    "playwright-extra": "^4.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
     "rc-virtual-list": "^3.10.8",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -48,7 +50,7 @@
     "zustand": "^4.4.7"
   },
   "devDependencies": {
-    "@playwright/test": "^1.40.1",
+    "@playwright/test": "^1.41.0",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^14.0.0",
     "@types/node": "^20.10.7",

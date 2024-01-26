@@ -1,3 +1,5 @@
+import { expect } from '@playwright/test';
+
 export class TestHelper {
   static hasValue = (val) => {
     return typeof val !== 'undefined' && val !== null && val !== '' && val !== 0;
@@ -21,20 +23,19 @@ export class TestHelper {
   /**
    * hex gen helpers
    */
-  /*     
-    static dec2hex (dec) {
-        return dec.toString(16).padStart(2, "0")
-    }
+  static getRandomChar = () => {
+    return Math.random().toString(36).substring(2);
+  };
 
-    static getRandomChar = (len=8) => {
-        let arr = new Uint8Array((len || 40) / 2)
-        window.crypto.getRandomValues(arr)
-        return Array.from(arr, dec2hex).join('')
-    }
+  static generateNumber = (digits = 10) => {
+    let num = '5' + Math.floor(100000000 + Math.random() * 9000000000).toString();
+    return num.slice(0, digits);
+  };
 
-    static generateNumber = (digits = 10) => {
-        let num = '5' + Math.floor(100000000 + Math.random() * 9000000000).toString()
-        return num.slice(0,digits);
-    } 
-    */
+  static async waitForTheTableLoadingIconToDisappear(page) {
+    const slowExpect = expect.configure({ timeout: 30000 });
+
+    //to not exist
+    await slowExpect(page.locator(`.ant-spin-dot`)).toHaveCount(0);
+  }
 }
