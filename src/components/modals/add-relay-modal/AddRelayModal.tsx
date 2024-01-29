@@ -296,6 +296,26 @@ export default function AddRelayModal({
                               if (!isNodeSelectable(node)) return 'unavailable-row';
                               return selectedRelayedIds.includes(node.id) ? 'selected-row' : '';
                             }}
+                            rowSelection={{
+                              type: 'checkbox',
+                              selectedRowKeys: selectedRelayedIds,
+                              hideSelectAll: true,
+                              onSelect: (record, selected) => {
+                                if (!isNodeSelectable(record)) return;
+                                setSelectedRelayedIds((prev) => {
+                                  const relayedNodesIds = new Set(prev);
+                                  if (relayedNodesIds.has(record.id)) {
+                                    relayedNodesIds.delete(record.id);
+                                  } else {
+                                    relayedNodesIds.add(record.id);
+                                  }
+                                  return [...relayedNodesIds];
+                                });
+                              },
+                              getCheckboxProps: (record) => {
+                                return { disabled: !isNodeSelectable(record) };
+                              },
+                            }}
                           />
                         </Col>
                       </Row>
