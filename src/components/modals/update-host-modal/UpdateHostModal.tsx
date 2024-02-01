@@ -5,6 +5,7 @@ import '../CustomModal.scss';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { Host } from '@/models/Host';
 import { HostsService } from '@/services/HostsService';
+import { isManagedHost } from '@/utils/Utils';
 
 interface UpdateHostModalProps {
   isOpen: boolean;
@@ -66,7 +67,7 @@ export default function UpdateHostModal({ isOpen, host, onUpdateHost, onCancel }
               rules={[{ required: true }]}
               data-nmui-intercom="update-host-form_name"
             >
-              <Input placeholder="Host name" />
+              <Input placeholder="Host name" disabled={isManagedHost(host.name)} />
             </Form.Item>
 
             <Form.Item
