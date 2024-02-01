@@ -22,7 +22,7 @@ import './AddRelayModal.styles.scss';
 import { Network } from '@/models/Network';
 import { ExtendedNode, Node } from '@/models/Node';
 import { getExtendedNode, getNodeConnectivityStatus, isNodeRelay } from '@/utils/NodeUtils';
-import { CloseOutlined, SearchOutlined } from '@ant-design/icons';
+import { CloseOutlined, DownOutlined, SearchOutlined, UpOutlined } from '@ant-design/icons';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { CreateNodeRelayDto } from '@/services/dtos/CreateNodeRelayDto';
 import { NodesService } from '@/services/NodesService';
@@ -54,6 +54,7 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
   const [selectedRelayedIds, setSelectedRelayedIds] = useState<Node['id'][]>([]);
   const [relayedSearch, setRelayedSearch] = useState('');
   const [isSelectOpen, setIsSelectOpen] = useState(false);
+  const [isDropDownOpen, setIsDropDownOpen] = useState(false);
 
   const getNodeConnectivity = useCallback((node: Node) => {
     if (getNodeConnectivityStatus(node) === 'error') return <Badge status="error" text="Error" />;
@@ -194,6 +195,8 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
                     </Row>
                   </div>
                 )}
+                onDropdownVisibleChange={(open) => setIsDropDownOpen(open)}
+                suffixIcon={isDropDownOpen ? <UpOutlined /> : <DownOutlined />}
               />
             )}
             {!!selectedRelay && (
@@ -287,6 +290,7 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
                       </Row>
                     </div>
                   )}
+                  suffixIcon={isSelectOpen ? <UpOutlined /> : <DownOutlined />}
                 />
               </Form.Item>
 
