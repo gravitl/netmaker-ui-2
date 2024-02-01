@@ -77,7 +77,7 @@ import { ControlsContainer, FullScreenControl, SearchControl, SigmaContainer, Zo
 import NetworkGraph from '@/components/NetworkGraph';
 import UpdateRelayModal from '@/components/modals/update-relay-modal/UpdateRelayModal';
 import { MetricCategories, NetworkMetrics, NodeOrClientMetric, UptimeNodeMetrics } from '@/models/Metrics';
-import { getExtClientAclStatus, getHostHealth, renderMetricValue, useBranding } from '@/utils/Utils';
+import { getExtClientAclStatus, getHostHealth, isManagedHost, renderMetricValue, useBranding } from '@/utils/Utils';
 import AddHostsToNetworkModal from '@/components/modals/add-hosts-to-network-modal/AddHostsToNetworkModal';
 import NewHostModal from '@/components/modals/new-host-modal/NewHostModal';
 import AddIngressModal from '@/components/modals/add-ingress-modal/AddIngressModal';
@@ -91,6 +91,7 @@ import UpdateIngressUsersModal from '@/components/modals/update-ingress-users-mo
 import getNodeImageProgram from 'sigma/rendering/webgl/programs/node.image';
 import { HOST_HEALTH_STATUS } from '@/models/NodeConnectivityStatus';
 import ClientConfigModal from '@/components/modals/client-config-modal/ClientConfigModal';
+import { isSaasBuild } from '@/services/BaseService';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -1764,6 +1765,13 @@ export default function NetworkDetailsPage(props: PageProps) {
     return nodeHealth === value;
   };
 
+  const checkIfManagedHostIsLoading = useMemo(() => {
+    // check if managed host is loading
+    const isNewTenant = store.isNewTenant;
+    const isManagedHostLoaded = store.hosts.some((host) => isManagedHost(host.name));
+    return isSaasBuild && isNewTenant && !isManagedHostLoaded;
+  }, [store.isNewTenant, store.hosts]);
+
   // ui components
   const getOverviewContent = useCallback(() => {
     if (!network) return <Skeleton active />;
@@ -1946,6 +1954,15 @@ export default function NetworkDetailsPage(props: PageProps) {
           </Col>
 
           <Col xs={24} style={{ paddingTop: '1rem' }}>
+            {checkIfManagedHostIsLoading && (
+              <Alert
+                message="Loading managed host..."
+                type="info"
+                showIcon
+                icon={<LoadingOutlined />}
+                style={{ marginBottom: '1rem' }}
+              />
+            )}
             <Table
               scroll={{ x: true }}
               columns={[

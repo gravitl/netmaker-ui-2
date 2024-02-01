@@ -18,27 +18,27 @@ function createNetwork(payload: CreateNetworkDto) {
 }
 
 function updateNetwork(networkId: Network['netid'], payload: NetworkPayload) {
-  return axiosService.put<NetworkPayload>(`${ApiRoutes.NETWORKS}/${networkId}`, payload);
+  return axiosService.put<NetworkPayload>(`${ApiRoutes.NETWORKS}/${encodeURIComponent(networkId)}`, payload);
 }
 
 function deleteNetwork(networkId: Network['netid']) {
-  return axiosService.delete<void>(`${ApiRoutes.NETWORKS}/${networkId}`);
+  return axiosService.delete<void>(`${ApiRoutes.NETWORKS}/${encodeURIComponent(networkId)}`);
 }
 
 function createAccessKey(networkId: Network['netid'], payload: CreateAccessKeyDto) {
-  return axiosService.post<AccessKey>(`${ApiRoutes.NETWORKS}/${networkId}/keys`, payload);
+  return axiosService.post<AccessKey>(`${ApiRoutes.NETWORKS}/${encodeURIComponent(networkId)}/keys`, payload);
 }
 
 function getAccessKeys(networkId: Network['netid']) {
-  return axiosService.get<AccessKey[]>(`${ApiRoutes.NETWORKS}/${networkId}/keys`);
+  return axiosService.get<AccessKey[]>(`${ApiRoutes.NETWORKS}/${encodeURIComponent(networkId)}/keys`);
 }
 
 function deleteAccessKey(networkId: Network['netid'], accessKeyName: AccessKey['name']) {
-  return axiosService.delete<void>(`${ApiRoutes.NETWORKS}/${networkId}/keys/${accessKeyName}`);
+  return axiosService.delete<void>(`${ApiRoutes.NETWORKS}/${encodeURIComponent(networkId)}/keys/${encodeURIComponent(accessKeyName)}`);
 }
 
 function createDns(networkId: Network['netid'], payload: DNS) {
-  return axiosService.post<DNS>(`${ApiRoutes.DNS}/${networkId}`, payload);
+  return axiosService.post<DNS>(`${ApiRoutes.DNS}/${encodeURIComponent(networkId)}`, payload);
 }
 
 function getDnses() {
@@ -46,24 +46,24 @@ function getDnses() {
 }
 
 function deleteDns(networkId: Network['netid'], dnsName: DNS['name']) {
-  return axiosService.delete<void>(`${ApiRoutes.DNS}/${networkId}/${dnsName}`);
+  return axiosService.delete<void>(`${ApiRoutes.DNS}/${encodeURIComponent(networkId)}/${encodeURIComponent(dnsName)}`);
 }
 
 function getAcls(networkId: Network['netid']) {
-  return axiosService.get<NodeAclContainer>(`${ApiRoutes.NETWORKS}/${networkId}/acls`);
+  return axiosService.get<NodeAclContainer>(`${ApiRoutes.NETWORKS}/${encodeURIComponent(networkId)}/acls`);
 }
 
 function updateAcls(networkId: Network['netid'], payload: NodeAclContainer) {
-  return axiosService.put<NodeAclContainer>(`${ApiRoutes.NETWORKS}/${networkId}/acls`, payload);
+  return axiosService.put<NodeAclContainer>(`${ApiRoutes.NETWORKS}/${encodeURIComponent(networkId)}/acls`, payload);
 }
 
 function getNodeMetrics(networkId: Network['netid']) {
-  return axiosService.get<NetworkMetrics>(`${ApiRoutes.METRICS}/${networkId}`);
+  return axiosService.get<NetworkMetrics>(`${ApiRoutes.METRICS}/${encodeURIComponent(networkId)}`);
 }
 
 function getClientMetrics(networkId: Network['netid']) {
   return axiosService.get<Record<ExternalClient['clientid'], NodeOrClientMetric>>(
-    `${ApiRoutes.METRICS_EXTERNAL_CLIENT}/${networkId}`,
+    `${ApiRoutes.METRICS_EXTERNAL_CLIENT}/${encodeURIComponent(networkId)}`,
   );
 }
 

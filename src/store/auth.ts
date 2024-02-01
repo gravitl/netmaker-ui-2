@@ -14,6 +14,7 @@ export interface IAuthSlice {
   amuiAuthToken: TenantConfig['amuiAuthToken'];
   amuiUserId: TenantConfig['amuiUserId'];
   user: User | null;
+  isNewTenant: TenantConfig['isNewTenant'];
 
   // methods
   isLoggedIn: () => boolean;
@@ -31,6 +32,7 @@ const createAuthSlice: StateCreator<IAuthSlice, [], [], IAuthSlice> = (set, get)
   amuiAuthToken: '',
   amuiUserId: '',
   user: null,
+  isNewTenant: false,
 
   isLoggedIn() {
     // TODO: fix username retrieval for SaaS

@@ -26,11 +26,12 @@ import { Network } from '@/models/Network';
 import { ExtendedNode, Node } from '@/models/Node';
 import { CreateExternalClientReqDto } from '@/services/dtos/CreateExternalClientReqDto';
 import { getExtendedNode, getNodeConnectivityStatus, isHostNatted } from '@/utils/NodeUtils';
-import { CloseOutlined, InfoCircleOutlined, SearchOutlined } from '@ant-design/icons';
+import { CloseOutlined, DownOutlined, InfoCircleOutlined, SearchOutlined, UpOutlined } from '@ant-design/icons';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { NodesService } from '@/services/NodesService';
 import { Host } from '@/models/Host';
 import { PUBLIC_DNS_RESOLVERS } from '@/constants/AppConstants';
+import { validateExtClientNameField } from '@/utils/Utils';
 
 interface AddClientModalProps {
   isOpen: boolean;
@@ -65,6 +66,7 @@ export default function AddClientModal({
   const [gatewaySearch, setGatewaySearch] = useState('');
   const [selectedGateway, setSelectedGateway] = useState<ExtendedNode | null>(null);
   const [isAutoselectionComplete, setIsAutoselectionComplete] = useState(false);
+  const [isDropDownOpen, setIsDropDownOpen] = useState(false);
   const isInternetGatewayVal = Form.useWatch('is_internet_gw', form);
 
   const getNodeConnectivity = useCallback((node: Node) => {
@@ -233,6 +235,8 @@ export default function AddClientModal({
                     </Row>
                   </div>
                 )}
+                onDropdownVisibleChange={(open) => setIsDropDownOpen(open)}
+                suffixIcon={isDropDownOpen ? <UpOutlined /> : <DownOutlined />}
               />
             )}
             {!!selectedGateway && (
@@ -324,7 +328,7 @@ export default function AddClientModal({
           <Form.Item
             label="Client ID (Optional)"
             name="clientid"
-            rules={[{ min: 5, max: 32 }]}
+            rules={validateExtClientNameField}
             data-nmui-intercom="add-client-form_clientid"
           >
             <Input placeholder="Unique name of client" />
