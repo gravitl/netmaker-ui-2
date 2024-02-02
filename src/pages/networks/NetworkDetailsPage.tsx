@@ -1956,7 +1956,7 @@ export default function NetworkDetailsPage(props: PageProps) {
           <Col xs={24} style={{ paddingTop: '1rem' }}>
             {checkIfManagedHostIsLoading && (
               <Alert
-                message="Loading managed host..."
+                message="Managed host creation in progress (estimated completion time: 5 - 10 minutes)."
                 type="info"
                 showIcon
                 icon={<LoadingOutlined />}
@@ -3059,11 +3059,13 @@ export default function NetworkDetailsPage(props: PageProps) {
         label: `Egress (${egresses.length})`,
         children: network && !isRefreshingNetwork ? getEgressContent() : <Skeleton active />,
       },
-      {
-        key: 'dns',
-        label: `DNS`,
-        children: network && !isRefreshingNetwork ? getDnsContent() : <Skeleton active />,
-      },
+      !isSaasBuild
+        ? {
+            key: 'dns',
+            label: `DNS`,
+            children: network && !isRefreshingNetwork ? getDnsContent() : <Skeleton active />,
+          }
+        : ({} as never),
       {
         key: 'access-control',
         label: `Access Control`,
