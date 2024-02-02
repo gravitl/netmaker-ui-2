@@ -478,7 +478,7 @@ export default function MainLayout() {
             {/* managed host is loading */}
             {checkIfManagedHostIsLoading && (
               <Alert
-                message="Loading managed host..."
+                message="Managed host creation in progress (estimated completion time: 5 - 10 minutes)."
                 type="info"
                 showIcon
                 icon={<LoadingOutlined />}
