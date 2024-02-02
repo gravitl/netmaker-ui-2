@@ -444,6 +444,8 @@ export default function HostsPage(props: PageProps) {
                   {
                     key: 'edit',
                     label: 'Edit Host',
+                    disabled: isManagedHost(host.name),
+                    tooltip: isManagedHost(host.name) ? 'Managed hosts cannot be edited' : undefined,
                     onClick: (ev) => {
                       ev.domEvent.stopPropagation();
                       onEditHost(host);
@@ -463,6 +465,7 @@ export default function HostsPage(props: PageProps) {
                     label: 'Delete Host',
                     danger: true,
                     disabled: isManagedHost(host.name),
+                    tooltip: isManagedHost(host.name) ? 'Managed hosts cannot be deleted' : undefined,
                     onClick: (ev) => {
                       ev.domEvent.stopPropagation();
                       confirmDeleteHost(host);
