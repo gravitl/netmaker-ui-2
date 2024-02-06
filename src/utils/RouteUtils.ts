@@ -100,6 +100,11 @@ export function getNetmakerSupportEmail() {
   return import.meta.env.VITE_NETMAKER_SUPPORT_EMAIL;
 }
 
+// Function to get Netmaker trial period docs
+export function getNetmakerTrialPeriodDocs() {
+  return import.meta.env.VITE_NETMAKER_TRIAL_PERIOD_DOCS_URL;
+}
+
 // Function to get netclient download link and filename based on OS, arch and type
 export function getNetclientDownloadLink(
   os: AvailableOses,

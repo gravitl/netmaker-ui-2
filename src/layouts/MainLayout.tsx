@@ -20,7 +20,7 @@ import { useTranslation } from 'react-i18next';
 import { isSaasBuild } from '@/services/BaseService';
 import { ServerConfigService } from '@/services/ServerConfigService';
 import { AppErrorBoundary } from '@/components/AppErrorBoundary';
-import { useBranding } from '@/utils/Utils';
+import { isManagedHost, useBranding } from '@/utils/Utils';
 
 const { Content, Sider } = Layout;
 
@@ -44,6 +44,7 @@ export default function MainLayout() {
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [openSidebarMenus, setOpenSidebarMenus] = useState(['networks']);
+  const [trialEndDate, setTrialEndDate] = useState<Date | null>(null);
 
   const recentNetworks = useMemo(
     // TODO: implement most recent ranking
@@ -318,6 +319,36 @@ export default function MainLayout() {
     return width < 576 && !isSidebarCollapsed;
   }, [isSidebarCollapsed, window.innerWidth]);
 
+  const checkIfManagedHostIsLoading = useMemo(() => {
+    // check if managed host is loading
+    const isNewTenant = store.isNewTenant;
+    const isManagedHostLoaded = store.hosts.some((host) => isManagedHost(host.name));
+    return isSaasBuild && isNewTenant && !isManagedHostLoaded;
+  }, [store.isNewTenant, store.hosts]);
+
+  useEffect(() => {
+    if (store.serverStatus?.status?.trial_end_date) {
+      const endDate = new Date(store.serverStatus.status.trial_end_date);
+      setTrialEndDate(endDate);
+    }
+  }, [store.serverStatus]);
+
+  const getTrialDaysRemainingText = useMemo(() => {
+    let getTrialDaysRemaining = 0;
+    if (trialEndDate) {
+      const currentDate = new Date();
+      const timeDifference = trialEndDate.getTime() - currentDate.getTime();
+      getTrialDaysRemaining = Math.ceil(timeDifference / (1000 * 3600 * 24));
+    }
+    if (getTrialDaysRemaining === 1) {
+      return `Your Pro trial ends on ${trialEndDate?.toDateString()} at ${trialEndDate?.toLocaleTimeString()}, you have less than a day left on your trial.`;
+    } else if (getTrialDaysRemaining > 1) {
+      return `Your Pro trial ends on ${trialEndDate?.toDateString()}, you have ${getTrialDaysRemaining} days left on your trial.`;
+    } else {
+      return `Your Pro trial ended on ${trialEndDate?.toDateString()} at ${trialEndDate?.toLocaleTimeString()}, please contact your administrator to renew your license.`;
+    }
+  }, [trialEndDate]);
+
   useEffect(() => {
     storeFetchNetworks();
   }, [storeFetchNetworks]);
@@ -444,6 +475,30 @@ export default function MainLayout() {
           }}
         >
           <Content style={{ background: themeToken.colorBgContainer, overflow: 'initial', minHeight: '100vh' }}>
+            {/* managed host is loading */}
+            {checkIfManagedHostIsLoading && (
+              <Alert
+                message="Managed host creation in progress (estimated completion time: 5 - 10 minutes)."
+                type="info"
+                showIcon
+                icon={<LoadingOutlined />}
+                style={{ marginBottom: '1rem' }}
+              />
+            )}
+            {/* license status indicator */}
+            {store.serverStatus?.status?.is_on_trial_license && (
+              <Row>
+                <Col xs={24}>
+                  <Alert
+                    type="warning"
+                    showIcon
+                    style={{ border: 'none', height: '3rem', fontSize: '1rem', color: '#D4B106' }}
+                    message={getTrialDaysRemainingText}
+                  />
+                </Col>
+              </Row>
+            )}
+
             {/* server status indicator */}
             {!store.serverStatus.isHealthy && (
               <Row>

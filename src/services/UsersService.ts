@@ -12,7 +12,7 @@ function getUsers() {
 }
 
 function getUser(username: User['username']) {
-  return axiosService.get<User>(`${ApiRoutes.USERS}/${username}`);
+  return axiosService.get<User>(`${ApiRoutes.USERS}/${encodeURIComponent(username)}`);
 }
 
 function serverHasAdmin() {
@@ -24,27 +24,27 @@ function createAdminUser(payload: CreateUserReqDto) {
 }
 
 function createUser(payload: User) {
-  return axiosService.post<User>(`${ApiRoutes.USERS}/${payload.username}`, payload);
+  return axiosService.post<User>(`${ApiRoutes.USERS}/${encodeURIComponent(payload.username)}`, payload);
 }
 
 function updateUser(username: User['username'], payload: UpdateUserReqDto) {
-  return axiosService.put<User>(`${ApiRoutes.USERS}/${username}`, payload);
+  return axiosService.put<User>(`${ApiRoutes.USERS}/${encodeURIComponent(username)}`, payload);
 }
 
 function updateUserDetails(username: User['username'], payload: User) {
-  return axiosService.put<User>(`${ApiRoutes.USERS}/networks/${username}`, payload);
+  return axiosService.put<User>(`${ApiRoutes.USERS}/networks/${encodeURIComponent(username)}`, payload);
 }
 
 function updateAdminUser(username: User['username'], payload: User) {
-  return axiosService.put<User>(`${ApiRoutes.USERS}/${username}/adm`, payload);
+  return axiosService.put<User>(`${ApiRoutes.USERS}/${encodeURIComponent(username)}/adm`, payload);
 }
 
 function deleteUser(username: User['username']) {
-  return axiosService.delete<void>(`${ApiRoutes.USERS}/${username}`);
+  return axiosService.delete<void>(`${ApiRoutes.USERS}/${encodeURIComponent(username)}`);
 }
 
 function createUserGroup(userGroupName: UserGroup) {
-  return axiosService.post<void>(`${ApiRoutes.USER_GROUPS}/${userGroupName}`);
+  return axiosService.post<void>(`${ApiRoutes.USER_GROUPS}/${encodeURIComponent(userGroupName)}`);
 }
 
 function getUserGroups(): Promise<UserGroup[]> {
@@ -54,23 +54,23 @@ function getUserGroups(): Promise<UserGroup[]> {
 }
 
 function deleteUserGroup(userGroupName: UserGroup) {
-  return axiosService.delete<void>(`${ApiRoutes.USER_GROUPS}/${userGroupName}`);
+  return axiosService.delete<void>(`${ApiRoutes.USER_GROUPS}/${encodeURIComponent(userGroupName)}`);
 }
 
 function attachUserToIngress(username: User['username'], ingressId: Node['id']) {
-  return axiosService.post<void>(`${ApiRoutes.USERS}/${username}/remote_access_gw/${ingressId}`);
+  return axiosService.post<void>(`${ApiRoutes.USERS}/${encodeURIComponent(username)}/remote_access_gw/${encodeURIComponent(ingressId)}`);
 }
 
 function removeUserFromIngress(username: User['username'], ingressId: Node['id']) {
-  return axiosService.delete<void>(`${ApiRoutes.USERS}/${username}/remote_access_gw/${ingressId}`);
+  return axiosService.delete<void>(`${ApiRoutes.USERS}/${encodeURIComponent(username)}/remote_access_gw/${encodeURIComponent(ingressId)}`);
 }
 
 function transferSuperAdminRights(username: User['username']) {
-  return axiosService.post<void>(`${ApiRoutes.USERS_ADMIN}/transfersuperadmin/${username}`);
+  return axiosService.post<void>(`${ApiRoutes.USERS_ADMIN}/transfersuperadmin/${encodeURIComponent(username)}`);
 }
 
 function getIngressUsers(nodeId: Node['id']) {
-  return axiosService.get<GatewayUsersResDto>(`${ApiRoutes.USERS}/ingress/${nodeId}`);
+  return axiosService.get<GatewayUsersResDto>(`${ApiRoutes.USERS}/ingress/${encodeURIComponent(nodeId)}`);
 }
 
 export const UsersService = {

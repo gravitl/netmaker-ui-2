@@ -12,11 +12,11 @@ function createEnrollmentKey(payload: CreateEnrollmentKeyReqDto) {
 }
 
 function deleteEnrollmentKey(id: EnrollmentKey['value']) {
-  return axiosService.delete<void>(`${ApiRoutes.ENROLLMENT_KEYS}/${id}`);
+  return axiosService.delete<void>(`${ApiRoutes.ENROLLMENT_KEYS}/${encodeURIComponent(id)}`);
 }
 
 function updateEnrollmentKey(id: EnrollmentKey['value'], payload: CreateEnrollmentKeyReqDto) {
-  return axiosService.put<EnrollmentKey>(`${ApiRoutes.ENROLLMENT_KEYS}/${id}`, payload);
+  return axiosService.put<EnrollmentKey>(`${ApiRoutes.ENROLLMENT_KEYS}/${encodeURIComponent(id)}`, payload);
 }
 
 export const EnrollmentKeysService = {

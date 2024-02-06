@@ -23,7 +23,7 @@ import '../CustomModal.scss';
 import { Network } from '@/models/Network';
 import { ExtendedNode, Node } from '@/models/Node';
 import { getExtendedNode, getNodeConnectivityStatus } from '@/utils/NodeUtils';
-import { CloseOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons';
+import { CloseOutlined, DownOutlined, PlusOutlined, SearchOutlined, UpOutlined } from '@ant-design/icons';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { AxiosError } from 'axios';
 import { NodesService } from '@/services/NodesService';
@@ -52,6 +52,7 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [egressSearch, setEgressSearch] = useState('');
+  const [isDropDownOpen, setIsDropDownOpen] = useState(false);
   const [selectedEgress, setSelectedEgress] = useState<ExtendedNode | null>(null);
   const idFormField = 'nodeId';
 
@@ -199,6 +200,8 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
                       </Row>
                     </div>
                   )}
+                  onDropdownVisibleChange={(open) => setIsDropDownOpen(open)}
+                  suffixIcon={isDropDownOpen ? <UpOutlined /> : <DownOutlined />}
                 />
               )}
               {!!selectedEgress && (

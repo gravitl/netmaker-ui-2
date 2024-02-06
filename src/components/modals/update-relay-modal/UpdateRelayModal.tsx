@@ -23,7 +23,7 @@ import { Network } from '@/models/Network';
 import { ExtendedNode, Node } from '@/models/Node';
 import { Host } from '@/models/Host';
 import { getExtendedNode, getNodeConnectivityStatus, isNodeRelay } from '@/utils/NodeUtils';
-import { CloseOutlined, SearchOutlined } from '@ant-design/icons';
+import { CloseOutlined, DownOutlined, SearchOutlined, UpOutlined } from '@ant-design/icons';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { CreateNodeRelayDto } from '@/services/dtos/CreateNodeRelayDto';
 import { NodesService } from '@/services/NodesService';
@@ -50,6 +50,7 @@ export default function UpdateRelayModal({ relay, isOpen, onUpdateRelay, onCance
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedRelayedIds, setSelectedRelayedIds] = useState<Host['id'][]>(relay.relaynodes ?? []);
   const [relayedSearch, setRelayedSearch] = useState('');
+  const [isDropDownOpen, setIsDropDownOpen] = useState(false);
 
   const getNodeConnectivity = useCallback((node: Node) => {
     if (getNodeConnectivityStatus(node) === 'error') return <Badge status="error" text="Error" />;
@@ -217,6 +218,8 @@ export default function UpdateRelayModal({ relay, isOpen, onUpdateRelay, onCance
                   </Row>
                 </div>
               )}
+              onDropdownVisibleChange={(open) => setIsDropDownOpen(open)}
+              suffixIcon={isDropDownOpen ? <UpOutlined /> : <DownOutlined />}
             />
           </Form.Item>
 

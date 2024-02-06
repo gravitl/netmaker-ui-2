@@ -32,7 +32,7 @@ export default function DashboardPage(props: PageProps) {
   const [showUpgradeAlert, setShowUpgradeAlert] = useState(false);
 
   useEffect(() => {
-    if (!isServerEE) {
+    if (!isServerEE && !store.serverStatus.status?.is_on_trial_license) {
       setShowUpgradeAlert(true);
     }
   }, [isServerEE]);

@@ -4,6 +4,7 @@ import { useStore } from '@/store/store';
 import { getHostRoute, resolveAppRoute } from '@/utils/RouteUtils';
 import { MoreOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
 import {
+  Alert,
   Button,
   Card,
   Col,
@@ -33,6 +34,7 @@ import { getNodeConnectivityStatus } from '@/utils/NodeUtils';
 import { Network } from '@/models/Network';
 import { HostsService } from '@/services/HostsService';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
+import { isManagedHost } from '@/utils/Utils';
 import NewHostModal from '@/components/modals/new-host-modal/NewHostModal';
 import { lt } from 'semver';
 import { ExtendedNode } from '@/models/Node';
@@ -442,6 +444,8 @@ export default function HostsPage(props: PageProps) {
                   {
                     key: 'edit',
                     label: 'Edit Host',
+                    disabled: isManagedHost(host.name),
+                    tooltip: isManagedHost(host.name) ? 'Managed hosts cannot be edited' : undefined,
                     onClick: (ev) => {
                       ev.domEvent.stopPropagation();
                       onEditHost(host);
@@ -460,6 +464,8 @@ export default function HostsPage(props: PageProps) {
                     key: 'delete',
                     label: 'Delete Host',
                     danger: true,
+                    disabled: isManagedHost(host.name),
+                    tooltip: isManagedHost(host.name) ? 'Managed hosts cannot be deleted' : undefined,
                     onClick: (ev) => {
                       ev.domEvent.stopPropagation();
                       confirmDeleteHost(host);

@@ -56,6 +56,7 @@ export interface TenantConfig {
   tenantName?: string;
   amuiAuthToken?: string;
   amuiUserId?: string;
+  isNewTenant?: boolean;
 }
 
 export interface ServerStatus {
@@ -64,6 +65,8 @@ export interface ServerStatus {
   healthyNetwork: boolean;
   license_error: string;
   is_pro: boolean;
+  trial_end_date: string;
+  is_on_trial_license: boolean;
 }
 
 export type IntercomTiers = 'paid_tier' | 'free_tier';

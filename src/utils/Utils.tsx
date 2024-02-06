@@ -391,6 +391,29 @@ export const validateLastNameField = validateName('last name');
 export const validateFirstNameField = validateName('first name');
 export const validateExtClientNameField = validateExtClientName('client id');
 
+// check host is a mananged host
+export const isManagedHost = (name: string): boolean => {
+  // check if host name matches the pattern: tenant-<TENANT_ID>-mgm-endpoint-<SOME_UUID>
+  // check if host name starts with tenant-
+  // check if host name has -mgm-endpoint-
+  const regex1 = /^tenant-/;
+  const regex2 = /-mgm-endpoint-/;
+  return regex1.test(name) && regex2.test(name);
+};
+
+const validateIfHostNameIsNotManagedHost = (_: any, value: string) => {
+  if (isManagedHost(value)) {
+    return Promise.reject('Host name cannot follow the pattern: tenant-<TENANT_ID>-mgm-endpoint-<SOME_UUID>');
+  } else {
+    return Promise.resolve();
+  }
+};
+
+export const validateHostNameField: Rule[] = [
+  { required: true, message: 'Please enter a value.' },
+  { validator: validateIfHostNameIsNotManagedHost },
+];
+
 /**
  * Hook to get app branding configuration.
  *
