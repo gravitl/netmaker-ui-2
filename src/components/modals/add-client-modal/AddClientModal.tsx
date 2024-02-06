@@ -32,6 +32,7 @@ import { NodesService } from '@/services/NodesService';
 import { Host } from '@/models/Host';
 import { PUBLIC_DNS_RESOLVERS } from '@/constants/AppConstants';
 import { validateExtClientNameField } from '@/utils/Utils';
+import TextArea from 'antd/es/input/TextArea';
 
 interface AddClientModalProps {
   isOpen: boolean;
@@ -47,6 +48,8 @@ type AddClientFormFields = CreateExternalClientReqDto & {
   gatewayId: Node['id'];
   extclientdns: string;
   is_internet_gw: boolean;
+  postup: string;
+  postdown: string;
 };
 
 export default function AddClientModal({
@@ -137,6 +140,8 @@ export default function AddClientModal({
   const createClient = async () => {
     try {
       const formData = await form.validateFields();
+      formData.postup = formData.postup?.trim();
+      formData.postdown = formData.postdown?.trim();
       setIsSubmitting(true);
 
       if (!selectedGateway) return;
@@ -353,6 +358,53 @@ export default function AddClientModal({
                 data-nmui-intercom="add-client-form_extraallowedips"
               >
                 <Select mode="tags" placeholder="Additional IP Addresses" allowClear={true} />
+              </Form.Item>
+
+              <Form.Item
+                label={
+                  <>
+                    Post Up (Optional)
+                    <Tooltip title="PostUp serves as a lifetime hook that runs the provided script that run just after wireguard sets up the interface and the VPN connection is live">
+                      <InfoCircleOutlined style={{ marginLeft: '0.3em' }} />
+                    </Tooltip>
+                  </>
+                }
+                name="postup"
+                data-nmui-intercom="add-client-form_postup"
+                rules={[
+                  {
+                    required: false,
+                  },
+                  {
+                    max: 1024,
+                    message: 'PostUp script cannot exceed 1024 characters',
+                  },
+                ]}
+              >
+                <Input placeholder="PostUp script" />
+              </Form.Item>
+              <Form.Item
+                label={
+                  <>
+                    Post Down (Optional)
+                    <Tooltip title="PostDown serves as a lifetime hook that runs the provided script that run just after wireguard tears down the interface">
+                      <InfoCircleOutlined style={{ marginLeft: '0.3em' }} />
+                    </Tooltip>
+                  </>
+                }
+                name="postdown"
+                data-nmui-intercom="add-client-form_postdown"
+                rules={[
+                  {
+                    required: false,
+                  },
+                  {
+                    max: 1024,
+                    message: 'PostDown script cannot exceed 1024 characters',
+                  },
+                ]}
+              >
+                <Input placeholder="PostDown script" />
               </Form.Item>
             </Collapse.Panel>
           </Collapse>
