@@ -65,7 +65,7 @@ export async function setupTenantConfig(): Promise<void> {
     amuiAuthToken,
     username: username || useStore.getState().username,
     amuiUserId: amuiUserId || useStore.getState().amuiUserId,
-    isNewTenant: isNewTenant || useStore.getState().isNewTenant,
+    isNewTenant: isNewTenant,
     // user,
   });
 }
