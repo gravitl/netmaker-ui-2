@@ -128,6 +128,7 @@ export default function UpdateNodeModal({ isOpen, node, onUpdateNode, onCancel }
                     value: iface.addressString,
                   })) ?? []
                 }
+                disabled={true}
               />
             </Form.Item>
 
