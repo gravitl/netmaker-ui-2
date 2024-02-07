@@ -1963,6 +1963,14 @@ export default function NetworkDetailsPage(props: PageProps) {
                 style={{ marginBottom: '1rem' }}
               />
             )}
+            {!isFailoverNodePresentInNetwork && (
+              <Alert
+                message="There's no failover node present in the network. Add one for redundancy."
+                type="warning"
+                showIcon
+                style={{ marginBottom: '1rem' }}
+              />
+            )}
             <Table
               scroll={{ x: true }}
               columns={[
