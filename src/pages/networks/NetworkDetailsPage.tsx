@@ -37,6 +37,7 @@ import {
   SettingOutlined,
   StopOutlined,
   UserOutlined,
+  WarningOutlined,
 } from '@ant-design/icons';
 import {
   Alert,
@@ -1968,6 +1969,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                 message="There's no failover node present in the network. Add one for redundancy."
                 type="warning"
                 showIcon
+                icon={<WarningOutlined />}
                 style={{ marginBottom: '1rem' }}
               />
             )}
