@@ -373,6 +373,24 @@ export default function NewHostModal({ isOpen, onCancel, onFinish, networkId }: 
                   <>
                     <Row>
                       <Col xs={24} style={{ textAlign: 'center' }}>
+                        <Alert
+                          type="info"
+                          message={
+                            <>
+                              We recommend using the remote access client for Windows, Go to remote access tab and you
+                              can follow the instructions for setup
+                              <a
+                                href="https://docs.netmaker.io/netclient.html#remote-access-client"
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                {' '}
+                                here.
+                              </a>
+                            </>
+                          }
+                          style={{ marginBottom: '0.5rem' }}
+                        />
                         <Button
                           type="primary"
                           href={getNetclientDownloadLink('windows', 'amd64')[0]}
@@ -397,6 +415,24 @@ export default function NewHostModal({ isOpen, onCancel, onFinish, networkId }: 
                   <>
                     <Row>
                       <Col xs={24} style={{ textAlign: 'center' }}>
+                        <Alert
+                          type="info"
+                          message={
+                            <>
+                              We recommend using the remote access client for Windows, Go to remote access tab and you
+                              can follow the instructions for setup
+                              <a
+                                href="https://docs.netmaker.io/netclient.html#remote-access-client"
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                {' '}
+                                here.
+                              </a>
+                            </>
+                          }
+                          style={{ marginBottom: '0.5rem' }}
+                        />
                         <Form.Item label="Select your architecture">
                           <Select
                             value={selectedArch}
