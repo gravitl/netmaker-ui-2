@@ -17,7 +17,7 @@ import {
   Typography,
   notification,
 } from 'antd';
-import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { MouseEvent, Ref, useCallback, useEffect, useMemo, useState } from 'react';
 import { useStore } from '@/store/store';
 import { AvailableArchs, AvailableOses } from '@/models/AvailableOses';
 import { getNetclientDownloadLink } from '@/utils/RouteUtils';
@@ -32,11 +32,18 @@ import { getExtendedNode } from '@/utils/NodeUtils';
 import { ExtendedNode } from '@/models/Node';
 import { NULL_NODE, NULL_NODE_ID } from '@/constants/Types';
 
+type PageType = 'network-details' | 'host';
 interface NewHostModal {
   isOpen: boolean;
   onFinish?: () => void;
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
   networkId?: string;
+  connectHostModalEnrollmentKeysTabRef?: Ref<HTMLDivElement>;
+  connectHostModalSelectOSTabRef?: Ref<HTMLDivElement>;
+  connectHostModalJoinNetworkTabRef?: Ref<HTMLDivElement>;
+  isTourOpen?: boolean;
+  tourStep?: number;
+  page?: PageType;
 }
 
 const steps = [
@@ -51,7 +58,18 @@ const steps = [
   },
 ];
 
-export default function NewHostModal({ isOpen, onCancel, onFinish, networkId }: NewHostModal) {
+export default function NewHostModal({
+  isOpen,
+  onCancel,
+  onFinish,
+  networkId,
+  connectHostModalEnrollmentKeysTabRef,
+  connectHostModalJoinNetworkTabRef,
+  connectHostModalSelectOSTabRef,
+  isTourOpen,
+  tourStep,
+  page,
+}: NewHostModal) {
   const store = useStore();
   const [notify, notifyCtx] = notification.useNotification();
 
@@ -135,6 +153,22 @@ export default function NewHostModal({ isOpen, onCancel, onFinish, networkId }: 
     return NULL_NODE;
   }, [selectedEnrollmentKey, store.nodes, store.hostsCommonDetails]);
 
+  const handleTourStepChange = useMemo(() => {
+    if (
+      (page === 'host' && isTourOpen && tourStep === 7) ||
+      (page === 'network-details' && isTourOpen && tourStep === 4)
+    ) {
+      setSelectedEnrollmentKey(enrollmentKeys[0]);
+      setCurrentStep(1);
+    } else if (
+      (page === 'host' && isTourOpen && tourStep === 8) ||
+      (page === 'network-details' && isTourOpen && tourStep === 5)
+    ) {
+      setSelectedOs('linux');
+      setCurrentStep(2);
+    }
+  }, [isTourOpen, tourStep]);
+
   useEffect(() => {
     // reset arch on OS change
     setSelectedArch('amd64');
@@ -205,7 +239,7 @@ export default function NewHostModal({ isOpen, onCancel, onFinish, networkId }: 
       {currentStep === 0 && (
         <div className="CustomModalBody">
           <Row justify="center">
-            <Col xs={24}>
+            <Col xs={24} ref={connectHostModalEnrollmentKeysTabRef}>
               <Card>
                 <p style={{ marginTop: '0' }}>Select an enrollment key to register with</p>
                 <div className="" style={{ textAlign: 'right' }}>
@@ -271,7 +305,7 @@ export default function NewHostModal({ isOpen, onCancel, onFinish, networkId }: 
       {/* install netclient */}
       {currentStep === 1 && (
         <div className="CustomModalBody">
-          <Row justify="center">
+          <Row justify="center" ref={connectHostModalSelectOSTabRef}>
             <Col xs={24}>
               {selectedEnrollmentKey?.relay != NULL_NODE_ID && (
                 <Alert
@@ -533,7 +567,7 @@ export default function NewHostModal({ isOpen, onCancel, onFinish, networkId }: 
       {/* join network */}
       {currentStep === 2 && (
         <div className="CustomModalBody">
-          <Row justify="center">
+          <Row justify="center" ref={connectHostModalJoinNetworkTabRef}>
             <Col xs={24}>
               <Card>
                 <Typography.Text>Steps to join a network:</Typography.Text>

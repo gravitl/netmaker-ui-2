@@ -15,7 +15,7 @@ import {
   Tooltip,
   Typography,
 } from 'antd';
-import { MouseEvent, useCallback, useMemo, useState } from 'react';
+import { MouseEvent, Ref, useCallback, useMemo, useState } from 'react';
 import { useStore } from '@/store/store';
 import '../CustomModal.scss';
 import './AddRelayModal.styles.scss';
@@ -35,13 +35,20 @@ interface AddRelayModalProps {
   closeModal?: () => void;
   onOk?: (e: MouseEvent<HTMLButtonElement>) => void;
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
+  createRelayModalSelectHostRef: Ref<HTMLDivElement>;
 }
 
 const nodeIdFormName = 'nodeid';
 
 type AddRelayFormFields = CreateNodeRelayDto;
 
-export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, networkId }: AddRelayModalProps) {
+export default function AddRelayModal({
+  isOpen,
+  onCreateRelay,
+  onCancel,
+  networkId,
+  createRelayModalSelectHostRef,
+}: AddRelayModalProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
   const { token: themeToken } = theme.useToken();
@@ -157,47 +164,51 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
             data-nmui-intercom="add-relay-form_nodeid"
           >
             {!selectedRelay && (
-              <Select
-                placeholder="Select host"
-                dropdownRender={() => (
-                  <div style={{ padding: '.5rem' }}>
-                    <Row style={{ marginBottom: '1rem' }}>
-                      <Col span={8}>
-                        <Input
-                          placeholder="Search host..."
-                          value={relaySearch}
-                          onChange={(e) => setRelaySearch(e.target.value)}
-                          prefix={<SearchOutlined />}
-                        />
-                      </Col>
-                    </Row>
-                    <Row>
-                      <Col span={24}>
-                        <Table
-                          size="small"
-                          columns={relayTableCols}
-                          dataSource={filteredNetworkNodes}
-                          rowKey="id"
-                          onRow={(node) => {
-                            return {
-                              onClick: () => {
-                                if (!isNodeSelectable(node)) return;
-                                form.setFieldValue(nodeIdFormName, node.id);
-                                setSelectedRelay(node);
-                              },
-                            };
-                          }}
-                          rowClassName={(node) => {
-                            return isNodeSelectable(node) ? '' : 'unavailable-row';
-                          }}
-                        />
-                      </Col>
-                    </Row>
-                  </div>
-                )}
-                onDropdownVisibleChange={(open) => setIsDropDownOpen(open)}
-                suffixIcon={isDropDownOpen ? <UpOutlined /> : <DownOutlined />}
-              />
+              <Row>
+                <Col span={24} ref={createRelayModalSelectHostRef}>
+                  <Select
+                    placeholder="Select host"
+                    dropdownRender={() => (
+                      <div style={{ padding: '.5rem' }}>
+                        <Row style={{ marginBottom: '1rem' }}>
+                          <Col span={8}>
+                            <Input
+                              placeholder="Search host..."
+                              value={relaySearch}
+                              onChange={(e) => setRelaySearch(e.target.value)}
+                              prefix={<SearchOutlined />}
+                            />
+                          </Col>
+                        </Row>
+                        <Row>
+                          <Col span={24}>
+                            <Table
+                              size="small"
+                              columns={relayTableCols}
+                              dataSource={filteredNetworkNodes}
+                              rowKey="id"
+                              onRow={(node) => {
+                                return {
+                                  onClick: () => {
+                                    if (!isNodeSelectable(node)) return;
+                                    form.setFieldValue(nodeIdFormName, node.id);
+                                    setSelectedRelay(node);
+                                  },
+                                };
+                              }}
+                              rowClassName={(node) => {
+                                return isNodeSelectable(node) ? '' : 'unavailable-row';
+                              }}
+                            />
+                          </Col>
+                        </Row>
+                      </div>
+                    )}
+                    onDropdownVisibleChange={(open) => setIsDropDownOpen(open)}
+                    suffixIcon={isDropDownOpen ? <UpOutlined /> : <DownOutlined />}
+                  />
+                </Col>
+              </Row>
             )}
             {!!selectedRelay && (
               <>

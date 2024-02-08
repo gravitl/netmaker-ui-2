@@ -1,5 +1,5 @@
-import { Button, Col, Divider, Form, Input, Modal, notification, Row, Switch } from 'antd';
-import { MouseEvent, useCallback, useEffect, useState } from 'react';
+import { Button, Col, Divider, Form, Input, Modal, notification, Row, Select, Switch } from 'antd';
+import { MouseEvent, Ref, useCallback, useEffect, useState } from 'react';
 import { useStore } from '@/store/store';
 import '../CustomModal.scss';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
@@ -11,11 +11,23 @@ interface AddUserModalProps {
   isOpen: boolean;
   onCreateUser: (user: User) => any;
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
+  addUserButtonRef?: Ref<HTMLDivElement>;
+  addUserNameInputRef?: Ref<HTMLDivElement>;
+  addUserPasswordInputRef?: Ref<HTMLDivElement>;
+  addUserSetAsAdminCheckboxRef?: Ref<HTMLDivElement>;
 }
 
 type CreateUserForm = User & { password: string; 'confirm-password': string };
 
-export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUserModalProps) {
+export default function AddUserModal({
+  isOpen,
+  onCreateUser,
+  onCancel,
+  addUserButtonRef,
+  addUserNameInputRef,
+  addUserPasswordInputRef,
+  addUserSetAsAdminCheckboxRef,
+}: AddUserModalProps) {
   const [form] = Form.useForm<CreateUserForm>();
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
@@ -76,13 +88,23 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
       <Divider style={{ margin: '0px 0px 2rem 0px' }} />
       <div className="CustomModalBody">
         <Form name="add-user-form" form={form} layout="vertical" initialValues={{ isadmin: isAdmin }}>
-          <Form.Item label="Username" name="username" rules={[{ required: true }]}>
-            <Input placeholder="Username" />
-          </Form.Item>
+          <Row ref={addUserNameInputRef}>
+            {' '}
+            <Col xs={24}>
+              <Form.Item label="Username" name="username" rules={[{ required: true }]}>
+                <Input placeholder="Username" />
+              </Form.Item>
+            </Col>
+          </Row>
 
-          <Form.Item label="Password" name="password" rules={[{ required: true }]}>
-            <Input placeholder="Password" type="password" />
-          </Form.Item>
+          <Row ref={addUserPasswordInputRef}>
+            {' '}
+            <Col xs={24}>
+              <Form.Item label="Password" name="password" rules={[{ required: true }]}>
+                <Input placeholder="Password" type="password" />
+              </Form.Item>
+            </Col>
+          </Row>
 
           <Form.Item
             label="Confirm Password"
@@ -103,10 +125,14 @@ export default function AddUserModal({ isOpen, onCreateUser, onCancel }: AddUser
           >
             <Input placeholder="Confirm Password" type="password" />
           </Form.Item>
-
-          <Form.Item label="Is admin" name="isadmin" valuePropName="checked">
-            <Switch disabled={isSwitchDisabled} />
-          </Form.Item>
+          <Row ref={addUserSetAsAdminCheckboxRef}>
+            {' '}
+            <Col xs={24}>
+              <Form.Item label="Is admin" name="isadmin" valuePropName="checked">
+                <Switch disabled={isSwitchDisabled} />
+              </Form.Item>
+            </Col>
+          </Row>
 
           <Row>
             <Col xs={24} style={{ textAlign: 'right' }}>

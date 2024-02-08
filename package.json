@@ -22,6 +22,7 @@
     "@ant-design/icons": "^5.2.6",
     "@react-sigma/core": "^3.4.2",
     "antd": "~5.10",
+    "antd-style": "^3.6.1",
     "axios": "^1.6.5",
     "axios-mock-adapter": "^1.22.0",
     "buffer": "^6.0.3",
