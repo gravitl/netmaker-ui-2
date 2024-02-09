@@ -1,5 +1,12 @@
 import { useStore } from '@/store/store';
-import { InfoCircleOutlined, MoreOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
+import {
+  InfoCircleOutlined,
+  MoreOutlined,
+  PlusOutlined,
+  QuestionCircleOutlined,
+  ReloadOutlined,
+  SearchOutlined,
+} from '@ant-design/icons';
 import {
   Button,
   Card,
@@ -33,6 +40,8 @@ import { isSaasBuild } from '@/services/BaseService';
 import { getAmuiUrl } from '@/utils/RouteUtils';
 import TransferSuperAdminRightsModal from '@/components/modals/transfer-super-admin-rights/TransferSuperAdminRightsModal';
 import { useBranding } from '@/utils/Utils';
+
+const USERS_DOCS_URL = 'https://docs.netmaker.io/pro/pro-users.html';
 
 export default function UsersPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
@@ -275,6 +284,13 @@ export default function UsersPage(props: PageProps) {
             <Button type="primary" size="large" onClick={onAddUser} ref={addUserButtonRef}>
               <PlusOutlined /> Add a User
             </Button>
+            <Button
+              title="Go to Users documentation"
+              style={{ marginLeft: '0.5rem' }}
+              href={USERS_DOCS_URL}
+              target="_blank"
+              icon={<QuestionCircleOutlined />}
+            />
           </Col>
         </Row>
         <Row className="" style={{ marginTop: '1rem' }}>

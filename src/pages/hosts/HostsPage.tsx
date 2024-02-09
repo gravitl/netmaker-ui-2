@@ -2,7 +2,14 @@ import { Host } from '@/models/Host';
 import { AppRoutes } from '@/routes';
 import { useStore } from '@/store/store';
 import { getHostRoute, resolveAppRoute } from '@/utils/RouteUtils';
-import { InfoCircleOutlined, MoreOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
+import {
+  InfoCircleOutlined,
+  MoreOutlined,
+  PlusOutlined,
+  QuestionCircleOutlined,
+  ReloadOutlined,
+  SearchOutlined,
+} from '@ant-design/icons';
 import {
   Alert,
   Button,
@@ -41,6 +48,8 @@ import NewHostModal from '@/components/modals/new-host-modal/NewHostModal';
 import { lt } from 'semver';
 import { ExtendedNode } from '@/models/Node';
 import { HOST_HEALTH_STATUS } from '@/models/NodeConnectivityStatus';
+
+const HOST_DOCS_URL = 'https://docs.netmaker.io/ui-reference.html#hosts';
 
 export default function HostsPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
@@ -1044,6 +1053,14 @@ export default function HostsPage(props: PageProps) {
                 >
                   <PlusOutlined /> Connect a host
                 </Button>
+
+                <Button
+                  title="Go to Hosts documentation"
+                  style={{ marginLeft: '0.5rem' }}
+                  href={HOST_DOCS_URL}
+                  target="_blank"
+                  icon={<QuestionCircleOutlined />}
+                />
               </Col>
             </Row>
 

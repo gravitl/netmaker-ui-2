@@ -34,6 +34,7 @@ import {
   LoadingOutlined,
   MoreOutlined,
   PlusOutlined,
+  QuestionCircleOutlined,
   ReloadOutlined,
   SearchOutlined,
   SettingOutlined,
@@ -100,6 +101,7 @@ import ClientConfigModal from '@/components/modals/client-config-modal/ClientCon
 import { isSaasBuild } from '@/services/BaseService';
 import { NetworkDetailTourStep } from '@/utils/Types';
 import TourComponent from '@/pages/networks/TourComponent';
+import DownloadRemotesAccessClientModal from '@/components/modals/remote-access-client-modal/DownloadRemoteAccessClientModal';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -133,6 +135,14 @@ interface NodeMetricsTableData {
     [nodeId: string]: UptimeNodeMetrics;
   };
 }
+
+const DNS_DOCS_URL = '';
+const HOSTS_DOCS_URL = 'https://docs.netmaker.io/ui-reference.html#hosts';
+const ACLS_DOCS_URL = 'https://docs.netmaker.io/acls.html';
+const RELAYS_DOCS_URL = 'https://docs.netmaker.io/pro/pro-relay-server.html';
+const EGRESS_DOCS_URL = 'https://docs.netmaker.io/egress-gateway.html';
+const GATEWAYS_DOCS_URL = 'https://docs.netmaker.io/external-clients.html';
+const CLIENTS_DOCS_URL = 'https://docs.netmaker.io/external-clients.html#adding-clients-to-a-gateway';
 
 export default function NetworkDetailsPage(props: PageProps) {
   const { networkId } = useParams<{ networkId: string }>();
@@ -198,6 +208,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [isTourOpen, setIsTourOpen] = useState(false);
   const [tourStep, setTourStep] = useState(0);
   const [activeTabKey, setActiveTabKey] = useState('overview');
+  const [isDownloadRemoteAccessClientModalOpen, setIsDownloadRemoteAccessClientModalOpen] = useState(false);
   {
     /** Refs */
   }
@@ -2072,6 +2083,13 @@ export default function NetworkDetailsPage(props: PageProps) {
             >
               Tour Hosts
             </Button>
+            <Button
+              title="Go to HOSTS documentation"
+              style={{ marginLeft: '1rem' }}
+              href={HOSTS_DOCS_URL}
+              target="_blank"
+              icon={<QuestionCircleOutlined />}
+            />
           </Col>
 
           <Col xs={24} style={{ paddingTop: '1rem' }}>
@@ -2412,117 +2430,163 @@ export default function NetworkDetailsPage(props: PageProps) {
         )}
 
         {!isEmpty && (
-          <Row style={{ width: '100%' }}>
-            <Col xs={24} xl={12} style={{ marginBottom: '2rem' }}>
-              <Input
-                placeholder="Search gateways"
-                value={searchClientGateways}
-                onChange={(ev) => setSearchClientGateways(ev.target.value)}
-                prefix={<SearchOutlined />}
-                style={{ width: '60%' }}
-              />
-            </Col>
-            <Col xs={24} xl={12} style={{ marginBottom: '2rem' }}>
-              <Input
-                placeholder="Search clients"
-                value={searchClients}
-                onChange={(ev) => setSearchClients(ev.target.value)}
-                prefix={<SearchOutlined />}
-                style={{ width: '60%' }}
-              />
-            </Col>
-            <Col xs={24} xl={12}>
+          <>
+            <Row>
               <Row style={{ width: '100%' }}>
-                <Col xs={24} md={12}>
-                  <Typography.Title style={{ marginTop: '0px' }} level={5}>
-                    Gateways
-                  </Typography.Title>
-                </Col>
-                <Col xs={23} md={11} style={{ textAlign: 'right' }}>
+                <div
+                  style={{
+                    marginBottom: '1rem',
+                    background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
+                    padding: '1rem',
+                  }}
+                >
+                  Introducing the Remote Access Client (RAC) – a graphical user interface (GUI) tool designed for
+                  convenient connectivity to a Netmaker network. RAC is particularly well-suited for offsite machines
+                  requiring access to a Netmaker network and is compatible with Windows, Mac, and Linux operating
+                  systems.
                   <Button
+                    href="#"
+                    onClick={() => setIsDownloadRemoteAccessClientModalOpen(true)}
                     type="primary"
-                    onClick={() => setIsAddClientGatewayModalOpen(true)}
-                    className="full-width-button-xs"
-                    ref={remoteAccessTabAddGatewayRef}
-                  >
-                    <PlusOutlined /> Create Gateway
-                  </Button>
-                  <Button
-                    style={{ marginLeft: '1rem' }}
-                    onClick={() => jumpToTourStep('remote-access')}
-                    icon={<InfoCircleOutlined />}
-                  >
-                    Take Tour
-                  </Button>
-                </Col>
-              </Row>
-              <Row style={{ marginTop: '1rem' }}>
-                <Col xs={23}>
-                  <Table
-                    columns={gatewaysTableCols}
-                    dataSource={filteredClientGateways}
-                    rowKey="id"
                     size="small"
-                    scroll={{ x: true }}
-                    rowClassName={(gateway) => {
-                      return gateway.id === selectedGateway?.id ? 'selected-row' : '';
+                    style={{
+                      marginLeft: '0.3rem',
                     }}
-                    onRow={(gateway) => {
-                      return {
-                        onClick: () => {
-                          if (selectedGateway?.id === gateway.id) setSelectedGateway(null);
-                          else setSelectedGateway(gateway);
-                        },
-                      };
-                    }}
-                    ref={remoteAccessTabGatewayTableRef}
+                  >
+                    {' '}
+                    Download RAC
+                  </Button>
+                </div>
+              </Row>
+
+              <Row style={{ width: '100%' }}>
+                <Col xs={24} xl={12} style={{ marginBottom: '2rem' }}>
+                  <Input
+                    placeholder="Search gateways"
+                    value={searchClientGateways}
+                    onChange={(ev) => setSearchClientGateways(ev.target.value)}
+                    prefix={<SearchOutlined />}
+                    style={{ width: '60%' }}
                   />
                 </Col>
-              </Row>
-            </Col>
-            <Col xs={24} xl={12}>
-              <Row style={{ width: '100%' }}>
-                <Col xs={24} md={12}>
-                  <Typography.Title style={{ marginTop: '0px' }} level={5}>
-                    VPN Config Files
-                  </Typography.Title>
-                </Col>
-                <Col xs={24} md={12} style={{ textAlign: 'right' }}>
-                  <Button
-                    type="primary"
-                    style={{ marginRight: '1rem' }}
-                    onClick={() => setIsAddClientModalOpen(true)}
-                    className="full-width-button-xs"
-                    ref={remoteAccessTabVPNConfigCreateConfigRef}
-                  >
-                    <PlusOutlined /> Create Config
-                  </Button>
-                  <div className="display-all-container-switch" ref={remoteAccessTabDisplayAllVPNConfigsRef}>
-                    Display All{' '}
-                    <Switch
-                      title="Display all clients. Click a gateway to filter clients specific to that gateway."
-                      checked={selectedGateway === null}
-                      onClick={() => {
-                        setSelectedGateway(null);
-                      }}
-                    />
-                  </div>
-                </Col>
-              </Row>
-              <Row style={{ marginTop: '1rem' }}>
-                <Col xs={24}>
-                  <Table
-                    columns={clientsTableCols}
-                    dataSource={filteredClients}
-                    rowKey="clientid"
-                    size="small"
-                    scroll={{ x: true }}
-                    ref={remoteAccessTabVPNConfigTableRef}
+
+                <Col xs={24} xl={12} style={{ marginBottom: '2rem' }}>
+                  <Input
+                    placeholder="Search clients"
+                    value={searchClients}
+                    onChange={(ev) => setSearchClients(ev.target.value)}
+                    prefix={<SearchOutlined />}
+                    style={{ width: '60%' }}
                   />
                 </Col>
+                <Col xs={24} xl={12}>
+                  <Row style={{ width: '100%' }}>
+                    <Col xs={24} md={10}>
+                      <Typography.Title style={{ marginTop: '0px' }} level={5}>
+                        Gateways
+                      </Typography.Title>
+                    </Col>
+                    <Col xs={23} md={13} style={{ textAlign: 'right' }}>
+                      <Button
+                        type="primary"
+                        onClick={() => setIsAddClientGatewayModalOpen(true)}
+                        className="full-width-button-xs"
+                        ref={remoteAccessTabAddGatewayRef}
+                      >
+                        <PlusOutlined /> Create Gateway
+                      </Button>
+                      <Button
+                        style={{ marginLeft: '1rem' }}
+                        onClick={() => jumpToTourStep('remote-access')}
+                        icon={<InfoCircleOutlined />}
+                      >
+                        Take Tour
+                      </Button>
+                      <Button
+                        title="Go to remote access gateways documentation"
+                        style={{ marginLeft: '1rem' }}
+                        href={GATEWAYS_DOCS_URL}
+                        target="_blank"
+                        icon={<QuestionCircleOutlined />}
+                      />
+                    </Col>
+                  </Row>
+                  <Row style={{ marginTop: '1rem' }}>
+                    <Col xs={23}>
+                      <Table
+                        columns={gatewaysTableCols}
+                        dataSource={filteredClientGateways}
+                        rowKey="id"
+                        size="small"
+                        scroll={{ x: true }}
+                        rowClassName={(gateway) => {
+                          return gateway.id === selectedGateway?.id ? 'selected-row' : '';
+                        }}
+                        onRow={(gateway) => {
+                          return {
+                            onClick: () => {
+                              if (selectedGateway?.id === gateway.id) setSelectedGateway(null);
+                              else setSelectedGateway(gateway);
+                            },
+                          };
+                        }}
+                        ref={remoteAccessTabGatewayTableRef}
+                      />
+                    </Col>
+                  </Row>
+                </Col>
+                <Col xs={24} xl={12}>
+                  <Row style={{ width: '100%' }}>
+                    <Col xs={24} md={12}>
+                      <Typography.Title style={{ marginTop: '0px' }} level={5}>
+                        VPN Config Files
+                      </Typography.Title>
+                    </Col>
+                    <Col xs={24} md={12} style={{ textAlign: 'right' }}>
+                      <Button
+                        type="primary"
+                        style={{ marginRight: '1rem' }}
+                        onClick={() => setIsAddClientModalOpen(true)}
+                        className="full-width-button-xs"
+                        ref={remoteAccessTabVPNConfigCreateConfigRef}
+                      >
+                        <PlusOutlined /> Create Config
+                      </Button>
+                      <div className="display-all-container-switch" ref={remoteAccessTabDisplayAllVPNConfigsRef}>
+                        Display All{' '}
+                        <Switch
+                          title="Display all clients. Click a gateway to filter clients specific to that gateway."
+                          checked={selectedGateway === null}
+                          onClick={() => {
+                            setSelectedGateway(null);
+                          }}
+                        />
+                      </div>
+                      <Button
+                        title="Go to client documentation"
+                        style={{ marginLeft: '1rem' }}
+                        href={CLIENTS_DOCS_URL}
+                        target="_blank"
+                        icon={<QuestionCircleOutlined />}
+                      />
+                    </Col>
+                  </Row>
+                  <Row style={{ marginTop: '1rem' }}>
+                    <Col xs={24}>
+                      <Table
+                        columns={clientsTableCols}
+                        dataSource={filteredClients}
+                        rowKey="clientid"
+                        size="small"
+                        scroll={{ x: true }}
+                        ref={remoteAccessTabVPNConfigTableRef}
+                      />
+                    </Col>
+                  </Row>
+                </Col>
               </Row>
-            </Col>
-          </Row>
+            </Row>
+          </>
         )}
       </div>
     );
@@ -2616,6 +2680,13 @@ export default function NetworkDetailsPage(props: PageProps) {
                   >
                     Take Tour
                   </Button>
+                  <Button
+                    title="Go to egress documentation"
+                    style={{ marginLeft: '1rem' }}
+                    href={EGRESS_DOCS_URL}
+                    target="_blank"
+                    icon={<QuestionCircleOutlined />}
+                  />
                 </Col>
               </Row>
               <Row style={{ marginTop: '1rem' }}>
@@ -2776,8 +2847,15 @@ export default function NetworkDetailsPage(props: PageProps) {
                     onClick={() => jumpToTourStep('relays')}
                     icon={<InfoCircleOutlined />}
                   >
-                    Take Tour
+                    Tour Relays
                   </Button>
+                  <Button
+                    title="Go to relays documentation"
+                    style={{ marginLeft: '1rem' }}
+                    href={RELAYS_DOCS_URL}
+                    target="_blank"
+                    icon={<QuestionCircleOutlined />}
+                  />
                 </Col>
               </Row>
               <Row style={{ marginTop: '1rem' }}>
@@ -3013,6 +3091,13 @@ export default function NetworkDetailsPage(props: PageProps) {
             <Button style={{ marginLeft: '1rem' }} onClick={() => jumpToTourStep('acls')} icon={<InfoCircleOutlined />}>
               Take Tour
             </Button>
+            <Button
+              title="Go to ACL documentation"
+              style={{ marginLeft: '1rem' }}
+              href={ACLS_DOCS_URL}
+              target="_blank"
+              icon={<QuestionCircleOutlined />}
+            />
           </Col>
 
           <Col xs={24} style={{ paddingTop: '1rem' }}>
@@ -3816,6 +3901,11 @@ export default function NetworkDetailsPage(props: PageProps) {
           onCancel={() => setIsUpdateNodeModalOpen(false)}
         />
       )}
+      <DownloadRemotesAccessClientModal
+        isOpen={isDownloadRemoteAccessClientModalOpen}
+        onCancel={() => setIsDownloadRemoteAccessClientModalOpen(false)}
+        networkId={networkId}
+      />
     </Layout.Content>
   );
 }

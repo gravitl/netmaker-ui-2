@@ -143,6 +143,41 @@ export function getNetclientDownloadLink(
   ];
 }
 
+// Function to get rac download link and filename based on OS, arch and type
+export function getRACDownloadLink(
+  os: AvailableOses,
+  arch: AvailableArchs,
+  appType: 'gui' | 'cli' = 'gui',
+): [string, string] {
+  const fileNamePlaceholder = ':fileName';
+  const verisonPlaceholder = ':version';
+  const netclientBinTemplate: string | undefined = import.meta.env.VITE_NETCLIENT_BIN_URL_TEMPLATE;
+
+  if (!netclientBinTemplate) {
+    console.error('NETCLIENT TEMPLATE is not defined. Contact your server admin');
+    return ['about:blank', ''];
+  }
+
+  const platform = os === 'macos' ? 'darwin' : os;
+  const serverVersion = useStore.getState().serverConfig?.Version ?? '';
+  let effectiveFileName = 'remote-client';
+
+  if (!serverVersion) return ['about:blank', ''];
+
+  effectiveFileName += `-${platform}-${arch}`;
+
+  if (platform === 'windows') effectiveFileName = 'remote_access_client_x86.msi';
+  else if (platform === 'darwin') {
+    if (arch === 'amd64') effectiveFileName = 'remote-access-client-Intel.pkg';
+    else if (arch === 'arm64') effectiveFileName = 'remote-access-client-M1.pkg';
+  }
+
+  return [
+    netclientBinTemplate.replace(verisonPlaceholder, serverVersion).replace(fileNamePlaceholder, effectiveFileName),
+    effectiveFileName,
+  ];
+}
+
 // Function that returns the current URL without query params
 export function deriveUrlWithoutQueryParams(url?: string): string {
   if (!url) {
