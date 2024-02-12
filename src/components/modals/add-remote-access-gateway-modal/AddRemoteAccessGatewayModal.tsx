@@ -138,7 +138,7 @@ export default function AddRemoteAccessGatewayModal({
       const ingressNode = (
         await NodesService.createIngressNode(formData.node.id, networkId, {
           extclientdns: formData.extclientdns,
-          is_internet_gw: isServerEE ? formData.is_internet_gw : false,
+          is_internet_gw: formData.is_internet_gw,
         })
       ).data;
       resetModal();
@@ -162,7 +162,7 @@ export default function AddRemoteAccessGatewayModal({
 
   return (
     <Modal
-      title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Add Client Gateway</span>}
+      title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Add Remote Access Gateway</span>}
       open={isOpen}
       onCancel={(ev) => {
         resetModal();
@@ -293,7 +293,6 @@ export default function AddRemoteAccessGatewayModal({
 
             <Row>
               <Col xs={24} ref={addClientGatewayModalDefaultClientDNSRef}>
-                {' '}
                 <Form.Item
                   label="Default client DNS"
                   name="extclientdns"
@@ -310,7 +309,8 @@ export default function AddRemoteAccessGatewayModal({
                 </Form.Item>
               </Col>
             </Row>
-            {isServerEE && (
+
+            {!isServerEE && (
               <Row>
                 <Col xs={24} ref={addClientGatewayModalIsInternetGatewayRef}>
                   <Form.Item

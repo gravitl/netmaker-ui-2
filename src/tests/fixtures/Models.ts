@@ -127,7 +127,6 @@ export const stubNode1: Node = {
   dnson: false,
   islocal: false,
   server: '',
-  internetgateway: '',
   defaultacl: '',
   connected: false,
   failover: false,
@@ -140,6 +139,10 @@ export const stubNode1: Node = {
   is_fail_over: false,
   failed_over_by: '',
   fail_over_peers: [],
+  internetgw_node_id: '',
+  inet_node_req: {
+    inet_node_client_ids: [],
+  },
 };
 
 export const stubNode2: Node = {
@@ -167,7 +170,6 @@ export const stubNode2: Node = {
   dnson: false,
   islocal: false,
   server: '',
-  internetgateway: '',
   defaultacl: '',
   connected: false,
   failover: false,
@@ -179,6 +181,10 @@ export const stubNode2: Node = {
   is_fail_over: false,
   failed_over_by: '',
   fail_over_peers: [],
+  internetgw_node_id: '',
+  inet_node_req: {
+    inet_node_client_ids: undefined,
+  },
 };
 
 export const stubNodes: Node[] = [stubNode1, stubNode2];
