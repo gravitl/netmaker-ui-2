@@ -50,7 +50,9 @@ export default function NetworksPage(props: PageProps) {
         compare: (a, b) => a.netid.localeCompare(b.netid),
       },
       defaultSortOrder: 'ascend',
-      render: (netId) => <Link to={`${resolveAppRoute(AppRoutes.NETWORKS_ROUTE)}/${encodeURIComponent(netId)}`}>{netId}</Link>,
+      render: (netId) => (
+        <Link to={`${resolveAppRoute(AppRoutes.NETWORKS_ROUTE)}/${encodeURIComponent(netId)}`}>{netId}</Link>
+      ),
     },
     {
       title: 'Address Range (IPv4)',

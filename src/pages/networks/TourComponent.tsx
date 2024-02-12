@@ -151,13 +151,21 @@ export default function TourComponent(props: TourUtilsProps) {
   const store = useStore();
   const isServerEE = store.serverConfig?.IsEE === 'yes';
 
+  const nextTourStep = () => {
+    setTourStep(tourStep + 1);
+  };
+
+  const prevTourStep = () => {
+    setTourStep(tourStep - 1);
+  };
+
   const networkDetailsTourStepsPro: TourProps['steps'] = [
     {
       title: 'Overview',
       description: 'Get a quick overview of your network',
       target: overviewTabContainerRef.current,
       onNext: () => {
-        setTourStep(1);
+        nextTourStep();
         setActiveTabKey('hosts');
       },
     },
@@ -172,7 +180,7 @@ export default function TourComponent(props: TourUtilsProps) {
       ),
       target: hostsTabContainerTableRef.current,
       onPrev: () => {
-        setTourStep(0);
+        prevTourStep();
         setActiveTabKey('overview');
       },
     },
@@ -181,7 +189,7 @@ export default function TourComponent(props: TourUtilsProps) {
       description: 'Add a new host or an existing host to your network',
       target: hostsTabContainerAddHostsRef.current,
       onNext: () => {
-        setTourStep(3);
+        nextTourStep();
         setIsAddNewHostModalOpen(true);
       },
     },
@@ -197,7 +205,7 @@ export default function TourComponent(props: TourUtilsProps) {
       onPrev: () => {
         setIsAddNewHostModalOpen(false);
         setActiveTabKey('hosts');
-        setTourStep(2);
+        prevTourStep();
       },
     },
     {
@@ -217,7 +225,7 @@ export default function TourComponent(props: TourUtilsProps) {
         // check if there are any gateways, if there are then go to the next step else
         // go to the create gateway step
         if (clientGateways.length > 0) {
-          setTourStep(6);
+          nextTourStep();
         } else {
           setIsAddClientGatewayModalOpen(true);
           setTourStep(8);
@@ -237,7 +245,7 @@ export default function TourComponent(props: TourUtilsProps) {
       onPrev: () => {
         setIsAddNewHostModalOpen(true);
         setActiveTabKey('hosts');
-        setTourStep(5);
+        prevTourStep();
       },
     },
     {
@@ -246,7 +254,7 @@ export default function TourComponent(props: TourUtilsProps) {
       target: remoteAccessTabAddGatewayRef.current,
       onNext: () => {
         setIsAddClientGatewayModalOpen(true);
-        setTourStep(8);
+        nextTourStep();
       },
     },
     {
@@ -259,7 +267,7 @@ export default function TourComponent(props: TourUtilsProps) {
         // check if there are any gateways, if there are then go to the next step else
         // go to hosts
         if (clientGateways.length > 0) {
-          setTourStep(7);
+          nextTourStep();
         } else {
           setActiveTabKey('hosts');
           setTourStep(5);
@@ -281,7 +289,7 @@ export default function TourComponent(props: TourUtilsProps) {
         // check if there are any gateways, if there are then go to the next step else we go to
         // the create client config
         if (clientGateways.length > 0) {
-          setTourStep(12);
+          nextTourStep();
         } else {
           setTourStep(14);
           setIsAddClientModalOpen(true);
@@ -309,7 +317,7 @@ export default function TourComponent(props: TourUtilsProps) {
       description: 'Create a new VPN config file for a client',
       target: remoteAccessTabVPNConfigCreateConfigRef.current,
       onNext: () => {
-        setTourStep(14);
+        nextTourStep();
         setIsAddClientModalOpen(true);
       },
     },
@@ -319,7 +327,7 @@ export default function TourComponent(props: TourUtilsProps) {
       target: createClientConfigModalSelectGatewayRef.current,
       onPrev: () => {
         setIsAddClientModalOpen(false);
-        setTourStep(13);
+        prevTourStep();
       },
     },
     {
@@ -356,7 +364,7 @@ export default function TourComponent(props: TourUtilsProps) {
       onNext: () => {
         setActiveTabKey('relays');
         setIsAddClientModalOpen(false);
-        setTourStep(21);
+        nextTourStep();
       },
     },
     {
@@ -377,7 +385,7 @@ export default function TourComponent(props: TourUtilsProps) {
       description: 'Add a new relay to your network',
       target: relaysTabAddRelayRef.current,
       onNext: () => {
-        setTourStep(23);
+        nextTourStep();
         setIsAddRelayModalOpen(true);
       },
     },
@@ -387,34 +395,38 @@ export default function TourComponent(props: TourUtilsProps) {
       target: createRelayModalSelectHostRef.current,
       onNext: () => {
         setIsAddRelayModalOpen(false);
-        setTourStep(24);
+        nextTourStep();
       },
       onPrev: () => {
         setIsAddRelayModalOpen(false);
-        setTourStep(21);
+        prevTourStep();
       },
     },
-    {
-      title: 'Relayed Hosts',
-      description:
-        'Get relayed host information like host name, relayed by, addresses and you can update a host to be stop being relayed',
-      target: relaysTabRelayedHostsTableRef.current,
-      onPrev: () => {
-        setIsAddRelayModalOpen(true);
-        setTourStep(23);
-      },
-    },
+    // {
+    //   title: 'Relayed Hosts',
+    //   description:
+    //     'Get relayed host information like host name, relayed by, addresses and you can update a host to be stop being relayed',
+    //   target: relaysTabRelayedHostsTableRef.current,
+    //   onPrev: () => {
+    //     setIsAddRelayModalOpen(true);
+    //     setTourStep(23);
+    //   },
+    // },
     {
       title: 'Display All Relayed Hosts',
       description: 'Display all relayed hosts',
       target: relaysTabDisplayAllRelayedHostsRef.current,
+      onPrev: () => {
+        setIsAddRelayModalOpen(true);
+        prevTourStep();
+      },
     },
     {
       title: 'Add Relayed Host',
       description: 'Add a new relayed host to your selected relay',
       target: relaysTabAddRelayedNodesRef.current,
       onNext: () => {
-        setTourStep(27);
+        nextTourStep();
         setIsUpdateRelayModalOpen(true);
       },
     },
@@ -425,11 +437,11 @@ export default function TourComponent(props: TourUtilsProps) {
       onNext: () => {
         setIsUpdateRelayModalOpen(false);
         setActiveTabKey('egress');
-        setTourStep(28);
+        nextTourStep();
       },
       onPrev: () => {
         setIsUpdateRelayModalOpen(false);
-        setTourStep(26);
+        prevTourStep();
       },
     },
 
@@ -446,7 +458,7 @@ export default function TourComponent(props: TourUtilsProps) {
       onPrev: () => {
         setActiveTabKey('relays');
         setIsUpdateRelayModalOpen(true);
-        setTourStep(27);
+        prevTourStep();
       },
     },
     {
@@ -454,7 +466,7 @@ export default function TourComponent(props: TourUtilsProps) {
       description: 'Add a new egress to your network',
       target: egressTabAddEgressRef.current,
       onNext: () => {
-        setTourStep(30);
+        nextTourStep();
         setIsAddEgressModalOpen(true);
       },
     },
@@ -464,30 +476,34 @@ export default function TourComponent(props: TourUtilsProps) {
       target: createEgressModalSelectHostRef.current,
       onPrev: () => {
         setIsAddEgressModalOpen(false);
-        setTourStep(28);
+        prevTourStep();
       },
     },
     {
       title: 'Enable NAT for egress traffic',
       description: 'Check this box if you want to enable NAT for egress traffic',
       target: createEgressModalEnableNATRef.current,
-    },
-    {
-      title: 'Select external ranges',
-      description: 'Select external ranges',
-      target: createEgressModalSelectExternalRangesRef.current,
       onNext: () => {
         setIsAddEgressModalOpen(false);
-        setTourStep(33);
+        nextTourStep();
       },
     },
+    // {
+    //   title: 'Select external ranges',
+    //   description: 'Select external ranges',
+    //   target: createEgressModalSelectExternalRangesRef.current,
+    //   onNext: () => {
+    //     setIsAddEgressModalOpen(false);
+    //     setTourStep(33);
+    //   },
+    // },
     {
       title: 'External Routes Table',
       description: 'Get external route information',
       target: egressTabExternalRoutesTableRef.current,
       onPrev: () => {
         setIsAddEgressModalOpen(true);
-        setTourStep(32);
+        prevTourStep();
       },
     },
     {
@@ -501,7 +517,7 @@ export default function TourComponent(props: TourUtilsProps) {
       target: egressTabAddExternalRouteRef.current,
       onNext: () => {
         setActiveTabKey('dns');
-        setTourStep(36);
+        nextTourStep();
       },
     },
     {
@@ -510,7 +526,7 @@ export default function TourComponent(props: TourUtilsProps) {
       target: dnsTabDNSTableRef.current,
       onPrev: () => {
         setActiveTabKey('egress');
-        setTourStep(35);
+        prevTourStep();
       },
     },
     {
@@ -518,8 +534,8 @@ export default function TourComponent(props: TourUtilsProps) {
       description: 'Add a new DNS entry to your network',
       target: dnsTabAddDNSRef.current,
       onNext: () => {
-        setTourStep(38);
         setIsAddDnsModalOpen(true);
+        nextTourStep();
       },
     },
     {
@@ -527,8 +543,8 @@ export default function TourComponent(props: TourUtilsProps) {
       description: 'Enter a DNS name',
       target: addDNSModalDNSNameRef.current,
       onPrev: () => {
+        prevTourStep();
         setIsAddDnsModalOpen(false);
-        setTourStep(37);
       },
     },
     {
@@ -538,7 +554,7 @@ export default function TourComponent(props: TourUtilsProps) {
       onNext: () => {
         setIsAddDnsModalOpen(false);
         setActiveTabKey('access-control');
-        setTourStep(40);
+        nextTourStep();
       },
     },
     {
@@ -553,7 +569,7 @@ export default function TourComponent(props: TourUtilsProps) {
       onPrev: () => {
         setActiveTabKey('dns');
         setIsAddDnsModalOpen(true);
-        setTourStep(39);
+        prevTourStep();
       },
     },
     {
@@ -582,7 +598,7 @@ export default function TourComponent(props: TourUtilsProps) {
       target: aclTabSubmitRef.current,
       onNext: () => {
         setActiveTabKey('graph');
-        setTourStep(46);
+        nextTourStep();
       },
     },
     {
@@ -591,12 +607,12 @@ export default function TourComponent(props: TourUtilsProps) {
       target: graphTabContainerRef.current,
       onPrev: () => {
         setActiveTabKey('access-control');
-        setTourStep(45);
+        prevTourStep();
       },
       onNext: () => {
         setActiveTabKey('metrics');
         setCurrentMetric('connectivity-status');
-        setTourStep(47);
+        nextTourStep();
       },
     },
 
@@ -606,11 +622,11 @@ export default function TourComponent(props: TourUtilsProps) {
       target: metricsTabConnectivityStatusTableRef.current,
       onNext: () => {
         setCurrentMetric('latency');
-        setTourStep(48);
+        nextTourStep();
       },
       onPrev() {
         setActiveTabKey('graph');
-        setTourStep(46);
+        prevTourStep();
       },
     },
     {
@@ -619,11 +635,11 @@ export default function TourComponent(props: TourUtilsProps) {
       target: metricsTabLatencyTableRef.current,
       onNext: () => {
         setCurrentMetric('bytes-sent');
-        setTourStep(49);
+        nextTourStep();
       },
       onPrev() {
         setCurrentMetric('connectivity-status');
-        setTourStep(47);
+        prevTourStep();
       },
     },
     {
@@ -632,11 +648,11 @@ export default function TourComponent(props: TourUtilsProps) {
       target: metricsTabBytesSentTableRef.current,
       onNext: () => {
         setCurrentMetric('bytes-received');
-        setTourStep(50);
+        nextTourStep();
       },
       onPrev() {
         setCurrentMetric('latency');
-        setTourStep(48);
+        prevTourStep();
       },
     },
     {
@@ -645,11 +661,11 @@ export default function TourComponent(props: TourUtilsProps) {
       target: metricsTabBytesReceivedTableRef.current,
       onNext: () => {
         setCurrentMetric('uptime');
-        setTourStep(51);
+        nextTourStep();
       },
       onPrev() {
         setCurrentMetric('bytes-sent');
-        setTourStep(49);
+        prevTourStep();
       },
     },
     {
@@ -658,11 +674,11 @@ export default function TourComponent(props: TourUtilsProps) {
       target: metricsTabUptimeTableRef.current,
       onNext: () => {
         setCurrentMetric('clients');
-        setTourStep(52);
+        nextTourStep();
       },
       onPrev() {
         setCurrentMetric('bytes-received');
-        setTourStep(50);
+        prevTourStep();
       },
     },
     {
@@ -671,7 +687,7 @@ export default function TourComponent(props: TourUtilsProps) {
       target: metricsTabClientsTableRef.current,
       onPrev() {
         setCurrentMetric('uptime');
-        setTourStep(51);
+        nextTourStep();
       },
     },
   ];
@@ -682,7 +698,7 @@ export default function TourComponent(props: TourUtilsProps) {
       description: 'Get a quick overview of your network',
       target: overviewTabContainerRef.current,
       onNext: () => {
-        setTourStep(1);
+        nextTourStep();
         setActiveTabKey('hosts');
       },
     },
@@ -697,7 +713,7 @@ export default function TourComponent(props: TourUtilsProps) {
       ),
       target: hostsTabContainerTableRef.current,
       onPrev: () => {
-        setTourStep(0);
+        prevTourStep();
         setActiveTabKey('overview');
       },
     },
@@ -706,7 +722,7 @@ export default function TourComponent(props: TourUtilsProps) {
       description: 'Add a new host or an existing host to your network',
       target: hostsTabContainerAddHostsRef.current,
       onNext: () => {
-        setTourStep(3);
+        nextTourStep();
         setIsAddNewHostModalOpen(true);
       },
     },
@@ -737,7 +753,7 @@ export default function TourComponent(props: TourUtilsProps) {
         // check if there are any gateways, if there are then go to the next step else
         // go to the create gateway step
         if (clientGateways.length > 0) {
-          setTourStep(6);
+          nextTourStep();
         } else {
           setIsAddClientGatewayModalOpen(true);
           setTourStep(8);
@@ -757,7 +773,7 @@ export default function TourComponent(props: TourUtilsProps) {
       onPrev: () => {
         setIsAddNewHostModalOpen(true);
         setActiveTabKey('hosts');
-        setTourStep(5);
+        prevTourStep();
       },
     },
     {
@@ -766,7 +782,7 @@ export default function TourComponent(props: TourUtilsProps) {
       target: remoteAccessTabAddGatewayRef.current,
       onNext: () => {
         setIsAddClientGatewayModalOpen(true);
-        setTourStep(8);
+        nextTourStep();
       },
     },
     {
@@ -779,7 +795,7 @@ export default function TourComponent(props: TourUtilsProps) {
         // check if there are any gateways, if there are then go to the next step else
         // go to hosts
         if (clientGateways.length > 0) {
-          setTourStep(7);
+          prevTourStep();
         } else {
           setActiveTabKey('hosts');
           setTourStep(5);
@@ -796,7 +812,7 @@ export default function TourComponent(props: TourUtilsProps) {
         // check if there are any gateways, if there are then go to the next step else we go to
         // the create client config
         if (clientGateways.length > 0) {
-          setTourStep(12);
+          nextTourStep();
         } else {
           setTourStep(13);
           setIsAddClientModalOpen(true);
@@ -824,7 +840,7 @@ export default function TourComponent(props: TourUtilsProps) {
       description: 'Create a new VPN config file for a client',
       target: remoteAccessTabVPNConfigCreateConfigRef.current,
       onNext: () => {
-        setTourStep(13);
+        nextTourStep();
         setIsAddClientModalOpen(true);
       },
     },
@@ -834,7 +850,7 @@ export default function TourComponent(props: TourUtilsProps) {
       target: createClientConfigModalSelectGatewayRef.current,
       onPrev: () => {
         setIsAddClientModalOpen(false);
-        setTourStep(13);
+        prevTourStep();
       },
     },
     {
@@ -873,7 +889,7 @@ export default function TourComponent(props: TourUtilsProps) {
         // if there are any egresses then go to the next step else go to create egress
         if (egresses.length > 0) {
           setIsAddClientModalOpen(false);
-          setTourStep(19);
+          nextTourStep();
         } else {
           setTourStep(23);
           setIsAddClientModalOpen(false);
@@ -893,7 +909,7 @@ export default function TourComponent(props: TourUtilsProps) {
       target: egressTabEgressTableRef.current,
       onPrev: () => {
         setActiveTabKey('clients');
-        setTourStep(10);
+        prevTourStep();
       },
     },
     {
@@ -901,7 +917,7 @@ export default function TourComponent(props: TourUtilsProps) {
       description: 'Add a new egress to your network',
       target: egressTabAddEgressRef.current,
       onNext: () => {
-        setTourStep(21);
+        nextTourStep();
         setIsAddEgressModalOpen(true);
       },
     },
@@ -911,7 +927,7 @@ export default function TourComponent(props: TourUtilsProps) {
       target: createEgressModalSelectHostRef.current,
       onPrev: () => {
         setIsAddEgressModalOpen(false);
-        setTourStep(19);
+        prevTourStep();
       },
     },
     {
@@ -926,7 +942,7 @@ export default function TourComponent(props: TourUtilsProps) {
       onNext: () => {
         // if there are any egresses then go to the next step else go to dns
         if (egresses.length > 0) {
-          setTourStep(24);
+          nextTourStep();
           setIsAddEgressModalOpen(false);
         } else {
           setTourStep(29);
@@ -941,7 +957,7 @@ export default function TourComponent(props: TourUtilsProps) {
       target: egressTabExternalRoutesTableRef.current,
       onPrev: () => {
         setIsAddEgressModalOpen(true);
-        setTourStep(24);
+        prevTourStep();
       },
     },
     {
@@ -955,7 +971,7 @@ export default function TourComponent(props: TourUtilsProps) {
       target: egressTabAddExternalRouteRef.current,
       onNext: () => {
         setActiveTabKey('dns');
-        setTourStep(27);
+        nextTourStep();
       },
     },
     {
@@ -964,7 +980,7 @@ export default function TourComponent(props: TourUtilsProps) {
       target: dnsTabDNSTableRef.current,
       onPrev: () => {
         setActiveTabKey('egress');
-        setTourStep(26);
+        prevTourStep();
         setIsAddEgressModalOpen(true);
       },
     },
@@ -973,7 +989,7 @@ export default function TourComponent(props: TourUtilsProps) {
       description: 'Add a new DNS entry to your network',
       target: dnsTabAddDNSRef.current,
       onNext: () => {
-        setTourStep(30);
+        nextTourStep();
         setIsAddDnsModalOpen(true);
       },
     },
@@ -983,7 +999,7 @@ export default function TourComponent(props: TourUtilsProps) {
       target: addDNSModalDNSNameRef.current,
       onPrev: () => {
         setIsAddDnsModalOpen(false);
-        setTourStep(29);
+        prevTourStep();
       },
     },
     {
@@ -993,7 +1009,7 @@ export default function TourComponent(props: TourUtilsProps) {
       onNext: () => {
         setIsAddDnsModalOpen(false);
         setActiveTabKey('access-control');
-        setTourStep(32);
+        nextTourStep();
       },
     },
     {
@@ -1008,7 +1024,7 @@ export default function TourComponent(props: TourUtilsProps) {
       onPrev: () => {
         setActiveTabKey('dns');
         setIsAddDnsModalOpen(true);
-        setTourStep(31);
+        prevTourStep();
       },
     },
     {
@@ -1032,7 +1048,7 @@ export default function TourComponent(props: TourUtilsProps) {
       target: aclTabSubmitRef.current,
       onNext: () => {
         setActiveTabKey('graph');
-        setTourStep(37);
+        prevTourStep();
       },
     },
     {
@@ -1041,7 +1057,7 @@ export default function TourComponent(props: TourUtilsProps) {
       target: graphTabContainerRef.current,
       onPrev: () => {
         setActiveTabKey('access-control');
-        setTourStep(36);
+        prevTourStep();
       },
     },
   ];

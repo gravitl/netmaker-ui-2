@@ -60,7 +60,7 @@ export default function AddRelayModal({
   const [selectedRelay, setSelectedRelay] = useState<ExtendedNode | null>(null);
   const [selectedRelayedIds, setSelectedRelayedIds] = useState<Node['id'][]>([]);
   const [relayedSearch, setRelayedSearch] = useState('');
-  const [isSelectOpen, setIsSelectOpen] = useState(false);
+  // const [isSelectOpen, setIsSelectOpen] = useState(false);
   const [isDropDownOpen, setIsDropDownOpen] = useState(false);
 
   const getNodeConnectivity = useCallback((node: Node) => {
@@ -105,7 +105,7 @@ export default function AddRelayModal({
     ];
   }, []);
 
-  const relayedTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(() => relayTableCols, [relayTableCols]);
+  // const relayedTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(() => relayTableCols, [relayTableCols]);
 
   const resetModal = () => {
     form.resetFields();
@@ -241,7 +241,7 @@ export default function AddRelayModal({
             )}
           </Form.Item>
 
-          {selectedRelay && (
+          {/* {selectedRelay && (
             <>
               <Form.Item label="Select hosts to relay" required data-nmui-intercom="add-relay-form_relayed">
                 <Select
@@ -342,7 +342,7 @@ export default function AddRelayModal({
                 </Row>
               )}
             </>
-          )}
+          )} */}
         </div>
 
         <Divider style={{ margin: '0px 0px 2rem 0px' }} />

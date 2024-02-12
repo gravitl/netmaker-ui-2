@@ -304,13 +304,13 @@ export default function NetworkDetailsPage(props: PageProps) {
 
   const filteredExternalRoutes = useMemo<ExternalRoutesTableData[]>(() => {
     if (filteredEgress) {
-      return filteredEgress.egressgatewayranges.map((range) => ({
+      return filteredEgress.egressgatewayranges?.map((range) => ({
         node: getExtendedNode(filteredEgress, store.hostsCommonDetails),
         range,
       }));
     } else {
       return filteredEgresses
-        .flatMap((e) => e.egressgatewayranges.map((range) => ({ node: e, range })))
+        .flatMap((e) => e.egressgatewayranges?.map((range) => ({ node: e, range })))
         .sort((a, b) => a.node.id.localeCompare(b.node.id));
     }
   }, [filteredEgress, filteredEgresses, store.hostsCommonDetails]);
@@ -639,14 +639,13 @@ export default function NetworkDetailsPage(props: PageProps) {
             const natEnabled = range.node.egressgatewaynatenabled;
             newRanges.delete(range.range);
             egressNode = (await NodesService.deleteEgressNode(range.node.id, networkId)).data;
-            if (newRanges.size > 0) {
-              egressNode = (
-                await NodesService.createEgressNode(range.node.id, networkId, {
-                  ranges: [...newRanges],
-                  natEnabled: natEnabled ? 'yes' : 'no',
-                })
-              ).data;
-            }
+            egressNode = (
+              await NodesService.createEgressNode(range.node.id, networkId, {
+                ranges: newRanges.size > 0 ? [...newRanges] : [],
+                natEnabled: natEnabled ? 'yes' : 'no',
+              })
+            ).data;
+
             store.fetchNodes();
             setFilteredEgress(egressNode);
           } catch (err) {

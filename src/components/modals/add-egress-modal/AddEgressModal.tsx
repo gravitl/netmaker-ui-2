@@ -178,46 +178,46 @@ export default function AddEgressModal({
             >
               {!selectedEgress && (
                 <Row>
-                <Col span={24} ref={createEgressModalSelectHostRef}>
-                <Select
-                  placeholder="Select a host as gateway"
-                  dropdownRender={() => (
-                    <div style={{ padding: '.5rem' }}>
-                      <Row style={{ marginBottom: '1rem' }}>
-                        <Col span={8}>
-                          <Input
-                            placeholder="Search host"
-                            value={egressSearch}
-                            onChange={(e) => setEgressSearch(e.target.value)}
-                            prefix={<SearchOutlined />}
-                          />
-                        </Col>
-                      </Row>
-                      <Row>
-                        <Col span={24}>
-                          <Table
-                            size="small"
-                            columns={egressTableCols}
-                            dataSource={filteredNetworkHosts}
-                            rowKey="id"
-                            onRow={(node) => {
-                              return {
-                                onClick: () => {
-                                  form.setFieldValue(idFormField, node.id);
-                                  setSelectedEgress(node);
-                                },
-                              };
-                            }}
-                          />
-                        </Col>
-                      </Row>
-                    </div>
-                  )}
-                  onDropdownVisibleChange={(open) => setIsDropDownOpen(open)}
-                  suffixIcon={isDropDownOpen ? <UpOutlined /> : <DownOutlined />}
-                />
-              </Col>
-              </Row>
+                  <Col span={24} ref={createEgressModalSelectHostRef}>
+                    <Select
+                      placeholder="Select a host as gateway"
+                      dropdownRender={() => (
+                        <div style={{ padding: '.5rem' }}>
+                          <Row style={{ marginBottom: '1rem' }}>
+                            <Col span={8}>
+                              <Input
+                                placeholder="Search host"
+                                value={egressSearch}
+                                onChange={(e) => setEgressSearch(e.target.value)}
+                                prefix={<SearchOutlined />}
+                              />
+                            </Col>
+                          </Row>
+                          <Row>
+                            <Col span={24}>
+                              <Table
+                                size="small"
+                                columns={egressTableCols}
+                                dataSource={filteredNetworkHosts}
+                                rowKey="id"
+                                onRow={(node) => {
+                                  return {
+                                    onClick: () => {
+                                      form.setFieldValue(idFormField, node.id);
+                                      setSelectedEgress(node);
+                                    },
+                                  };
+                                }}
+                              />
+                            </Col>
+                          </Row>
+                        </div>
+                      )}
+                      onDropdownVisibleChange={(open) => setIsDropDownOpen(open)}
+                      suffixIcon={isDropDownOpen ? <UpOutlined /> : <DownOutlined />}
+                    />
+                  </Col>
+                </Row>
               )}
               {!!selectedEgress && (
                 <>
@@ -268,7 +268,7 @@ export default function AddEgressModal({
               />
             )}
 
-            <Row>
+            {/* <Row>
               <Col xs={24} ref={createEgressModalSelectExternalRangesRef}>
                 <Typography.Title level={4}>Select external ranges</Typography.Title>
 
@@ -348,7 +348,7 @@ export default function AddEgressModal({
                   )}
                 </Form.List>
               </Col>
-            </Row>
+            </Row> */}
           </div>
         </div>
         <Divider style={{ margin: '0px 0px 2rem 0px' }} />
