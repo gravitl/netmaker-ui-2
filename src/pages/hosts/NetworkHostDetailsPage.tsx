@@ -366,6 +366,18 @@ export default function NetworkHostDetailsPage(props: PageProps) {
 
           <Row
             style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+            data-nmui-intercom="network-host-details_metadata"
+          >
+            <Col xs={12}>
+              <Typography.Text disabled>Metadata</Typography.Text>
+            </Col>
+            <Col xs={12}>
+              <Typography.Text>{node?.metadata}</Typography.Text>
+            </Col>
+          </Row>
+
+          <Row
+            style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
             data-nmui-intercom="network-host-details_lastcheckin"
           >
             <Col xs={12}>

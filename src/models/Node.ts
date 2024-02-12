@@ -37,7 +37,8 @@ export interface Node {
   autoupdate: boolean;
   is_fail_over: boolean;
   failed_over_by: Node['id'];
-  fail_over_peers: Node['id'][]; // temporary don't know the type
+  fail_over_peers: Node['id'][]; // temporary don't know the type;
+  metadata?: string;
 }
 
 export type AddressType = 'address' | 'address6' | 'localaddress';
