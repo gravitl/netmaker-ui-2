@@ -413,11 +413,7 @@ export default function NewHostModal({
                             <>
                               We recommend using the remote access client for Windows, Go to remote access tab and you
                               can follow the instructions for setup
-                              <a
-                                href="https://docs.netmaker.io/netclient.html#remote-access-client"
-                                target="_blank"
-                                rel="noreferrer"
-                              >
+                              <a href="https://docs.netmaker.io/pro/rac.html" target="_blank" rel="noreferrer">
                                 {' '}
                                 here.
                               </a>
