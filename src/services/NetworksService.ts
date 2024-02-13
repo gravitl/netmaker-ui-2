@@ -34,7 +34,9 @@ function getAccessKeys(networkId: Network['netid']) {
 }
 
 function deleteAccessKey(networkId: Network['netid'], accessKeyName: AccessKey['name']) {
-  return axiosService.delete<void>(`${ApiRoutes.NETWORKS}/${encodeURIComponent(networkId)}/keys/${encodeURIComponent(accessKeyName)}`);
+  return axiosService.delete<void>(
+    `${ApiRoutes.NETWORKS}/${encodeURIComponent(networkId)}/keys/${encodeURIComponent(accessKeyName)}`,
+  );
 }
 
 function createDns(networkId: Network['netid'], payload: DNS) {

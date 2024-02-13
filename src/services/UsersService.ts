@@ -58,11 +58,15 @@ function deleteUserGroup(userGroupName: UserGroup) {
 }
 
 function attachUserToIngress(username: User['username'], ingressId: Node['id']) {
-  return axiosService.post<void>(`${ApiRoutes.USERS}/${encodeURIComponent(username)}/remote_access_gw/${encodeURIComponent(ingressId)}`);
+  return axiosService.post<void>(
+    `${ApiRoutes.USERS}/${encodeURIComponent(username)}/remote_access_gw/${encodeURIComponent(ingressId)}`,
+  );
 }
 
 function removeUserFromIngress(username: User['username'], ingressId: Node['id']) {
-  return axiosService.delete<void>(`${ApiRoutes.USERS}/${encodeURIComponent(username)}/remote_access_gw/${encodeURIComponent(ingressId)}`);
+  return axiosService.delete<void>(
+    `${ApiRoutes.USERS}/${encodeURIComponent(username)}/remote_access_gw/${encodeURIComponent(ingressId)}`,
+  );
 }
 
 function transferSuperAdminRights(username: User['username']) {

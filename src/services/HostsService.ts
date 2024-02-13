@@ -17,8 +17,14 @@ function updateHostsNetworks(
   forceLeave = false,
 ) {
   return action === 'join'
-    ? axiosService.post<void>(`${ApiRoutes.HOSTS}/${encodeURIComponent(hostId)}/networks/${encodeURIComponent(networkId)}`)
-    : axiosService.delete<void>(`${ApiRoutes.HOSTS}/${encodeURIComponent(hostId)}/networks/${encodeURIComponent(networkId)}?force=${forceLeave}`);
+    ? axiosService.post<void>(
+        `${ApiRoutes.HOSTS}/${encodeURIComponent(hostId)}/networks/${encodeURIComponent(networkId)}`,
+      )
+    : axiosService.delete<void>(
+        `${ApiRoutes.HOSTS}/${encodeURIComponent(hostId)}/networks/${encodeURIComponent(
+          networkId,
+        )}?force=${forceLeave}`,
+      );
 }
 
 function updateHost(hostId: Host['id'], payload: Host) {

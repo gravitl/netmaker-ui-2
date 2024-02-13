@@ -131,7 +131,7 @@ export default function AddEnrollmentKeyModal({
                 rules={[
                   { required: true, min: 3, max: 32 },
                   { whitespace: true, pattern: /^[a-zA-Z0-9- ]+$/ },
-                ]}                
+                ]}
                 data-nmui-intercom="add-enrollment-key-form_tags"
               >
                 {/* <Select mode="tags" style={{ width: '100%' }} placeholder="Tags" /> */}
