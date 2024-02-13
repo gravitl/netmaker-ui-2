@@ -59,6 +59,10 @@ function updateAcls(networkId: Network['netid'], payload: NodeAclContainer) {
   return axiosService.put<NodeAclContainer>(`${ApiRoutes.NETWORKS}/${encodeURIComponent(networkId)}/acls`, payload);
 }
 
+function updateAclsV2(networkId: Network['netid'], payload: NodeAclContainer) {
+  return axiosService.put<NodeAclContainer>(`${ApiRoutes.NETWORKS}/${encodeURIComponent(networkId)}/acls/v2`, payload);
+}
+
 function getNodeMetrics(networkId: Network['netid']) {
   return axiosService.get<NetworkMetrics>(`${ApiRoutes.METRICS}/${encodeURIComponent(networkId)}`);
 }
@@ -84,4 +88,5 @@ export const NetworksService = {
   updateAcls,
   getNodeMetrics,
   getClientMetrics,
+  updateAclsV2,
 };
