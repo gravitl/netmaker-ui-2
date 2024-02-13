@@ -1,6 +1,6 @@
 # Netmaker UI release notes
 
-## Netmaker UI v0.22.1
+## Netmaker UI v0.23.0
 
 ## Whats New
 - Internet gateways
