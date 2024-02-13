@@ -288,13 +288,19 @@ export default function NewHostModal({
                   rowClassName={(key) => {
                     return key.value === selectedEnrollmentKey?.value ? 'selected-row' : '';
                   }}
-                  // rowSelection={{
-                  //   type: "checkbox",
-                  //   hideSelectAll: true,
-                  //   onChange: (selectedRowKeys, selectedRows) => {
-                  //     console.log(selectedRowKeys, selectedRows);
-                  //   }
-                  // }}
+                  rowSelection={{
+                    type: 'checkbox',
+                    hideSelectAll: true,
+                    selectedRowKeys: selectedEnrollmentKey ? [selectedEnrollmentKey.value] : [],
+                    onSelect: (record, selected) => {
+                      if (selectedEnrollmentKey?.value === record.value) {
+                        setSelectedEnrollmentKey(null);
+                      } else {
+                        setSelectedEnrollmentKey(record);
+                        onStepChange(1);
+                      }
+                    },
+                  }}
                 />
               </Card>
             </Col>

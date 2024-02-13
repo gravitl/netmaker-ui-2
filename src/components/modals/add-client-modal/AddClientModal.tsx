@@ -97,7 +97,7 @@ export default function AddClientModal({
 
   const networkHosts = useMemo<ExtendedNode[]>(() => {
     return store.nodes
-      .filter((node) => node.network === networkId)
+      .filter((node) => node.network === networkId && node.isingressgateway)
       .map((node) => ({ ...node, ...getExtendedNode(node, store.hostsCommonDetails) }));
   }, [networkId, store.hostsCommonDetails, store.nodes]);
 
@@ -128,14 +128,6 @@ export default function AddClientModal({
       {
         title: 'Address',
         dataIndex: 'address',
-      },
-      {
-        title: 'Remote Access Gateway',
-        // dataIndex: 'name',
-        render(value, node) {
-          if (node.isingressgateway) return <Badge status="success" text="Gateway" />;
-          return <Badge status="error" text="Gateway" />;
-        },
       },
       {
         title: 'Health status',
@@ -189,14 +181,9 @@ export default function AddClientModal({
     if (preferredGateway) {
       setSelectedGateway(getExtendedNode(preferredGateway, store.hostsCommonDetails));
       form.setFieldValue('gatewayId', preferredGateway.id);
+      setIsAutoselectionComplete(true);
       return;
     }
-    const gateways = networkHosts.filter((node) => node.isingressgateway);
-    if (gateways.length) {
-      setSelectedGateway(gateways[0]);
-      form.setFieldValue('gatewayId', gateways[0].id);
-    }
-    setIsAutoselectionComplete(true);
   }, [form, isOpen, networkHosts, preferredGateway, store.hostsCommonDetails, isAutoselectionComplete]);
 
   // TODO: add autofill for fields
@@ -211,6 +198,10 @@ export default function AddClientModal({
       footer={null}
       className="CustomModal"
       style={{ minWidth: '50vw' }}
+      afterClose={() => {
+        resetModal();
+        setIsAutoselectionComplete(false);
+      }}
     >
       <Divider style={{ margin: '0px 0px 2rem 0px' }} />
       <Form name="add-client-form" form={form} layout="vertical">
