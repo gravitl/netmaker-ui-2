@@ -36,7 +36,7 @@ jobs:
           tags: ${{ github.repository_owner }}/netmaker-ui-saas:${{ env.TAG }}
 
       - name: Set up kubectl
-        uses: matootie/dokube@v1.4.0
+        uses: matootie/dokube@v1.4.1
         with:
           personalAccessToken: ${{ secrets.DIGITALOCEAN_TOKEN }}
           clusterName: saas-dev-cluster-europe-1
