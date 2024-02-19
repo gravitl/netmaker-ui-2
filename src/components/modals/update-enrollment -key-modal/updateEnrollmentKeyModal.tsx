@@ -39,7 +39,6 @@ export default function UpdateEnrollmentKeyModal({
   onUpdateKey,
   onCancel,
 }: UpdateEnrollmentKeyModalProps) {
-  console.log('enrollmentKey', enrollmentKey);
   const [form] = Form.useForm<UpdateEnrollmentKeyFormData>();
   const store = useStore();
   const [type, setType] = useState<'unlimited' | 'uses' | 'time'>('unlimited');
@@ -54,12 +53,14 @@ export default function UpdateEnrollmentKeyModal({
   };
 
   const relays = useMemo<ExtendedNode[]>(() => {
-    const networkNodes = store.nodes.map((node) => getExtendedNode(node, store.hostsCommonDetails));
+    const relayNodes = store.nodes
+      .filter((node) => isNodeRelay(node) && enrollmentKey.networks.includes(node.network))
+      .map((node) => getExtendedNode(node, store.hostsCommonDetails));
     if (!isServerEE) {
       return [];
     }
-    return networkNodes.filter((node) => isNodeRelay(node));
-  }, [isServerEE, store.hostsCommonDetails, store.nodes]);
+    return relayNodes;
+  }, [isServerEE, store.hostsCommonDetails, store.nodes, enrollmentKey]);
 
   const updateEnrollmentKey = async () => {
     try {

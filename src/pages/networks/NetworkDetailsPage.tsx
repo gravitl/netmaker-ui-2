@@ -718,11 +718,7 @@ export default function NetworkDetailsPage(props: PageProps) {
             const relayedIds = new Set([...(relay.relaynodes ?? [])]);
             relayedIds.delete(relayed.id);
 
-            if (relayedIds.size > 0) {
-              await NodesService.updateNode(relay.id, networkId, { ...relay, relaynodes: [...relayedIds] });
-            } else {
-              (await NodesService.deleteRelay(relay.id, networkId)).data;
-            }
+            await NodesService.updateNode(relay.id, networkId, { ...relay, relaynodes: [...relayedIds] });
 
             storeFetchNodes();
           } catch (err) {
@@ -2012,7 +2008,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                 style={{ marginBottom: '1rem' }}
               />
             )}
-            {networkNodes.length > 0 && !isFailoverNodePresentInNetwork && (
+            {isServerEE && networkNodes.length > 0 && !isFailoverNodePresentInNetwork && (
               <Alert
                 message="There's no failover node present in the network. Add one for redundancy."
                 type="warning"
@@ -3811,6 +3807,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       />
       {selectedGateway && (
         <UpdateIngressModal
+          key={`update-ingress-${selectedGateway.id}`}
           isOpen={isUpdateGatewayModalOpen}
           ingress={selectedGateway}
           networkId={networkId}
@@ -3822,6 +3819,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       )}
       {selectedGateway && (
         <UpdateIngressUsersModal
+          key={`update-ingress-users-${selectedGateway.id}`}
           isOpen={isUpdateIngressUsersModalOpen}
           ingress={selectedGateway}
           networkId={networkId}
