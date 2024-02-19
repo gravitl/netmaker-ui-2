@@ -104,8 +104,9 @@ export default function AddEgressModal({
       {
         title: 'Address',
         dataIndex: 'address',
-        render(value, egress) {
-          return <Typography.Text>{`${value}, ${egress.address6}`}</Typography.Text>;
+        render(_, egress) {
+          const addrs = ([] as Array<string>).concat(egress.address || [], egress.address6 || []).join(', ');
+          return <Typography.Text title={addrs}>{`${addrs}`}</Typography.Text>;
         },
       },
       {
@@ -114,7 +115,7 @@ export default function AddEgressModal({
       },
       {
         title: 'Health status',
-        render(value, node) {
+        render(_, node) {
           return getNodeConnectivity(node);
         },
       },

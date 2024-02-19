@@ -872,7 +872,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         title: 'Addresses',
         dataIndex: 'address',
         render(_, node) {
-          const addrs = `${node.address}${node.address6 ? `, ${node.address6}` : ''}`;
+          const addrs = ([] as Array<string>).concat(node.address || [], node.address6 || []).join(', ');
           return <Tooltip title={addrs}>{addrs}</Tooltip>;
         },
       },
@@ -918,7 +918,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         title: 'Addresses',
         dataIndex: 'address',
         render(_, node) {
-          const addrs = `${node.address} ${node.address6 ? `, ${node.address6}` : ''}`;
+          const addrs = ([] as Array<string>).concat(node.address || [], node.address6 || []).join(', ');
           return <Tooltip title={addrs}>{addrs}</Tooltip>;
         },
       },
@@ -1159,7 +1159,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         title: 'Addresses',
         dataIndex: 'address',
         render(_, node) {
-          const addrs = `${node.address ?? ''},${node.address6 ? `, ${node.address6}` : ''}`;
+          const addrs = ([] as Array<string>).concat(node.address || [], node.address6 || []).join(', ');
           return <Tooltip title={addrs}>{addrs}</Tooltip>;
         },
       },
@@ -1225,7 +1225,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         title: 'Addresses',
         dataIndex: 'address',
         render(_, node) {
-          const addrs = `${node.address ?? ''}${node.address6 ? `, ${node.address6}` : ''}`;
+          const addrs = ([] as Array<string>).concat(node.address || [], node.address6 || []).join(', ');
           return <Tooltip title={addrs}>{addrs}</Tooltip>;
         },
       },
@@ -2012,7 +2012,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                 style={{ marginBottom: '1rem' }}
               />
             )}
-            {!isFailoverNodePresentInNetwork && (
+            {networkNodes.length > 0 && !isFailoverNodePresentInNetwork && (
               <Alert
                 message="There's no failover node present in the network. Add one for redundancy."
                 type="warning"
@@ -2242,9 +2242,8 @@ export default function NetworkDetailsPage(props: PageProps) {
                 {
                   title: 'IP Addresses',
                   render(_, dns) {
-                    return (
-                      <Typography.Text copyable>{[dns.address].concat(dns.address6 || []).join(', ')}</Typography.Text>
-                    );
+                    const addrs = ([] as Array<string>).concat(dns.address || [], dns.address6 || []).join(', ');
+                    return <Typography.Text copyable>{addrs}</Typography.Text>;
                   },
                 },
                 {
@@ -2468,7 +2467,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                         }}
                         ref={remoteAccessTabGatewayTableRef}
                         rowSelection={{
-                          type: 'checkbox',
+                          type: 'radio',
                           hideSelectAll: true,
                           selectedRowKeys: selectedGateway ? [selectedGateway.id] : [],
                           onSelect: (gateway) => {
@@ -2659,7 +2658,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                     }}
                     ref={egressTabEgressTableRef}
                     rowSelection={{
-                      type: 'checkbox',
+                      type: 'radio',
                       hideSelectAll: true,
                       selectedRowKeys: filteredEgress ? [filteredEgress.id] : [],
                       onSelect: (record, selected) => {
@@ -2842,7 +2841,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                     scroll={{ x: true }}
                     ref={relaysTabRelayTableRef}
                     rowSelection={{
-                      type: 'checkbox',
+                      type: 'radio',
                       hideSelectAll: true,
                       selectedRowKeys: selectedRelay ? [selectedRelay.id] : [],
                       onSelect: (record, selected) => {
