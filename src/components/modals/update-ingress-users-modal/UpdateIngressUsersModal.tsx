@@ -1,11 +1,10 @@
 import { Network } from '@/models/Network';
 import { useStore } from '@/store/store';
 import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
-import { Button, Col, Divider, Form, Input, Modal, notification, Row, Table, TableColumnsType, Typography } from 'antd';
+import { Col, Input, Modal, notification, Row, Table, TableColumnsType, Typography } from 'antd';
 import { User } from '@/models/User';
 import { Node } from '@/models/Node';
 import { UsersService } from '@/services/UsersService';
-import { NodesService } from '@/services/NodesService';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { SearchOutlined } from '@ant-design/icons';
 
@@ -17,12 +16,7 @@ interface UpdateIngressUsersModalProps {
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
 }
 
-export default function UpdateIngressUsersModal({
-  isOpen,
-  networkId,
-  ingress,
-  onCancel,
-}: UpdateIngressUsersModalProps) {
+export default function UpdateIngressUsersModal({ isOpen, ingress, onCancel }: UpdateIngressUsersModalProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const [isUsersLoading, setIsUsersLoading] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
@@ -100,9 +94,7 @@ export default function UpdateIngressUsersModal({
       {
         title: 'Actions',
         render(_, user) {
-          return (
-            <Typography.Link onClick={(_) => confirmAttachOrRemoveUser(user)}>{getLinkText(user)}</Typography.Link>
-          );
+          return <Typography.Link onClick={() => confirmAttachOrRemoveUser(user)}>{getLinkText(user)}</Typography.Link>;
         },
       },
     ],

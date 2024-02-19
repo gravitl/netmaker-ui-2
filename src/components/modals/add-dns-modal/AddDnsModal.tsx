@@ -38,10 +38,13 @@ export default function AddDnsModal({
     () =>
       store.nodes
         .filter((node) => node.network === networkId)
-        .map((node) => ({
-          label: `${node.address}, ${node.address6} (${getExtendedNode(node, store.hostsCommonDetails)?.name ?? ''})`,
-          value: node.address ?? node.address6 ?? '',
-        })),
+        .map((node) => {
+          const addrs = ([] as Array<string>).concat(node.address || [], node.address6 || []).join(', ');
+          return {
+            label: `${addrs} (${getExtendedNode(node, store.hostsCommonDetails)?.name ?? ''})`,
+            value: node.address ?? node.address6 ?? '',
+          };
+        }),
     [networkId, store.hostsCommonDetails, store.nodes],
   );
 
