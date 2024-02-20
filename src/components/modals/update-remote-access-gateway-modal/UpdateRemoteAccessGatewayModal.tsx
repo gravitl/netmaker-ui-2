@@ -7,7 +7,7 @@ import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { NodesService } from '@/services/NodesService';
 import { useStore } from '@/store/store';
 
-interface UpdateIngressModalProps {
+interface UpdateRemoteAccessGatewayModalProp {
   isOpen: boolean;
   networkId: Network['netid'];
   ingress: Node;
@@ -16,18 +16,18 @@ interface UpdateIngressModalProps {
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
 }
 
-interface UpdateIngressForm {
+interface UpdateRemoteAccessGatewayForm {
   ingressdns: string;
 }
 
-export default function UpdateIngressModal({
+export default function UpdateRemoteAccessGatewayModal({
   isOpen,
   onUpdateIngress,
   onCancel,
   ingress,
   networkId,
-}: UpdateIngressModalProps) {
-  const [form] = Form.useForm<UpdateIngressForm>();
+}: UpdateRemoteAccessGatewayModalProp) {
+  const [form] = Form.useForm<UpdateRemoteAccessGatewayForm>();
   const [notify, notifyCtx] = notification.useNotification();
 
   const storeUpdateNode = useStore().updateNode;

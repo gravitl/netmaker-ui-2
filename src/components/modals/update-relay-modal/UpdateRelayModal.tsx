@@ -15,7 +15,7 @@ import {
   Tooltip,
   Typography,
 } from 'antd';
-import { MouseEvent, Ref, useCallback, useMemo, useState } from 'react';
+import { MouseEvent, Ref, useCallback, useEffect, useMemo, useState } from 'react';
 import { useStore } from '@/store/store';
 import '../CustomModal.scss';
 import './UpdateRelayModal.styles.scss';
@@ -142,6 +142,12 @@ export default function UpdateRelayModal({
       setIsSubmitting(false);
     }
   };
+
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedRelayedIds(relay.relaynodes ?? []);
+    }
+  }, [isOpen]);
 
   return (
     <Modal

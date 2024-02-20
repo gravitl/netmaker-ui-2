@@ -34,7 +34,7 @@ function createExternalClient(nodeId: Node['id'], networkId: Network['netid'], p
 }
 
 function createIngressNode(nodeId: Node['id'], networkId: Network['netid'], payload: CreateIngressNodeDto) {
-  return axiosService.post<void>(
+  return axiosService.post<Node>(
     `${ApiRoutes.NODES}/${encodeURIComponent(networkId)}/${encodeURIComponent(nodeId)}/createingress`,
     payload,
   );

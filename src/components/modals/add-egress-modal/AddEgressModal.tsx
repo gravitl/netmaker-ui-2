@@ -34,7 +34,7 @@ import { INTERNET_RANGE_IPV4, INTERNET_RANGE_IPV6 } from '@/constants/AppConstan
 interface AddEgressModalProps {
   isOpen: boolean;
   networkId: Network['netid'];
-  onCreateEgress: () => any;
+  onCreateEgress: (node: Node) => any;
   closeModal?: () => void;
   onOk?: (e: MouseEvent<HTMLButtonElement>) => void;
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
@@ -134,12 +134,14 @@ export default function AddEgressModal({
       setIsSubmitting(true);
 
       if (!selectedEgress) return;
-      await NodesService.createEgressNode(selectedEgress.id, networkId, {
-        ...formData,
-        natEnabled: formData.natEnabled ? 'yes' : 'no',
-      });
+      const egressNode = (
+        await NodesService.createEgressNode(selectedEgress.id, networkId, {
+          ...formData,
+          natEnabled: formData.natEnabled ? 'yes' : 'no',
+        })
+      ).data;
       resetModal();
-      onCreateEgress();
+      onCreateEgress(egressNode);
       notify.success({ message: `Egress gateway created` });
     } catch (err) {
       if (err instanceof AxiosError) {
