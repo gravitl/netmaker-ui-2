@@ -355,7 +355,7 @@ export default function AddClientModal({
             </Col>
           </Row>
 
-          <Collapse ghost size="small" activeKey={isTourOpen ? 'details' : ''}>
+          <Collapse ghost size="small" defaultActiveKey={isTourOpen ? 'details' : ''}>
             <Collapse.Panel
               key="details"
               header={<Typography.Text style={{ marginTop: '0rem' }}>Advanced Settings</Typography.Text>}

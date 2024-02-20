@@ -83,8 +83,8 @@ import { MetricCategories, NetworkMetrics, NodeOrClientMetric, UptimeNodeMetrics
 import { getHostHealth, isManagedHost, renderMetricValue, useBranding } from '@/utils/Utils';
 import AddHostsToNetworkModal from '@/components/modals/add-hosts-to-network-modal/AddHostsToNetworkModal';
 import NewHostModal from '@/components/modals/new-host-modal/NewHostModal';
-import AddIngressModal from '@/components/modals/add-ingress-modal/AddIngressModal';
-import UpdateIngressModal from '@/components/modals/update-ingress-modal/UpdateIngressModal';
+import AddIngressModal from '@/components/modals/add-remote-access-gateway-modal/AddRemoteAccessGatewayModal';
+import UpdateIngressModal from '@/components/modals/update-remote-access-gateway-modal/UpdateRemoteAccessGatewayModal';
 import UpdateClientModal from '@/components/modals/update-client-modal/UpdateClientModal';
 import { NULL_HOST, NULL_NODE } from '@/constants/Types';
 import UpdateNodeModal from '@/components/modals/update-node-modal/UpdateNodeModal';
@@ -98,6 +98,7 @@ import { isSaasBuild } from '@/services/BaseService';
 import { NetworkDetailTourStep } from '@/utils/Types';
 import TourComponent from '@/pages/networks/TourComponent';
 import DownloadRemotesAccessClientModal from '@/components/modals/remote-access-client-modal/DownloadRemoteAccessClientModal';
+import AddRemoteAccessGatewayModal from '@/components/modals/add-remote-access-gateway-modal/AddRemoteAccessGatewayModal';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -718,8 +719,11 @@ export default function NetworkDetailsPage(props: PageProps) {
             const relayedIds = new Set([...(relay.relaynodes ?? [])]);
             relayedIds.delete(relayed.id);
 
-            await NodesService.updateNode(relay.id, networkId, { ...relay, relaynodes: [...relayedIds] });
+            const relay_res = (
+              await NodesService.updateNode(relay.id, networkId, { ...relay, relaynodes: [...relayedIds] })
+            ).data;
 
+            setSelectedRelay(relay_res);
             storeFetchNodes();
           } catch (err) {
             notify.error({
@@ -3299,7 +3303,7 @@ export default function NetworkDetailsPage(props: PageProps) {
             {
               key: 'metrics',
               label: `Metrics`,
-              children: network ? getMetricsContent() : <Skeleton active />,
+              children: network && !isRefreshingNetwork ? getMetricsContent() : <Skeleton active />,
             },
           ]
         : [],
@@ -3309,7 +3313,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       tabs.splice(3, 0, {
         key: 'relays',
         label: `Relays (${relays.length})`,
-        children: network ? getRelayContent() : <Skeleton active />,
+        children: network && !isRefreshingNetwork ? getRelayContent() : <Skeleton active />,
       });
     }
 
@@ -3702,8 +3706,9 @@ export default function NetworkDetailsPage(props: PageProps) {
       <AddEgressModal
         isOpen={isAddEgressModalOpen}
         networkId={networkId}
-        onCreateEgress={() => {
+        onCreateEgress={(egress) => {
           store.fetchNodes();
+          setFilteredEgress(egress);
           setIsAddEgressModalOpen(false);
         }}
         onCancel={() => setIsAddEgressModalOpen(false)}
@@ -3751,8 +3756,9 @@ export default function NetworkDetailsPage(props: PageProps) {
       <AddRelayModal
         isOpen={isAddRelayModalOpen}
         networkId={networkId}
-        onCreateRelay={() => {
+        onCreateRelay={(relay) => {
           store.fetchNodes();
+          setSelectedRelay(relay);
           setIsAddRelayModalOpen(false);
         }}
         onCancel={() => setIsAddRelayModalOpen(false)}
@@ -3764,8 +3770,9 @@ export default function NetworkDetailsPage(props: PageProps) {
           isOpen={isUpdateRelayModalOpen}
           relay={selectedRelay}
           networkId={networkId}
-          onUpdateRelay={() => {
+          onUpdateRelay={(relay) => {
             store.fetchNodes();
+            setSelectedRelay(relay);
             setIsUpdateRelayModalOpen(false);
           }}
           onCancel={() => setIsUpdateRelayModalOpen(false)}
@@ -3793,11 +3800,12 @@ export default function NetworkDetailsPage(props: PageProps) {
         tourStep={tourStep}
         page="network-details"
       />
-      <AddIngressModal
+      <AddRemoteAccessGatewayModal
         isOpen={isAddClientGatewayModalOpen}
         networkId={networkId}
-        onCreateIngress={() => {
+        onCreateIngress={(remoteAccessGateway) => {
           store.fetchNodes();
+          setSelectedGateway(remoteAccessGateway);
           setIsAddClientGatewayModalOpen(false);
         }}
         onCancel={() => setIsAddClientGatewayModalOpen(false)}

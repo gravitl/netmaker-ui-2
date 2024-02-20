@@ -30,10 +30,10 @@ import { Host } from '@/models/Host';
 import { CreateIngressNodeDto } from '@/services/dtos/CreateIngressNodeDto';
 import { PUBLIC_DNS_RESOLVERS } from '@/constants/AppConstants';
 
-interface AddIngressModalProps {
+interface AddRemoteAccessGatewayModalProps {
   isOpen: boolean;
   networkId: Network['netid'];
-  onCreateIngress: () => any;
+  onCreateIngress: (node: Node) => any;
   onOk?: (e: MouseEvent<HTMLButtonElement>) => void;
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
   addClientGatewayModalHostRef?: Ref<HTMLDivElement>;
@@ -41,11 +41,11 @@ interface AddIngressModalProps {
   addClientGatewayModalIsInternetGatewayRef?: Ref<HTMLDivElement>;
 }
 
-interface AddIngressForm extends CreateIngressNodeDto {
+interface AddRemoteAccessGatewaysForm extends CreateIngressNodeDto {
   node: Node;
 }
 
-export default function AddIngressModal({
+export default function AddRemoteAccessGatewayModal({
   isOpen,
   onCreateIngress,
   onCancel,
@@ -53,8 +53,8 @@ export default function AddIngressModal({
   addClientGatewayModalDefaultClientDNSRef,
   addClientGatewayModalHostRef,
   addClientGatewayModalIsInternetGatewayRef,
-}: AddIngressModalProps) {
-  const [form] = Form.useForm<AddIngressForm>();
+}: AddRemoteAccessGatewayModalProps) {
+  const [form] = Form.useForm<AddRemoteAccessGatewaysForm>();
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
 
@@ -132,13 +132,15 @@ export default function AddIngressModal({
     try {
       const formData = await form.validateFields();
       setIsSubmitting(true);
-      await NodesService.createIngressNode(formData.node.id, networkId, {
-        extclientdns: formData.extclientdns,
-        is_internet_gw: isServerEE ? formData.is_internet_gw : false,
-      });
+      const ingressNode = (
+        await NodesService.createIngressNode(formData.node.id, networkId, {
+          extclientdns: formData.extclientdns,
+          is_internet_gw: isServerEE ? formData.is_internet_gw : false,
+        })
+      ).data;
       resetModal();
       notify.success({ message: `Client gateway created` });
-      onCreateIngress();
+      onCreateIngress(ingressNode);
     } catch (err) {
       notify.error({
         message: 'Failed to create client gateway',
