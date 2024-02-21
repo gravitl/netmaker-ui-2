@@ -591,8 +591,10 @@ export default function NetworkDetailsPage(props: PageProps) {
         onOk: async () => {
           try {
             await NodesService.deleteIngressNode(gateway.id, gateway.network);
+            store.updateNode(gateway.id, { ...gateway, isingressgateway: false });
             storeFetchNodes();
             loadClients();
+            setIsInitialLoad(true);
             notify.success({ message: 'Gateway deleted' });
           } catch (err) {
             if (err instanceof AxiosError) {
@@ -616,8 +618,10 @@ export default function NetworkDetailsPage(props: PageProps) {
         onOk: async () => {
           try {
             await NodesService.deleteEgressNode(egress.id, egress.network);
+            store.updateNode(egress.id, { ...egress, isegressgateway: false, egressgatewayranges: [] });
             storeFetchNodes();
             setFilteredEgress(null);
+            setIsInitialLoad(true);
             notify.success({ message: 'Egress deleted' });
           } catch (err) {
             if (err instanceof AxiosError) {
@@ -703,7 +707,10 @@ export default function NetworkDetailsPage(props: PageProps) {
         onOk: async () => {
           try {
             await NodesService.deleteRelay(relay.id, networkId);
+            store.updateNode(relay.id, { ...relay, relaynodes: [], isrelay: false });
+            d;
             store.fetchNodes();
+            setIsInitialLoad(true);
             notify.success({ message: 'Relay deleted' });
           } catch (err) {
             notify.error({
