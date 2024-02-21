@@ -208,7 +208,7 @@ export default function AddEnrollmentKeyModal({
                     placeholder="Select relay to join with key"
                     allowClear
                     style={{ width: '100%' }}
-                    options={relays.map((node) => ({ label: node.name, value: node.id }))}
+                    options={relays.map((node) => ({ label: `${node.name} (${node.network})`, value: node.id }))}
                     disabled={networksVal?.length === 0}
                   />
                 </Form.Item>
