@@ -83,7 +83,6 @@ import { MetricCategories, NetworkMetrics, NodeOrClientMetric, UptimeNodeMetrics
 import { getHostHealth, isManagedHost, renderMetricValue, useBranding } from '@/utils/Utils';
 import AddHostsToNetworkModal from '@/components/modals/add-hosts-to-network-modal/AddHostsToNetworkModal';
 import NewHostModal from '@/components/modals/new-host-modal/NewHostModal';
-import AddIngressModal from '@/components/modals/add-remote-access-gateway-modal/AddRemoteAccessGatewayModal';
 import UpdateIngressModal from '@/components/modals/update-remote-access-gateway-modal/UpdateRemoteAccessGatewayModal';
 import UpdateClientModal from '@/components/modals/update-client-modal/UpdateClientModal';
 import { NULL_HOST, NULL_NODE } from '@/constants/Types';
@@ -1152,6 +1151,9 @@ export default function NetworkDetailsPage(props: PageProps) {
       {
         title: 'Host name',
         dataIndex: 'name',
+        render(value) {
+          return <Typography.Link>{value}</Typography.Link>;
+        },
         sorter: (a, b) => a.name?.localeCompare(b.name ?? '') ?? 0,
         defaultSortOrder: 'ascend',
       },
@@ -2460,8 +2462,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                         onRow={(gateway) => {
                           return {
                             onClick: () => {
-                              if (selectedGateway?.id === gateway.id) setSelectedGateway(null);
-                              else setSelectedGateway(gateway);
+                              setSelectedGateway(gateway);
                             },
                           };
                         }}
@@ -2499,16 +2500,6 @@ export default function NetworkDetailsPage(props: PageProps) {
                       >
                         <PlusOutlined /> Create Config
                       </Button>
-                      <div className="display-all-container-switch" ref={remoteAccessTabDisplayAllVPNConfigsRef}>
-                        Display All{' '}
-                        <Switch
-                          title="Display all clients. Click a gateway to filter clients specific to that gateway."
-                          checked={selectedGateway === null}
-                          onClick={() => {
-                            setSelectedGateway(null);
-                          }}
-                        />
-                      </div>
                       <Button
                         title="Go to client documentation"
                         style={{ marginLeft: '1rem' }}
@@ -2651,8 +2642,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                     onRow={(egress) => {
                       return {
                         onClick: () => {
-                          if (filteredEgress?.id === egress.id) setFilteredEgress(null);
-                          else setFilteredEgress(egress);
+                          setFilteredEgress(egress);
                         },
                       };
                     }}
@@ -2693,16 +2683,6 @@ export default function NetworkDetailsPage(props: PageProps) {
                       <PlusOutlined /> Add external route
                     </Button>
                   )}
-                  <div className="display-all-container-switch" ref={egressTabDisplayAllExternalRoutesRef}>
-                    Display All{' '}
-                    <Switch
-                      title="Display all routes. Click an egress to filter routes specific to that egress."
-                      checked={filteredEgress === null}
-                      onClick={() => {
-                        setFilteredEgress(null);
-                      }}
-                    />
-                  </div>
                 </Col>
               </Row>
               <Row style={{ marginTop: '1rem' }}>
@@ -2833,8 +2813,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                     onRow={(relay) => {
                       return {
                         onClick: () => {
-                          if (selectedRelay?.id === relay.id) setSelectedRelay(null);
-                          else setSelectedRelay(relay);
+                          setSelectedRelay(relay);
                         },
                       };
                     }}
@@ -2876,16 +2855,6 @@ export default function NetworkDetailsPage(props: PageProps) {
                       <PlusOutlined /> Add relayed host
                     </Button>
                   )}
-                  <div className="display-all-container-switch" ref={relaysTabDisplayAllRelayedHostsRef}>
-                    Display All{' '}
-                    <Switch
-                      title="Display all relayed hosts. Click a relay to filter hosts relayed only by that relay."
-                      checked={selectedRelay === null}
-                      onClick={() => {
-                        setSelectedRelay(null);
-                      }}
-                    />
-                  </div>
                 </Col>
               </Row>
               <Row style={{ marginTop: '1rem' }}>
