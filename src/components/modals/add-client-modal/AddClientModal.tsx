@@ -127,12 +127,14 @@ export default function AddClientModal({
       },
       {
         title: 'Address',
-        dataIndex: 'address',
+        render(_, gateway) {
+          const addrs = ([] as Array<string>).concat(gateway.address || [], gateway.address6 || []).join(', ');
+          return <Typography.Text>{addrs}</Typography.Text>;
+        },
       },
       {
         title: 'Health status',
-        // dataIndex: 'lastcheckin',
-        render(value, node) {
+        render(_, node) {
           return getNodeConnectivity(node);
         },
       },
@@ -259,7 +261,11 @@ export default function AddClientModal({
                       style={{ border: `1px solid ${themeToken.colorBorder}`, padding: '.5rem', borderRadius: '8px' }}
                     >
                       <Col span={6}>{selectedGateway?.name ?? ''}</Col>
-                      <Col span={6}>{selectedGateway?.address ?? ''}</Col>
+                      <Col span={6}>
+                        {([] as Array<string>)
+                          .concat(selectedGateway.address || [], selectedGateway.address6 || [])
+                          .join(', ')}
+                      </Col>
                       <Col span={6}>
                         {selectedGateway.isingressgateway && <Badge status="success" text="Gateway" />}
                         {!selectedGateway.isingressgateway && <Badge status="error" text="Not a Gateway" />}

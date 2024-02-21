@@ -1036,7 +1036,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       {
         title: 'Addresses',
         render(_, client) {
-          const addrs = `${client.address}${client.address6 ? `, ${client.address6}` : ''}`;
+          const addrs = ([] as Array<string>).concat(client.address || [], client.address6 || []).join(', ');
           return <Tooltip title={addrs}>{addrs}</Tooltip>;
         },
       },

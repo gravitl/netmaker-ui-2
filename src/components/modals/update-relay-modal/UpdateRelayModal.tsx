@@ -172,7 +172,9 @@ export default function UpdateRelayModal({
             }}
           >
             <Col span={6}>{extendedRelay?.name ?? ''}</Col>
-            <Col span={6}>{extendedRelay?.address ?? ''}</Col>
+            <Col span={6}>
+              {([] as Array<string>).concat(extendedRelay.address || [], extendedRelay.address6 || []).join(', ')}
+            </Col>
             <Col span={6}>{extendedRelay?.endpointip ?? ''}</Col>
             <Col span={6}>{extendedRelay && getNodeConnectivity(extendedRelay)}</Col>
           </Row>
@@ -271,7 +273,14 @@ export default function UpdateRelayModal({
               }}
             >
               <Col span={6}>{networkNodes.find((h) => h.id === id)?.name ?? ''}</Col>
-              <Col span={6}>{networkNodes.find((h) => h.id === id)?.address ?? ''}</Col>
+              <Col span={6}>
+                {([] as Array<string>)
+                  .concat(
+                    networkNodes.find((h) => h.id === id)?.address || [],
+                    networkNodes.find((h) => h.id === id)?.address6 || [],
+                  )
+                  .join(', ')}
+              </Col>
               <Col span={6}>{networkNodes.find((h) => h.id === id)?.endpointip ?? ''}</Col>
               <Col span={5}>{getNodeConnectivity(networkNodes.find((n) => n.id === id) ?? NULL_NODE)}</Col>
               <Col span={1} style={{ textAlign: 'right' }}>

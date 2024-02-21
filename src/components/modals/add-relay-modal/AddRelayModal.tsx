@@ -26,7 +26,6 @@ import { CloseOutlined, DownOutlined, SearchOutlined, UpOutlined } from '@ant-de
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { CreateNodeRelayDto } from '@/services/dtos/CreateNodeRelayDto';
 import { NodesService } from '@/services/NodesService';
-import { NULL_NODE } from '@/constants/Types';
 
 interface AddRelayModalProps {
   isOpen: boolean;
@@ -220,7 +219,9 @@ export default function AddRelayModal({
                   }}
                 >
                   <Col span={6}>{selectedRelay?.name ?? ''}</Col>
-                  <Col span={6}>{selectedRelay?.address ?? ''}</Col>
+                  <Col span={6}>
+                    {([] as Array<string>).concat(selectedRelay.address || [], selectedRelay.address6 || []).join(', ')}
+                  </Col>
                   <Col span={6}>{selectedRelay?.endpointip ?? ''}</Col>
                   <Col span={5}>{selectedRelay && getNodeConnectivity(selectedRelay)}</Col>
                   <Col span={1} style={{ textAlign: 'right' }}>
