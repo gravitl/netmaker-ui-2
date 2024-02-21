@@ -105,7 +105,10 @@ export default function AddRemoteAccessGatewayModal({
       },
       {
         title: 'Address',
-        dataIndex: 'address',
+        render(_, gateway) {
+          const addrs = ([] as Array<string>).concat(gateway.address || [], gateway.address6 || []).join(', ');
+          return <Typography.Text>{addrs}</Typography.Text>;
+        },
       },
       {
         title: 'OS',
@@ -113,7 +116,7 @@ export default function AddRemoteAccessGatewayModal({
       },
       {
         title: 'Health status',
-        render(value, node) {
+        render(_, node) {
           return getNodeConnectivity(node);
         },
       },
@@ -220,7 +223,7 @@ export default function AddRemoteAccessGatewayModal({
                                 type: 'checkbox',
                                 hideSelectAll: true,
                                 selectedRowKeys: selectedNode ? [selectedNode.id] : [],
-                                onSelect: (record, selected) => {
+                                onSelect: (record) => {
                                   if (selectedNode?.id === record.id) {
                                     setSelectedNode(null);
                                     form.setFieldValue('node', undefined);
@@ -257,7 +260,7 @@ export default function AddRemoteAccessGatewayModal({
                   </Col>
                   <Col span={6}>{selectedNode.name ?? ''}</Col>
                   <Col span={6}>
-                    {selectedNode.address ?? ''}, {selectedNode.address6 ?? ''}
+                    {([] as Array<string>).concat(selectedNode.address || [], selectedNode.address6 || []).join(', ')}
                   </Col>
                   <Col span={6}>{selectedNode.os ?? ''}</Col>
                   <Col span={5}>{getNodeConnectivity(selectedNode)}</Col>
