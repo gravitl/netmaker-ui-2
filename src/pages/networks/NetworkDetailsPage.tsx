@@ -83,7 +83,6 @@ import { MetricCategories, NetworkMetrics, NodeOrClientMetric, UptimeNodeMetrics
 import { getHostHealth, isManagedHost, renderMetricValue, useBranding } from '@/utils/Utils';
 import AddHostsToNetworkModal from '@/components/modals/add-hosts-to-network-modal/AddHostsToNetworkModal';
 import NewHostModal from '@/components/modals/new-host-modal/NewHostModal';
-import AddIngressModal from '@/components/modals/add-remote-access-gateway-modal/AddRemoteAccessGatewayModal';
 import UpdateIngressModal from '@/components/modals/update-remote-access-gateway-modal/UpdateRemoteAccessGatewayModal';
 import UpdateClientModal from '@/components/modals/update-client-modal/UpdateClientModal';
 import { NULL_HOST, NULL_NODE } from '@/constants/Types';
@@ -96,7 +95,7 @@ import { HOST_HEALTH_STATUS } from '@/models/NodeConnectivityStatus';
 import ClientConfigModal from '@/components/modals/client-config-modal/ClientConfigModal';
 import { isSaasBuild } from '@/services/BaseService';
 import { NetworkDetailTourStep } from '@/utils/Types';
-import TourComponent from '@/pages/networks/TourComponent';
+import TourComponent, { JumpToTourStepObj } from '@/pages/networks/TourComponent';
 import DownloadRemotesAccessClientModal from '@/components/modals/remote-access-client-modal/DownloadRemoteAccessClientModal';
 import AddRemoteAccessGatewayModal from '@/components/modals/add-remote-access-gateway-modal/AddRemoteAccessGatewayModal';
 
@@ -203,6 +202,17 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [isDownloadRemoteAccessClientModalOpen, setIsDownloadRemoteAccessClientModalOpen] = useState(false);
   const [originalAcls, setOriginalAcls] = useState<NodeAclContainer>({});
   const [acls, setAcls] = useState<NodeAclContainer>({});
+  const [jumpTourStepObj, setJumpTourStepObj] = useState<JumpToTourStepObj>({
+    overview: 0,
+    hosts: 1,
+    remoteAccess: 2,
+    relays: 3,
+    egress: 4,
+    dns: 5,
+    acls: 6,
+    graph: 7,
+    metrics: 8,
+  });
 
   const overviewTabContainerRef = useRef(null);
   const hostsTabContainerTableRef = useRef(null);
@@ -581,8 +591,10 @@ export default function NetworkDetailsPage(props: PageProps) {
         onOk: async () => {
           try {
             await NodesService.deleteIngressNode(gateway.id, gateway.network);
+            store.updateNode(gateway.id, { ...gateway, isingressgateway: false });
             storeFetchNodes();
             loadClients();
+            setIsInitialLoad(true);
             notify.success({ message: 'Gateway deleted' });
           } catch (err) {
             if (err instanceof AxiosError) {
@@ -606,8 +618,10 @@ export default function NetworkDetailsPage(props: PageProps) {
         onOk: async () => {
           try {
             await NodesService.deleteEgressNode(egress.id, egress.network);
+            store.updateNode(egress.id, { ...egress, isegressgateway: false, egressgatewayranges: [] });
             storeFetchNodes();
             setFilteredEgress(null);
+            setIsInitialLoad(true);
             notify.success({ message: 'Egress deleted' });
           } catch (err) {
             if (err instanceof AxiosError) {
@@ -693,7 +707,9 @@ export default function NetworkDetailsPage(props: PageProps) {
         onOk: async () => {
           try {
             await NodesService.deleteRelay(relay.id, networkId);
+            store.updateNode(relay.id, { ...relay, relaynodes: [], isrelay: false });
             store.fetchNodes();
+            setIsInitialLoad(true);
             notify.success({ message: 'Relay deleted' });
           } catch (err) {
             notify.error({
@@ -1152,6 +1168,9 @@ export default function NetworkDetailsPage(props: PageProps) {
       {
         title: 'Host name',
         dataIndex: 'name',
+        render(value) {
+          return <Typography.Link>{value}</Typography.Link>;
+        },
         sorter: (a, b) => a.name?.localeCompare(b.name ?? '') ?? 0,
         defaultSortOrder: 'ascend',
       },
@@ -1761,50 +1780,38 @@ export default function NetworkDetailsPage(props: PageProps) {
       switch (step) {
         case 'hosts':
           setIsTourOpen(true);
-          setTourStep(1);
+          setTourStep(jumpTourStepObj.hosts);
           break;
         case 'remote-access':
           setIsTourOpen(true);
-          setTourStep(6);
+          setTourStep(jumpTourStepObj.remoteAccess);
           break;
         case 'egress':
           setIsTourOpen(true);
-          if (isServerEE) {
-            setTourStep(28);
-          } else {
-            setTourStep(9);
-          }
+          setTourStep(jumpTourStepObj.egress);
           break;
         case 'relays':
           setIsTourOpen(true);
-          setTourStep(21);
+          setTourStep(jumpTourStepObj.relays);
           break;
         case 'dns':
           setIsTourOpen(true);
-          if (isServerEE) {
-            setTourStep(36);
-          } else {
-            setTourStep(24);
-          }
+          setTourStep(jumpTourStepObj.dns);
           break;
         case 'acls':
           setIsTourOpen(true);
-          if (isServerEE) {
-            setTourStep(40);
-          } else {
-            setTourStep(30);
-          }
+          setTourStep(jumpTourStepObj.acls);
           break;
         case 'metrics':
           setCurrentMetric('connectivity-status');
           setIsTourOpen(true);
-          setTourStep(47);
+          setTourStep(jumpTourStepObj.metrics);
           break;
         default:
           break;
       }
     },
-    [isServerEE],
+    [isServerEE, jumpTourStepObj],
   );
 
   // ui components
@@ -2460,8 +2467,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                         onRow={(gateway) => {
                           return {
                             onClick: () => {
-                              if (selectedGateway?.id === gateway.id) setSelectedGateway(null);
-                              else setSelectedGateway(gateway);
+                              setSelectedGateway(gateway);
                             },
                           };
                         }}
@@ -2499,16 +2505,6 @@ export default function NetworkDetailsPage(props: PageProps) {
                       >
                         <PlusOutlined /> Create Config
                       </Button>
-                      <div className="display-all-container-switch" ref={remoteAccessTabDisplayAllVPNConfigsRef}>
-                        Display All{' '}
-                        <Switch
-                          title="Display all clients. Click a gateway to filter clients specific to that gateway."
-                          checked={selectedGateway === null}
-                          onClick={() => {
-                            setSelectedGateway(null);
-                          }}
-                        />
-                      </div>
                       <Button
                         title="Go to client documentation"
                         style={{ marginLeft: '1rem' }}
@@ -2651,8 +2647,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                     onRow={(egress) => {
                       return {
                         onClick: () => {
-                          if (filteredEgress?.id === egress.id) setFilteredEgress(null);
-                          else setFilteredEgress(egress);
+                          setFilteredEgress(egress);
                         },
                       };
                     }}
@@ -2693,16 +2688,6 @@ export default function NetworkDetailsPage(props: PageProps) {
                       <PlusOutlined /> Add external route
                     </Button>
                   )}
-                  <div className="display-all-container-switch" ref={egressTabDisplayAllExternalRoutesRef}>
-                    Display All{' '}
-                    <Switch
-                      title="Display all routes. Click an egress to filter routes specific to that egress."
-                      checked={filteredEgress === null}
-                      onClick={() => {
-                        setFilteredEgress(null);
-                      }}
-                    />
-                  </div>
                 </Col>
               </Row>
               <Row style={{ marginTop: '1rem' }}>
@@ -2833,8 +2818,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                     onRow={(relay) => {
                       return {
                         onClick: () => {
-                          if (selectedRelay?.id === relay.id) setSelectedRelay(null);
-                          else setSelectedRelay(relay);
+                          setSelectedRelay(relay);
                         },
                       };
                     }}
@@ -2876,16 +2860,6 @@ export default function NetworkDetailsPage(props: PageProps) {
                       <PlusOutlined /> Add relayed host
                     </Button>
                   )}
-                  <div className="display-all-container-switch" ref={relaysTabDisplayAllRelayedHostsRef}>
-                    Display All{' '}
-                    <Switch
-                      title="Display all relayed hosts. Click a relay to filter hosts relayed only by that relay."
-                      checked={selectedRelay === null}
-                      onClick={() => {
-                        setSelectedRelay(null);
-                      }}
-                    />
-                  </div>
                 </Col>
               </Row>
               <Row style={{ marginTop: '1rem' }}>
@@ -3607,6 +3581,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         setIsUpdateRelayModalOpen={setIsUpdateRelayModalOpen}
         setActiveTabKey={setActiveTabKey}
         setCurrentMetric={setCurrentMetric}
+        setJumpToTourStepObj={setJumpTourStepObj}
         clientGateways={clientGateways}
         relays={relays}
         egresses={egresses}
