@@ -2,7 +2,20 @@ import { MetricCategories } from '@/models/Metrics';
 import { ExtendedNode } from '@/models/Node';
 import { useStore } from '@/store/store';
 import { Tour, TourProps } from 'antd';
-import { useRef, Fragment, Ref, RefObject } from 'react';
+import { t } from 'i18next';
+import { useRef, Fragment, Ref, RefObject, useMemo, useCallback, useEffect } from 'react';
+
+export interface JumpToTourStepObj {
+  overview: number;
+  hosts: number;
+  remoteAccess: number;
+  relays: number;
+  egress: number;
+  dns: number;
+  acls: number;
+  graph: number;
+  metrics: number;
+}
 
 interface TourUtilsProps {
   overviewTabContainerRef: RefObject<HTMLDivElement>;
@@ -74,6 +87,7 @@ interface TourUtilsProps {
   setCurrentMetric: (metric: MetricCategories) => void;
   tourStep: number;
   relays: ExtendedNode[];
+  setJumpToTourStepObj: (obj: JumpToTourStepObj) => void;
 }
 
 export default function TourComponent(props: TourUtilsProps) {
@@ -308,11 +322,6 @@ export default function TourComponent(props: TourUtilsProps) {
       target: remoteAccessTabVPNConfigTableRef.current,
     },
     {
-      title: 'Display All VPN Config Files',
-      description: 'Display all VPN config files',
-      target: remoteAccessTabDisplayAllVPNConfigsRef.current,
-    },
-    {
       title: 'Create Config',
       description: 'Create a new VPN config file for a client',
       target: remoteAccessTabVPNConfigCreateConfigRef.current,
@@ -413,21 +422,16 @@ export default function TourComponent(props: TourUtilsProps) {
     //   },
     // },
     {
-      title: 'Display All Relayed Hosts',
-      description: 'Display all relayed hosts',
-      target: relaysTabDisplayAllRelayedHostsRef.current,
-      onPrev: () => {
-        setIsAddRelayModalOpen(true);
-        prevTourStep();
-      },
-    },
-    {
       title: 'Add Relayed Host',
       description: 'Add a new relayed host to your selected relay',
       target: relaysTabAddRelayedNodesRef.current,
       onNext: () => {
         nextTourStep();
         setIsUpdateRelayModalOpen(true);
+      },
+      onPrev: () => {
+        setIsAddRelayModalOpen(true);
+        prevTourStep();
       },
     },
     {
@@ -507,11 +511,6 @@ export default function TourComponent(props: TourUtilsProps) {
       },
     },
     {
-      title: 'Display All External Routes',
-      description: 'Display all external routes',
-      target: egressTabDisplayAllExternalRoutesRef.current,
-    },
-    {
       title: 'Add External Route',
       description: 'Add a new external route to your selected egress gateway',
       target: egressTabAddExternalRouteRef.current,
@@ -521,7 +520,7 @@ export default function TourComponent(props: TourUtilsProps) {
       },
     },
     {
-      title: 'DNS table',
+      title: 'DNS Table',
       description: <>Get DNS entries and IP addresses for your network and you can delete a DNS entry</>,
       target: dnsTabDNSTableRef.current,
       onPrev: () => {
@@ -831,11 +830,6 @@ export default function TourComponent(props: TourUtilsProps) {
       target: remoteAccessTabVPNConfigTableRef.current,
     },
     {
-      title: 'Display All VPN Config Files',
-      description: 'Display all VPN config files',
-      target: remoteAccessTabDisplayAllVPNConfigsRef.current,
-    },
-    {
       title: 'Create Config',
       description: 'Create a new VPN config file for a client',
       target: remoteAccessTabVPNConfigCreateConfigRef.current,
@@ -961,11 +955,6 @@ export default function TourComponent(props: TourUtilsProps) {
       },
     },
     {
-      title: 'Display All External Routes',
-      description: 'Display all external routes',
-      target: egressTabDisplayAllExternalRoutesRef.current,
-    },
-    {
       title: 'Add External Route',
       description: 'Add a new external route to your selected egress gateway',
       target: egressTabAddExternalRouteRef.current,
@@ -975,7 +964,7 @@ export default function TourComponent(props: TourUtilsProps) {
       },
     },
     {
-      title: 'DNS table',
+      title: 'DNS Table',
       description: <>Get DNS entries and IP addresses for your network and you can delete a DNS entry</>,
       target: dnsTabDNSTableRef.current,
       onPrev: () => {
@@ -1065,6 +1054,60 @@ export default function TourComponent(props: TourUtilsProps) {
   const handleTourOnChange = (current: number) => {
     setTourStep(current);
   };
+
+  const tourSteps = useMemo(() => (isServerEE ? networkDetailsTourStepsPro : networkDetailsTourStepsCE), [isServerEE]);
+
+  const generateJumpToTourStepObj = useCallback(() => {
+    // find the current step by index and then set the jump to tour step object
+    const tabTexts = [
+      'Overview',
+      'Hosts Table',
+      'Gateway Table',
+      'Relays Table',
+      'Egress Table',
+      'DNS Table',
+      'Access Control Table',
+      'Graph',
+      'Metrics Connectivity Status',
+    ];
+
+    const tabTextToStepMap: { [key: string]: string } = {
+      Overview: 'overview',
+      'Hosts Table': 'hosts',
+      'Gateway Table': 'remoteAccess',
+      'Relays Table': 'relays',
+      'Egress Table': 'egress',
+      'DNS Table': 'dns',
+      'Access Control Table': 'acls',
+      Graph: 'graph',
+      'Metrics Connectivity Status': 'metrics',
+    };
+
+    const jumpToTourStepObj: JumpToTourStepObj = {
+      overview: 0,
+      hosts: 1,
+      remoteAccess: 6,
+      relays: 18,
+      egress: 23,
+      dns: 31,
+      acls: 39,
+      graph: 47,
+      metrics: 48,
+    };
+
+    tabTexts.forEach((tab, index) => {
+      const tourStepIndex = tourSteps.findIndex((step) => step.title === tab);
+      if (tourStepIndex !== -1) {
+        jumpToTourStepObj[tabTextToStepMap[tab] as keyof JumpToTourStepObj] = tourStepIndex;
+      }
+    });
+
+    props.setJumpToTourStepObj(jumpToTourStepObj);
+  }, [tourSteps]);
+
+  useEffect(() => {
+    generateJumpToTourStepObj();
+  }, [generateJumpToTourStepObj]);
 
   return (
     <>

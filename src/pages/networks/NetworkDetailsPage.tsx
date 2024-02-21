@@ -95,7 +95,7 @@ import { HOST_HEALTH_STATUS } from '@/models/NodeConnectivityStatus';
 import ClientConfigModal from '@/components/modals/client-config-modal/ClientConfigModal';
 import { isSaasBuild } from '@/services/BaseService';
 import { NetworkDetailTourStep } from '@/utils/Types';
-import TourComponent from '@/pages/networks/TourComponent';
+import TourComponent, { JumpToTourStepObj } from '@/pages/networks/TourComponent';
 import DownloadRemotesAccessClientModal from '@/components/modals/remote-access-client-modal/DownloadRemoteAccessClientModal';
 import AddRemoteAccessGatewayModal from '@/components/modals/add-remote-access-gateway-modal/AddRemoteAccessGatewayModal';
 
@@ -202,6 +202,17 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [isDownloadRemoteAccessClientModalOpen, setIsDownloadRemoteAccessClientModalOpen] = useState(false);
   const [originalAcls, setOriginalAcls] = useState<NodeAclContainer>({});
   const [acls, setAcls] = useState<NodeAclContainer>({});
+  const [jumpTourStepObj, setJumpTourStepObj] = useState<JumpToTourStepObj>({
+    overview: 0,
+    hosts: 1,
+    remoteAccess: 2,
+    relays: 3,
+    egress: 4,
+    dns: 5,
+    acls: 6,
+    graph: 7,
+    metrics: 8,
+  });
 
   const overviewTabContainerRef = useRef(null);
   const hostsTabContainerTableRef = useRef(null);
@@ -1763,50 +1774,38 @@ export default function NetworkDetailsPage(props: PageProps) {
       switch (step) {
         case 'hosts':
           setIsTourOpen(true);
-          setTourStep(1);
+          setTourStep(jumpTourStepObj.hosts);
           break;
         case 'remote-access':
           setIsTourOpen(true);
-          setTourStep(6);
+          setTourStep(jumpTourStepObj.remoteAccess);
           break;
         case 'egress':
           setIsTourOpen(true);
-          if (isServerEE) {
-            setTourStep(28);
-          } else {
-            setTourStep(9);
-          }
+          setTourStep(jumpTourStepObj.egress);
           break;
         case 'relays':
           setIsTourOpen(true);
-          setTourStep(21);
+          setTourStep(jumpTourStepObj.relays);
           break;
         case 'dns':
           setIsTourOpen(true);
-          if (isServerEE) {
-            setTourStep(36);
-          } else {
-            setTourStep(24);
-          }
+          setTourStep(jumpTourStepObj.dns);
           break;
         case 'acls':
           setIsTourOpen(true);
-          if (isServerEE) {
-            setTourStep(40);
-          } else {
-            setTourStep(30);
-          }
+          setTourStep(jumpTourStepObj.acls);
           break;
         case 'metrics':
           setCurrentMetric('connectivity-status');
           setIsTourOpen(true);
-          setTourStep(47);
+          setTourStep(jumpTourStepObj.metrics);
           break;
         default:
           break;
       }
     },
-    [isServerEE],
+    [isServerEE, jumpTourStepObj],
   );
 
   // ui components
@@ -3576,6 +3575,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         setIsUpdateRelayModalOpen={setIsUpdateRelayModalOpen}
         setActiveTabKey={setActiveTabKey}
         setCurrentMetric={setCurrentMetric}
+        setJumpToTourStepObj={setJumpTourStepObj}
         clientGateways={clientGateways}
         relays={relays}
         egresses={egresses}
