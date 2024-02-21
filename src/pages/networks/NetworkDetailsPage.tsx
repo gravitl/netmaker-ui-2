@@ -708,7 +708,6 @@ export default function NetworkDetailsPage(props: PageProps) {
           try {
             await NodesService.deleteRelay(relay.id, networkId);
             store.updateNode(relay.id, { ...relay, relaynodes: [], isrelay: false });
-            d;
             store.fetchNodes();
             setIsInitialLoad(true);
             notify.success({ message: 'Relay deleted' });
