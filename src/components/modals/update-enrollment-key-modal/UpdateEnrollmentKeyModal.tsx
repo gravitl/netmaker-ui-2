@@ -116,7 +116,7 @@ export default function UpdateEnrollmentKeyModal({
               style={{ width: '100%' }}
               options={[
                 { label: 'Select relay to join with key', value: NULL_NODE_ID, disabled: true },
-                ...relays.map((node) => ({ label: node.name, value: node.id })),
+                ...relays.map((node) => ({ label: `${node.name} (${node.network})`, value: node.id })),
               ]}
             />
           </Form.Item>

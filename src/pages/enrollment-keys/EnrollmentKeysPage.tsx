@@ -38,7 +38,7 @@ import { PageProps } from '../../models/Page';
 
 import './EnrollmentKeysPage.scss';
 import { useBranding } from '@/utils/Utils';
-import UpdateEnrollmentKeyModal from '@/components/modals/update-enrollment -key-modal/updateEnrollmentKeyModal';
+import UpdateEnrollmentKeyModal from '@/components/modals/update-enrollment-key-modal/UpdateEnrollmentKeyModal';
 
 export default function EnrollmentKeysPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
