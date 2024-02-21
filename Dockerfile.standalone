@@ -33,14 +33,14 @@ ENV VITE_LICENSE_DASHBOARD_URL=https://account.netmaker.io
 ENV VITE_NETMAKER_SUPPORT_EMAIL=help@netmaker.io
 
 # EE customisations and branding
-ENV VITE_PRODUCT_NAME=
-ENV VITE_TENANT_LOGO_DARK_URL=
-ENV VITE_TENANT_LOGO_LIGHT_URL=
-ENV VITE_TENANT_LOGO_DARK_SMALL_URL=
-ENV VITE_TENANT_LOGO_LIGHT_SMALL_URL=
-ENV VITE_TENANT_LOGO_ALT_TEXT=
-ENV VITE_TENANT_FAVICON_LOGO=
-ENV VITE_TENANT_PRIMARY_COLOR=
+ENV VITE_PRODUCT_NAME=matemaker
+ENV VITE_TENANT_LOGO_DARK_URL=https://www.lismore.nsw.gov.au/files/assets/public/v/1/1.-households/3.-pets-amp-animals/images/kitten.jpg
+ENV VITE_TENANT_LOGO_LIGHT_URL=https://static.scientificamerican.com/sciam/cache/file/9CAE9C60-8BC5-4CA3-95C180EFACDD99FD_source.jpg
+ENV VITE_TENANT_LOGO_DARK_SMALL_URL=https://cdn.britannica.com/25/172925-050-DC7E2298/black-cat-back.jpg
+ENV VITE_TENANT_LOGO_LIGHT_SMALL_URL=https://www.purina.co.uk/sites/default/files/2023-03/Hero%20Pedigree%20Cats.jpg
+ENV VITE_TENANT_LOGO_ALT_TEXT=matemakeralt
+ENV VITE_TENANT_FAVICON_LOGO=https://www.dcnewsnow.com/wp-content/uploads/sites/14/2022/07/Cat.jpg
+ENV VITE_TENANT_PRIMARY_COLOR=yellow
 
 
 # Other vars
