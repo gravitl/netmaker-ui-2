@@ -82,6 +82,10 @@ export default function UpdateRelayModal({
     [networkNodes, relayedSearch],
   );
 
+  const initialRelayHealth = useMemo(() => {
+    return getNodeConnectivity(extendedRelay);
+  }, [extendedRelay, getNodeConnectivity]);
+
   const relayTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(() => {
     return [
       {
@@ -176,7 +180,7 @@ export default function UpdateRelayModal({
               {([] as Array<string>).concat(extendedRelay.address || [], extendedRelay.address6 || []).join(', ')}
             </Col>
             <Col span={6}>{extendedRelay?.endpointip ?? ''}</Col>
-            <Col span={6}>{extendedRelay && getNodeConnectivity(extendedRelay)}</Col>
+            <Col span={6}>{initialRelayHealth}</Col>
           </Row>
           <Row>
             <Col span={24} ref={addRelayedHostModalSelectHostRef}>

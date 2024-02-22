@@ -5,7 +5,7 @@ import { BrowserStore, useStore } from './store/store';
 import './App.scss';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AxiosError } from 'axios';
-import { ServerConfigService } from './services/ServerConfigService';
+import { ServerConfigService, getUiVersion } from './services/ServerConfigService';
 import ServerMalfunctionModal from './components/modals/server-malfunction-modal/ServerMalfunctionModal';
 import { useBranding } from './utils/Utils';
 import { isSaasBuild } from './services/BaseService';
@@ -118,7 +118,9 @@ function App() {
 
           if (isSaasBuild && !BrowserStore.hasNmuiVersionSynced()) {
             BrowserStore.syncNmuiVersion();
-            reloadNmuiWithVersion(serverConfig?.Version ?? '');
+            if (serverConfig?.Version.toLocaleLowerCase() !== getUiVersion()) {
+              reloadNmuiWithVersion(serverConfig?.Version ?? '');
+            }
           }
         }
       }
