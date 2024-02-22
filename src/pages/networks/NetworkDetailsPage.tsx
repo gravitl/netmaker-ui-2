@@ -735,11 +735,11 @@ export default function NetworkDetailsPage(props: PageProps) {
             const relayedIds = new Set([...(relay.relaynodes ?? [])]);
             relayedIds.delete(relayed.id);
 
-            const relay_res = (
+            const relayRes = (
               await NodesService.updateNode(relay.id, networkId, { ...relay, relaynodes: [...relayedIds] })
             ).data;
 
-            setSelectedRelay(relay_res);
+            setSelectedRelay(relayRes);
             storeFetchNodes();
           } catch (err) {
             notify.error({

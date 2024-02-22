@@ -11,12 +11,12 @@ function getServerStatus() {
   return axiosService.get<ServerStatus>(ApiRoutes.SERVER_STATUS);
 }
 
-function getUiVersion(): string {
+export function getUiVersion(): string {
   if (!uiVersion) {
     return 'latest';
   }
   if (uiVersion.charAt(0) === 'v' || uiVersion.charAt(0) === 'V') {
-    return uiVersion;
+    return uiVersion.toLocaleLowerCase();
   }
   return `v${uiVersion}`;
 }

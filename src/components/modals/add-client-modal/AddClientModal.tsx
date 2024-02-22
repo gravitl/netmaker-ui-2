@@ -32,7 +32,7 @@ import { NodesService } from '@/services/NodesService';
 import { Host } from '@/models/Host';
 import { PUBLIC_DNS_RESOLVERS } from '@/constants/AppConstants';
 import { validateExtClientNameField } from '@/utils/Utils';
-import TextArea from 'antd/es/input/TextArea';
+import _ from 'lodash';
 
 interface AddClientModalProps {
   isOpen: boolean;
@@ -115,6 +115,11 @@ export default function AddClientModal({
     if (!selectedGateway) return null;
     return store.hosts.find((h) => h.id === selectedGateway.hostid) || null;
   }, [selectedGateway, store.hosts]);
+
+  const initialPreferredGatewayHealth = useMemo(() => {
+    if (!preferredGateway) return null;
+    return getNodeConnectivity(preferredGateway);
+  }, [preferredGateway, getNodeConnectivity]);
 
   const gatewayTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(() => {
     return [
@@ -270,7 +275,11 @@ export default function AddClientModal({
                         {selectedGateway.isingressgateway && <Badge status="success" text="Gateway" />}
                         {!selectedGateway.isingressgateway && <Badge status="error" text="Not a Gateway" />}
                       </Col>
-                      <Col span={5}>{getNodeConnectivity(selectedGateway)}</Col>
+                      <Col span={5}>
+                        {_.isEqual(selectedGateway, preferredGateway)
+                          ? initialPreferredGatewayHealth
+                          : getNodeConnectivity(selectedGateway)}
+                      </Col>
                       <Col span={1} style={{ textAlign: 'right' }}>
                         <Button
                           danger
