@@ -202,6 +202,16 @@ export default function AddRemoteAccessGatewayModal({
                               prefix={<SearchOutlined />}
                             />
                           </Col>
+                          <Col span={16} style={{ textAlign: 'right' }}>
+                            <Button
+                              type="primary"
+                              onClick={() => {
+                                setIsSelectOpen(false);
+                              }}
+                            >
+                              Done
+                            </Button>
+                          </Col>
                         </Row>
                         <Row>
                           <Col span={24}>

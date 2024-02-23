@@ -377,23 +377,6 @@ export default function NewHostModal({
                   </Col>
                   <Col xs={8} md={4} style={{ textAlign: 'center' }}>
                     <div
-                      className={`os-button ${
-                        selectedOs === 'freebsd13' || selectedOs === 'freebsd14' ? 'active' : ''
-                      }`}
-                      onClick={(ev) => onShowInstallGuide(ev, 'freebsd13')}
-                    >
-                      <img
-                        src={`${
-                          isSaasBuild ? `/${ServerConfigService.getUiVersion()}` : ''
-                        }/icons/freebsd-${theme}.jpg`}
-                        alt="freebsd icon"
-                        className="logo"
-                      />
-                      <p>FreeBSD</p>
-                    </div>
-                  </Col>
-                  <Col xs={8} md={4} style={{ textAlign: 'center' }}>
-                    <div
                       className={`os-button ${selectedOs === 'docker' ? 'active' : ''}`}
                       onClick={(ev) => onShowInstallGuide(ev, 'docker')}
                     >
@@ -403,6 +386,21 @@ export default function NewHostModal({
                         className="logo"
                       />
                       <p>Docker</p>
+                    </div>
+                  </Col>
+                  <Col xs={8} md={4} style={{ textAlign: 'center' }}>
+                    <div
+                      className={`os-button ${selectedOs === 'other' ? 'active' : ''}`}
+                      onClick={(ev) => onShowInstallGuide(ev, 'other')}
+                    >
+                      <img
+                        src={`${
+                          isSaasBuild ? `/${ServerConfigService.getUiVersion()}` : ''
+                        }/icons/others-icon-${theme}.png`}
+                        alt="others icon"
+                        className="logo"
+                      />
+                      <p>Others</p>
                     </div>
                   </Col>
                 </Row>
@@ -417,7 +415,7 @@ export default function NewHostModal({
                           type="info"
                           message={
                             <>
-                              We recommend using the remote access client for Windows, Go to remote access tab and you
+                              We recommend using the remote access client for Windows. Go to remote access tab and you
                               can follow the instructions for setup
                               <a href="https://docs.netmaker.io/pro/rac.html" target="_blank" rel="noreferrer">
                                 {' '}
@@ -455,8 +453,8 @@ export default function NewHostModal({
                           type="info"
                           message={
                             <>
-                              We recommend using the remote access client for Windows, Go to remote access tab and you
-                              can follow the instructions for setup
+                              We recommend using the remote access client for Mac. Go to remote access tab and you can
+                              follow the instructions for setup
                               <a
                                 href="https://docs.netmaker.io/netclient.html#remote-access-client"
                                 target="_blank"
@@ -551,29 +549,6 @@ export default function NewHostModal({
                   </>
                 )}
 
-                {(selectedOs === 'freebsd13' || selectedOs === 'freebsd14') && (
-                  <>
-                    <Row>
-                      <Col xs={24}>
-                        <h4 style={{ marginBottom: '.5rem' }}>Install with this command</h4>
-                        <Typography.Title level={5}>FreeBSD 13</Typography.Title>
-                        <Typography.Text code copyable>
-                          {`fetch -o /tmp/netclient ${
-                            getNetclientDownloadLink('freebsd13', 'amd64', 'cli')[0]
-                          } && chmod +x /tmp/netclient && sudo /tmp/netclient install`}
-                        </Typography.Text>
-                        <br />
-                        <Typography.Title level={5}>FreeBSD 14</Typography.Title>
-                        <Typography.Text code copyable>
-                          {`fetch -o /tmp/netclient ${
-                            getNetclientDownloadLink('freebsd14', 'amd64', 'cli')[0]
-                          } && chmod +x /tmp/netclient && sudo /tmp/netclient install`}
-                        </Typography.Text>
-                      </Col>
-                    </Row>
-                  </>
-                )}
-
                 {selectedOs === 'docker' && (
                   <>
                     <Row>
@@ -592,6 +567,16 @@ export default function NewHostModal({
                             getNetclientDownloadLink('freebsd14', 'amd64', 'cli')[0]
                           } && chmod +x /tmp/netclient && sudo /tmp/netclient install`}
                         </Typography.Text> */}
+                      </Col>
+                    </Row>
+                  </>
+                )}
+
+                {selectedOs === 'other' && (
+                  <>
+                    <Row>
+                      <Col xs={24}>
+                        <h4 style={{ marginBottom: '.5rem' }}>Installation steps on next page</h4>
                       </Col>
                     </Row>
                   </>
@@ -640,17 +625,33 @@ export default function NewHostModal({
                     <small>Note: It might take a few minutes for the host to show up in the network(s)</small>
                   </div>
                 )}
-                {(selectedOs === 'freebsd13' || selectedOs === 'freebsd14') && (
-                  <div>
-                    <ol>
+                {selectedOs === 'other' && (
+                  <div style={{ marginTop: '10px' }}>
+                    <Typography.Text>
+                      Any device that supports WireGuard can be integrated into your network using a Client Config file
+                      with the Remote Access Gateway. Follow this guide to set up the Remote Access Gateway and generate
+                      a Client Config file for your device, which can be run with WireGuard
+                    </Typography.Text>
+                    <ul>
                       <li>
-                        <Typography.Text>Run</Typography.Text>
-                        <Typography.Text code copyable>
-                          {`sudo /tmp/netclient join -t ${`${selectedEnrollmentKey?.token ?? '<token>'}`}`}
-                        </Typography.Text>
+                        <a
+                          href="https://docs.netmaker.io/external-clients.html#remote-access"
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          General setup
+                        </a>
                       </li>
-                    </ol>
-                    <small>Note: It might take a few minutes for the host to show up in the network(s)</small>
+                      <li>
+                        <a
+                          href="https://docs.netmaker.io/integrating-non-native-devices.html"
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          Routers
+                        </a>
+                      </li>
+                    </ul>
                   </div>
                 )}
 

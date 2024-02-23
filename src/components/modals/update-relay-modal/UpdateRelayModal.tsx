@@ -203,6 +203,16 @@ export default function UpdateRelayModal({
                             prefix={<SearchOutlined />}
                           />
                         </Col>
+                        <Col span={16} style={{ textAlign: 'right' }}>
+                          <Button
+                            type="primary"
+                            onClick={() => {
+                              setIsDropDownOpen(false);
+                            }}
+                          >
+                            Done
+                          </Button>
+                        </Col>
                       </Row>
                       <Row>
                         <Col span={24}>
@@ -261,6 +271,7 @@ export default function UpdateRelayModal({
                   )}
                   onDropdownVisibleChange={(open) => setIsDropDownOpen(open)}
                   suffixIcon={isDropDownOpen ? <UpOutlined /> : <DownOutlined />}
+                  open={isDropDownOpen}
                 />
               </Form.Item>
             </Col>

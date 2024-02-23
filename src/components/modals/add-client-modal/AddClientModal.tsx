@@ -235,6 +235,16 @@ export default function AddClientModal({
                               prefix={<SearchOutlined />}
                             />
                           </Col>
+                          <Col span={16} style={{ textAlign: 'right' }}>
+                            <Button
+                              type="primary"
+                              onClick={() => {
+                                setIsDropDownOpen(false);
+                              }}
+                            >
+                              Done
+                            </Button>
+                          </Col>
                         </Row>
                         <Row>
                           <Col span={24}>
@@ -258,6 +268,7 @@ export default function AddClientModal({
                     )}
                     onDropdownVisibleChange={(open) => setIsDropDownOpen(open)}
                     suffixIcon={isDropDownOpen ? <UpOutlined /> : <DownOutlined />}
+                    open={isDropDownOpen}
                   />
                 )}
                 {!!selectedGateway && (
