@@ -4,14 +4,15 @@
 
 ## Whats New
 - Internet gateways
+- Metadata field for ingress nodes
+- Post up and post down script field for ext clients.
+- Remote access client setup modal.
+- Product tours.
 
 ## What's Fixed/Improvements
-- Bug with relayed host search during creation
-- Incorrect docker/docker-compose installation instructions
-- Allow transferrence of superadmin role in CE
-- Enforce private address ranges in network creation
-- Edge cases with network graph
-- Enrollment key validation
+- Ext client name validation should not allow spaces
+- Wrap url with encodeuricomponent
+- Fixed bug with client id not being optional.
 - Minor UI/UX bug fixes and improvements
 
 
