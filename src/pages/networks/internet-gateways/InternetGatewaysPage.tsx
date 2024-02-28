@@ -6,7 +6,14 @@ import { NodesService } from '@/services/NodesService';
 import { useStore } from '@/store/store';
 import { getExtendedNode } from '@/utils/NodeUtils';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
-import { DeleteOutlined, EditOutlined, MoreOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons';
+import {
+  DeleteOutlined,
+  EditOutlined,
+  MoreOutlined,
+  PlusOutlined,
+  QuestionCircleOutlined,
+  SearchOutlined,
+} from '@ant-design/icons';
 import { Button, Card, Col, Dropdown, Input, Modal, Row, Table, TableColumnProps, Tooltip, Typography } from 'antd';
 import useNotification from 'antd/es/notification/useNotification';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -15,6 +22,8 @@ interface InternetGatewaysPageProps {
   network: Network;
   activeTabKey: string;
 }
+
+const INTERNET_GATEWAYS_DOCS_URL = 'https://docs.netmaker.io/pro/internet-gateways.html';
 
 export function InternetGatewaysPage({ network, activeTabKey }: InternetGatewaysPageProps) {
   const store = useStore();
@@ -356,6 +365,14 @@ export function InternetGatewaysPage({ network, activeTabKey }: InternetGateways
                 >
                   <PlusOutlined /> Create Gateway
                 </Button>
+                <Button
+                  title="Go to internet gateways documentation"
+                  style={{ marginLeft: '1rem' }}
+                  href={INTERNET_GATEWAYS_DOCS_URL}
+                  target="_blank"
+                  referrerPolicy="no-referrer"
+                  icon={<QuestionCircleOutlined />}
+                />
               </Col>
             </Row>
             <Row style={{ marginTop: '1rem' }}>
