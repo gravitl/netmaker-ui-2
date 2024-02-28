@@ -7,6 +7,7 @@ import { CreateEgressNodeDto } from './dtos/CreateEgressNodeDto';
 import { CreateExternalClientReqDto } from './dtos/CreateExternalClientReqDto';
 import { CreateIngressNodeDto } from './dtos/CreateIngressNodeDto';
 import { CreateNodeRelayDto } from './dtos/CreateNodeRelayDto';
+import { CreateInternetGatewayDto, UpdateInternetGatewayDto } from './dtos/InternetGatewayDto';
 import { UpdateExternalClientDto } from './dtos/UpdateExternalClientDto';
 
 function getNodes() {
@@ -126,6 +127,26 @@ function removeNodeFailoverStatus(nodeId: Node['id']) {
   return axiosService.delete<Node>(`${ApiRoutes.NODE}/${encodeURIComponent(nodeId)}/failover`);
 }
 
+function createInternetGateway(nodeId: Node['id'], networkId: Network['netid'], payload: CreateInternetGatewayDto) {
+  return axiosService.post<Node>(
+    `${ApiRoutes.NODES}/${encodeURIComponent(networkId)}/${encodeURIComponent(nodeId)}/inet_gw`,
+    payload,
+  );
+}
+
+function updateInternetGateway(nodeId: Node['id'], networkId: Network['netid'], payload: UpdateInternetGatewayDto) {
+  return axiosService.put<Node>(
+    `${ApiRoutes.NODES}/${encodeURIComponent(networkId)}/${encodeURIComponent(nodeId)}/inet_gw`,
+    payload,
+  );
+}
+
+function deleteInternetGateway(nodeId: Node['id'], networkId: Network['netid']) {
+  return axiosService.delete<Node>(
+    `${ApiRoutes.NODES}/${encodeURIComponent(networkId)}/${encodeURIComponent(nodeId)}/inet_gw`,
+  );
+}
+
 export const NodesService = {
   getNodes,
   approveNode,
@@ -145,4 +166,7 @@ export const NodesService = {
   deleteRelay,
   setNodeAsFailover,
   removeNodeFailoverStatus,
+  createInternetGateway,
+  updateInternetGateway,
+  deleteInternetGateway,
 };

@@ -25,8 +25,11 @@ export interface Node {
   dnson: boolean;
   islocal: boolean;
   server: string;
-  internetgateway: string;
   isinternetgateway: boolean;
+  internetgw_node_id: Node['id'];
+  inet_node_req: {
+    inet_node_client_ids?: Node['id'][];
+  };
   defaultacl: string;
   connected: boolean;
   failover: boolean;

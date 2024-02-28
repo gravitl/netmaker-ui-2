@@ -98,6 +98,7 @@ import { NetworkDetailTourStep } from '@/utils/Types';
 import TourComponent, { JumpToTourStepObj } from '@/pages/networks/TourComponent';
 import DownloadRemotesAccessClientModal from '@/components/modals/remote-access-client-modal/DownloadRemoteAccessClientModal';
 import AddRemoteAccessGatewayModal from '@/components/modals/add-remote-access-gateway-modal/AddRemoteAccessGatewayModal';
+import { InternetGatewaysPage } from './internet-gateways/InternetGatewaysPage';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -276,6 +277,10 @@ export default function NetworkDetailsPage(props: PageProps) {
         .filter((node) => `${node?.name ?? ''}${node.address}`.toLowerCase().includes(searchHost.toLowerCase())),
     [store.nodes, store.hostsCommonDetails, networkId, searchHost],
   );
+
+  const internetGatewaysCount = useMemo(() => {
+    return networkNodes.filter((node) => node.isinternetgateway).length;
+  }, [networkNodes]);
 
   const clientGateways = useMemo<ExtendedNode[]>(() => {
     return networkNodes
@@ -607,7 +612,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       });
     },
-    [loadClients, notify, store.hostsCommonDetails, storeFetchNodes],
+    [loadClients, notify, store, storeFetchNodes],
   );
 
   const confirmDeleteEgress = useCallback(
@@ -634,7 +639,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       });
     },
-    [notify, store.hostsCommonDetails, storeFetchNodes],
+    [notify, store, storeFetchNodes],
   );
 
   const confirmDeleteRange = useCallback(
@@ -871,7 +876,7 @@ export default function NetworkDetailsPage(props: PageProps) {
           return (
             <>
               <Typography.Link>{name}</Typography.Link>
-              {node.isinternetgateway && isServerEE && (
+              {node.isinternetgateway && (
                 <GlobalOutlined
                   title="This host serves as an internet gateway: all traffic of connected clients would be routed through this host just like a traditional VPN"
                   style={{ color: branding.primaryColor }}
@@ -915,7 +920,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       },
     ],
-    [branding.primaryColor, getGatewayDropdownOptions, isServerEE],
+    [branding.primaryColor, getGatewayDropdownOptions],
   );
 
   const egressTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(
@@ -1811,7 +1816,7 @@ export default function NetworkDetailsPage(props: PageProps) {
           break;
       }
     },
-    [isServerEE, jumpTourStepObj],
+    [jumpTourStepObj],
   );
 
   // ui components
@@ -3233,7 +3238,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   ]);
 
   const networkTabs: TabsProps['items'] = useMemo(() => {
-    const tabs = [
+    const tabs: TabsProps['items'] = [
       {
         key: 'overview',
         label: `Overview`,
@@ -3289,6 +3294,26 @@ export default function NetworkDetailsPage(props: PageProps) {
         label: `Relays (${relays.length})`,
         children: network && !isRefreshingNetwork ? getRelayContent() : <Skeleton active />,
       });
+      tabs.splice(5, 0, {
+        key: 'internet-gateways',
+        label: (
+          <Badge
+            count="BETA"
+            style={{ fontWeight: 'bold' }}
+            offset={['0rem', '-.2rem']}
+            color={branding.primaryColor}
+            title="Internet Gateways is a new feature. This feature needs broader testing and improvements to covers all use cases and environments. Might be unstable."
+          >
+            <Typography.Text>Internet Gateways ({internetGatewaysCount})</Typography.Text>
+          </Badge>
+        ),
+        children:
+          network && !isRefreshingNetwork ? (
+            <InternetGatewaysPage network={network} activeTabKey={activeTabKey} />
+          ) : (
+            <Skeleton active />
+          ),
+      });
     }
 
     return tabs;
@@ -3309,6 +3334,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     getMetricsContent,
     relays.length,
     getRelayContent,
+    internetGatewaysCount,
   ]);
 
   const loadDnses = useCallback(async () => {
@@ -3557,9 +3583,9 @@ export default function NetworkDetailsPage(props: PageProps) {
             <Tabs
               items={networkTabs}
               activeKey={activeTabKey}
-              onChange={(active: string) => {
+              onChange={(tabKey: string) => {
                 setIsInitialLoad(true);
-                setActiveTabKey(active);
+                setActiveTabKey(tabKey);
               }}
             />
           </Col>

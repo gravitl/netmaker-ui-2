@@ -104,7 +104,6 @@ export default function UpdateEgressModal({
     }
   };
 
-  // TODO: add autofill for fields
   return (
     <Modal
       title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Update Egress</span>}
