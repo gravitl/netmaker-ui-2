@@ -17,7 +17,7 @@ import {
   Tooltip,
   Typography,
 } from 'antd';
-import { MouseEvent, useCallback, useMemo, useState } from 'react';
+import { MouseEvent, Ref, useCallback, useMemo, useState } from 'react';
 import { useStore } from '@/store/store';
 import '../CustomModal.scss';
 import { Network } from '@/models/Network';
@@ -34,17 +34,28 @@ import { INTERNET_RANGE_IPV4, INTERNET_RANGE_IPV6 } from '@/constants/AppConstan
 interface AddEgressModalProps {
   isOpen: boolean;
   networkId: Network['netid'];
-  onCreateEgress: () => any;
+  onCreateEgress: (node: Node) => any;
   closeModal?: () => void;
   onOk?: (e: MouseEvent<HTMLButtonElement>) => void;
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
+  createEgressModalSelectHostRef: Ref<HTMLDivElement>;
+  createEgressModalEnableNATRef: Ref<HTMLDivElement>;
+  createEgressModalSelectExternalRangesRef: Ref<HTMLDivElement>;
 }
 
 type AddEgressFormFields = CreateEgressNodeDto & {
   nodeId: Node['id'];
 };
 
-export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, networkId }: AddEgressModalProps) {
+export default function AddEgressModal({
+  isOpen,
+  onCreateEgress,
+  onCancel,
+  networkId,
+  createEgressModalSelectHostRef,
+  createEgressModalEnableNATRef,
+  createEgressModalSelectExternalRangesRef,
+}: AddEgressModalProps) {
   const [form] = Form.useForm<AddEgressFormFields>();
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
@@ -93,8 +104,9 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
       {
         title: 'Address',
         dataIndex: 'address',
-        render(value, egress) {
-          return <Typography.Text>{`${value}, ${egress.address6}`}</Typography.Text>;
+        render(_, egress) {
+          const addrs = ([] as Array<string>).concat(egress.address || [], egress.address6 || []).join(', ');
+          return <Typography.Text title={addrs}>{`${addrs}`}</Typography.Text>;
         },
       },
       {
@@ -103,7 +115,7 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
       },
       {
         title: 'Health status',
-        render(value, node) {
+        render(_, node) {
           return getNodeConnectivity(node);
         },
       },
@@ -122,12 +134,14 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
       setIsSubmitting(true);
 
       if (!selectedEgress) return;
-      await NodesService.createEgressNode(selectedEgress.id, networkId, {
-        ...formData,
-        natEnabled: formData.natEnabled ? 'yes' : 'no',
-      });
+      const egressNode = (
+        await NodesService.createEgressNode(selectedEgress.id, networkId, {
+          ...formData,
+          natEnabled: formData.natEnabled ? 'yes' : 'no',
+        })
+      ).data;
       resetModal();
-      onCreateEgress();
+      onCreateEgress(egressNode);
       notify.success({ message: `Egress gateway created` });
     } catch (err) {
       if (err instanceof AxiosError) {
@@ -166,43 +180,58 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
               data-nmui-intercom="add-egress-form_host"
             >
               {!selectedEgress && (
-                <Select
-                  placeholder="Select a host as gateway"
-                  dropdownRender={() => (
-                    <div style={{ padding: '.5rem' }}>
-                      <Row style={{ marginBottom: '1rem' }}>
-                        <Col span={8}>
-                          <Input
-                            placeholder="Search host"
-                            value={egressSearch}
-                            onChange={(e) => setEgressSearch(e.target.value)}
-                            prefix={<SearchOutlined />}
-                          />
-                        </Col>
-                      </Row>
-                      <Row>
-                        <Col span={24}>
-                          <Table
-                            size="small"
-                            columns={egressTableCols}
-                            dataSource={filteredNetworkHosts}
-                            rowKey="id"
-                            onRow={(node) => {
-                              return {
-                                onClick: () => {
-                                  form.setFieldValue(idFormField, node.id);
-                                  setSelectedEgress(node);
-                                },
-                              };
-                            }}
-                          />
-                        </Col>
-                      </Row>
-                    </div>
-                  )}
-                  onDropdownVisibleChange={(open) => setIsDropDownOpen(open)}
-                  suffixIcon={isDropDownOpen ? <UpOutlined /> : <DownOutlined />}
-                />
+                <Row>
+                  <Col span={24} ref={createEgressModalSelectHostRef}>
+                    <Select
+                      placeholder="Select a host as gateway"
+                      dropdownRender={() => (
+                        <div style={{ padding: '.5rem' }}>
+                          <Row style={{ marginBottom: '1rem' }}>
+                            <Col span={8}>
+                              <Input
+                                placeholder="Search host"
+                                value={egressSearch}
+                                onChange={(e) => setEgressSearch(e.target.value)}
+                                prefix={<SearchOutlined />}
+                              />
+                            </Col>
+                            <Col span={16} style={{ textAlign: 'right' }}>
+                              <Button
+                                type="primary"
+                                onClick={() => {
+                                  setIsDropDownOpen(false);
+                                }}
+                              >
+                                Done
+                              </Button>
+                            </Col>
+                          </Row>
+                          <Row>
+                            <Col span={24}>
+                              <Table
+                                size="small"
+                                columns={egressTableCols}
+                                dataSource={filteredNetworkHosts}
+                                rowKey="id"
+                                onRow={(node) => {
+                                  return {
+                                    onClick: () => {
+                                      form.setFieldValue(idFormField, node.id);
+                                      setSelectedEgress(node);
+                                    },
+                                  };
+                                }}
+                              />
+                            </Col>
+                          </Row>
+                        </div>
+                      )}
+                      onDropdownVisibleChange={(open) => setIsDropDownOpen(open)}
+                      suffixIcon={isDropDownOpen ? <UpOutlined /> : <DownOutlined />}
+                      open={isDropDownOpen}
+                    />
+                  </Col>
+                </Row>
               )}
               {!!selectedEgress && (
                 <>
@@ -233,14 +262,19 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
 
           <Divider style={{ margin: '0px 0px 2rem 0px' }} />
           <div className="CustomModalBody">
-            <Form.Item
-              name="natEnabled"
-              label="Enable NAT for egress traffic"
-              valuePropName="checked"
-              data-nmui-intercom="add-egress-form_natEnabled"
-            >
-              <Switch />
-            </Form.Item>
+            <Row>
+              <Col span={24} ref={createEgressModalEnableNATRef}>
+                <Form.Item
+                  name="natEnabled"
+                  label="Enable NAT for egress traffic"
+                  valuePropName="checked"
+                  data-nmui-intercom="add-egress-form_natEnabled"
+                >
+                  <Switch />
+                </Form.Item>
+              </Col>
+            </Row>
+
             {!natEnabledVal && (
               <Alert
                 type="warning"
@@ -248,7 +282,9 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
               />
             )}
 
-            <Typography.Title level={4}>Select external ranges</Typography.Title>
+            {/* <Row>
+              <Col xs={24} ref={createEgressModalSelectExternalRangesRef}>
+                <Typography.Title level={4}>Select external ranges</Typography.Title>
 
             <Form.List
               name="ranges"
@@ -288,42 +324,45 @@ export default function AddEgressModal({ isOpen, onCreateEgress, onCancel, netwo
                                 }
                                 return Promise.resolve();
                               }
-                            },
+                            }
                           },
                         ]}
-                        noStyle
-                      >
-                        <Input
-                          placeholder="CIDR range (eg: 10.0.0.0/8 or a123:4567::/16)"
-                          style={{ width: '100%' }}
-                          prefix={
-                            <Tooltip title="Remove">
-                              <Button
-                                danger
-                                type="link"
-                                icon={<CloseOutlined />}
-                                onClick={() => remove(index)}
-                                size="small"
-                              />
-                            </Tooltip>
-                          }
-                        />
+                      
+                             noStyle
+                          >
+                            <Input
+                              placeholder="CIDR range (eg: 10.0.0.0/8 or a123:4567::/16)"
+                              style={{ width: '100%' }}
+                              prefix={
+                                <Tooltip title="Remove">
+                                  <Button
+                                    danger
+                                    type="link"
+                                    icon={<CloseOutlined />}
+                                    onClick={() => remove(index)}
+                                    size="small"
+                                  />
+                                </Tooltip>
+                              }
+                            />
+                          </Form.Item>
+                        </Form.Item>
+                      ))}
+                      <Form.Item>
+                        <Button
+                          onClick={() => add()}
+                          icon={<PlusOutlined />}
+                          data-nmui-intercom="add-egress-form_addrangebtn"
+                        >
+                          Add range
+                        </Button>
+                        <Form.ErrorList errors={errors} />
                       </Form.Item>
-                    </Form.Item>
-                  ))}
-                  <Form.Item>
-                    <Button
-                      onClick={() => add()}
-                      icon={<PlusOutlined />}
-                      data-nmui-intercom="add-egress-form_addrangebtn"
-                    >
-                      Add range
-                    </Button>
-                    <Form.ErrorList errors={errors} />
-                  </Form.Item>
-                </>
-              )}
-            </Form.List>
+                    </>
+                  )}
+                </Form.List>
+              </Col>
+            </Row> */}
           </div>
         </div>
         <Divider style={{ margin: '0px 0px 2rem 0px' }} />

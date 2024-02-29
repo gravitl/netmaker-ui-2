@@ -34,7 +34,9 @@ function getAccessKeys(networkId: Network['netid']) {
 }
 
 function deleteAccessKey(networkId: Network['netid'], accessKeyName: AccessKey['name']) {
-  return axiosService.delete<void>(`${ApiRoutes.NETWORKS}/${encodeURIComponent(networkId)}/keys/${encodeURIComponent(accessKeyName)}`);
+  return axiosService.delete<void>(
+    `${ApiRoutes.NETWORKS}/${encodeURIComponent(networkId)}/keys/${encodeURIComponent(accessKeyName)}`,
+  );
 }
 
 function createDns(networkId: Network['netid'], payload: DNS) {
@@ -55,6 +57,10 @@ function getAcls(networkId: Network['netid']) {
 
 function updateAcls(networkId: Network['netid'], payload: NodeAclContainer) {
   return axiosService.put<NodeAclContainer>(`${ApiRoutes.NETWORKS}/${encodeURIComponent(networkId)}/acls`, payload);
+}
+
+function updateAclsV2(networkId: Network['netid'], payload: NodeAclContainer) {
+  return axiosService.put<NodeAclContainer>(`${ApiRoutes.NETWORKS}/${encodeURIComponent(networkId)}/acls/v2`, payload);
 }
 
 function getNodeMetrics(networkId: Network['netid']) {
@@ -82,4 +88,5 @@ export const NetworksService = {
   updateAcls,
   getNodeMetrics,
   getClientMetrics,
+  updateAclsV2,
 };

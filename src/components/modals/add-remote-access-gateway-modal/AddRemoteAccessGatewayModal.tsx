@@ -17,7 +17,7 @@ import {
   Tooltip,
   Typography,
 } from 'antd';
-import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { MouseEvent, Ref, useCallback, useEffect, useMemo, useState } from 'react';
 import { useStore } from '@/store/store';
 import '../CustomModal.scss';
 import { Network } from '@/models/Network';
@@ -30,20 +30,31 @@ import { Host } from '@/models/Host';
 import { CreateIngressNodeDto } from '@/services/dtos/CreateIngressNodeDto';
 import { PUBLIC_DNS_RESOLVERS } from '@/constants/AppConstants';
 
-interface AddIngressModalProps {
+interface AddRemoteAccessGatewayModalProps {
   isOpen: boolean;
   networkId: Network['netid'];
-  onCreateIngress: () => any;
+  onCreateIngress: (node: Node) => any;
   onOk?: (e: MouseEvent<HTMLButtonElement>) => void;
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
+  addClientGatewayModalHostRef?: Ref<HTMLDivElement>;
+  addClientGatewayModalDefaultClientDNSRef?: Ref<HTMLDivElement>;
+  addClientGatewayModalIsInternetGatewayRef?: Ref<HTMLDivElement>;
 }
 
-interface AddIngressForm extends CreateIngressNodeDto {
+interface AddRemoteAccessGatewaysForm extends CreateIngressNodeDto {
   node: Node;
 }
 
-export default function AddIngressModal({ isOpen, onCreateIngress, onCancel, networkId }: AddIngressModalProps) {
-  const [form] = Form.useForm<AddIngressForm>();
+export default function AddRemoteAccessGatewayModal({
+  isOpen,
+  onCreateIngress,
+  onCancel,
+  networkId,
+  addClientGatewayModalDefaultClientDNSRef,
+  addClientGatewayModalHostRef,
+  addClientGatewayModalIsInternetGatewayRef,
+}: AddRemoteAccessGatewayModalProps) {
+  const [form] = Form.useForm<AddRemoteAccessGatewaysForm>();
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
 
@@ -94,7 +105,10 @@ export default function AddIngressModal({ isOpen, onCreateIngress, onCancel, net
       },
       {
         title: 'Address',
-        dataIndex: 'address',
+        render(_, gateway) {
+          const addrs = ([] as Array<string>).concat(gateway.address || [], gateway.address6 || []).join(', ');
+          return <Typography.Text>{addrs}</Typography.Text>;
+        },
       },
       {
         title: 'OS',
@@ -102,7 +116,7 @@ export default function AddIngressModal({ isOpen, onCreateIngress, onCancel, net
       },
       {
         title: 'Health status',
-        render(value, node) {
+        render(_, node) {
           return getNodeConnectivity(node);
         },
       },
@@ -121,13 +135,15 @@ export default function AddIngressModal({ isOpen, onCreateIngress, onCancel, net
     try {
       const formData = await form.validateFields();
       setIsSubmitting(true);
-      await NodesService.createIngressNode(formData.node.id, networkId, {
-        extclientdns: formData.extclientdns,
-        is_internet_gw: isServerEE ? formData.is_internet_gw : false,
-      });
+      const ingressNode = (
+        await NodesService.createIngressNode(formData.node.id, networkId, {
+          extclientdns: formData.extclientdns,
+          is_internet_gw: formData.is_internet_gw,
+        })
+      ).data;
       resetModal();
       notify.success({ message: `Client gateway created` });
-      onCreateIngress();
+      onCreateIngress(ingressNode);
     } catch (err) {
       notify.error({
         message: 'Failed to create client gateway',
@@ -146,7 +162,7 @@ export default function AddIngressModal({ isOpen, onCreateIngress, onCancel, net
 
   return (
     <Modal
-      title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Add Client Gateway</span>}
+      title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Add Remote Access Gateway</span>}
       open={isOpen}
       onCancel={(ev) => {
         resetModal();
@@ -161,54 +177,83 @@ export default function AddIngressModal({ isOpen, onCreateIngress, onCancel, net
       <Form name="add-ingress-form" form={form} layout="vertical">
         <div className="" style={{ maxHeight: '60vh', overflow: 'auto' }}>
           <div className="CustomModalBody">
-            <Form.Item
-              label="Host"
-              name="node"
-              rules={[{ required: true }]}
-              style={{ marginBottom: '0px' }}
-              data-nmui-intercom="add-ingress-form_node"
-            >
-              <Select
-                open={isSelectOpen}
-                placeholder="Select a host as gateway"
-                value={selectedNode?.name}
-                onDropdownVisibleChange={(visible) => setIsSelectOpen(visible)}
-                dropdownRender={() => (
-                  <div style={{ padding: '.5rem' }}>
-                    <Row style={{ marginBottom: '1rem' }}>
-                      <Col span={8}>
-                        <Input
-                          placeholder="Search host"
-                          value={gatewaySearch}
-                          onChange={(e) => setGatewaySearch(e.target.value)}
-                          prefix={<SearchOutlined />}
-                        />
-                      </Col>
-                    </Row>
-                    <Row>
-                      <Col span={24}>
-                        <Table
-                          size="small"
-                          columns={gatewayTableCols}
-                          dataSource={filteredNetworkNonIngressHosts}
-                          rowKey="id"
-                          onRow={(node) => {
-                            return {
-                              onClick: () => {
-                                setSelectedNode(node);
-                                form.setFieldValue('node', { ...node, label: node.name });
+            <Row>
+              <Col xs={24} ref={addClientGatewayModalHostRef}>
+                <Form.Item
+                  label="Host"
+                  name="node"
+                  rules={[{ required: true }]}
+                  style={{ marginBottom: '0px' }}
+                  data-nmui-intercom="add-ingress-form_node"
+                >
+                  <Select
+                    open={isSelectOpen}
+                    placeholder="Select a host as gateway"
+                    value={selectedNode?.name}
+                    onDropdownVisibleChange={(visible) => setIsSelectOpen(visible)}
+                    dropdownRender={() => (
+                      <div style={{ padding: '.5rem' }}>
+                        <Row style={{ marginBottom: '1rem' }}>
+                          <Col span={8}>
+                            <Input
+                              placeholder="Search host"
+                              value={gatewaySearch}
+                              onChange={(e) => setGatewaySearch(e.target.value)}
+                              prefix={<SearchOutlined />}
+                            />
+                          </Col>
+                          <Col span={16} style={{ textAlign: 'right' }}>
+                            <Button
+                              type="primary"
+                              onClick={() => {
                                 setIsSelectOpen(false);
-                              },
-                            };
-                          }}
-                        />
-                      </Col>
-                    </Row>
-                  </div>
-                )}
-                suffixIcon={isSelectOpen ? <UpOutlined /> : <DownOutlined />}
-              />
-            </Form.Item>
+                              }}
+                            >
+                              Done
+                            </Button>
+                          </Col>
+                        </Row>
+                        <Row>
+                          <Col span={24}>
+                            <Table
+                              size="small"
+                              columns={gatewayTableCols}
+                              dataSource={filteredNetworkNonIngressHosts}
+                              rowKey="id"
+                              onRow={(node) => {
+                                return {
+                                  onClick: () => {
+                                    setSelectedNode(node);
+                                    form.setFieldValue('node', { ...node, label: node.name });
+                                    setIsSelectOpen(false);
+                                  },
+                                };
+                              }}
+                              rowSelection={{
+                                type: 'checkbox',
+                                hideSelectAll: true,
+                                selectedRowKeys: selectedNode ? [selectedNode.id] : [],
+                                onSelect: (record) => {
+                                  if (selectedNode?.id === record.id) {
+                                    setSelectedNode(null);
+                                    form.setFieldValue('node', undefined);
+                                  } else {
+                                    setSelectedNode(record);
+                                    form.setFieldValue('node', { ...record, label: record.name });
+                                    setIsSelectOpen(false);
+                                  }
+                                },
+                              }}
+                            />
+                          </Col>
+                        </Row>
+                      </div>
+                    )}
+                    suffixIcon={isSelectOpen ? <UpOutlined /> : <DownOutlined />}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
             {!!selectedNode && (
               <>
                 <Row
@@ -225,7 +270,7 @@ export default function AddIngressModal({ isOpen, onCreateIngress, onCancel, net
                   </Col>
                   <Col span={6}>{selectedNode.name ?? ''}</Col>
                   <Col span={6}>
-                    {selectedNode.address ?? ''}, {selectedNode.address6 ?? ''}
+                    {([] as Array<string>).concat(selectedNode.address || [], selectedNode.address6 || []).join(', ')}
                   </Col>
                   <Col span={6}>{selectedNode.os ?? ''}</Col>
                   <Col span={5}>{getNodeConnectivity(selectedNode)}</Col>
@@ -256,40 +301,48 @@ export default function AddIngressModal({ isOpen, onCreateIngress, onCancel, net
               </>
             )}
 
-            <Form.Item
-              label="Default client DNS"
-              name="extclientdns"
-              style={{ marginTop: '1rem' }}
-              data-nmui-intercom="add-ingress-form_extclientdns"
-              rules={[{ required: isInternetGatewayVal, message: 'This field is required for internet gateways' }]}
-            >
-              <AutoComplete
-                options={PUBLIC_DNS_RESOLVERS}
-                style={{ width: '100%' }}
-                placeholder="Default DNS for associated clients"
-                allowClear
-              />
-            </Form.Item>
+            <Row>
+              <Col xs={24} ref={addClientGatewayModalDefaultClientDNSRef}>
+                <Form.Item
+                  label="Default client DNS"
+                  name="extclientdns"
+                  style={{ marginTop: '1rem' }}
+                  data-nmui-intercom="add-ingress-form_extclientdns"
+                  rules={[{ required: isInternetGatewayVal, message: 'This field is required for internet gateways' }]}
+                >
+                  <AutoComplete
+                    options={PUBLIC_DNS_RESOLVERS}
+                    style={{ width: '100%' }}
+                    placeholder="Default DNS for associated clients"
+                    allowClear
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
 
-            {isServerEE && (
-              <Form.Item
-                name="is_internet_gw"
-                label={
-                  <Typography.Text>
-                    Internet Gateway
-                    <Tooltip
-                      title="Internet gateways behave like traditional VPN servers: all traffic of connected clients would be routed through this host."
-                      placement="right"
-                    >
-                      <InfoCircleOutlined style={{ marginLeft: '0.5rem' }} />
-                    </Tooltip>
-                  </Typography.Text>
-                }
-                valuePropName="checked"
-                data-nmui-intercom="add-ingress-form_isInternetGateway"
-              >
-                <Switch />
-              </Form.Item>
+            {!isServerEE && (
+              <Row>
+                <Col xs={24} ref={addClientGatewayModalIsInternetGatewayRef}>
+                  <Form.Item
+                    name="is_internet_gw"
+                    label={
+                      <Typography.Text>
+                        Internet Gateway
+                        <Tooltip
+                          title="Internet gateways behave like traditional VPN servers: all traffic of connected clients would be routed through this host."
+                          placement="right"
+                        >
+                          <InfoCircleOutlined style={{ marginLeft: '0.5rem' }} />
+                        </Tooltip>
+                      </Typography.Text>
+                    }
+                    valuePropName="checked"
+                    data-nmui-intercom="add-ingress-form_isInternetGateway"
+                  >
+                    <Switch />
+                  </Form.Item>
+                </Col>
+              </Row>
             )}
           </div>
         </div>

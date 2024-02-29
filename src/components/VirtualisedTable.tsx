@@ -6,9 +6,9 @@ import classNames from 'classnames';
 import ResizeObserver from 'rc-resize-observer';
 
 export default function VirtualisedTable<RecordType extends object>(
-  props: RequiredField<TableProps<RecordType>, 'scroll' | 'columns'>,
+  props: RequiredField<TableProps<RecordType>, 'scroll' | 'columns'> & { ref?: React.Ref<any> },
 ) {
-  const { columns, scroll } = props!;
+  const { columns, scroll, ref } = props!;
   const [tableWidth, setTableWidth] = useState(0);
   const { token } = theme.useToken();
 
@@ -110,6 +110,7 @@ export default function VirtualisedTable<RecordType extends object>(
         components={{
           body: renderVirtualList,
         }}
+        ref={ref}
       />
     </ResizeObserver>
   );

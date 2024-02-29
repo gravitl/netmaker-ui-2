@@ -1,11 +1,12 @@
-import { Button, Col, Divider, Image, Modal, notification, Row, Select, Switch, Typography } from 'antd';
+import { Button, Col, Divider, Image, Modal, notification, Row, Select, Switch, Tooltip, Typography } from 'antd';
 import { MouseEvent, useCallback, useEffect, useState } from 'react';
 import '../CustomModal.scss';
-import { DownloadOutlined } from '@ant-design/icons';
+import { DownloadOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { download, extractErrorMsg } from '@/utils/ServiceUtils';
 import { NodesService } from '@/services/NodesService';
 import { ExternalClient } from '@/models/ExternalClient';
 import { Buffer } from 'buffer';
+import TextArea from 'antd/es/input/TextArea';
 
 interface ClientDetailsModalProps {
   isOpen: boolean;
@@ -148,6 +149,32 @@ export default function ClientDetailsModal({ client, isOpen, onCancel, onUpdateC
           <Col xs={16}>
             <Switch checked={client.enabled} onChange={(checked) => toggleClientStatus(checked)} />
           </Col>
+        </Row>
+        <Divider style={{ margin: '1rem 0px 1rem 0px' }} />
+
+        <Row data-nmui-intercom="client-details_dns">
+          <Col xs={8}>
+            <Typography.Text>
+              Post Up Script
+              <Tooltip title="PostUp serves as a lifetime hook that runs the provided script that run just after wireguard sets up the interface and the VPN connection is live">
+                <InfoCircleOutlined style={{ marginLeft: '0.3em' }} />
+              </Tooltip>
+            </Typography.Text>
+          </Col>
+          <Col xs={16}>{client.postup && <Typography.Text copyable> {client.postup} </Typography.Text>}</Col>
+        </Row>
+        <Divider style={{ margin: '1rem 0px 1rem 0px' }} />
+
+        <Row data-nmui-intercom="client-details_dns">
+          <Col xs={8}>
+            <Typography.Text>
+              Post Down Script
+              <Tooltip title="PostDown serves as a lifetime hook that runs the provided script that run just after wireguard tears down the interface">
+                <InfoCircleOutlined style={{ marginLeft: '0.3em' }} />
+              </Tooltip>
+            </Typography.Text>
+          </Col>
+          <Col xs={16}>{client.postdown && <Typography.Text copyable> {client.postdown} </Typography.Text>}</Col>
         </Row>
         <Divider style={{ margin: '1rem 0px 1rem 0px' }} />
 

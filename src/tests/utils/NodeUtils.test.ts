@@ -27,7 +27,6 @@ const testNode: Node = {
   dnson: false,
   islocal: false,
   server: '',
-  internetgateway: '',
   defaultacl: '',
   connected: false,
   failover: false,
@@ -40,6 +39,10 @@ const testNode: Node = {
   is_fail_over: false,
   failed_over_by: '',
   fail_over_peers: [],
+  internetgw_node_id: '',
+  inet_node_req: {
+    inet_node_client_ids: [],
+  },
 };
 
 const hostRegistry: Record<Host['id'], HostCommonDetails> = {

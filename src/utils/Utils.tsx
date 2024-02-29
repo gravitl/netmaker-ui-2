@@ -350,13 +350,17 @@ const validateName = (fieldName: string): Rule[] => [
 
 const validateExtClientName = (fieldName: string): Rule[] => [
   {
-    required: true,
+    required: false,
     message: `Please enter a ${fieldName}, with a minimum of 5 characters and a maximum of 32 characters.`,
     min: 5,
     max: 32,
   },
   {
     validator: (_: any, value: string) => {
+      if (value === '') {
+        return Promise.resolve();
+      }
+
       const regex = /^[^\s]+$/;
       if (regex.test(value)) {
         return Promise.resolve();

@@ -37,7 +37,6 @@ const testNode1: Node = {
   dnson: false,
   islocal: false,
   server: '',
-  internetgateway: '',
   defaultacl: '',
   connected: false,
   failover: false,
@@ -50,6 +49,10 @@ const testNode1: Node = {
   is_fail_over: false,
   failed_over_by: '',
   fail_over_peers: [],
+  internetgw_node_id: '',
+  inet_node_req: {
+    inet_node_client_ids: [],
+  },
 };
 
 const testNode2 = { ...testNode1, lastcheckin: testNode1.lastcheckin - 400 };

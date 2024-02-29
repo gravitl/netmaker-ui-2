@@ -7,6 +7,7 @@ import { extractErrorMsg } from '@/utils/ServiceUtils';
 import {
   DeleteOutlined,
   EditOutlined,
+  InfoCircleOutlined,
   MoreOutlined,
   PlusOutlined,
   ReloadOutlined,
@@ -27,15 +28,17 @@ import {
   Table,
   TableColumnsType,
   Tag,
+  Tour,
+  TourProps,
   Typography,
 } from 'antd';
 import { AxiosError } from 'axios';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PageProps } from '../../models/Page';
 
 import './EnrollmentKeysPage.scss';
 import { useBranding } from '@/utils/Utils';
-import UpdateEnrollmentKeyModal from '@/components/modals/update-enrollment -key-modal/updateEnrollmentKeyModal';
+import UpdateEnrollmentKeyModal from '@/components/modals/update-enrollment-key-modal/UpdateEnrollmentKeyModal';
 
 export default function EnrollmentKeysPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
@@ -48,6 +51,14 @@ export default function EnrollmentKeysPage(props: PageProps) {
   const [selectedKey, setSelectedKey] = useState<EnrollmentKey | null>(null);
   const [isKeyDetailsModalOpen, setIsKeyDetailsModalOpen] = useState(false);
   const [isEditKeyModalOpen, setIsEditKeyModalOpen] = useState(false);
+  const [isTourOpen, setIsTourOpen] = useState(false);
+  const [tourStep, setTourStep] = useState(0);
+  const enrollmentKeysTableRef = useRef(null);
+  const createKeyButtonRef = useRef(null);
+  const keyNameInputRef = useRef(null);
+  const keyTypeSelectRef = useRef(null);
+  const keyNetworksSelectRef = useRef(null);
+  const keyRelaySelectRef = useRef(null);
 
   const confirmRemoveKey = useCallback(
     (key: EnrollmentKey) => {
@@ -193,6 +204,68 @@ export default function EnrollmentKeysPage(props: PageProps) {
     }
   }, [notify]);
 
+  const enrollmentKeysTourSteps: TourProps['steps'] = [
+    {
+      title: 'Enrollment Keys',
+      description: (
+        <>
+          You can view the list of enrollment keys here. You can also view the specific details of each key by clicking
+          on the key name on the right side there is an ellipsis button that allows you to either edit or delete a key.
+        </>
+      ),
+      target: () => enrollmentKeysTableRef.current,
+    },
+    {
+      title: 'Add a Key',
+      description: <>You can add a new enrollment key by clicking on this button.</>,
+      target: () => createKeyButtonRef.current,
+    },
+    {
+      title: 'Add Key Name',
+      description: <>You can add a name for your key here.</>,
+      target: () => keyNameInputRef.current,
+    },
+    {
+      title: 'Select Key Type',
+      description: (
+        <>
+          You can select the type of key you want to create here, you can choose either time-bound, usage-based, and
+          unlimited keys.
+        </>
+      ),
+      target: () => keyTypeSelectRef.current,
+    },
+    {
+      title: 'Select Networks to Add',
+      description: <>You can select the networks you want to add to the key here.</>,
+      target: () => keyNetworksSelectRef.current,
+    },
+    {
+      title: 'Select if key is for a relay server',
+      description: (
+        <>
+          You can select if the key is for a relay server here. So once a host joins using this key it automatically
+          becomes relayed
+        </>
+      ),
+      target: () => keyRelaySelectRef.current,
+    },
+  ];
+
+  const handleTourOnChange = (current: number) => {
+    setTourStep(current);
+    switch (current) {
+      case 1:
+        setIsAddKeyModalOpen(false);
+        break;
+      case 2:
+        setIsAddKeyModalOpen(true);
+        break;
+      default:
+        break;
+    }
+  };
+
   useEffect(() => {
     loadEnrollmentKeys();
   }, [loadEnrollmentKeys]);
@@ -296,10 +369,20 @@ export default function EnrollmentKeysPage(props: PageProps) {
                 />
               </Col>
               <Col xs={24} md={12} style={{ textAlign: 'right' }} className="enrollment-keys-table-button">
+                <Button
+                  size="large"
+                  style={{ marginRight: '0.5em' }}
+                  onClick={() => {
+                    setIsTourOpen(true);
+                    setTourStep(0);
+                  }}
+                >
+                  <InfoCircleOutlined /> Start Tour
+                </Button>
                 <Button size="large" style={{ marginRight: '0.5em' }} onClick={() => loadEnrollmentKeys()}>
                   <ReloadOutlined /> Refresh keys
                 </Button>
-                <Button type="primary" size="large" onClick={() => setIsAddKeyModalOpen(true)}>
+                <Button type="primary" size="large" onClick={() => setIsAddKeyModalOpen(true)} ref={createKeyButtonRef}>
                   <PlusOutlined /> Create Key
                 </Button>
               </Col>
@@ -320,12 +403,21 @@ export default function EnrollmentKeysPage(props: PageProps) {
                       },
                     };
                   }}
+                  ref={enrollmentKeysTableRef}
                 />
               </Col>
             </Row>
           </>
         )}
       </Skeleton>
+
+      <Tour
+        steps={enrollmentKeysTourSteps}
+        open={isTourOpen}
+        onClose={() => setIsTourOpen(false)}
+        onChange={handleTourOnChange}
+        current={tourStep}
+      />
 
       {/* misc */}
       <AddEnrollmentKeyModal
@@ -335,6 +427,10 @@ export default function EnrollmentKeysPage(props: PageProps) {
           setKeys((prevKeys) => [...prevKeys, key].sort((k) => k.value.localeCompare(k.value)));
         }}
         onCancel={() => setIsAddKeyModalOpen(false)}
+        keyNameInputRef={keyNameInputRef}
+        keyTypeSelectRef={keyTypeSelectRef}
+        keyNetworksSelectRef={keyNetworksSelectRef}
+        keyRelaySelectRef={keyRelaySelectRef}
       />
 
       {isKeyDetailsModalOpen && selectedKey && (

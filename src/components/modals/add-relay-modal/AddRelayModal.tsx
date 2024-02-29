@@ -15,7 +15,7 @@ import {
   Tooltip,
   Typography,
 } from 'antd';
-import { MouseEvent, useCallback, useMemo, useState } from 'react';
+import { MouseEvent, Ref, useCallback, useMemo, useState } from 'react';
 import { useStore } from '@/store/store';
 import '../CustomModal.scss';
 import './AddRelayModal.styles.scss';
@@ -26,7 +26,6 @@ import { CloseOutlined, DownOutlined, SearchOutlined, UpOutlined } from '@ant-de
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { CreateNodeRelayDto } from '@/services/dtos/CreateNodeRelayDto';
 import { NodesService } from '@/services/NodesService';
-import { NULL_NODE } from '@/constants/Types';
 
 interface AddRelayModalProps {
   isOpen: boolean;
@@ -35,13 +34,20 @@ interface AddRelayModalProps {
   closeModal?: () => void;
   onOk?: (e: MouseEvent<HTMLButtonElement>) => void;
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
+  createRelayModalSelectHostRef: Ref<HTMLDivElement>;
 }
 
 const nodeIdFormName = 'nodeid';
 
 type AddRelayFormFields = CreateNodeRelayDto;
 
-export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, networkId }: AddRelayModalProps) {
+export default function AddRelayModal({
+  isOpen,
+  onCreateRelay,
+  onCancel,
+  networkId,
+  createRelayModalSelectHostRef,
+}: AddRelayModalProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
   const { token: themeToken } = theme.useToken();
@@ -53,7 +59,7 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
   const [selectedRelay, setSelectedRelay] = useState<ExtendedNode | null>(null);
   const [selectedRelayedIds, setSelectedRelayedIds] = useState<Node['id'][]>([]);
   const [relayedSearch, setRelayedSearch] = useState('');
-  const [isSelectOpen, setIsSelectOpen] = useState(false);
+  // const [isSelectOpen, setIsSelectOpen] = useState(false);
   const [isDropDownOpen, setIsDropDownOpen] = useState(false);
 
   const getNodeConnectivity = useCallback((node: Node) => {
@@ -91,14 +97,14 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
         title: 'Address',
         dataIndex: 'address',
         render(_, node) {
-          const addrs = `${node?.address ?? ''} ${node.address6 ? `, ${node.address6}` : ''}`;
+          const addrs = ([] as Array<string>).concat(node.address || [], node.address6 || []).join(', ');
           return <Tooltip title={addrs}>{addrs}</Tooltip>;
         },
       },
     ];
   }, []);
 
-  const relayedTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(() => relayTableCols, [relayTableCols]);
+  // const relayedTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(() => relayTableCols, [relayTableCols]);
 
   const resetModal = () => {
     form.resetFields();
@@ -157,47 +163,62 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
             data-nmui-intercom="add-relay-form_nodeid"
           >
             {!selectedRelay && (
-              <Select
-                placeholder="Select host"
-                dropdownRender={() => (
-                  <div style={{ padding: '.5rem' }}>
-                    <Row style={{ marginBottom: '1rem' }}>
-                      <Col span={8}>
-                        <Input
-                          placeholder="Search host..."
-                          value={relaySearch}
-                          onChange={(e) => setRelaySearch(e.target.value)}
-                          prefix={<SearchOutlined />}
-                        />
-                      </Col>
-                    </Row>
-                    <Row>
-                      <Col span={24}>
-                        <Table
-                          size="small"
-                          columns={relayTableCols}
-                          dataSource={filteredNetworkNodes}
-                          rowKey="id"
-                          onRow={(node) => {
-                            return {
-                              onClick: () => {
-                                if (!isNodeSelectable(node)) return;
-                                form.setFieldValue(nodeIdFormName, node.id);
-                                setSelectedRelay(node);
-                              },
-                            };
-                          }}
-                          rowClassName={(node) => {
-                            return isNodeSelectable(node) ? '' : 'unavailable-row';
-                          }}
-                        />
-                      </Col>
-                    </Row>
-                  </div>
-                )}
-                onDropdownVisibleChange={(open) => setIsDropDownOpen(open)}
-                suffixIcon={isDropDownOpen ? <UpOutlined /> : <DownOutlined />}
-              />
+              <Row>
+                <Col span={24} ref={createRelayModalSelectHostRef}>
+                  <Select
+                    placeholder="Select host"
+                    dropdownRender={() => (
+                      <div style={{ padding: '.5rem' }}>
+                        <Row style={{ marginBottom: '1rem' }}>
+                          <Col span={8}>
+                            <Input
+                              placeholder="Search host..."
+                              value={relaySearch}
+                              onChange={(e) => setRelaySearch(e.target.value)}
+                              prefix={<SearchOutlined />}
+                            />
+                          </Col>
+                          <Col span={16} style={{ textAlign: 'right' }}>
+                            <Button
+                              type="primary"
+                              onClick={() => {
+                                setIsDropDownOpen(false);
+                              }}
+                            >
+                              Done
+                            </Button>
+                          </Col>
+                        </Row>
+                        <Row>
+                          <Col span={24}>
+                            <Table
+                              size="small"
+                              columns={relayTableCols}
+                              dataSource={filteredNetworkNodes}
+                              rowKey="id"
+                              onRow={(node) => {
+                                return {
+                                  onClick: () => {
+                                    if (!isNodeSelectable(node)) return;
+                                    form.setFieldValue(nodeIdFormName, node.id);
+                                    setSelectedRelay(node);
+                                  },
+                                };
+                              }}
+                              rowClassName={(node) => {
+                                return isNodeSelectable(node) ? '' : 'unavailable-row';
+                              }}
+                            />
+                          </Col>
+                        </Row>
+                      </div>
+                    )}
+                    onDropdownVisibleChange={(open) => setIsDropDownOpen(open)}
+                    suffixIcon={isDropDownOpen ? <UpOutlined /> : <DownOutlined />}
+                    open={isDropDownOpen}
+                  />
+                </Col>
+              </Row>
             )}
             {!!selectedRelay && (
               <>
@@ -209,7 +230,9 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
                   }}
                 >
                   <Col span={6}>{selectedRelay?.name ?? ''}</Col>
-                  <Col span={6}>{selectedRelay?.address ?? ''}</Col>
+                  <Col span={6}>
+                    {([] as Array<string>).concat(selectedRelay.address || [], selectedRelay.address6 || []).join(', ')}
+                  </Col>
                   <Col span={6}>{selectedRelay?.endpointip ?? ''}</Col>
                   <Col span={5}>{selectedRelay && getNodeConnectivity(selectedRelay)}</Col>
                   <Col span={1} style={{ textAlign: 'right' }}>
@@ -230,7 +253,7 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
             )}
           </Form.Item>
 
-          {selectedRelay && (
+          {/* {selectedRelay && (
             <>
               <Form.Item label="Select hosts to relay" required data-nmui-intercom="add-relay-form_relayed">
                 <Select
@@ -285,6 +308,26 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
                               if (!isNodeSelectable(node)) return 'unavailable-row';
                               return selectedRelayedIds.includes(node.id) ? 'selected-row' : '';
                             }}
+                            rowSelection={{
+                              type: 'checkbox',
+                              selectedRowKeys: selectedRelayedIds,
+                              hideSelectAll: true,
+                              onSelect: (record, selected) => {
+                                if (!isNodeSelectable(record)) return;
+                                setSelectedRelayedIds((prev) => {
+                                  const relayedNodesIds = new Set(prev);
+                                  if (relayedNodesIds.has(record.id)) {
+                                    relayedNodesIds.delete(record.id);
+                                  } else {
+                                    relayedNodesIds.add(record.id);
+                                  }
+                                  return [...relayedNodesIds];
+                                });
+                              },
+                              getCheckboxProps: (record) => {
+                                return { disabled: !isNodeSelectable(record) };
+                              },
+                            }}
                           />
                         </Col>
                       </Row>
@@ -331,7 +374,7 @@ export default function AddRelayModal({ isOpen, onCreateRelay, onCancel, network
                 </Row>
               )}
             </>
-          )}
+          )} */}
         </div>
 
         <Divider style={{ margin: '0px 0px 2rem 0px' }} />

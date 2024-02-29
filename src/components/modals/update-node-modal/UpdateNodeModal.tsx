@@ -5,7 +5,6 @@ import {
   Divider,
   Form,
   Input,
-  InputNumber,
   Modal,
   notification,
   Row,
@@ -128,6 +127,7 @@ export default function UpdateNodeModal({ isOpen, node, onUpdateNode, onCancel }
                     value: iface.addressString,
                   })) ?? []
                 }
+                disabled={true}
               />
             </Form.Item>
 
@@ -193,6 +193,15 @@ export default function UpdateNodeModal({ isOpen, node, onUpdateNode, onCancel }
               data-nmui-intercom="update-node-form_dnson"
             >
               <Switch />
+            </Form.Item>
+
+            <Form.Item
+              label="Metadata"
+              name="metadata"
+              data-nmui-intercom="update-node-form_metadata"
+              rules={[{ max: 255 }]}
+            >
+              <Input placeholder="Metadata" />
             </Form.Item>
           </div>
         </div>
