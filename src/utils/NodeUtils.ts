@@ -39,7 +39,7 @@ export function getNodeConnectivityStatus(node: Node | ExternalClient): NodeConn
  * @returns node with associated common host details
  */
 export function getExtendedNode(node: Node, hostCommonDetails: Record<string, HostCommonDetails>): ExtendedNode {
-  const hostDetails = hostCommonDetails[node.hostid];
+  const hostDetails = hostCommonDetails[node?.hostid];
   return { ...node, ...(hostDetails ? hostDetails : NULL_HOST) };
 }
 

@@ -20,7 +20,7 @@ import { useTranslation } from 'react-i18next';
 import { isSaasBuild } from '@/services/BaseService';
 import { ServerConfigService } from '@/services/ServerConfigService';
 import { AppErrorBoundary } from '@/components/AppErrorBoundary';
-import { useBranding } from '@/utils/Utils';
+import { isManagedHost, useBranding } from '@/utils/Utils';
 
 const { Content, Sider } = Layout;
 
@@ -319,6 +319,13 @@ export default function MainLayout() {
     return width < 576 && !isSidebarCollapsed;
   }, [isSidebarCollapsed, window.innerWidth]);
 
+  const checkIfManagedHostIsLoading = useMemo(() => {
+    // check if managed host is loading
+    const isNewTenant = store.isNewTenant;
+    const isManagedHostLoaded = store.hosts.some((host) => isManagedHost(host.name));
+    return isSaasBuild && isNewTenant && !isManagedHostLoaded;
+  }, [store.isNewTenant, store.hosts]);
+
   useEffect(() => {
     if (store.serverStatus?.status?.trial_end_date) {
       const endDate = new Date(store.serverStatus.status.trial_end_date);
@@ -468,6 +475,16 @@ export default function MainLayout() {
           }}
         >
           <Content style={{ background: themeToken.colorBgContainer, overflow: 'initial', minHeight: '100vh' }}>
+            {/* managed host is loading */}
+            {checkIfManagedHostIsLoading && (
+              <Alert
+                message="Managed host creation in progress (estimated completion time: 5 - 10 minutes)."
+                type="info"
+                showIcon
+                icon={<LoadingOutlined />}
+                style={{ marginBottom: '1rem' }}
+              />
+            )}
             {/* license status indicator */}
             {store.serverStatus?.status?.is_on_trial_license && (
               <Row>

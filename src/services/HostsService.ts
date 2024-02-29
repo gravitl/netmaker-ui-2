@@ -8,7 +8,7 @@ function getHosts() {
 }
 
 function deleteHost(hostId: Host['id'], force = false) {
-  return axiosService.delete<Host>(`${ApiRoutes.HOSTS}/${hostId}?force=${force}`);
+  return axiosService.delete<Host>(`${ApiRoutes.HOSTS}/${encodeURIComponent(hostId)}?force=${force}`);
 }
 function updateHostsNetworks(
   hostId: Host['id'],
@@ -17,12 +17,18 @@ function updateHostsNetworks(
   forceLeave = false,
 ) {
   return action === 'join'
-    ? axiosService.post<void>(`${ApiRoutes.HOSTS}/${hostId}/networks/${networkId}`)
-    : axiosService.delete<void>(`${ApiRoutes.HOSTS}/${hostId}/networks/${networkId}?force=${forceLeave}`);
+    ? axiosService.post<void>(
+        `${ApiRoutes.HOSTS}/${encodeURIComponent(hostId)}/networks/${encodeURIComponent(networkId)}`,
+      )
+    : axiosService.delete<void>(
+        `${ApiRoutes.HOSTS}/${encodeURIComponent(hostId)}/networks/${encodeURIComponent(
+          networkId,
+        )}?force=${forceLeave}`,
+      );
 }
 
 function updateHost(hostId: Host['id'], payload: Host) {
-  return axiosService.put<Host>(`${ApiRoutes.HOSTS}/${hostId}`, payload);
+  return axiosService.put<Host>(`${ApiRoutes.HOSTS}/${encodeURIComponent(hostId)}`, payload);
 }
 
 function refreshAllHostsKeys() {
@@ -30,15 +36,15 @@ function refreshAllHostsKeys() {
 }
 
 function refreshHostKeys(hostId: Host['id']) {
-  return axiosService.put<void>(`${ApiRoutes.HOSTS}/${hostId}/keys`);
+  return axiosService.put<void>(`${ApiRoutes.HOSTS}/${encodeURIComponent(hostId)}/keys`);
 }
 
 function requestHostPull(hostId: Host['id']) {
-  return axiosService.post<void>(`${ApiRoutes.HOSTS}/${hostId}/sync`);
+  return axiosService.post<void>(`${ApiRoutes.HOSTS}/${encodeURIComponent(hostId)}/sync`);
 }
 
 function upgradeClientVersion(hostId: Host['id']) {
-  return axiosService.put<void>(`${ApiRoutes.HOSTS}/${hostId}/upgrade`);
+  return axiosService.put<void>(`${ApiRoutes.HOSTS}/${encodeURIComponent(hostId)}/upgrade`);
 }
 
 export const HostsService = {

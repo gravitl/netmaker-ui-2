@@ -1,10 +1,26 @@
-import { Button, Col, Collapse, Divider, Form, Input, Modal, notification, Row, Select, Typography } from 'antd';
+import {
+  Button,
+  Col,
+  Collapse,
+  Divider,
+  Form,
+  Input,
+  Modal,
+  notification,
+  Row,
+  Select,
+  Tooltip,
+  Typography,
+} from 'antd';
 import { MouseEvent, useState } from 'react';
 import '../CustomModal.scss';
 import { Network } from '@/models/Network';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { NodesService } from '@/services/NodesService';
 import { ExternalClient } from '@/models/ExternalClient';
+import { validateExtClientNameField } from '@/utils/Utils';
+import { InfoCircleOutlined } from '@ant-design/icons';
+import TextArea from 'antd/es/input/TextArea';
 
 interface UpdateClientModalProps {
   isOpen: boolean;
@@ -34,6 +50,8 @@ export default function UpdateClientModal({
   const updateClient = async () => {
     try {
       const formData = await form.validateFields();
+      formData.postup = formData.postup?.trim();
+      formData.postdown = formData.postdown?.trim();
       setIsSubmitting(true);
 
       const newClient = (
@@ -74,7 +92,7 @@ export default function UpdateClientModal({
           <Form.Item
             label="Client ID (Optional)"
             name="clientid"
-            rules={[{ min: 5, max: 32 }]}
+            rules={validateExtClientNameField}
             data-nmui-intercom="update-client-form_clientid"
           >
             <Input placeholder="Unique name of client" />
@@ -103,6 +121,52 @@ export default function UpdateClientModal({
                 data-nmui-intercom="update-client-form_extraallowedips"
               >
                 <Select mode="tags" placeholder="Additional IP Addresses" clearIcon />
+              </Form.Item>
+              <Form.Item
+                label={
+                  <>
+                    Post Up (Optional)
+                    <Tooltip title="PostUp serves as a lifetime hook that runs the provided script that run just after wireguard sets up the interface and the VPN connection is live">
+                      <InfoCircleOutlined style={{ marginLeft: '0.3em' }} />
+                    </Tooltip>
+                  </>
+                }
+                name="postup"
+                data-nmui-intercom="update-client-form_postup"
+                rules={[
+                  {
+                    required: false,
+                  },
+                  {
+                    max: 1024,
+                    message: 'PostUp script cannot exceed 1024 characters',
+                  },
+                ]}
+              >
+                <Input placeholder="PostUp script" />
+              </Form.Item>
+              <Form.Item
+                label={
+                  <>
+                    Post Down (Optional)
+                    <Tooltip title="PostDown serves as a lifetime hook that runs the provided script that run just after wireguard tears down the interface">
+                      <InfoCircleOutlined style={{ marginLeft: '0.3em' }} />
+                    </Tooltip>
+                  </>
+                }
+                name="postdown"
+                data-nmui-intercom="update-client-form_postdown"
+                rules={[
+                  {
+                    required: false,
+                  },
+                  {
+                    max: 1024,
+                    message: 'PostDown script cannot exceed 1024 characters',
+                  },
+                ]}
+              >
+                <Input placeholder="PostDown script" />
               </Form.Item>
             </Collapse.Panel>
           </Collapse>
