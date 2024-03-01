@@ -594,31 +594,13 @@ export default function NewHostModal({
             <Col xs={24}>
               <Card>
                 <Typography.Text>Steps to join a network:</Typography.Text>
-                {(selectedOs === 'windows' || selectedOs === 'macos') && (
-                  <div>
-                    <ol>
-                      <li>Open Netclient GUI</li>
-                      <li>Select &quot;Add New Network&quot;</li>
-                      <li>Click Join via Enrollemnt Key</li>
-                      <li>
-                        Enter{' '}
-                        <Typography.Text code copyable>
-                          {`${selectedEnrollmentKey?.token ?? '<token>'}`}
-                        </Typography.Text>{' '}
-                        as enrollment key
-                      </li>
-                      <li>Click Submit and Get connected :)</li>
-                    </ol>
-                    <small>Note: It might take a few minutes for the host to show up in the network(s)</small>
-                  </div>
-                )}
-                {selectedOs === 'linux' && (
+                {(selectedOs === 'linux' || selectedOs === 'windows' || selectedOs === 'macos') && (
                   <div>
                     <ol>
                       <li>
-                        <Typography.Text>Run</Typography.Text>
+                        <Typography.Text>Run (with admin priviledges)</Typography.Text>
                         <Typography.Text code copyable>
-                          {`sudo netclient join -t ${`${selectedEnrollmentKey?.token ?? '<token>'}`}`}
+                          {`netclient join -t ${`${selectedEnrollmentKey?.token ?? '<token>'}`}`}
                         </Typography.Text>
                       </li>
                     </ol>
