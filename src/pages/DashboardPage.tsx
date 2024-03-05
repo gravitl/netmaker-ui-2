@@ -127,8 +127,8 @@ export default function DashboardPage(props: PageProps) {
                 {branding.productName} automates a secure superhighway between devices, clouds, virtual machines, and
                 servers using WireGuard®. It blows past any NAT’s, firewalls, or subnets that stand between them to
                 create a flat, simple network. The result is a secure overlay network that spans all your devices,
-                wherever they are. Of course, {branding.productName} does a lot more than that. With ACL’s, Ingress,
-                Egress, and Relays, you have complete control of your network.
+                wherever they are. Of course, {branding.productName} does a lot more than that. With ACL’s, Remote
+                Access Gateway, Egress, and Relays, you have complete control of your network.
               </p>
               <div>
                 <Button type="link" href="https://netmaker.io/demo-page" target="_blank" rel="noreferrer">

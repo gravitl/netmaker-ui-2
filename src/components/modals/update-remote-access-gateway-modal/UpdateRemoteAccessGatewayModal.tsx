@@ -56,11 +56,11 @@ export default function UpdateRemoteAccessGatewayModal({
         }
       }
       storeUpdateNode(ingress.id, newNode);
-      notify.success({ message: `Ingress gateway updated` });
+      notify.success({ message: `Remote access gateway updated` });
       onUpdateIngress();
     } catch (err) {
       notify.error({
-        message: 'Failed to update ingress gateway',
+        message: 'Failed to update remote access gateway',
         description: extractErrorMsg(err as any),
       });
     } finally {

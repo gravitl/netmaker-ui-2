@@ -2317,11 +2317,11 @@ export default function NetworkDetailsPage(props: PageProps) {
               <Typography.Text style={{ color: 'white ' }}>
                 Remote Access Gateways enable secure access to your network via Clients. The Gateway forwards traffic
                 from the clients into the network, and from the network back to the clients. Clients are simple
-                WireGuard config files, supported on most devices. To use Clients, you must configure a Client Gateway,
-                which is typically deployed in a public cloud environment, e.g. on a server with a public IP, so that it
-                is easily reachable from the Clients. Clients are configured on this dashboard primary via client
-                configs{' '}
-                <a href="https://www.netmaker.io/features/ingress" target="_blank" rel="noreferrer">
+                WireGuard config files, supported on most devices. To use Clients, you must configure a Remote Access
+                Gateway, which is typically deployed in a public cloud environment, e.g. on a server with a public IP,
+                so that it is easily reachable from the Clients. Clients are configured on this dashboard primary via
+                client configs{' '}
+                <a href="https://www.netmaker.io/features/remote-access-gateway" target="_blank" rel="noreferrer">
                   Learn More
                 </a>
               </Typography.Text>
@@ -2356,14 +2356,14 @@ export default function NetworkDetailsPage(props: PageProps) {
                 </Row>
               </Card> */}
               <Card className="header-card" style={{ position: 'absolute', width: '100%' }}>
-                <Typography.Title level={3}>Create Client Gateway</Typography.Title>
+                <Typography.Title level={3}>Create Remote Access Gateway</Typography.Title>
                 <Typography.Text>
-                  You will need to create a client gateway for your network before you can create a client.
+                  You will need to create a remote access gateway for your network before you can create a client.
                 </Typography.Text>
                 <Row style={{ marginTop: '1rem' }}>
                   <Col>
                     <Button type="primary" size="large" onClick={() => setIsAddClientGatewayModalOpen(true)}>
-                      <PlusOutlined /> Create Client Gateway
+                      <PlusOutlined /> Create Remote Access Gateway
                     </Button>
                   </Col>
                 </Row>
@@ -2900,7 +2900,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     return (
       <>
         <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-          {aclTableColsV2.length + filteredAclDataV2.length > 100 ? (
+          {networkHosts.length + clients.length > 50 ? (
             <Row style={{ width: '100%' }}>
               <Col xs={24}>
                 <Alert
@@ -2908,7 +2908,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   description={
                     <>
                       Please use{' '}
-                      <a rel="no-referrer noreferrer" href="https://docs.netmaker.io/nmctl.html#nmctl" target="_blank">
+                      <a rel="no-referrer noreferrer" href="https://docs.netmaker.io/nmctl.html#acls" target="_blank">
                         NMCTL
                       </a>{' '}
                       our commandline tool to manage ACLs.
