@@ -142,11 +142,11 @@ export default function AddRemoteAccessGatewayModal({
         })
       ).data;
       resetModal();
-      notify.success({ message: `Client gateway created` });
+      notify.success({ message: `Remote access gateway created` });
       onCreateIngress(ingressNode);
     } catch (err) {
       notify.error({
-        message: 'Failed to create client gateway',
+        message: 'Failed to create remote access gateway',
         description: extractErrorMsg(err as any),
       });
     } finally {

@@ -2317,11 +2317,11 @@ export default function NetworkDetailsPage(props: PageProps) {
               <Typography.Text style={{ color: 'white ' }}>
                 Remote Access Gateways enable secure access to your network via Clients. The Gateway forwards traffic
                 from the clients into the network, and from the network back to the clients. Clients are simple
-                WireGuard config files, supported on most devices. To use Clients, you must configure a Client Gateway,
-                which is typically deployed in a public cloud environment, e.g. on a server with a public IP, so that it
-                is easily reachable from the Clients. Clients are configured on this dashboard primary via client
-                configs{' '}
-                <a href="https://www.netmaker.io/features/ingress" target="_blank" rel="noreferrer">
+                WireGuard config files, supported on most devices. To use Clients, you must configure a Remote Access
+                Gateway, which is typically deployed in a public cloud environment, e.g. on a server with a public IP,
+                so that it is easily reachable from the Clients. Clients are configured on this dashboard primary via
+                client configs{' '}
+                <a href="https://www.netmaker.io/features/remote-access-gateway" target="_blank" rel="noreferrer">
                   Learn More
                 </a>
               </Typography.Text>
@@ -2356,14 +2356,14 @@ export default function NetworkDetailsPage(props: PageProps) {
                 </Row>
               </Card> */}
               <Card className="header-card" style={{ position: 'absolute', width: '100%' }}>
-                <Typography.Title level={3}>Create Client Gateway</Typography.Title>
+                <Typography.Title level={3}>Create Remote Access Gateway</Typography.Title>
                 <Typography.Text>
-                  You will need to create a client gateway for your network before you can create a client.
+                  You will need to create a remote access gateway for your network before you can create a client.
                 </Typography.Text>
                 <Row style={{ marginTop: '1rem' }}>
                   <Col>
                     <Button type="primary" size="large" onClick={() => setIsAddClientGatewayModalOpen(true)}>
-                      <PlusOutlined /> Create Client Gateway
+                      <PlusOutlined /> Create Remote Access Gateway
                     </Button>
                   </Col>
                 </Row>
@@ -2898,147 +2898,175 @@ export default function NetworkDetailsPage(props: PageProps) {
 
   const getAclsContent = useCallback(() => {
     return (
-      <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-        <Row style={{ width: '100%' }}>
-          <Col xl={12} xs={24}>
-            <Input
-              allowClear
-              placeholder="Search host"
-              value={searchAclHost}
-              onChange={(ev) => setSearchAclHost(ev.target.value)}
-              prefix={<SearchOutlined />}
-              className="search-acl-host-input"
-            />
-            {isServerEE && (
-              <span
-                className="show-clients-toggle"
-                data-nmui-intercom="network-details-acls_showclientstoggle"
-                ref={aclTabShowClientAclsRef}
-              >
-                <label style={{ marginRight: '1rem' }} htmlFor="show-clients-acl-switch">
-                  Show Clients
-                </label>
-                <Switch
-                  id="show-clients-acl-switch"
-                  checked={showClientAcls}
-                  onChange={(newVal) => setShowClientAcls(newVal)}
+      <>
+        <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+          {networkHosts.length + clients.length > 50 ? (
+            <Row style={{ width: '100%' }}>
+              <Col xs={24}>
+                <Alert
+                  message="Too many ACLs to display"
+                  description={
+                    <>
+                      Please use{' '}
+                      <a rel="no-referrer noreferrer" href="https://docs.netmaker.io/nmctl.html#acls" target="_blank">
+                        NMCTL
+                      </a>{' '}
+                      our commandline tool to manage ACLs.
+                    </>
+                  }
+                  type="warning"
+                  showIcon
+                  style={{ marginBottom: '1rem' }}
                 />
-              </span>
-            )}
-          </Col>
-          <Col xl={12} xs={24} className="mt-10 acl-tab-buttons">
-            <Button
-              title="Allow All"
-              style={{ marginRight: '1rem', color: '#3C8618', borderColor: '#274916' }}
-              icon={<CheckOutlined />}
-              onClick={() => {
-                setAcls((prevAcls) => {
-                  const newAcls = structuredClone(prevAcls);
-                  for (const nodeId1 in newAcls) {
-                    if (Object.prototype.hasOwnProperty.call(newAcls, nodeId1)) {
-                      const nodeAcl = newAcls[nodeId1];
-                      for (const nodeId in nodeAcl) {
-                        if (Object.prototype.hasOwnProperty.call(nodeAcl, nodeId)) {
-                          nodeAcl[nodeId] = 2;
+              </Col>
+            </Row>
+          ) : (
+            <Row style={{ width: '100%' }}>
+              <Col xl={12} xs={24}>
+                <Input
+                  allowClear
+                  placeholder="Search host"
+                  value={searchAclHost}
+                  onChange={(ev) => setSearchAclHost(ev.target.value)}
+                  prefix={<SearchOutlined />}
+                  className="search-acl-host-input"
+                />
+                {isServerEE && (
+                  <span
+                    className="show-clients-toggle"
+                    data-nmui-intercom="network-details-acls_showclientstoggle"
+                    ref={aclTabShowClientAclsRef}
+                  >
+                    <label style={{ marginRight: '1rem' }} htmlFor="show-clients-acl-switch">
+                      Show Clients
+                    </label>
+                    <Switch
+                      id="show-clients-acl-switch"
+                      checked={showClientAcls}
+                      onChange={(newVal) => setShowClientAcls(newVal)}
+                    />
+                  </span>
+                )}
+              </Col>
+              <Col xl={12} xs={24} className="mt-10 acl-tab-buttons">
+                <Button
+                  title="Allow All"
+                  style={{ marginRight: '1rem', color: '#3C8618', borderColor: '#274916' }}
+                  icon={<CheckOutlined />}
+                  onClick={() => {
+                    setAcls((prevAcls) => {
+                      const newAcls = structuredClone(prevAcls);
+                      for (const nodeId1 in newAcls) {
+                        if (Object.prototype.hasOwnProperty.call(newAcls, nodeId1)) {
+                          const nodeAcl = newAcls[nodeId1];
+                          for (const nodeId in nodeAcl) {
+                            if (Object.prototype.hasOwnProperty.call(nodeAcl, nodeId)) {
+                              nodeAcl[nodeId] = 2;
+                            }
+                          }
                         }
                       }
-                    }
-                  }
-                  return newAcls;
-                });
-              }}
-              ref={aclTabAllowAllRef}
-            />
-            <Button
-              danger
-              title="Block All"
-              style={{ marginRight: '1rem' }}
-              icon={<StopOutlined />}
-              onClick={() => {
-                setAcls((prevAcls) => {
-                  const newAcls = structuredClone(prevAcls);
-                  for (const nodeId1 in newAcls) {
-                    if (Object.prototype.hasOwnProperty.call(newAcls, nodeId1)) {
-                      const nodeAcl = newAcls[nodeId1];
-                      for (const nodeId in nodeAcl) {
-                        if (Object.prototype.hasOwnProperty.call(nodeAcl, nodeId)) {
-                          nodeAcl[nodeId] = 1;
+                      return newAcls;
+                    });
+                  }}
+                  ref={aclTabAllowAllRef}
+                />
+                <Button
+                  danger
+                  title="Block All"
+                  style={{ marginRight: '1rem' }}
+                  icon={<StopOutlined />}
+                  onClick={() => {
+                    setAcls((prevAcls) => {
+                      const newAcls = structuredClone(prevAcls);
+                      for (const nodeId1 in newAcls) {
+                        if (Object.prototype.hasOwnProperty.call(newAcls, nodeId1)) {
+                          const nodeAcl = newAcls[nodeId1];
+                          for (const nodeId in nodeAcl) {
+                            if (Object.prototype.hasOwnProperty.call(nodeAcl, nodeId)) {
+                              nodeAcl[nodeId] = 1;
+                            }
+                          }
                         }
                       }
+                      return newAcls;
+                    });
+                  }}
+                  ref={aclTabDenyAllRef}
+                />
+                <Button
+                  title="Reset"
+                  style={{ marginRight: '1rem' }}
+                  icon={<ReloadOutlined />}
+                  onClick={() => {
+                    setAcls(originalAcls);
+                  }}
+                  disabled={!hasAclsBeenEdited}
+                  ref={aclTabResetRef}
+                />
+                <Button
+                  type="primary"
+                  onClick={async () => {
+                    try {
+                      if (!networkId) return;
+                      setIsSubmittingAcls(true);
+                      const newAcls = (await NetworksService.updateAclsV2(networkId, acls)).data;
+                      setOriginalAcls(newAcls);
+                      setAcls(newAcls);
+                      notify.success({
+                        message: 'ACLs updated',
+                      });
+                    } catch (err) {
+                      notify.error({
+                        message: 'Error updating ACLs',
+                        description: extractErrorMsg(err as any),
+                      });
+                    } finally {
+                      setIsSubmittingAcls(false);
                     }
-                  }
-                  return newAcls;
-                });
-              }}
-              ref={aclTabDenyAllRef}
-            />
-            <Button
-              title="Reset"
-              style={{ marginRight: '1rem' }}
-              icon={<ReloadOutlined />}
-              onClick={() => {
-                setAcls(originalAcls);
-              }}
-              disabled={!hasAclsBeenEdited}
-              ref={aclTabResetRef}
-            />
-            <Button
-              type="primary"
-              onClick={async () => {
-                try {
-                  if (!networkId) return;
-                  setIsSubmittingAcls(true);
-                  const newAcls = (await NetworksService.updateAclsV2(networkId, acls)).data;
-                  setOriginalAcls(newAcls);
-                  setAcls(newAcls);
-                  notify.success({
-                    message: 'ACLs updated',
-                  });
-                } catch (err) {
-                  notify.error({
-                    message: 'Error updating ACLs',
-                    description: extractErrorMsg(err as any),
-                  });
-                } finally {
-                  setIsSubmittingAcls(false);
-                }
-              }}
-              disabled={!hasAclsBeenEdited}
-              loading={isSubmittingAcls}
-              ref={aclTabSubmitRef}
-            >
-              Submit Changes
-            </Button>
-            <Button style={{ marginLeft: '1rem' }} onClick={() => jumpToTourStep('acls')} icon={<InfoCircleOutlined />}>
-              Take Tour
-            </Button>
-            <Button
-              title="Go to ACL documentation"
-              style={{ marginLeft: '1rem' }}
-              href={ACLS_DOCS_URL}
-              target="_blank"
-              icon={<QuestionCircleOutlined />}
-            />
-          </Col>
+                  }}
+                  disabled={!hasAclsBeenEdited}
+                  loading={isSubmittingAcls}
+                  ref={aclTabSubmitRef}
+                >
+                  Submit Changes
+                </Button>
+                <Button
+                  style={{ marginLeft: '1rem' }}
+                  onClick={() => jumpToTourStep('acls')}
+                  icon={<InfoCircleOutlined />}
+                >
+                  Take Tour
+                </Button>
+                <Button
+                  title="Go to ACL documentation"
+                  style={{ marginLeft: '1rem' }}
+                  href={ACLS_DOCS_URL}
+                  target="_blank"
+                  icon={<QuestionCircleOutlined />}
+                />
+              </Col>
 
-          <Col xs={24} style={{ paddingTop: '1rem' }}>
-            <div className="" style={{ width: '100%', overflow: 'auto' }}>
-              <VirtualisedTable
-                columns={aclTableColsV2}
-                dataSource={filteredAclDataV2}
-                className="acl-table"
-                rowKey="nodeOrClientId"
-                size="small"
-                pagination={false}
-                scroll={{
-                  x: '100%',
-                }}
-                ref={aclTabTableRef}
-              />
-            </div>
-          </Col>
-        </Row>
-      </div>
+              <Col xs={24} style={{ paddingTop: '1rem' }}>
+                <div className="" style={{ width: '100%', overflow: 'auto' }}>
+                  <VirtualisedTable
+                    columns={aclTableColsV2}
+                    dataSource={filteredAclDataV2}
+                    className="acl-table"
+                    rowKey="nodeOrClientId"
+                    size="small"
+                    pagination={false}
+                    scroll={{
+                      x: '100%',
+                    }}
+                    ref={aclTabTableRef}
+                  />
+                </div>
+              </Col>
+            </Row>
+          )}
+        </div>
+      </>
     );
   }, [
     searchAclHost,

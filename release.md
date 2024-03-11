@@ -6,7 +6,7 @@
 
 - Revamped Internet Gateways: hosts and clients can now use internet gateways! More info [here](https://docs.netmaker.io/pro/internet-gateways.html)
   On community edition, internet gateways for clients can be accessed via the Remote Access tab.
-- Metadata field for ingress nodes
+- Metadata field for remote access gateway nodes
 - Post up and post down script field for ext clients.
 - Remote access client setup modal.
 - Product tours.

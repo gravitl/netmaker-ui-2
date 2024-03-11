@@ -203,8 +203,8 @@ export default function NetworksPage(props: PageProps) {
                 <Typography.Text style={{ color: 'white ' }}>
                   A network is how your hosts and clients communicate. Each machine gets a private IP address within the
                   defined subnet and communicates securely with all the other devices in the network. The network is
-                  your base layer. Once it&apos;s created you can add Ingress, Egress, Relay, and more. Create multiple
-                  networks and manage multiple secure domains for your devices!
+                  your base layer. Once it&apos;s created you can add Remote Access Gateway, Egress, Relay, and more.
+                  Create multiple networks and manage multiple secure domains for your devices!
                 </Typography.Text>
               </Col>
               <Col xs={24} xl={(24 * 1) / 3} style={{ position: 'relative' }}>
@@ -270,7 +270,7 @@ export default function NetworksPage(props: PageProps) {
                   <Typography.Text>
                     Add hosts to your network. Make a host into a{' '}
                     <a href="https://www.netmaker.io/features/ingress" target="_blank" rel="noreferrer">
-                      Client Gateway
+                      remote access gateway
                     </a>{' '}
                     to begin using Clients. Make a host an{' '}
                     <a href="https://www.netmaker.io/features/egress" target="_blank" rel="noreferrer">
