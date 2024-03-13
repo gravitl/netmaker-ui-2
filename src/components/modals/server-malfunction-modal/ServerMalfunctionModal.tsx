@@ -153,7 +153,7 @@ export default function ServerMalfunctionModal({ isOpen, onCancel }: ServerMalfu
         algorithm: store.currentTheme === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm,
       }}
     >
-      <Modal open={isOpen} onCancel={onCancel} footer={null} centered closable={false}>
+      <Modal open={false} onCancel={onCancel} footer={null} centered closable={false}>
         <Row style={{ marginTop: '1rem' }}>
           <Col span={24}>
             <ExclamationCircleOutlined

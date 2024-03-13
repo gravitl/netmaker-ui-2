@@ -516,6 +516,7 @@ export default function MainLayout() {
             transition: 'all 200ms',
             marginLeft: contentMarginLeft,
             display: hideContent ? 'none' : 'block',
+            position: 'relative',
           }}
         >
           <Content style={{ background: themeToken.colorBgContainer, overflow: 'initial', minHeight: '100vh' }}>

@@ -7,6 +7,8 @@ export type NetworkDetailTourStep =
   | 'hosts'
   | 'relays'
   | 'remote-access'
+  | 'vpn-clients'
+  | 'users'
   | 'egress'
   | 'acls'
   | 'dns'

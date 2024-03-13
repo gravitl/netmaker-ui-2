@@ -9,6 +9,7 @@ export interface JumpToTourStepObj {
   overview: number;
   hosts: number;
   remoteAccess: number;
+  vpnConfigs: number;
   relays: number;
   egress: number;
   dns: number;
@@ -1059,7 +1060,7 @@ export default function TourComponent(props: TourUtilsProps) {
 
   const generateJumpToTourStepObj = useCallback(() => {
     // find the current step by index and then set the jump to tour step object
-    const tabTexts = [
+    const Texts = [
       'Overview',
       'Hosts Table',
       'Gateway Table',
@@ -1069,9 +1070,10 @@ export default function TourComponent(props: TourUtilsProps) {
       'Access Control Table',
       'Graph',
       'Metrics Connectivity Status',
+      'VPN Config Files Table',
     ];
 
-    const tabTextToStepMap: { [key: string]: string } = {
+    const TextToStepMap: { [key: string]: string } = {
       Overview: 'overview',
       'Hosts Table': 'hosts',
       'Gateway Table': 'remoteAccess',
@@ -1081,12 +1083,15 @@ export default function TourComponent(props: TourUtilsProps) {
       'Access Control Table': 'acls',
       Graph: 'graph',
       'Metrics Connectivity Status': 'metrics',
+      Users: 'users',
+      'VPN Config Files Table': 'vpnConfigs',
     };
 
     const jumpToTourStepObj: JumpToTourStepObj = {
       overview: 0,
       hosts: 1,
       remoteAccess: 6,
+      vpnConfigs: 10,
       relays: 18,
       egress: 23,
       dns: 31,
@@ -1095,10 +1100,10 @@ export default function TourComponent(props: TourUtilsProps) {
       metrics: 48,
     };
 
-    tabTexts.forEach((tab, index) => {
+    Texts.forEach((tab, index) => {
       const tourStepIndex = tourSteps.findIndex((step) => step.title === tab);
       if (tourStepIndex !== -1) {
-        jumpToTourStepObj[tabTextToStepMap[tab] as keyof JumpToTourStepObj] = tourStepIndex;
+        jumpToTourStepObj[TextToStepMap[tab] as keyof JumpToTourStepObj] = tourStepIndex;
       }
     });
 
