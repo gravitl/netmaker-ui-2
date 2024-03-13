@@ -72,7 +72,7 @@ import {
 } from 'antd';
 import { AxiosError } from 'axios';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { PageProps } from '../../models/Page';
 import '@react-sigma/core/lib/react-sigma.min.css';
 import './NetworkDetailsPage.scss';
@@ -99,6 +99,7 @@ import TourComponent, { JumpToTourStepObj } from '@/pages/networks/TourComponent
 import DownloadRemotesAccessClientModal from '@/components/modals/remote-access-client-modal/DownloadRemoteAccessClientModal';
 import AddRemoteAccessGatewayModal from '@/components/modals/add-remote-access-gateway-modal/AddRemoteAccessGatewayModal';
 import { InternetGatewaysPage } from './internet-gateways/InternetGatewaysPage';
+import { set } from 'lodash';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -144,6 +145,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const { networkId } = useParams<{ networkId: string }>();
   const store = useStore();
   const navigate = useNavigate();
+  const location = useLocation();
   const [notify, notifyCtx] = notification.useNotification();
   const { token: themeToken } = theme.useToken();
   const branding = useBranding();
@@ -203,6 +205,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [isDownloadRemoteAccessClientModalOpen, setIsDownloadRemoteAccessClientModalOpen] = useState(false);
   const [originalAcls, setOriginalAcls] = useState<NodeAclContainer>({});
   const [acls, setAcls] = useState<NodeAclContainer>({});
+  const [isJumpToPageTourStarted, setIsJumpToPageTourStarted] = useState(false);
   const [jumpTourStepObj, setJumpTourStepObj] = useState<JumpToTourStepObj>({
     overview: 0,
     hosts: 1,
@@ -3532,6 +3535,38 @@ export default function NetworkDetailsPage(props: PageProps) {
       setIsInitialLoad(false);
     }
   }, [filteredRelays, filteredEgresses, isInitialLoad, filteredClientGateways]);
+
+  useEffect(() => {
+    console.log('location.state.startTour', location.state.startTour);
+    switch (location.state?.startTour) {
+      case 'remoteaccess':
+        setActiveTabKey('clients');
+        setTourStep(jumpTourStepObj?.remoteAccess);
+        setIsTourOpen(true);
+        setIsJumpToPageTourStarted(true);
+        break;
+      case 'relays':
+        setActiveTabKey('relays');
+        setTourStep(jumpTourStepObj?.relays);
+        setIsTourOpen(true);
+        setIsJumpToPageTourStarted(true);
+        break;
+      case 'egress':
+        setActiveTabKey('egress');
+        setTourStep(jumpTourStepObj?.egress);
+        setIsTourOpen(true);
+        setIsJumpToPageTourStarted(true);
+        break;
+      case 'acls':
+        setActiveTabKey('access-control');
+        setTourStep(jumpTourStepObj?.acls);
+        setIsTourOpen(true);
+        setIsJumpToPageTourStarted(true);
+        break;
+      default:
+        break;
+    }
+  }, [location.state.startTour]);
 
   if (!networkId) {
     navigate(resolveAppRoute(AppRoutes.NETWORKS_ROUTE));
