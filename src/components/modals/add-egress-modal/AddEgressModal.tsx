@@ -14,7 +14,6 @@ import {
   Table,
   TableColumnProps,
   theme,
-  Tooltip,
   Typography,
 } from 'antd';
 import { MouseEvent, Ref, useCallback, useMemo, useState } from 'react';
@@ -23,13 +22,12 @@ import '../CustomModal.scss';
 import { Network } from '@/models/Network';
 import { ExtendedNode, Node } from '@/models/Node';
 import { getExtendedNode, getNodeConnectivityStatus } from '@/utils/NodeUtils';
-import { CloseOutlined, DownOutlined, PlusOutlined, SearchOutlined, UpOutlined } from '@ant-design/icons';
+import { CloseOutlined, DownOutlined, SearchOutlined, UpOutlined } from '@ant-design/icons';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { AxiosError } from 'axios';
 import { NodesService } from '@/services/NodesService';
-import { isValidIpCidr } from '@/utils/NetworkUtils';
 import { CreateEgressNodeDto } from '@/services/dtos/CreateEgressNodeDto';
-import { INTERNET_RANGE_IPV4, INTERNET_RANGE_IPV6 } from '@/constants/AppConstants';
+import './AddEgressModal.styles.scss';
 
 interface AddEgressModalProps {
   isOpen: boolean;
@@ -54,7 +52,6 @@ export default function AddEgressModal({
   networkId,
   createEgressModalSelectHostRef,
   createEgressModalEnableNATRef,
-  createEgressModalSelectExternalRangesRef,
 }: AddEgressModalProps) {
   const [form] = Form.useForm<AddEgressFormFields>();
   const [notify, notifyCtx] = notification.useNotification();
@@ -121,6 +118,10 @@ export default function AddEgressModal({
       },
     ];
   }, [getNodeConnectivity]);
+
+  const isNodeSelectable = (node: Node) => {
+    return !node.isegressgateway;
+  };
 
   const resetModal = () => {
     form.resetFields();
@@ -211,15 +212,22 @@ export default function AddEgressModal({
                               <Table
                                 size="small"
                                 columns={egressTableCols}
-                                dataSource={filteredNetworkHosts}
+                                dataSource={filteredNetworkHosts.sort((a, b) =>
+                                  isNodeSelectable(a) === isNodeSelectable(b) ? 0 : isNodeSelectable(a) ? -1 : 1,
+                                )}
                                 rowKey="id"
                                 onRow={(node) => {
                                   return {
                                     onClick: () => {
+                                      if (!isNodeSelectable(node)) return;
                                       form.setFieldValue(idFormField, node.id);
                                       setSelectedEgress(node);
                                     },
+                                    title: !isNodeSelectable(node) ? 'This host is already an egress gateway' : '',
                                   };
+                                }}
+                                rowClassName={(node) => {
+                                  return isNodeSelectable(node) ? '' : 'unavailable-row';
                                 }}
                               />
                             </Col>
