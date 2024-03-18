@@ -12,6 +12,7 @@ export class ApiRoutes {
   static ENROLLMENT_KEYS = '/v1/enrollment-keys';
   static USERS_ADMIN = '/users/adm';
   static USERS = '/users';
+  static PENDING_USERS = '/users_pending';
   static USER_GROUPS = '/usergroups';
   static METRICS = '/metrics';
   static METRICS_EXTERNAL_CLIENT = '/metrics-ext';
