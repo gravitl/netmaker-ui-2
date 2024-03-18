@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  CloudSyncOutlined,
   DatabaseOutlined,
   GlobalOutlined,
   KeyOutlined,
@@ -7,7 +8,6 @@ import {
   LoadingOutlined,
   LogoutOutlined,
   RightOutlined,
-  // MobileOutlined,
   UserOutlined,
 } from '@ant-design/icons';
 import { Alert, Col, MenuProps, Row, Select, Switch, Typography } from 'antd';
@@ -18,9 +18,11 @@ import { BrowserStore, useStore } from '../store/store';
 import { AppRoutes } from '@/routes';
 import { useTranslation } from 'react-i18next';
 import { isSaasBuild } from '@/services/BaseService';
-import { ServerConfigService } from '@/services/ServerConfigService';
+import { ServerConfigService, getUiVersion } from '@/services/ServerConfigService';
 import { AppErrorBoundary } from '@/components/AppErrorBoundary';
 import { isManagedHost, useBranding } from '@/utils/Utils';
+import VersionUpgradeModal from '@/components/modals/version-upgrade-modal/VersionUpgradeModal';
+import { lt } from 'semver';
 
 const { Content, Sider } = Layout;
 
@@ -40,11 +42,15 @@ export default function MainLayout() {
   const storeLogout = useStore((state) => state.logout);
   const location = useLocation();
   const branding = useBranding();
-  const [isSmallScreen, setIsSmallScreen] = useState(false);
+  const isServerEE = store.serverConfig?.IsEE === 'yes';
 
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [openSidebarMenus, setOpenSidebarMenus] = useState(['networks']);
   const [trialEndDate, setTrialEndDate] = useState<Date | null>(null);
+  const [isVersionUpgradeModalOpen, setIsVersionUpgradeModalOpen] = useState(false);
+  const [latestNetmakerVersion, setLatestNetmakerVersion] = useState('');
+  const [canUpgrade, setCanUpgrade] = useState(false);
 
   const recentNetworks = useMemo(
     // TODO: implement most recent ranking
@@ -106,11 +112,6 @@ export default function MainLayout() {
           icon: LaptopOutlined,
           label: 'Hosts',
         },
-        // {
-        //   key: 'clients',
-        //   icon: MobileOutlined,
-        //   label: 'Clients',
-        // },
         {
           key: 'enrollment-keys',
           icon: KeyOutlined,
@@ -134,13 +135,7 @@ export default function MainLayout() {
                   label: 'Switch Tenant',
                 },
               ]
-            : [
-                // {
-                //   key: 'users',
-                //   icon: UserOutlined,
-                //   label: 'Users',
-                // },
-              ],
+            : [],
         )
         .concat(
           !isSaasBuild
@@ -168,7 +163,7 @@ export default function MainLayout() {
             type: (child as any)?.type,
           })),
         })),
-    [recentNetworks, store.user?.isadmin, store.user?.issuperadmin],
+    [recentNetworks],
   );
 
   const sideNavBottomItems: MenuProps['items'] = useMemo(
@@ -303,6 +298,44 @@ export default function MainLayout() {
     }
   }, [location.pathname]);
 
+  const checkLatestVersion = () => {
+    if (isSaasBuild) return;
+    try {
+      const corsProxyUrl = 'https://cors-proxy.netmaker.io';
+      const resourceUrl = 'https://github.com/gravitl/netmaker/releases';
+
+      fetch(`${corsProxyUrl}/${resourceUrl}`)
+        .then((res) => res.text())
+        .then((data) => {
+          const githubReleasesPage = new DOMParser().parseFromString(data, 'text/html');
+          const latestVersion = githubReleasesPage.querySelectorAll('h2.sr-only')?.[0].textContent ?? '0.5';
+          const uiVersion = getUiVersion();
+          if (latestVersion && lt(uiVersion, latestVersion)) {
+            if (isServerEE) setLatestNetmakerVersion(`${latestVersion}-ee`);
+            else setLatestNetmakerVersion(latestVersion);
+            setCanUpgrade(true);
+
+            // animate version info to draw user attention
+            const updateBtn = window.document.querySelector('.version-box .update-btn');
+            updateBtn?.classList.add('animate__animated', 'animate__flash', 'animate__infinite');
+            if (updateBtn) (updateBtn as HTMLElement).style.transform = 'scale(1.4)';
+          }
+        });
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const openVersionUpgradeModal = () => {
+    if (isSaasBuild) return;
+    if (!canUpgrade) return;
+    setIsVersionUpgradeModalOpen(true);
+
+    // remove animations once user has go the update message
+    const updateBtn = window.document.querySelector('.version-box .update-btn');
+    updateBtn?.classList.remove('animate__animated', 'animate__flash', 'animate__infinite');
+  };
+
   const contentMarginLeft = useMemo(() => {
     if (isSidebarCollapsed) {
       if (isSmallScreen) {
@@ -351,6 +384,7 @@ export default function MainLayout() {
 
   useEffect(() => {
     storeFetchNetworks();
+    checkLatestVersion();
   }, [storeFetchNetworks]);
 
   return (
@@ -443,15 +477,25 @@ export default function MainLayout() {
 
           {/* server version */}
           {!isSidebarCollapsed && (
-            <div style={{ marginTop: '1rem', padding: '0rem 1.5rem', fontSize: '.8rem' }}>
-              <Typography.Text style={{ fontSize: 'inherit' }}>
-                UI: {ServerConfigService.getUiVersion()}{' '}
-                {isSaasBuild && !BrowserStore.hasNmuiVersionSynced() && <LoadingOutlined />}
-              </Typography.Text>
-              <br />
-              <Typography.Text style={{ fontSize: 'inherit' }} type="secondary">
-                Server: {store.serverConfig?.Version ?? 'n/a'}
-              </Typography.Text>
+            <div className="version-box" style={{ marginTop: '1rem', padding: '0rem 1.5rem', fontSize: '.8rem' }}>
+              <div
+                style={{
+                  fontSize: '.8rem',
+                  cursor: canUpgrade ? 'pointer' : '',
+                }}
+                title={canUpgrade ? 'A new version is available. Click to show version upgrade steps' : ''}
+                onClick={() => openVersionUpgradeModal()}
+              >
+                <Typography.Text style={{ fontSize: 'inherit' }}>
+                  UI: {ServerConfigService.getUiVersion()}{' '}
+                  {isSaasBuild && !BrowserStore.hasNmuiVersionSynced() && <LoadingOutlined />}
+                  {canUpgrade && <CloudSyncOutlined style={{ marginLeft: '.5rem' }} className="update-btn" />}
+                </Typography.Text>
+                <br />
+                <Typography.Text style={{ fontSize: 'inherit' }} type="secondary">
+                  Server: {store.serverConfig?.Version ?? 'n/a'}
+                </Typography.Text>
+              </div>
             </div>
           )}
 
@@ -520,6 +564,15 @@ export default function MainLayout() {
           </Content>
         </Layout>
       </Layout>
+
+      {/* misc */}
+      {canUpgrade && (
+        <VersionUpgradeModal
+          isOpen={isVersionUpgradeModalOpen}
+          latestNetmakerVersion={latestNetmakerVersion}
+          onCancel={() => setIsVersionUpgradeModalOpen(false)}
+        />
+      )}
     </AppErrorBoundary>
   );
 }
