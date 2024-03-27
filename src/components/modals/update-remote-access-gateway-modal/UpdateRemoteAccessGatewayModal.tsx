@@ -44,17 +44,13 @@ export default function UpdateRemoteAccessGatewayModal({
     try {
       const formData = await form.validateFields();
       setIsSubmitting(true);
-      let newNode = (
-        await NodesService.updateNode(ingress.id, networkId, { ...ingress, ingressdns: formData.ingressdns })
+      const newNode = (
+        await NodesService.updateNode(ingress.id, networkId, {
+          ...ingress,
+          ingressdns: formData.ingressdns,
+          isinternetgateway: form.getFieldValue('isinternetgateway'),
+        })
       ).data;
-      if (form.getFieldValue('isinternetgateway') !== ingress.isinternetgateway) {
-        if (form.getFieldValue('isinternetgateway')) {
-          newNode = (await NodesService.createInternetGateway(ingress.id, networkId, { inet_node_client_ids: [] }))
-            .data;
-        } else {
-          newNode = (await NodesService.deleteInternetGateway(ingress.id, networkId)).data;
-        }
-      }
       storeUpdateNode(ingress.id, newNode);
       notify.success({ message: `Remote access gateway updated` });
       onUpdateIngress();
