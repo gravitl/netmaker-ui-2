@@ -102,7 +102,9 @@ export default function HostsPage(props: PageProps) {
   const filteredHosts = useMemo(
     () =>
       hosts.filter((host) => {
-        return host.name.toLowerCase().includes(searchText.toLowerCase());
+        return `${host.name ?? ''}${host.endpointip ?? ''}${host.publickey ?? ''}${host.id ?? ''}`
+          .toLowerCase()
+          .includes(searchText.toLowerCase());
       }),
     [hosts, searchText],
   );

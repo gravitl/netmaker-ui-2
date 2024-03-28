@@ -274,7 +274,11 @@ export default function NetworkDetailsPage(props: PageProps) {
       store.nodes
         .map((node) => getExtendedNode(node, store.hostsCommonDetails))
         .filter((node) => node.network === networkId)
-        .filter((node) => `${node?.name ?? ''}${node.address}`.toLowerCase().includes(searchHost.toLowerCase())),
+        .filter((node) =>
+          `${node?.name ?? ''}${node.address ?? ''}${node.address6 ?? ''}${node.id ?? ''}${node.endpointip ?? ''}${node.publickey ?? ''}`
+            .toLowerCase()
+            .includes(searchHost.toLowerCase()),
+        ),
     [store.nodes, store.hostsCommonDetails, networkId, searchHost],
   );
 
