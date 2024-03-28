@@ -3693,13 +3693,6 @@ export default function NetworkDetailsPage(props: PageProps) {
         metricsTabUptimeTableRef={metricsTabUptimeTableRef}
         metricsTabClientsTableRef={metricsTabClientsTableRef}
       />
-      {/* <Tour
-        open={isTourOpen}
-        steps={networkDetailsTourStep}
-        onClose={() => setIsTourOpen(false)}
-        onChange={handleTourOnChange}
-        current={tourStep}
-      /> */}
 
       {/* misc */}
       {notifyCtx}
