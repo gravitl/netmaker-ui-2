@@ -55,7 +55,7 @@
     "@testing-library/react": "^14.2.2",
     "@types/lodash": "^4.17.0",
     "@types/node": "^20.12.5",
-    "@types/react": "^18.2.45",
+    "@types/react": "^18.2.74",
     "@types/react-dom": "^18.2.24",
     "@types/react-window": "^1.8.8",
     "@typescript-eslint/eslint-plugin": "^5.61.0",
