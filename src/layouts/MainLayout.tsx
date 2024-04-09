@@ -132,7 +132,7 @@ export default function MainLayout() {
                 {
                   key: 'amuitenants',
                   icon: RightOutlined,
-                  label: 'Switch Tenant',
+                  label: 'Tenants',
                 },
               ]
             : [],
