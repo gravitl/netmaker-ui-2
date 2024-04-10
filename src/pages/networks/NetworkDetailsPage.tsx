@@ -99,6 +99,7 @@ import TourComponent, { JumpToTourStepObj } from '@/pages/networks/TourComponent
 import DownloadRemotesAccessClientModal from '@/components/modals/remote-access-client-modal/DownloadRemoteAccessClientModal';
 import AddRemoteAccessGatewayModal from '@/components/modals/add-remote-access-gateway-modal/AddRemoteAccessGatewayModal';
 import { InternetGatewaysPage } from './internet-gateways/InternetGatewaysPage';
+import { AvailableOses } from '@/models/AvailableOses';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -3816,7 +3817,12 @@ export default function NetworkDetailsPage(props: PageProps) {
       />
       <NewHostModal
         isOpen={isAddNewHostModalOpen}
-        onFinish={() => setIsAddNewHostModalOpen(false)}
+        onFinish={(selectedOs?: AvailableOses) => {
+          setIsAddNewHostModalOpen(false);
+          if (selectedOs === 'mobile') {
+            setActiveTabKey('clients');
+          }
+        }}
         onCancel={() => setIsAddNewHostModalOpen(false)}
         networkId={networkId}
         connectHostModalEnrollmentKeysTabRef={connectHostModalEnrollmentKeysTabRef}
