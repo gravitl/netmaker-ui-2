@@ -32,7 +32,7 @@ const createAppSlice: StateCreator<IAppSlice, [], [], IAppSlice> = (set) => ({
     set(() => ({
       serverStatus: {
         status,
-        isHealthy: status.broker_connected && status.db_connected && status.healthyNetwork && !status.license_error,
+        isHealthy: status.db_connected && status.healthyNetwork && !status.license_error, // not checking broker status here because of mq fallback mechanism between netmaker and netclient
       },
     })),
   fetchServerConfig: async () => {

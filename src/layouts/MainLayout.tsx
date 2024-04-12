@@ -529,6 +529,7 @@ export default function MainLayout() {
                 style={{ marginBottom: '1rem' }}
               />
             )}
+
             {/* license status indicator */}
             {store.serverStatus?.status?.is_on_trial_license && (
               <Row>
@@ -538,6 +539,20 @@ export default function MainLayout() {
                     showIcon
                     style={{ border: 'none', height: '3rem', fontSize: '1rem', color: '#D4B106' }}
                     message={getTrialDaysRemainingText}
+                  />
+                </Col>
+              </Row>
+            )}
+
+            {/* broker issues indicator */}
+            {!store.serverStatus.status?.broker_connected && (
+              <Row>
+                <Col xs={24}>
+                  <Alert
+                    type="warning"
+                    showIcon
+                    style={{ border: 'none', height: '4rem', fontSize: '1rem', color: '#D4B106' }}
+                    message="Your server is not connected to the broker, and the fallback mechanism will kick in. This may impact network performance. Contact your administrator."
                   />
                 </Col>
               </Row>
