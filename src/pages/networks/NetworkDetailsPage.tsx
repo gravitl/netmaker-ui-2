@@ -108,7 +108,7 @@ import AddRemoteAccessGatewayModal from '@/components/modals/add-remote-access-g
 import { InternetGatewaysPage } from './internet-gateways/InternetGatewaysPage';
 import { AvailableOses } from '@/models/AvailableOses';
 import { NetworkUsage, networkUsecaseMap } from '@/constants/NetworkUseCases';
-import { filter, get } from 'lodash';
+import { filter, get, some } from 'lodash';
 import { UsersService } from '@/services/UsersService';
 import Meta from 'antd/es/card/Meta';
 import { title } from 'process';
@@ -239,6 +239,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     graph: 7,
     metrics: 8,
     vpnConfigs: 9,
+    // addRAGateway: 10,
   });
 
   const overviewTabContainerRef = useRef(null);
@@ -1815,11 +1816,18 @@ export default function NetworkDetailsPage(props: PageProps) {
       switch (step) {
         case 'hosts':
           setIsTourOpen(true);
+          setActiveTabKey('hosts');
           setTourStep(jumpTourStepObj.hosts);
           break;
         case 'remote-access':
           setIsTourOpen(true);
-          setTourStep(jumpTourStepObj.remoteAccess);
+          setActiveTabKey('clients');
+          if (filteredClientGateways.length > 0) {
+            setTourStep(jumpTourStepObj.remoteAccess);
+          } else {
+            setIsAddClientGatewayModalOpen(true);
+            setTourStep(jumpTourStepObj.remoteAccess);
+          }
           break;
         case 'egress':
           setIsTourOpen(true);
@@ -1858,6 +1866,13 @@ export default function NetworkDetailsPage(props: PageProps) {
     if (!networkId) return '';
     return store.networksUsecase[networkId];
   }, [networkId, store.networksUsecase]);
+
+  const onUpdateUsecase = useCallback(
+    async (usecase: string) => {
+      store.updateNetworkUsecase(networkId!, usecase as NetworkUsecaseString);
+    },
+    [networkId, store.updateNetworkUsecase],
+  );
 
   // ui components
   const getOverviewContent = useCallback(() => {
@@ -2027,6 +2042,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                         options={Object.keys(networkUsecaseMapText).map((key) => {
                           return { label: networkUsecaseMapText[key as NetworkUsecaseString], value: key };
                         })}
+                        onChange={onUpdateUsecase}
                       ></Select>
                     </Form.Item>
                   </Col>
@@ -2037,7 +2053,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         </Card>
       </div>
     );
-  }, [network, form, isEditingNetwork, themeToken.colorBorder, isIpv4Watch, isIpv6Watch]);
+  }, [network, form, isEditingNetwork, themeToken.colorBorder, isIpv4Watch, isIpv6Watch, usecase]);
 
   const getHostsContent = useCallback(() => {
     return (
@@ -3663,9 +3679,9 @@ export default function NetworkDetailsPage(props: PageProps) {
             title: 'Waiting',
             description: (
               <>
-                {`Your usecase requires at least ${getUsageValue(item, minimumLimits)} ${getItemText(item)}  `}
+                {`Your usecase requires at least ${getUsageValue(item, minimumLimits)} ${getItemText(item)}.  `}
                 <Button type="default" size="small" onClick={() => jumpToUsecaseTourStep(item)}>
-                  Jump to Tour
+                  Take Tour
                 </Button>
               </>
             ),
@@ -3673,7 +3689,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         } else {
           return {
             title: 'Completed',
-            description: `Your usecase requires at least ${getUsageValue(item, minimumLimits)} ${getItemText(item)}`,
+            description: `Your usecase requires at least ${getUsageValue(item, minimumLimits)} ${getItemText(item)}.`,
           };
         }
       });
@@ -3694,6 +3710,15 @@ export default function NetworkDetailsPage(props: PageProps) {
       });
     };
 
+    const getStepsRemaining = () => {
+      const stepsNumber = Object.keys(minimumLimits).length - getActualUsage();
+
+      if (stepsNumber === 1) {
+        return '1 step';
+      }
+      return `${stepsNumber} steps`;
+    };
+
     const toggleFloatingButton = () => {
       setShowFloatingButton(!showFloatingButton);
     };
@@ -3704,7 +3729,7 @@ export default function NetworkDetailsPage(props: PageProps) {
           <FloatButton
             icon={<QuestionCircleOutlined />}
             type="primary"
-            style={{ left: 210 }}
+            style={{ left: store.isSidebarCollapsed ? 90 : 210 }}
             badge={{ dot: true }}
             onClick={toggleFloatingButton}
           />
@@ -3714,6 +3739,7 @@ export default function NetworkDetailsPage(props: PageProps) {
           <Card
             style={{
               width: '400px',
+              boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
             }}
             className="progress-card"
             title={
@@ -3740,8 +3766,8 @@ export default function NetworkDetailsPage(props: PageProps) {
                 strokeColor={themeToken.colorPrimary}
               />
               <Typography.Text style={{ marginTop: '1rem', marginBottom: '1rem' }}>
-                {`Your network is ${((getActualUsage() / Object.keys(minimumLimits).length) * 100).toFixed(0)}% complete`}{' '}
-                based on the usecase {networkUsecaseMapText[usecase]} requirements
+                You are {getStepsRemaining()} away from configuring your network for your use case,{' '}
+                {`"${networkUsecaseMapText[usecase]}"`}
               </Typography.Text>
 
               <Steps direction="vertical" size="small" current={getUsageStep()} items={getSteps()} />
@@ -3754,6 +3780,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     networkId,
     usecase,
     store.networksUsecase,
+    store.isSidebarCollapsed,
     networkNodes.length,
     clientGateways.length,
     filteredClients.length,

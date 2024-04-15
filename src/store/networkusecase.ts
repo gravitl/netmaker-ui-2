@@ -1,7 +1,7 @@
 import { StateCreator } from 'zustand';
 import { Network } from '../models/Network';
 
-export type NetworkUsecaseString = 'remote_access_multiple_users' | 'egress_to_cloud_vpc' | 'egress_to_office_lan_ips';
+export type NetworkUsecaseString = 'remote_access_multiple_users' | 'egress_to_cloud_vpc';
 
 interface NetworksUsecase {
   [key: Network['netid']]: NetworkUsecaseString;

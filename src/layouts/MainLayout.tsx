@@ -393,7 +393,10 @@ export default function MainLayout() {
         <Sider
           collapsible
           collapsed={isSidebarCollapsed}
-          onCollapse={(value) => setIsSidebarCollapsed(value)}
+          onCollapse={(value) => {
+            setIsSidebarCollapsed(value);
+            store.setIsSidebarCollapsed(value);
+          }}
           collapsedWidth={isSmallScreen ? 0 : SIDE_NAV_COLLAPSED_WIDTH}
           width={SIDE_NAV_EXPANDED_WIDTH}
           theme="light"

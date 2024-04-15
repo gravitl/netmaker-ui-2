@@ -16,6 +16,7 @@ export interface JumpToTourStepObj {
   acls: number;
   graph: number;
   metrics: number;
+  // addRAGateway: number;
 }
 
 interface TourUtilsProps {

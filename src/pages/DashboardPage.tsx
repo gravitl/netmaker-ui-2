@@ -33,6 +33,7 @@ import { getAmuiUrl, getLicenseDashboardUrl, resolveAppRoute } from '@/utils/Rou
 import NewHostModal from '@/components/modals/new-host-modal/NewHostModal';
 import { isSaasBuild } from '@/services/BaseService';
 import { useBranding } from '@/utils/Utils';
+import QuickSetupModal from '@/components/modals/quick-setup-modal/QuickSetupModal';
 
 export type TourType = 'relays' | 'egress' | 'remoteaccess' | 'networks' | 'hosts';
 
@@ -46,6 +47,8 @@ export default function DashboardPage(props: PageProps) {
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [isNewHostModalOpen, setIsNewHostModalOpen] = useState(false);
   const [showUpgradeAlert, setShowUpgradeAlert] = useState(false);
+  const [isQuickSetupModalOpen, setIsQuickSetupModalOpen] = useState(false);
+  const [notify, notifyCtx] = notification.useNotification();
 
   const jumpToTourPage = (tourType: TourType) => {
     if (store.networks.length === 0) {
@@ -172,11 +175,27 @@ export default function DashboardPage(props: PageProps) {
         </Layout.Header>
       </Row>
       <Row className="dashboard-page-row-2">
-        <Col>
-          <Space direction="vertical" size="middle">
+        <Col xs={24}>
+          <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+            <Card>
+              <h3>Start using {branding.productName}</h3>
+              <p>
+                {branding.productName} automates a secure superhighway between devices, clouds, virtual machines, and
+                servers using WireGuard®. It blows past any NAT’s, firewalls, or subnets that stand between them to
+                create a flat, simple network. The result is a secure overlay network that spans all your devices,
+                wherever they are. Of course, {branding.productName} does a lot more than that. With ACL’s, Ingress,
+                Egress, and Relays, you have complete control of your network.
+              </p>
+              <div>
+                <Button type="link" onClick={() => setIsQuickSetupModalOpen(true)}>
+                  <ArrowRightOutlined />
+                  Take the tutorial
+                </Button>
+              </div>
+            </Card>
             <div
               style={{
-                width: '1111px',
+                width: '100%',
                 height: '259px',
               }}
             >
@@ -331,6 +350,13 @@ export default function DashboardPage(props: PageProps) {
         onFinish={() => navigate(resolveAppRoute(AppRoutes.HOSTS_ROUTE))}
         onCancel={() => setIsNewHostModalOpen(false)}
       />
+      <QuickSetupModal
+        isModalOpen={isQuickSetupModalOpen}
+        notify={notify}
+        handleCancel={() => setIsQuickSetupModalOpen(false)}
+        handleUpgrade={() => true}
+      />
+      {notifyCtx}
     </Layout.Content>
   );
 }
