@@ -10,12 +10,14 @@ import {
   Form,
   Input,
   Modal,
+  QRCode,
   Row,
   Select,
   Steps,
   Table,
   Typography,
   notification,
+  theme,
 } from 'antd';
 import { MouseEvent, Ref, useCallback, useEffect, useMemo, useState } from 'react';
 import { useStore } from '@/store/store';
@@ -32,6 +34,7 @@ import { getExtendedNode } from '@/utils/NodeUtils';
 import { ExtendedNode } from '@/models/Node';
 import { NULL_NODE, NULL_NODE_ID } from '@/constants/Types';
 import { useBranding } from '@/utils/Utils';
+import { useTheme } from 'antd-style';
 
 type PageType = 'network-details' | 'host';
 interface NewHostModal {
@@ -59,6 +62,10 @@ const steps = [
   },
 ];
 
+const appleStoreLink = 'https://apps.apple.com/us/app/netmaker-rac/id6479694220?itsct=apps_box_badge&amp;itscg=30200';
+const playStoreLink =
+  'https://play.google.com/store/apps/details?id=com.net.netmaker&pli=1&utm_source=nmui&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1';
+
 export default function NewHostModal({
   isOpen,
   onCancel,
@@ -74,6 +81,7 @@ export default function NewHostModal({
   const store = useStore();
   const [notify, notifyCtx] = notification.useNotification();
   const branding = useBranding();
+  const antdTheme = useTheme();
 
   const theme = store.currentTheme;
   const [currentStep, setCurrentStep] = useState(0);
@@ -585,24 +593,32 @@ export default function NewHostModal({
                           Easily connect to your {branding.productName} network with our mobile application.
                         </Typography.Paragraph>
                       </Col>
-                      <Col xs={24} style={{ textAlign: 'start' }}>
-                        <a
-                          href="https://play.google.com/store/apps/details?id=com.net.netmaker&pli=1&utm_source=nmui&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1"
-                          target="_blank"
-                          rel="noreferrer"
-                        >
+                      <Col xs={12} style={{ textAlign: 'start' }}>
+                        <QRCode value={playStoreLink} />
+                        <Typography.Paragraph style={{ marginTop: '1rem' }}>
+                          or download from store
+                        </Typography.Paragraph>
+                        <a href={playStoreLink} target="_blank" rel="noreferrer">
                           <img
                             alt="Get Reomte Access Client on Google Play"
                             src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"
                             style={{ width: '13rem', height: '5rem', marginRight: '2rem' }}
                           />
                         </a>
-
-                        <a
-                          href="https://apps.apple.com/us/app/netmaker-rac/id6479694220?itsct=apps_box_badge&amp;itscg=30200"
-                          target="_blank"
-                          rel="noreferrer"
-                        >
+                      </Col>
+                      <Col
+                        xs={12}
+                        style={{
+                          textAlign: 'start',
+                          borderLeft: `1px solid ${antdTheme.colorBorder}`,
+                          paddingLeft: '1rem',
+                        }}
+                      >
+                        <QRCode value={appleStoreLink} />
+                        <Typography.Paragraph style={{ marginTop: '1rem' }}>
+                          or download from store
+                        </Typography.Paragraph>
+                        <a href={appleStoreLink} target="_blank" rel="noreferrer">
                           <img
                             src="https://tools.applemediaservices.com/api/badges/download-on-the-app-store/white/en-us?size=250x83&amp;releaseDate=1711670400"
                             alt="Download Remote Access Client on the App Store"
