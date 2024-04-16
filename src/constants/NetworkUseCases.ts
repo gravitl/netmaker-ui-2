@@ -94,8 +94,9 @@ export const UsecaseQuestionsAll: UsecaseQuestions[] = [
     answers: [], // networks
     type: 'select',
     descriptionTitle: 'What are networks in Netmaker?',
-    description:
-      'Networks are a collection of nodes that can communicate with each other. You can create a network for your office, home, or cloud VPC.',
+    description: `A network is how your hosts and clients communicate. Each machine gets a private IP address within the
+                  defined subnet and communicates securely with all the other devices in the network. The network is
+                  your base layer.`,
   },
   {
     key: 'hosts',
@@ -112,8 +113,13 @@ export const UsecaseQuestionsAll: UsecaseQuestions[] = [
     answers: [], // hosts
     type: 'select',
     descriptionTitle: 'What are Remote Access Gateways?',
-    description:
-      'Remote Access Gateways are hosts that allow you to access your network from anywhere. You can add a Remote Access Gateway by specifying its IP address or hostname.',
+    description: `
+        Remote Access Gateways enable secure access to your network via Clients. The Gateway forwards traffic
+        from the clients into the network, and from the network back to the clients. Clients are simple
+        WireGuard config files, supported on most devices. To use Clients, you must configure a Remote Access
+        Gateway, which is typically deployed in a public cloud environment, e.g. on a server with a public IP,
+        so that it is easily reachable from the Clients.
+      `,
   },
   {
     key: 'users',
@@ -126,12 +132,15 @@ export const UsecaseQuestionsAll: UsecaseQuestions[] = [
   },
   {
     key: 'egress',
-    question: 'What is the egress point for the network?',
+    question: 'What host will you like to use for the egress gateway?',
     answers: [],
     type: 'select',
-    descriptionTitle: 'What is an Egress in Netmaker?',
-    description:
-      'Egress is the point where traffic leaves the network. You can set up an egress point to allow traffic to leave the network.',
+    descriptionTitle: 'What is an Egress gateway in Netmaker?',
+    description: `
+      Enable devices in your network to communicate with other devices outside the network via egress
+                gateways. An office network, home network, data center, or cloud region all become easily accessible via
+                the Egress Gateway.
+    `,
   },
   {
     key: 'ranges',

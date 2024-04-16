@@ -14,7 +14,9 @@ import {
   Input,
   Form,
 } from 'antd';
-import Ellipse from '../../../assets/icons/Ellipse5.png';
+import EgressImg from '../../../assets/egress.webp';
+import RagImg from '../../../assets/rag.webp';
+import NetImg from '../../../assets/network.webp';
 import { useStore } from '@/store/store';
 import { useMemo, useState } from 'react';
 import {
@@ -35,18 +37,13 @@ import { NotificationInstance } from 'antd/es/notification/interface';
 import AddEgressModal from '../add-egress-modal/AddEgressModal';
 import { isValidIpCidr } from '@/utils/NetworkUtils';
 import { INTERNET_RANGE_IPV4, INTERNET_RANGE_IPV6 } from '@/constants/AppConstants';
+import { UsecaseQuestionAndAnswer } from '@/store/networkusecase';
 
 interface ModalProps {
   isModalOpen: boolean;
   handleCancel: () => void;
   notify: NotificationInstance;
   handleUpgrade: () => void;
-}
-
-interface UsecaseQuestionAndAnswer {
-  index: number;
-  questionKey: string;
-  answer: string;
 }
 
 interface RangesFormFields {
@@ -213,6 +210,7 @@ export default function QuickSetupModal(props: ModalProps) {
 
     // if current question index is the last question
     if (currentQuestionIndex === userQuestions.length - 1) {
+      store.updateNetworkUsecaseQuestionAndAnswer(networkId, userQuestionsAsked);
       props.notify.success({ message: 'Network setup complete' });
       props.handleCancel();
       return;
@@ -303,6 +301,21 @@ export default function QuickSetupModal(props: ModalProps) {
     return [];
   };
 
+  const getCurrentQuestionImage = useMemo(() => {
+    let img = null;
+    if (currentQuestion.key === 'egress') {
+      img = EgressImg;
+    } else if (currentQuestion.key === 'remote_access_gateways') {
+      img = RagImg;
+    } else if (currentQuestion.key === 'networks') {
+      img = NetImg;
+    } else {
+      return <></>;
+    }
+
+    return <Image src={img} alt="egress" width={400} height={400} preview={false} style={{ borderRadius: '8px' }} />;
+  }, [currentQuestion]);
+
   return (
     <>
       <Modal
@@ -315,7 +328,7 @@ export default function QuickSetupModal(props: ModalProps) {
             currentTheme === 'dark'
               ? 'linear-gradient(to right, #1f1f1f 0%, #1f1f1f 50%, #141414 50%, #141414 100%)'
               : 'linear-gradient(to right, #FFFFFF 0%, #FFFFFF 50%, #F5F5F5 50%, #F5F5F5 100%)',
-          height: '500px',
+          height: '740px',
           padding: '0px',
         }}
         style={{
@@ -360,6 +373,8 @@ export default function QuickSetupModal(props: ModalProps) {
                 >
                   {currentQuestion.description}
                 </Typography.Text>
+
+                {getCurrentQuestionImage}
               </div>
             </Space>
           </div>

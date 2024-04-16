@@ -178,13 +178,11 @@ export default function DashboardPage(props: PageProps) {
         <Col xs={24}>
           <Space direction="vertical" size="middle" style={{ width: '100%' }}>
             <Card>
-              <h3>Start using {branding.productName}</h3>
+              <h3>Introducing Quick Setup</h3>
               <p>
-                {branding.productName} automates a secure superhighway between devices, clouds, virtual machines, and
-                servers using WireGuard®. It blows past any NAT’s, firewalls, or subnets that stand between them to
-                create a flat, simple network. The result is a secure overlay network that spans all your devices,
-                wherever they are. Of course, {branding.productName} does a lot more than that. With ACL’s, Ingress,
-                Egress, and Relays, you have complete control of your network.
+                Unveiling guided tours! This innovative functionality streamlines the setup process for your{' '}
+                {branding.productName} network. Now you can effortlessly configure it for a multitude of other use
+                cases.
               </p>
               <div>
                 <Button type="link" onClick={() => setIsQuickSetupModalOpen(true)}>
@@ -199,7 +197,7 @@ export default function DashboardPage(props: PageProps) {
                 height: '259px',
               }}
             >
-              <Carousel adaptiveHeight={false} autoplay>
+              <Carousel adaptiveHeight={false} autoplay autoplaySpeed={10000}>
                 <div>
                   <Card
                     style={{
