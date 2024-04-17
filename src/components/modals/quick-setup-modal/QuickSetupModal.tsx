@@ -13,6 +13,7 @@ import {
   Select,
   Input,
   Form,
+  Alert,
 } from 'antd';
 import EgressImg from '../../../assets/egress.webp';
 import RagImg from '../../../assets/rag.webp';
@@ -26,6 +27,7 @@ import {
   UsecaseQuestionKey,
   PrimaryUsecaseQuestions,
   UsecaseKeyStringToTextMap,
+  UsecaseKeyStringToTextMapForAnswers,
 } from '@/constants/NetworkUseCases';
 import { getExtendedNode } from '@/utils/NodeUtils';
 import { ExtendedNode, Node } from '@/models/Node';
@@ -44,6 +46,7 @@ interface ModalProps {
   handleCancel: () => void;
   notify: NotificationInstance;
   handleUpgrade: () => void;
+  networkId?: string;
 }
 
 interface RangesFormFields {
@@ -70,6 +73,9 @@ const RemoteAccessUsecaseWithEgressQuestions: UsecaseQuestionKey[] = [
   'ranges',
 ];
 
+const RAC_LINK = 'https://docs.netmaker.io/pro/rac.html';
+const WIREGUARD_LINK = 'https://docs.netmaker.io/integrating-non-native-devices.html';
+
 export default function QuickSetupModal(props: ModalProps) {
   const store = useStore();
   const { currentTheme } = store;
@@ -81,7 +87,7 @@ export default function QuickSetupModal(props: ModalProps) {
   const [userQuestions, setUserQuestions] = useState<UsecaseQuestions[]>(PrimaryUsecaseQuestions);
   const [currentQuestion, setCurrentQuestion] = useState<UsecaseQuestions>(PrimaryUsecaseQuestions[0]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
-  const [networkId, setNetworkId] = useState<string>('');
+  const [networkId, setNetworkId] = useState<string>(props.networkId ?? '');
   const [isAddNetworkModalOpen, setIsAddNetworkModalOpen] = useState<boolean>(false);
   const [isAddNewHostModalOpen, setIsAddNewHostModalOpen] = useState<boolean>(false);
   const [isNextLoading, setIsNextLoading] = useState<boolean>(false);
@@ -241,7 +247,7 @@ export default function QuickSetupModal(props: ModalProps) {
   const selectDropdownOptions = useMemo(() => {
     const initialOptions = [
       {
-        label: `Add new ${UsecaseKeyStringToTextMap[currentQuestion.key] ?? currentQuestion.key}`,
+        label: `Add new ${UsecaseKeyStringToTextMapForAnswers[currentQuestion.key] ?? currentQuestion.key}`,
         value: 'add_new',
       },
     ];
@@ -302,6 +308,8 @@ export default function QuickSetupModal(props: ModalProps) {
   };
 
   const getCurrentQuestionImage = useMemo(() => {
+    //return <></> if screen size is less than 768px
+    if (window.innerWidth <= 768) return <></>;
     let img = null;
     if (currentQuestion.key === 'egress') {
       img = EgressImg;
@@ -313,8 +321,79 @@ export default function QuickSetupModal(props: ModalProps) {
       return <></>;
     }
 
-    return <Image src={img} alt="egress" width={400} height={400} preview={false} style={{ borderRadius: '8px' }} />;
+    return <Image src={img} alt="netmaker_resource_img" preview={false} style={{ marginTop: '10px' }} />;
+  }, [currentQuestion, window.innerWidth]);
+
+  const alertIfUsecaseIsSetupAlreadyForNetwork = useMemo(() => {
+    // check if the network has a usecase setup already
+    const check = Object.keys(store.networksUsecaseQuestionAndAnswer).find((networkId) => {
+      return networkId === props.networkId;
+    });
+
+    return (
+      <>
+        {check && (
+          <Alert message="Network usecase setup already exists" type="info" showIcon style={{ marginBottom: '1rem' }} />
+        )}
+      </>
+    );
+  }, [networkId]);
+
+  const getQuickLink = useMemo(() => {
+    return (
+      <>
+        {currentQuestion.key === 'users' && currentQuestion.selectedAnswer === 'our_rac' && (
+          <Alert
+            message={
+              <>
+                Visit{' '}
+                <a href={RAC_LINK} target="_blank" rel="noreferrer">
+                  our docs{' '}
+                </a>{' '}
+                to find out how to use the Remote Access Client
+              </>
+            }
+            type="info"
+            showIcon
+          />
+        )}
+        {currentQuestion.key === 'users' && currentQuestion.selectedAnswer === 'vpn_client' && (
+          <Alert
+            message={
+              <>
+                Visit{' '}
+                <a href={WIREGUARD_LINK} target="_blank" rel="noreferrer">
+                  our docs{' '}
+                </a>{' '}
+                to find out how to use the vpn client with wireguard
+              </>
+            }
+            type="info"
+            showIcon
+          />
+        )}
+      </>
+    );
   }, [currentQuestion]);
+
+  const getBodyStyle = useMemo(() => {
+    if (window.innerWidth <= 768) {
+      return {
+        background: currentTheme === 'dark' ? '#1f1f1f' : '#F5F5F5',
+        padding: '0px',
+        minHeight: '400px',
+      };
+    } else {
+      return {
+        background:
+          currentTheme === 'dark'
+            ? 'linear-gradient(to right, #1f1f1f 0%, #1f1f1f 50%, #141414 50%, #141414 100%)'
+            : 'linear-gradient(to right, #FFFFFF 0%, #FFFFFF 50%, #F5F5F5 50%, #F5F5F5 100%)',
+        padding: '0px',
+        height: '747px',
+      };
+    }
+  }, [window.innerWidth]);
 
   return (
     <>
@@ -323,25 +402,18 @@ export default function QuickSetupModal(props: ModalProps) {
         onCancel={props.handleCancel}
         className="upgrade-modal"
         width={1196}
-        bodyStyle={{
-          background:
-            currentTheme === 'dark'
-              ? 'linear-gradient(to right, #1f1f1f 0%, #1f1f1f 50%, #141414 50%, #141414 100%)'
-              : 'linear-gradient(to right, #FFFFFF 0%, #FFFFFF 50%, #F5F5F5 50%, #F5F5F5 100%)',
-          height: '740px',
-          padding: '0px',
-        }}
-        style={{
-          background:
-            currentTheme === 'dark'
-              ? 'linear-gradient(to right, #1f1f1f 0%, #1f1f1f 50%, #141414 50%, #141414 100%)'
-              : 'linear-gradient(to right, #FFFFFF 0%, #FFFFFF 50%, #F5F5F5 50%, #F5F5F5 100%)',
-          padding: '0px',
-          // height: "740px",
-        }}
+        bodyStyle={getBodyStyle}
+        // style={{
+        //   background:
+        //     currentTheme === 'dark'
+        //       ? 'linear-gradient(to right, #1f1f1f 0%, #1f1f1f 50%, #141414 50%, #141414 100%)'
+        //       : 'linear-gradient(to right, #FFFFFF 0%, #FFFFFF 50%, #F5F5F5 50%, #F5F5F5 100%)',
+        //   padding: '0px',
+        //   // height: "747px",
+        // }}
         footer={null}
       >
-        <div
+        <Row
           style={{
             width: '100%',
             height: '100%',
@@ -350,16 +422,17 @@ export default function QuickSetupModal(props: ModalProps) {
             alignItems: 'center',
           }}
         >
-          <div
+          <Col
+            lg={12}
+            md={24}
             style={{
-              width: '50%',
               height: '100%',
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
             }}
           >
-            <Space direction="vertical" size="large" style={{ width: '362px' }}>
+            <Space direction="vertical" size="large" style={{ width: '400px' }}>
               <div>
                 <Typography.Title level={4}>{currentQuestion.descriptionTitle}</Typography.Title>
 
@@ -373,17 +446,17 @@ export default function QuickSetupModal(props: ModalProps) {
                 >
                   {currentQuestion.description}
                 </Typography.Text>
-
                 {getCurrentQuestionImage}
               </div>
             </Space>
-          </div>
+          </Col>
 
-          <div
+          <Col
+            lg={12}
+            md={24}
             style={{
-              width: '50%',
-              height: '100%',
               display: 'flex',
+              height: '100%',
               justifyContent: 'center',
               alignItems: 'center',
               flexDirection: 'column',
@@ -397,7 +470,8 @@ export default function QuickSetupModal(props: ModalProps) {
                 // marginTop: "auto",
               }}
             >
-              <Space direction="vertical" size="large" style={{ width: '362px' }}>
+              <Space direction="vertical" size="large" style={{ width: '400px' }}>
+                {alertIfUsecaseIsSetupAlreadyForNetwork}
                 <div>
                   <Typography.Title level={4}>{currentQuestion.question}</Typography.Title>
 
@@ -495,6 +569,7 @@ export default function QuickSetupModal(props: ModalProps) {
                   </Form>
                 )}
 
+                {getQuickLink}
                 <div
                   style={{
                     display: 'flex',
@@ -520,8 +595,8 @@ export default function QuickSetupModal(props: ModalProps) {
                 </div>
               </Space>
             </div>
-          </div>
-        </div>
+          </Col>
+        </Row>
       </Modal>
 
       {/* modals */}

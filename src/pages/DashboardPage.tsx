@@ -178,9 +178,9 @@ export default function DashboardPage(props: PageProps) {
         <Col xs={24}>
           <Space direction="vertical" size="middle" style={{ width: '100%' }}>
             <Card>
-              <h3>Introducing Quick Setup</h3>
+              <h3>Introducing Guided Setup</h3>
               <p>
-                Unveiling guided tours! This innovative functionality streamlines the setup process for your{' '}
+                Unveiling guided setup! This innovative functionality streamlines the setup process for your{' '}
                 {branding.productName} network. Now you can effortlessly configure it for a multitude of other use
                 cases.
               </p>

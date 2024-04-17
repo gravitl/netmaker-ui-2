@@ -113,6 +113,7 @@ import { UsersService } from '@/services/UsersService';
 import Meta from 'antd/es/card/Meta';
 import { title } from 'process';
 import { NetworkUsecaseString } from '@/store/networkusecase';
+import QuickSetupModal from '@/components/modals/quick-setup-modal/QuickSetupModal';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -2009,7 +2010,8 @@ export default function NetworkDetailsPage(props: PageProps) {
                 </Row>
               </Col>
             </Row>
-            <Row
+            {/* TODO: Bring back if needed */}
+            {/* <Row
               style={{
                 border: `1px solid ${themeToken.colorBorder}`,
                 borderRadius: '8px',
@@ -2048,7 +2050,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   </Col>
                 </Row>
               </Col>
-            </Row>
+            </Row> */}
           </Form>
         </Card>
       </div>
@@ -3793,6 +3795,38 @@ export default function NetworkDetailsPage(props: PageProps) {
     jumpToTourStep,
   ]);
 
+  const handleQuickSetupModal = useMemo(() => {
+    let showQuickSetupModal = false;
+
+    const toggleFloatingButton = () => {
+      showQuickSetupModal = !showQuickSetupModal;
+      setShowFloatingButton(!showFloatingButton);
+    };
+
+    return (
+      <>
+        {showFloatingButton && (
+          <FloatButton
+            icon={<QuestionCircleOutlined />}
+            type="primary"
+            style={{ left: store.isSidebarCollapsed ? 90 : 210 }}
+            badge={{ dot: true }}
+            onClick={toggleFloatingButton}
+          />
+        )}
+        {!showFloatingButton && (
+          <QuickSetupModal
+            isModalOpen={!showFloatingButton}
+            notify={notify}
+            handleCancel={() => toggleFloatingButton()}
+            handleUpgrade={() => true}
+            networkId={networkId}
+          />
+        )}
+      </>
+    );
+  }, [showFloatingButton]);
+
   const promptConfirmDelete = () => {
     Modal.confirm({
       title: `Do you want to delete network ${network?.netid}?`,
@@ -4250,7 +4284,8 @@ export default function NetworkDetailsPage(props: PageProps) {
           networkId={networkId}
         />
       </Layout.Content>
-      {getNetworkSuggestionsBasedOnUsecase}
+      {/* {getNetworkSuggestionsBasedOnUsecase} */}
+      {handleQuickSetupModal}
     </>
   );
 }
