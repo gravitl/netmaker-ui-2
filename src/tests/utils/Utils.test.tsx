@@ -72,6 +72,7 @@ const testHost1: Host = {
   interfaces: [],
   defaultinterface: '',
   endpointip: '',
+  endpointipv6: '',
   publickey: '',
   macaddress: '',
   nodes: [],
