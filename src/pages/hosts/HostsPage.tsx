@@ -102,7 +102,7 @@ export default function HostsPage(props: PageProps) {
   const filteredHosts = useMemo(
     () =>
       hosts.filter((host) => {
-        return `${host.name ?? ''}${host.endpointip ?? ''}${host.publickey ?? ''}${host.id ?? ''}`
+        return `${host.name ?? ''}${host.endpointip ?? ''}${host.endpointipv6 ?? ''}${host.publickey ?? ''}${host.id ?? ''}`
           .toLowerCase()
           .includes(searchText.toLowerCase());
       }),
@@ -320,11 +320,20 @@ export default function HostsPage(props: PageProps) {
         defaultSortOrder: 'ascend',
       },
       {
-        title: 'Endpoint',
+        title: 'Endpoint (IPv4)',
         dataIndex: 'endpointip',
         render: (endpointip) => (
           <div onClick={(ev) => ev.stopPropagation()}>
             <Typography.Text>{endpointip}</Typography.Text>
+          </div>
+        ),
+      },
+      {
+        title: 'Endpoint (IPv6)',
+        dataIndex: 'endpointipv6',
+        render: (endpointipv6) => (
+          <div onClick={(ev) => ev.stopPropagation()}>
+            <Typography.Text>{endpointipv6}</Typography.Text>
           </div>
         ),
       },
@@ -933,7 +942,7 @@ export default function HostsPage(props: PageProps) {
               </Col>
               <Col xs={24} xl={(24 * 1) / 3} style={{ position: 'relative' }}>
                 <Card className="header-card" style={{ height: '20rem', position: 'absolute', width: '100%' }}>
-                  <Typography.Title level={3}>Add a Key</Typography.Title>
+                  <Typography.Title level={3}>Add a Host</Typography.Title>
                   <Typography.Text>
                     Start creating your network by adding controllable devices as “hosts” on your platform. Servers,
                     VM’s, your laptop, and more are all fair game.

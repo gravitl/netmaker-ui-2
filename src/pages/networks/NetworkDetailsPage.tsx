@@ -2074,11 +2074,19 @@ export default function NetworkDetailsPage(props: PageProps) {
                     }
                   : {},
                 {
-                  title: 'Public Address',
+                  title: 'Public Address (IPv4)',
                   render(_, node) {
                     return getExtendedNode(node, store.hostsCommonDetails)?.endpointip ?? '';
                   },
                 },
+                network?.isipv6
+                  ? {
+                      title: 'Public Address (IPv6)',
+                      render(_, node) {
+                        return getExtendedNode(node, store.hostsCommonDetails)?.endpointipv6 ?? '';
+                      },
+                    }
+                  : {},
                 // {
                 //   title: 'Preferred DNS',
                 //   dataIndex: 'name',

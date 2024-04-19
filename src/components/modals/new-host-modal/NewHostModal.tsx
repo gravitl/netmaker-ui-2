@@ -17,7 +17,6 @@ import {
   Table,
   Typography,
   notification,
-  theme,
 } from 'antd';
 import { MouseEvent, Ref, useCallback, useEffect, useMemo, useState } from 'react';
 import { useStore } from '@/store/store';
@@ -480,11 +479,7 @@ export default function NewHostModal({
                             <>
                               We recommend using the remote access client for Mac. Go to remote access tab and you can
                               follow the instructions for setup
-                              <a
-                                href="https://docs.netmaker.io/netclient.html#remote-access-client"
-                                target="_blank"
-                                rel="noreferrer"
-                              >
+                              <a href="https://docs.netmaker.io/pro/rac.html" target="_blank" rel="noreferrer">
                                 {' '}
                                 here.
                               </a>
@@ -552,14 +547,6 @@ export default function NewHostModal({
                         </Typography.Text>
                         <Divider />
                         <div className="" style={{ marginTop: '1rem', textAlign: 'center' }}>
-                          <Button
-                            type="link"
-                            href={getNetclientDownloadLink('linux', selectedArch, 'gui')[0]}
-                            target="_blank"
-                            rel="noreferrer"
-                          >
-                            Download GUI
-                          </Button>
                           <Button
                             type="link"
                             href="https://docs.netmaker.io/netclient.html#linux"

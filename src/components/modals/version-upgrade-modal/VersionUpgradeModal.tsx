@@ -55,14 +55,18 @@ export default function VersionUpgradeModal({ isOpen, onCancel, latestNetmakerVe
                 <br />
                 <pre className="code-bg">
                   {`SERVER_IMAGE_TAG=${latestNetmakerVersion}
-UI_IMAGE_TAG=${latestNetmakerVersion}`}
+UI_IMAGE_TAG=${latestNetmakerVersion.replace('-ee', '')}`}
                 </pre>
               </li>
               <li>
                 <Typography.Text>
-                  Restart the server{' '}
+                  Restart the server with{' '}
                   <Typography.Text code copyable>
-                    docker-compose down && docker-compose up -d
+                    docker-compose down
+                  </Typography.Text>{' '}
+                  then{' '}
+                  <Typography.Text code copyable>
+                    docker-compose up -d
                   </Typography.Text>
                 </Typography.Text>
               </li>
