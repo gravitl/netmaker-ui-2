@@ -17,6 +17,7 @@ export const NULL_HOST: Host = {
   interfaces: [],
   defaultinterface: '',
   endpointip: '',
+  endpointipv6: '',
   publickey: '',
   macaddress: '',
   nodes: [],

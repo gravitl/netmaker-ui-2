@@ -48,6 +48,7 @@ const testNode: Node = {
 const hostRegistry: Record<Host['id'], HostCommonDetails> = {
   'test-host': {
     endpointip: '1.2.3.4',
+    endpointipv6: 'fd00::2.3.4',
     interfaces: [],
     isstatic: false,
     listenport: 0,
