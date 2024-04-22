@@ -64,7 +64,7 @@ export default function AddNetworkModal({
         (await NetworksService.createNetwork(convertUiNetworkToNetworkPayload(formData as unknown as Network))).data,
       );
       store.addNetwork(network);
-      store.updateNetworkUsecase(network.netid, usecase);
+      // store.updateNetworkUsecase(network.netid, usecase);
       notify.success({ message: `Network ${network.netid} created` });
       onCreateNetwork(network);
       resetModal();
@@ -265,7 +265,7 @@ export default function AddNetworkModal({
             </Col>
           </Row>
 
-          <Row
+          {/* <Row
             style={{
               border: `1px solid ${themeToken.colorBorder}`,
               borderRadius: '8px',
@@ -294,7 +294,7 @@ export default function AddNetworkModal({
                 </Col>
               </Row>
             </Col>
-          </Row>
+          </Row> */}
 
           <Row>
             <Col xs={24} style={{ textAlign: 'right' }}>

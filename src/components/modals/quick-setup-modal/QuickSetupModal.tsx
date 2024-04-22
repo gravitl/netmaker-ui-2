@@ -40,6 +40,7 @@ import AddEgressModal from '../add-egress-modal/AddEgressModal';
 import { isValidIpCidr } from '@/utils/NetworkUtils';
 import { INTERNET_RANGE_IPV4, INTERNET_RANGE_IPV6 } from '@/constants/AppConstants';
 import { UsecaseQuestionAndAnswer } from '@/store/networkusecase';
+import AddHostsToNetworkModal from '../add-hosts-to-network-modal/AddHostsToNetworkModal';
 
 interface ModalProps {
   isModalOpen: boolean;
@@ -90,11 +91,10 @@ export default function QuickSetupModal(props: ModalProps) {
   const [networkId, setNetworkId] = useState<string>(props.networkId ?? '');
   const [isAddNetworkModalOpen, setIsAddNetworkModalOpen] = useState<boolean>(false);
   const [isAddNewHostModalOpen, setIsAddNewHostModalOpen] = useState<boolean>(false);
+  const [isAddHostsToNetworkModalOpen, setIsAddHostsToNetworkModalOpen] = useState<boolean>(false);
   const [isNextLoading, setIsNextLoading] = useState<boolean>(false);
   const [egressNodeId, setEgressNodeId] = useState<string>('');
   const [form] = Form.useForm<RangesFormFields>();
-
-  const refPlaceholder = null;
 
   const networkNodes = useMemo(
     () =>
@@ -146,7 +146,7 @@ export default function QuickSetupModal(props: ModalProps) {
 
   const handleNextQuestion = async () => {
     // if current question has no answer return and notify user
-    if (!currentQuestion.selectedAnswer && currentQuestion.key !== 'ranges') {
+    if (!currentQuestion.selectedAnswer && currentQuestion.key !== 'ranges' && currentQuestion.key !== 'hosts') {
       props.notify.error({ message: 'Please select an answer' });
       return;
     }
@@ -250,6 +250,10 @@ export default function QuickSetupModal(props: ModalProps) {
         label: `Add new ${UsecaseKeyStringToTextMapForAnswers[currentQuestion.key] ?? currentQuestion.key}`,
         value: 'add_new',
       },
+      {
+        label: `Connect existing host`,
+        value: 'add_existing',
+      },
     ];
 
     if (currentQuestion.key === 'networks') {
@@ -288,6 +292,8 @@ export default function QuickSetupModal(props: ModalProps) {
       } else {
         setIsAddNewHostModalOpen(true);
       }
+    } else if (value === 'add_existing') {
+      setIsAddHostsToNetworkModalOpen(true);
     } else {
       handleQuestionAnswer(value);
     }
@@ -326,14 +332,19 @@ export default function QuickSetupModal(props: ModalProps) {
 
   const alertIfUsecaseIsSetupAlreadyForNetwork = useMemo(() => {
     // check if the network has a usecase setup already
-    const check = Object.keys(store.networksUsecaseQuestionAndAnswer).find((networkId) => {
-      return networkId === props.networkId;
+    const check = Object.keys(store.networksUsecaseQuestionAndAnswer).find((netId) => {
+      return netId === props.networkId || netId === networkId;
     });
 
     return (
       <>
         {check && (
-          <Alert message="Network usecase setup already exists" type="info" showIcon style={{ marginBottom: '1rem' }} />
+          <Alert
+            message="We noticed you've used this setup for this network before, ignore this message if you still want to proceed"
+            type="info"
+            showIcon
+            style={{ marginBottom: '1rem' }}
+          />
         )}
       </>
     );
@@ -625,6 +636,16 @@ export default function QuickSetupModal(props: ModalProps) {
         isTourOpen={false}
         tourStep={0}
         page="network-details"
+      />
+
+      <AddHostsToNetworkModal
+        isOpen={isAddHostsToNetworkModalOpen}
+        networkId={networkId}
+        onNetworkUpdated={() => {
+          store.fetchNetworks();
+          setIsAddHostsToNetworkModalOpen(false);
+        }}
+        onCancel={() => setIsAddHostsToNetworkModalOpen(false)}
       />
     </>
   );

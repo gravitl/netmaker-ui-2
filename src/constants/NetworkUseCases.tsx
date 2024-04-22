@@ -100,7 +100,7 @@ export const UsecaseQuestionsAll: UsecaseQuestions[] = [
     descriptionTitle: 'Networks in Netmaker',
     description: `Networks enable your machines to communicate securely. 
       Every machine added to a network gets a private IP address inside of the defined subnet. 
-      This can be alternativels referred to as a "virtual private network", "VPN", or "virtual subnet". 
+      This can be alternatively referred to as a "virtual private network", "VPN", or "virtual subnet". 
       All machines added to Netmaker must be added to a network to enable communication with other devices
     `,
   },
@@ -134,7 +134,7 @@ export const UsecaseQuestionsAll: UsecaseQuestions[] = [
     question: 'Select a host to use as your gateway',
     answers: [], // hosts
     type: 'select',
-    descriptionTitle: 'Remote Access Gateways?',
+    descriptionTitle: 'Remote Access Gateways',
     description: `
       Remote Access Gateways act as a bridge to your virtual network. 
       They enable secure access to network resources from devices like laptops, phones, and routers.
@@ -179,7 +179,7 @@ export const UsecaseQuestionsAll: UsecaseQuestions[] = [
         </Typography.Paragraph>
         <Typography.Paragraph className="guided-tour-text">
           Linux-based hosts added to your network can act as egress gateways to local environments in which they are
-          deployeed. For example, a VM running in your data center can be set as a host in Netmakre, and then configured
+          deployed. For example, a VM running in your data center can be set as a host in Netmaker, and then configured
           as an egress gateway to a data center subnet.
         </Typography.Paragraph>
       </>
@@ -190,7 +190,7 @@ export const UsecaseQuestionsAll: UsecaseQuestions[] = [
     question: 'Add the IP ranges you want to access',
     answers: [],
     type: 'ranges',
-    descriptionTitle: 'Egress Ranges?',
+    descriptionTitle: 'Egress Ranges',
     description: `An egress gateway can be configured to access one or more egress range. An egress range is simply an IP subnet range. 
       Ranges must be accessible from the device, and should not conflict with the VPN subnet range.`,
   },
