@@ -250,11 +250,12 @@ export default function QuickSetupModal(props: ModalProps) {
         label: `Add new ${UsecaseKeyStringToTextMapForAnswers[currentQuestion.key] ?? currentQuestion.key}`,
         value: 'add_new',
       },
-      {
-        label: `Connect existing host`,
-        value: 'add_existing',
-      },
     ];
+
+    const connectExistingHost = {
+      label: `Connect existing host`,
+      value: 'add_existing',
+    };
 
     if (currentQuestion.key === 'networks') {
       const networkOptions = store.networks.map((network) => ({
@@ -267,19 +268,19 @@ export default function QuickSetupModal(props: ModalProps) {
         label: node.name ?? node.id,
         value: node.id,
       }));
-      initialOptions.push(...networkOptions);
+      initialOptions.push(connectExistingHost, ...networkOptions);
     } else if (currentQuestion.key === 'hosts') {
       const networkOptions = networkNodes.map((node) => ({
         label: node.name ?? node.id,
         value: node.id,
       }));
-      initialOptions.push(...networkOptions);
+      initialOptions.push(connectExistingHost, ...networkOptions);
     } else if (currentQuestion.key === 'egress') {
       const networkOptions = networkNodes.map((node) => ({
         label: node.name ?? node.id,
         value: node.id,
       }));
-      initialOptions.push(...networkOptions);
+      initialOptions.push(connectExistingHost, ...networkOptions);
     }
 
     return initialOptions;
@@ -510,23 +511,19 @@ export default function QuickSetupModal(props: ModalProps) {
 
                 {currentQuestion && currentQuestion.type === 'ranges' && (
                   <Form form={form}>
-                    <Form.List
-                      name="ranges"
-                      initialValue={getRangesDisplay()}
-                      data-nmui-intercom="update-egress-form_ranges"
-                    >
-                      {(fields, { add, remove }, { errors }) => (
-                        <>
-                          {fields.map((field, index) => (
-                            <Form.Item
-                              label={index === 0 ? 'Input range' : ''}
-                              key={field.key}
-                              required={false}
-                              style={{ marginBottom: '.5rem' }}
-                            >
+                    <Form.Item label="Input range" required={false}>
+                      <Form.List
+                        name="ranges"
+                        initialValue={getRangesDisplay()}
+                        data-nmui-intercom="update-egress-form_ranges"
+                      >
+                        {(fields, { add, remove }, { errors }) => (
+                          <>
+                            {fields.map((field, index) => (
                               <Form.Item
                                 {...field}
                                 validateTrigger={['onBlur']}
+                                key={field.key}
                                 rules={[
                                   {
                                     required: true,
@@ -547,7 +544,7 @@ export default function QuickSetupModal(props: ModalProps) {
                                     },
                                   },
                                 ]}
-                                noStyle
+                                style={{ marginBottom: '.5rem' }}
                               >
                                 <Input
                                   placeholder="CIDR range (eg: 10.0.0.0/8 or a123:4567::/16)"
@@ -566,17 +563,17 @@ export default function QuickSetupModal(props: ModalProps) {
                                   }
                                 />
                               </Form.Item>
+                            ))}
+                            <Form.Item>
+                              <Button onClick={() => add()} icon={<PlusOutlined />}>
+                                Add range
+                              </Button>
+                              <Form.ErrorList errors={errors} />
                             </Form.Item>
-                          ))}
-                          <Form.Item>
-                            <Button onClick={() => add()} icon={<PlusOutlined />}>
-                              Add range
-                            </Button>
-                            <Form.ErrorList errors={errors} />
-                          </Form.Item>
-                        </>
-                      )}
-                    </Form.List>
+                          </>
+                        )}
+                      </Form.List>
+                    </Form.Item>
                   </Form>
                 )}
 

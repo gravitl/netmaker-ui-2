@@ -187,7 +187,7 @@ export default function DashboardPage(props: PageProps) {
               <div>
                 <Button type="link" onClick={() => setIsQuickSetupModalOpen(true)}>
                   <ArrowRightOutlined />
-                  Take the tutorial
+                  Get Started
                 </Button>
               </div>
             </Card>

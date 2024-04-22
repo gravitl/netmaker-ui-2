@@ -187,7 +187,12 @@ export default function AddEnrollmentKeyModal({
           <Row ref={keyNetworksSelectRef}>
             {' '}
             <Col xs={24}>
-              <Form.Item name="networks" label="Networks" data-nmui-intercom="add-enrollment-key-form_networks">
+              <Form.Item
+                name="networks"
+                label="Networks"
+                data-nmui-intercom="add-enrollment-key-form_networks"
+                initialValue={networkId}
+              >
                 <Select
                   mode="multiple"
                   allowClear
