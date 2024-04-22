@@ -19,7 +19,7 @@ import EgressImg from '../../../assets/egress.webp';
 import RagImg from '../../../assets/rag.webp';
 import NetImg from '../../../assets/network.webp';
 import { useStore } from '@/store/store';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   UsecaseQuestionsAll,
   UsecaseQuestions,
@@ -119,9 +119,12 @@ export default function QuickSetupModal(props: ModalProps) {
   const handleQuestionAnswer = (answer: string) => {
     // if current question is null return
     if (!currentQuestion) return;
-    // add answer to userQuestionsAsked
+    // add answer to userQuestionsAsked, remove question if it exists
+    const questionsAskedMinusCurrentQuestion = userQuestionsAsked.filter(
+      (ques) => ques.questionKey !== currentQuestion.key,
+    );
     setUserQuestionsAsked([
-      ...userQuestionsAsked,
+      ...questionsAskedMinusCurrentQuestion,
       { index: currentQuestionIndex, questionKey: currentQuestion.key, answer },
     ]);
 
@@ -414,7 +417,7 @@ export default function QuickSetupModal(props: ModalProps) {
         onCancel={props.handleCancel}
         className="upgrade-modal"
         width={1196}
-        bodyStyle={getBodyStyle}
+        styles={{ body: getBodyStyle }}
         // style={{
         //   background:
         //     currentTheme === 'dark'
