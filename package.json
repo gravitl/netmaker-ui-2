@@ -23,7 +23,7 @@
     "@react-sigma/core": "^3.4.2",
     "animate.css": "^4.1.1",
     "antd": "~5.10",
-    "antd-style": "^3.6.1",
+    "antd-style": "^3.6.2",
     "axios": "^1.6.8",
     "axios-mock-adapter": "^1.22.0",
     "buffer": "^6.0.3",
