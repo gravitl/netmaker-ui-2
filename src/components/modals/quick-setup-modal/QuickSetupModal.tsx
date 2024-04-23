@@ -221,6 +221,8 @@ export default function QuickSetupModal(props: ModalProps) {
     if (currentQuestionIndex === userQuestions.length - 1) {
       store.updateNetworkUsecaseQuestionAndAnswer(networkId, userQuestionsAsked);
       props.notify.success({ message: 'Network setup complete' });
+      setUserQuestionsAsked([]);
+      setUserQuestions(PrimaryUsecaseQuestions);
       props.handleCancel();
       return;
     }
@@ -613,8 +615,9 @@ export default function QuickSetupModal(props: ModalProps) {
       {/* modals */}
       <AddNetworkModal
         isOpen={isAddNetworkModalOpen}
-        onCreateNetwork={() => {
+        onCreateNetwork={(network) => {
           setIsAddNetworkModalOpen(false);
+          setCurrentQuestion({ ...currentQuestion, selectedAnswer: network.netid });
         }}
         onCancel={() => setIsAddNetworkModalOpen(false)}
         autoFillButtonRef={undefined} // Assign a valid ref object or undefined
