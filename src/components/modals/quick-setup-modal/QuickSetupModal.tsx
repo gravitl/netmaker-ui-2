@@ -58,7 +58,7 @@ const RemoteAccessUsecaseQuestions: UsecaseQuestionKey[] = [
   'primary_usecase',
   'usecase',
   'networks',
-  'hosts',
+  // 'hosts',
   'remote_access_gateways',
   'users',
 ];
@@ -67,7 +67,7 @@ const RemoteAccessUsecaseWithEgressQuestions: UsecaseQuestionKey[] = [
   'primary_usecase',
   'usecase',
   'networks',
-  'hosts',
+  // 'hosts',
   'remote_access_gateways',
   'users',
   'egress',
