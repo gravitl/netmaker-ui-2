@@ -236,8 +236,13 @@ export default function DashboardPage(props: PageProps) {
                       Remote Access Gateway, which is typically deployed in a public cloud environment, e.g. on a server
                       with a public IP, so that it is easily reachable from the Clients. Clients are configured on this
                       dashboard primary via client configs{' '}
-                      <a href="https://www.netmaker.io/features/remote-access-gateway" target="_blank" rel="noreferrer">
-                        Learn More
+                      <a
+                        href="https://www.netmaker.io/features/remote-access-gateway"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="tutorial-banner-link"
+                      >
+                        (Learn More)
                       </a>
                     </p>
                     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -261,7 +266,12 @@ export default function DashboardPage(props: PageProps) {
                       gateways. An office network, home network, data center, or cloud region all become easily
                       accessible via the Egress Gateway. You can even set a machine as an Internet Gateway to create a
                       “traditional” VPN{' '}
-                      <a href="https://www.netmaker.io/features/egress" target="_blank" rel="noreferrer">
+                      <a
+                        href="https://www.netmaker.io/features/egress"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="tutorial-banner-link"
+                      >
                         (Learn more)
                       </a>
                     </p>
@@ -285,7 +295,12 @@ export default function DashboardPage(props: PageProps) {
                       Enable devices in your network to communicate with othererwise unreachable devices with relays.{' '}
                       {branding.productName} uses Turn servers to automatically route traffic in these scenarios, but
                       sometimes, you’d rather specify which device should be routing the traffic
-                      <a href="https://www.netmaker.io/features/relay" target="_blank" rel="noreferrer">
+                      <a
+                        href="https://www.netmaker.io/features/relay"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="tutorial-banner-link"
+                      >
                         (Learn More)
                       </a>
                     </p>

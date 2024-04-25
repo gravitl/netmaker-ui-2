@@ -3915,7 +3915,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       default:
         break;
     }
-  }, [location.state]);
+  }, [location.state, setJumpTourStepObj]);
 
   if (!networkId) {
     navigate(resolveAppRoute(AppRoutes.NETWORKS_ROUTE));
@@ -3964,6 +3964,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   <Button
                     style={{ marginRight: '1em' }}
                     onClick={() => {
+                      setActiveTabKey('overview');
                       setTourStep(0);
                       setIsTourOpen(true);
                     }}

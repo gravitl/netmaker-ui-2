@@ -80,12 +80,8 @@ const WIREGUARD_LINK = 'https://docs.netmaker.io/integrating-non-native-devices.
 export default function QuickSetupModal(props: ModalProps) {
   const store = useStore();
   const { currentTheme } = store;
-  const [promoText, setPromoText] = useState(
-    'Keep using for free under the usage limit, and access additional features',
-  );
-
   const [userQuestionsAsked, setUserQuestionsAsked] = useState<UsecaseQuestionAndAnswer[]>([]);
-  const [userQuestions, setUserQuestions] = useState<UsecaseQuestions[]>(PrimaryUsecaseQuestions);
+  const [userQuestions, setUserQuestions] = useState<UsecaseQuestions[]>(UsecaseQuestionsAll);
   const [currentQuestion, setCurrentQuestion] = useState<UsecaseQuestions>(PrimaryUsecaseQuestions[0]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
   const [networkId, setNetworkId] = useState<string>(props.networkId ?? '');
@@ -179,6 +175,8 @@ export default function QuickSetupModal(props: ModalProps) {
             message: 'Failed to create remote access gateway',
             description: extractErrorMsg(err as any),
           });
+          setIsNextLoading(false);
+          return;
         } finally {
           setIsNextLoading(false);
           store.fetchNodes();
@@ -211,6 +209,8 @@ export default function QuickSetupModal(props: ModalProps) {
           message: 'Failed to create egress gateway',
           description: extractErrorMsg(err as any),
         });
+        setIsNextLoading(false);
+        return;
       } finally {
         setIsNextLoading(false);
         store.fetchNodes();
@@ -222,7 +222,11 @@ export default function QuickSetupModal(props: ModalProps) {
       store.updateNetworkUsecaseQuestionAndAnswer(networkId, userQuestionsAsked);
       props.notify.success({ message: 'Network setup complete' });
       setUserQuestionsAsked([]);
-      setUserQuestions(PrimaryUsecaseQuestions);
+      setUserQuestions(UsecaseQuestionsAll);
+      setCurrentQuestion(PrimaryUsecaseQuestions[0]);
+      setCurrentQuestionIndex(0);
+      setNetworkId('');
+      setEgressNodeId('');
       props.handleCancel();
       return;
     }
@@ -412,6 +416,20 @@ export default function QuickSetupModal(props: ModalProps) {
     }
   }, [window.innerWidth]);
 
+  const selectedAnswer = useMemo(() => {
+    if (currentQuestion.key === 'remote_access_gateways') {
+      const answer = clientGateways.find((gateway) => gateway.id === currentQuestion.selectedAnswer)?.id || '';
+      setCurrentQuestion({ ...currentQuestion, selectedAnswer: answer });
+      return answer;
+    }
+    if (currentQuestion.key === 'egress') {
+      const answer = egresses.find((egress) => egress.id === currentQuestion.selectedAnswer)?.id || '';
+      setCurrentQuestion({ ...currentQuestion, selectedAnswer: answer });
+      return answer;
+    }
+    return currentQuestion.selectedAnswer;
+  }, [currentQuestion.selectedAnswer, clientGateways, egresses]);
+
   return (
     <>
       <Modal
@@ -508,7 +526,7 @@ export default function QuickSetupModal(props: ModalProps) {
                 {currentQuestion && currentQuestion.type === 'select' && (
                   <Select
                     options={selectDropdownOptions}
-                    value={currentQuestion.selectedAnswer}
+                    value={selectedAnswer}
                     style={{ width: '100%' }}
                     onChange={handleSelectChange}
                   />

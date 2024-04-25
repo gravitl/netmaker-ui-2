@@ -71,7 +71,7 @@ export const PrimaryUsecaseQuestions: UsecaseQuestions[] = [
     key: 'primary_usecase',
     question: 'What are you trying to do?',
     answers: ['Remote Access'],
-    selectedAnswer: 'Remote Access',
+    // selectedAnswer: 'Remote Access',
     type: 'radio',
     descriptionTitle: 'Welcome to Guided Setup',
     description: `This opinionated setup process will help get your use case configured in as few steps as possible. 
@@ -104,31 +104,31 @@ export const UsecaseQuestionsAll: UsecaseQuestions[] = [
       All machines added to Netmaker must be added to a network to enable communication with other devices
     `,
   },
-  {
-    key: 'hosts',
-    question: 'Add hosts to your network',
-    answers: [], // hosts
-    type: 'select',
-    descriptionTitle: 'What are hosts in Netmaker?',
-    description: (
-      <>
-        <Typography.Paragraph className="guided-tour-text">
-          {` Hosts can acts as gateways and endpoints in your network. For the remote access use case, you will need at least one host, 
-      deployed in a public environment, to act as the gateway. If deploying on-prem, you can use the existing "server" host. 
-      If deploying from our SaaS, you can use your managed endpoint. Otherwise, please deploy at least one additional endpoint in a public environment 
-      (e.g. cloud) with a public IP."
-`}
-        </Typography.Paragraph>
-        <Typography.Paragraph className="guided-tour-text">
-          {`
-          At least one host should also be deployed in the target environment for remote access, e.g. the office, data center, or edge environment.
-          If accessing specific endpoints, deploy one host per endpoint. If you would like to access a LAN or other subnet (or the internet), 
-          you can deploy just one host which has access to the target range, and later, we will set it as a gateway to the target network.
-      `}
-        </Typography.Paragraph>
-      </>
-    ),
-  },
+  //   {
+  //     key: 'hosts',
+  //     question: 'Add hosts to your network',
+  //     answers: [], // hosts
+  //     type: 'select',
+  //     descriptionTitle: 'What are hosts in Netmaker?',
+  //     description: (
+  //       <>
+  //         <Typography.Paragraph className="guided-tour-text">
+  //           {` Hosts can acts as gateways and endpoints in your network. For the remote access use case, you will need at least one host,
+  //       deployed in a public environment, to act as the gateway. If deploying on-prem, you can use the existing "server" host.
+  //       If deploying from our SaaS, you can use your managed endpoint. Otherwise, please deploy at least one additional endpoint in a public environment
+  //       (e.g. cloud) with a public IP."
+  // `}
+  //         </Typography.Paragraph>
+  //         <Typography.Paragraph className="guided-tour-text">
+  //           {`
+  //           At least one host should also be deployed in the target environment for remote access, e.g. the office, data center, or edge environment.
+  //           If accessing specific endpoints, deploy one host per endpoint. If you would like to access a LAN or other subnet (or the internet),
+  //           you can deploy just one host which has access to the target range, and later, we will set it as a gateway to the target network.
+  //       `}
+  //         </Typography.Paragraph>
+  //       </>
+  //     ),
+  //   },
   {
     key: 'remote_access_gateways',
     question: 'Select a host to use as your gateway',
