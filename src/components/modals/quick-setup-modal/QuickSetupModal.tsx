@@ -425,6 +425,16 @@ export default function QuickSetupModal(props: ModalProps) {
     if (currentQuestion.key === 'egress') {
       const answer = networkNodes.find((egress) => egress.id === currentQuestion.selectedAnswer)?.id || '';
       setCurrentQuestion({ ...currentQuestion, selectedAnswer: answer });
+      // egress range in already answered question set to empty string array
+      const isEgressGatewayRangeSet = userQuestionsAsked.find((ques) => ques.questionKey === 'ranges');
+      if (isEgressGatewayRangeSet && answer !== egressNodeId) {
+        const questionsAskedMinusEgressRange = userQuestionsAsked.filter((ques) => ques.questionKey !== 'ranges');
+        setUserQuestionsAsked([
+          ...questionsAskedMinusEgressRange,
+          { index: currentQuestionIndex, questionKey: 'ranges', answer: JSON.stringify([]) },
+        ]);
+      }
+
       return answer;
     }
     return currentQuestion.selectedAnswer;
