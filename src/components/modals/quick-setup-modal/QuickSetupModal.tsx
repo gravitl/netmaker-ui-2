@@ -122,6 +122,16 @@ export default function QuickSetupModal(props: ModalProps) {
     ]);
   };
 
+  const resetModal = () => {
+    setUserQuestionsAsked([]);
+    setUserQuestions(UsecaseQuestionsAll);
+    setCurrentQuestion(PrimaryUsecaseQuestions[0]);
+    setCurrentQuestionIndex(0);
+    setNetworkId('');
+    setEgressNodeId('');
+    form.resetFields();
+  };
+
   const handleQuestionAnswer = (answer: string) => {
     // if current question is null return
     if (!currentQuestion) return;
@@ -188,6 +198,11 @@ export default function QuickSetupModal(props: ModalProps) {
     } else if (currentQuestion.key === 'egress') {
       const answer = currentQuestion.selectedAnswer as Node['id'];
       setEgressNodeId(answer);
+      // check if ranges are set, if not reset form fields
+      const isEgressGatewayRangeSet = userQuestionsAsked.find((ques) => ques.questionKey === 'ranges');
+      if (!isEgressGatewayRangeSet) {
+        form.resetFields();
+      }
     } else if (currentQuestion.key === 'ranges') {
       let egressNode: Node;
       const isAnswerAnEgress = egresses.find((gateway) => gateway.id === egressNodeId);
@@ -224,13 +239,7 @@ export default function QuickSetupModal(props: ModalProps) {
     if (currentQuestionIndex === userQuestions.length - 1) {
       store.updateNetworkUsecaseQuestionAndAnswer(networkId, userQuestionsAsked);
       props.notify.success({ message: 'Network setup complete' });
-      setUserQuestionsAsked([]);
-      setUserQuestions(UsecaseQuestionsAll);
-      setCurrentQuestion(PrimaryUsecaseQuestions[0]);
-      setCurrentQuestionIndex(0);
-      setNetworkId('');
-      setEgressNodeId('');
-      form.resetFields();
+      resetModal();
       props.handleCancel();
       return;
     }
@@ -438,6 +447,7 @@ export default function QuickSetupModal(props: ModalProps) {
           ...questionsAskedMinusEgressRange,
           { index: currentQuestionIndex, questionKey: 'ranges', answer: JSON.stringify([]) },
         ]);
+        form.resetFields();
       }
 
       return answer;
@@ -449,7 +459,10 @@ export default function QuickSetupModal(props: ModalProps) {
     <>
       <Modal
         open={props.isModalOpen}
-        onCancel={props.handleCancel}
+        onCancel={() => {
+          resetModal();
+          props.handleCancel();
+        }}
         className="upgrade-modal"
         width={1196}
         styles={{ body: getBodyStyle }}
@@ -543,7 +556,7 @@ export default function QuickSetupModal(props: ModalProps) {
                     options={selectDropdownOptions}
                     value={selectedAnswer}
                     style={{ width: '100%' }}
-                    onChange={handleSelectChange}
+                    onSelect={handleSelectChange}
                   />
                 )}
 
