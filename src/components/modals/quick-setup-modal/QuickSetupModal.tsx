@@ -112,10 +112,7 @@ export default function QuickSetupModal(props: ModalProps) {
       .map((node) => getExtendedNode(node, store.hostsCommonDetails));
   }, [networkNodes, store.hostsCommonDetails]);
 
-  const handleQuestionAnswer = (answer: string) => {
-    // if current question is null return
-    if (!currentQuestion) return;
-    // add answer to userQuestionsAsked, remove question if it exists
+  const handleAddToAlreadyAskedQuestions = (answer: string) => {
     const questionsAskedMinusCurrentQuestion = userQuestionsAsked.filter(
       (ques) => ques.questionKey !== currentQuestion.key,
     );
@@ -123,6 +120,12 @@ export default function QuickSetupModal(props: ModalProps) {
       ...questionsAskedMinusCurrentQuestion,
       { index: currentQuestionIndex, questionKey: currentQuestion.key, answer },
     ]);
+  };
+
+  const handleQuestionAnswer = (answer: string) => {
+    // if current question is null return
+    if (!currentQuestion) return;
+    handleAddToAlreadyAskedQuestions(answer);
 
     // check if current question index is 1
     if (currentQuestion.key === 'usecase') {
@@ -227,6 +230,7 @@ export default function QuickSetupModal(props: ModalProps) {
       setCurrentQuestionIndex(0);
       setNetworkId('');
       setEgressNodeId('');
+      form.resetFields();
       props.handleCancel();
       return;
     }
@@ -312,6 +316,7 @@ export default function QuickSetupModal(props: ModalProps) {
   const handleRangeChange = async () => {
     const formData = await form.validateFields();
     const newRanges = new Set(formData.ranges);
+    handleAddToAlreadyAskedQuestions(JSON.stringify([...newRanges]));
     setCurrentQuestion({ ...currentQuestion, selectedAnswer: JSON.stringify([...newRanges]) });
   };
 
