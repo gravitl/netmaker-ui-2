@@ -1,9 +1,11 @@
 import { MetricCategories } from '@/models/Metrics';
 import { ExtendedNode } from '@/models/Node';
 import { useStore } from '@/store/store';
-import { Tour, TourProps } from 'antd';
+import { Tour, TourProps, notification } from 'antd';
+import { NotificationInstance } from 'antd/es/notification/interface';
 import { t } from 'i18next';
-import { useRef, Fragment, Ref, RefObject, useMemo, useCallback, useEffect } from 'react';
+import { useRef, Fragment, Ref, RefObject, useMemo, useCallback, useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 
 export interface JumpToTourStepObj {
   overview: number;
@@ -90,6 +92,7 @@ interface TourUtilsProps {
   tourStep: number;
   relays: ExtendedNode[];
   setJumpToTourStepObj: (obj: JumpToTourStepObj) => void;
+  notify: NotificationInstance;
 }
 
 export default function TourComponent(props: TourUtilsProps) {
@@ -163,9 +166,23 @@ export default function TourComponent(props: TourUtilsProps) {
     setCurrentMetric,
     tourStep,
     relays,
+    notify,
   } = props;
   const store = useStore();
   const isServerEE = store.serverConfig?.IsEE === 'yes';
+  const location = useLocation();
+  const [jumpToTourStepObj, setJumpToTourStepObj] = useState<JumpToTourStepObj>({
+    overview: 0,
+    hosts: 1,
+    remoteAccess: 6,
+    vpnConfigs: 10,
+    relays: 18,
+    egress: 23,
+    dns: 31,
+    acls: 39,
+    graph: 47,
+    metrics: 48,
+  });
 
   const nextTourStep = () => {
     setTourStep(tourStep + 1);
@@ -1114,6 +1131,56 @@ export default function TourComponent(props: TourUtilsProps) {
   useEffect(() => {
     generateJumpToTourStepObj();
   }, [generateJumpToTourStepObj]);
+
+  useEffect(() => {
+    if (location.state == null) {
+      return;
+    }
+    switch (location.state?.startTour) {
+      case 'remoteaccess':
+        setActiveTabKey('clients');
+        if (clientGateways.length > 0) {
+          setTourStep(jumpToTourStepObj?.remoteAccess);
+          setIsTourOpen(true);
+          break;
+        }
+        notify.info({
+          message: 'Please add a gateway to start the tour',
+          description: '',
+        });
+        break;
+      case 'relays':
+        setActiveTabKey('relays');
+        if (relays.length > 0) {
+          setTourStep(jumpToTourStepObj?.relays);
+          setIsTourOpen(true);
+          break;
+        }
+        notify.info({
+          message: 'Please add a relay to start the tour',
+          description: '',
+        });
+        break;
+      case 'egress':
+        setActiveTabKey('egress');
+        if (egresses.length > 0) {
+          setTourStep(jumpToTourStepObj?.egress);
+          setIsTourOpen(true);
+        }
+        notify.info({
+          message: 'Please add an egress to start the tour',
+          description: '',
+        });
+        break;
+      case 'acls':
+        setActiveTabKey('access-control');
+        setTourStep(jumpToTourStepObj?.acls);
+        setIsTourOpen(true);
+        break;
+      default:
+        break;
+    }
+  }, [location.state, jumpToTourStepObj]);
 
   return (
     <>

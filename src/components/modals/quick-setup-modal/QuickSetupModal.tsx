@@ -418,12 +418,12 @@ export default function QuickSetupModal(props: ModalProps) {
 
   const selectedAnswer = useMemo(() => {
     if (currentQuestion.key === 'remote_access_gateways') {
-      const answer = clientGateways.find((gateway) => gateway.id === currentQuestion.selectedAnswer)?.id || '';
+      const answer = networkNodes.find((gateway) => gateway.id === currentQuestion.selectedAnswer)?.id || '';
       setCurrentQuestion({ ...currentQuestion, selectedAnswer: answer });
       return answer;
     }
     if (currentQuestion.key === 'egress') {
-      const answer = egresses.find((egress) => egress.id === currentQuestion.selectedAnswer)?.id || '';
+      const answer = networkNodes.find((egress) => egress.id === currentQuestion.selectedAnswer)?.id || '';
       setCurrentQuestion({ ...currentQuestion, selectedAnswer: answer });
       return answer;
     }
@@ -635,7 +635,7 @@ export default function QuickSetupModal(props: ModalProps) {
         isOpen={isAddNetworkModalOpen}
         onCreateNetwork={(network) => {
           setIsAddNetworkModalOpen(false);
-          setCurrentQuestion({ ...currentQuestion, selectedAnswer: network.netid });
+          handleQuestionAnswer(network.netid);
         }}
         onCancel={() => setIsAddNetworkModalOpen(false)}
         autoFillButtonRef={undefined} // Assign a valid ref object or undefined

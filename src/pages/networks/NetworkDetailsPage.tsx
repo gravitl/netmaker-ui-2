@@ -227,7 +227,6 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [isDownloadRemoteAccessClientModalOpen, setIsDownloadRemoteAccessClientModalOpen] = useState(false);
   const [originalAcls, setOriginalAcls] = useState<NodeAclContainer>({});
   const [acls, setAcls] = useState<NodeAclContainer>({});
-  const [isJumpToPageTourStarted, setIsJumpToPageTourStarted] = useState(false);
   const [showFloatingButton, setShowFloatingButton] = useState(true);
   const [jumpTourStepObj, setJumpTourStepObj] = useState<JumpToTourStepObj>({
     overview: 0,
@@ -3882,41 +3881,6 @@ export default function NetworkDetailsPage(props: PageProps) {
     }
   }, [filteredRelays, filteredEgresses, isInitialLoad, filteredClientGateways]);
 
-  useEffect(() => {
-    if (location.state == null) {
-      return;
-    }
-    console.log('location.state.startTour', location.state.startTour);
-    switch (location.state?.startTour) {
-      case 'remoteaccess':
-        setActiveTabKey('clients');
-        setTourStep(jumpTourStepObj?.remoteAccess);
-        setIsTourOpen(true);
-        setIsJumpToPageTourStarted(true);
-        break;
-      case 'relays':
-        setActiveTabKey('relays');
-        setTourStep(jumpTourStepObj?.relays);
-        setIsTourOpen(true);
-        setIsJumpToPageTourStarted(true);
-        break;
-      case 'egress':
-        setActiveTabKey('egress');
-        setTourStep(jumpTourStepObj?.egress);
-        setIsTourOpen(true);
-        setIsJumpToPageTourStarted(true);
-        break;
-      case 'acls':
-        setActiveTabKey('access-control');
-        setTourStep(jumpTourStepObj?.acls);
-        setIsTourOpen(true);
-        setIsJumpToPageTourStarted(true);
-        break;
-      default:
-        break;
-    }
-  }, [location.state, setJumpTourStepObj]);
-
   if (!networkId) {
     navigate(resolveAppRoute(AppRoutes.NETWORKS_ROUTE));
     return null;
@@ -4025,6 +3989,7 @@ export default function NetworkDetailsPage(props: PageProps) {
           clientGateways={clientGateways}
           relays={relays}
           egresses={egresses}
+          notify={notify}
           overviewTabContainerRef={overviewTabContainerRef}
           hostsTabContainerTableRef={hostsTabContainerTableRef}
           hostsTabContainerAddHostsRef={hostsTabContainerAddHostsRef}

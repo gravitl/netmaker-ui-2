@@ -68,7 +68,7 @@ export default function DashboardPage(props: PageProps) {
         break;
       case 'egress':
         navigate(resolveAppRoute(`${AppRoutes.NETWORKS_ROUTE}/${store.networks[0].netid}`), {
-          state: { startTour: 'remoteaccess' },
+          state: { startTour: 'egress' },
         });
         break;
       case 'remoteaccess':
@@ -272,7 +272,7 @@ export default function DashboardPage(props: PageProps) {
                         rel="noreferrer"
                         className="tutorial-banner-link"
                       >
-                        (Learn more)
+                        {` `}(Learn more){` `}
                       </a>
                     </p>
                     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -292,7 +292,7 @@ export default function DashboardPage(props: PageProps) {
                   >
                     <h3>Relays</h3>
                     <p>
-                      Enable devices in your network to communicate with othererwise unreachable devices with relays.{' '}
+                      Enable devices in your network to communicate with otherwise unreachable devices with relays.{' '}
                       {branding.productName} uses Turn servers to automatically route traffic in these scenarios, but
                       sometimes, you’d rather specify which device should be routing the traffic
                       <a
@@ -301,7 +301,7 @@ export default function DashboardPage(props: PageProps) {
                         rel="noreferrer"
                         className="tutorial-banner-link"
                       >
-                        (Learn More)
+                        {` `}(Learn More) {` `}
                       </a>
                     </p>
                     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
