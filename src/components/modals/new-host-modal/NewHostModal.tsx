@@ -753,6 +753,7 @@ export default function NewHostModal({
       {/* misc */}
       {notifyCtx}
       <AddEnrollmentKeyModal
+        key={`add-enrollment-key-${networkId}`}
         isOpen={isAddEnrollmentKeyModalOpen}
         onCreateKey={(key) => {
           setEnrollmentKeys([...enrollmentKeys, key]);

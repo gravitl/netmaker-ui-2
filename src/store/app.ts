@@ -9,6 +9,7 @@ export interface IAppSlice {
   serverName: string;
   serverStatus: { status: ServerStatus | null; isHealthy: boolean };
   serverConfig: ServerConfig | null;
+  isSidebarCollapsed: boolean;
 
   // methods
   setCurrentTheme: (theme: AvailableThemes) => void;
@@ -16,6 +17,7 @@ export interface IAppSlice {
   setServerName: (name: string) => void;
   setServerStatus: (status: ServerStatus) => void;
   fetchServerConfig: () => Promise<[Boolean, ServerConfig | null]>; // eslint-disable-line @typescript-eslint/ban-types
+  setIsSidebarCollapsed: (isCollapsed: boolean) => void;
 }
 
 const createAppSlice: StateCreator<IAppSlice, [], [], IAppSlice> = (set) => ({
@@ -24,6 +26,7 @@ const createAppSlice: StateCreator<IAppSlice, [], [], IAppSlice> = (set) => ({
   serverName: '',
   serverStatus: { status: null, isHealthy: true },
   serverConfig: null,
+  isSidebarCollapsed: false,
 
   setCurrentTheme: (theme) => set(() => ({ currentTheme: theme })),
   setLogoUrl: (url) => set(() => ({ logoUrl: url })),
@@ -45,6 +48,7 @@ const createAppSlice: StateCreator<IAppSlice, [], [], IAppSlice> = (set) => ({
       return Promise.reject([false, null]);
     }
   },
+  setIsSidebarCollapsed: (isCollapsed) => set(() => ({ isSidebarCollapsed: isCollapsed })),
 });
 
 export const AppSlice = {

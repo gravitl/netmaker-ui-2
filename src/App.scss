@@ -149,3 +149,26 @@
     padding: 0px 1.125rem;
   }
 }
+
+.guided-tour-text {
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 24px;
+}
+
+.upgrade-modal {
+  background-repeat: no-repeat !important;
+  @media screen and (max-width: 768px) { 
+    height: 500px !important;
+    background-color: no;
+  }
+}
+.tutorial-banner-link {
+  color: white;
+  font-weight: 600;
+}
+
+.tutorial-banner-link:hover {
+  text-decoration: underline;
+  color: white;
+}

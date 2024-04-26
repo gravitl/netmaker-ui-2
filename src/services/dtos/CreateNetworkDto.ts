@@ -1,4 +1,5 @@
 import { ProSettings } from '../../models/ProSettings';
+import { NetworkUsecaseString } from '@/store/networkusecase';
 
 export interface CreateNetworkDto {
   netid: string;
@@ -10,4 +11,5 @@ export interface CreateNetworkDto {
   defaultacl: 'no' | 'yes';
   prosettings?: ProSettings;
   defaultDns?: string;
+  defaultUsecase?: NetworkUsecaseString;
 }

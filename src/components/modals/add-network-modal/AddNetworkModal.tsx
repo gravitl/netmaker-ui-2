@@ -84,7 +84,7 @@ export default function AddNetworkModal({
 
   return (
     <Modal
-      title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Create a Network</span>}
+      title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold', width: '700px' }}>Create a Network</span>}
       open={isOpen}
       onCancel={(ev) => {
         resetModal();
@@ -106,7 +106,11 @@ export default function AddNetworkModal({
           name="add-network-form"
           form={form}
           layout="vertical"
-          initialValues={{ isipv4: true, isipv6: false, defaultacl: 'yes' }}
+          initialValues={{
+            isipv4: true,
+            isipv6: false,
+            defaultacl: 'yes',
+          }}
         >
           <Row ref={networkNameInputRef}>
             <Col xs={24}>
