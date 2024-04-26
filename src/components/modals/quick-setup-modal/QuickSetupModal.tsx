@@ -562,7 +562,7 @@ export default function QuickSetupModal(props: ModalProps) {
 
                 {currentQuestion && currentQuestion.type === 'ranges' && (
                   <Form form={form}>
-                    <Form.Item label="Input range" required={false}>
+                    <Form.Item label="Input range" required={true}>
                       <Form.List
                         name="ranges"
                         initialValue={getRangesDisplay()}
