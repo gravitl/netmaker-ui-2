@@ -208,6 +208,15 @@ export default function QuickSetupModal(props: ModalProps) {
         let egressNode: Node;
         const isAnswerAnEgress = egresses.find((gateway) => gateway.id === egressNodeId);
         const formData = await form.validateFields();
+        console.log(formData.ranges);
+
+        //check if there is an empty range field
+        if (formData.ranges.includes('') || formData.ranges.length === 0) {
+          props.notify.error({
+            message: 'An IP range is required to continue. Please fill in the necessary fields.',
+          });
+          return;
+        }
         const newRanges = new Set(formData.ranges);
 
         if (isAnswerAnEgress) {
