@@ -204,16 +204,15 @@ export default function QuickSetupModal(props: ModalProps) {
         form.resetFields();
       }
     } else if (currentQuestion.key === 'ranges') {
-      let egressNode: Node;
-      const isAnswerAnEgress = egresses.find((gateway) => gateway.id === egressNodeId);
-      const formData = await form.validateFields();
-      const newRanges = new Set(formData.ranges);
-
-      if (isAnswerAnEgress) {
-        egressNode = (await NodesService.deleteEgressNode(egressNodeId, networkId)).data;
-      }
-
       try {
+        let egressNode: Node;
+        const isAnswerAnEgress = egresses.find((gateway) => gateway.id === egressNodeId);
+        const formData = await form.validateFields();
+        const newRanges = new Set(formData.ranges);
+
+        if (isAnswerAnEgress) {
+          egressNode = (await NodesService.deleteEgressNode(egressNodeId, networkId)).data;
+        }
         setIsNextLoading(true);
         egressNode = (
           await NodesService.createEgressNode(egressNodeId, networkId, {
