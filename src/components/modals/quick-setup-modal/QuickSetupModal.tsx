@@ -15,15 +15,11 @@ import {
   Form,
   Alert,
 } from 'antd';
-import EgressImg from '../../../assets/egress.webp';
-import RagImg from '../../../assets/rag.webp';
-import NetImg from '../../../assets/network.webp';
 import { useStore } from '@/store/store';
 import { useEffect, useMemo, useState } from 'react';
 import {
   UsecaseQuestionsAll,
   UsecaseQuestions,
-  UsecaseAnswer,
   UsecaseQuestionKey,
   PrimaryUsecaseQuestions,
   UsecaseKeyStringToTextMap,
@@ -36,11 +32,11 @@ import NewHostModal from '../new-host-modal/NewHostModal';
 import { NodesService } from '@/services/NodesService';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { NotificationInstance } from 'antd/es/notification/interface';
-import AddEgressModal from '../add-egress-modal/AddEgressModal';
 import { isValidIpCidr } from '@/utils/NetworkUtils';
 import { INTERNET_RANGE_IPV4, INTERNET_RANGE_IPV6 } from '@/constants/AppConstants';
 import { UsecaseQuestionAndAnswer } from '@/store/networkusecase';
 import AddHostsToNetworkModal from '../add-hosts-to-network-modal/AddHostsToNetworkModal';
+import { Links, Images } from '@/constants/LinkAndImageConstants';
 
 interface ModalProps {
   isModalOpen: boolean;
@@ -73,9 +69,6 @@ const RemoteAccessUsecaseWithEgressQuestions: UsecaseQuestionKey[] = [
   'egress',
   'ranges',
 ];
-
-const RAC_LINK = 'https://docs.netmaker.io/pro/rac.html';
-const WIREGUARD_LINK = 'https://docs.netmaker.io/integrating-non-native-devices.html';
 
 export default function QuickSetupModal(props: ModalProps) {
   const store = useStore();
@@ -350,11 +343,11 @@ export default function QuickSetupModal(props: ModalProps) {
     if (window.innerWidth <= 768) return <></>;
     let img = null;
     if (currentQuestion.key === 'egress') {
-      img = EgressImg;
+      img = Images.EGRESS_IMG;
     } else if (currentQuestion.key === 'remote_access_gateways') {
-      img = RagImg;
+      img = Images.RAG_IMG;
     } else if (currentQuestion.key === 'networks') {
-      img = NetImg;
+      img = Images.NET_IMG;
     } else {
       return <></>;
     }
@@ -390,7 +383,7 @@ export default function QuickSetupModal(props: ModalProps) {
             message={
               <>
                 Visit{' '}
-                <a href={RAC_LINK} target="_blank" rel="noreferrer">
+                <a href={Links.RAC_LINK} target="_blank" rel="noreferrer">
                   our docs{' '}
                 </a>{' '}
                 to find out how to use the Remote Access Client
@@ -405,7 +398,7 @@ export default function QuickSetupModal(props: ModalProps) {
             message={
               <>
                 Visit{' '}
-                <a href={WIREGUARD_LINK} target="_blank" rel="noreferrer">
+                <a href={Links.WIREGUARD_LINK} target="_blank" rel="noreferrer">
                   our docs{' '}
                 </a>{' '}
                 to find out how to use the vpn client with wireguard

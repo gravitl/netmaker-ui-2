@@ -177,7 +177,12 @@ export default function DashboardPage(props: PageProps) {
       <Row className="dashboard-page-row-2">
         <Col xs={24}>
           <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-            <Card>
+            <Card
+              style={{
+                height: '259px',
+                background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
+              }}
+            >
               <h3>Introducing Guided Setup</h3>
               <p>
                 Unveiling guided setup! This innovative functionality streamlines the setup process for your{' '}
@@ -185,7 +190,7 @@ export default function DashboardPage(props: PageProps) {
                 cases.
               </p>
               <div>
-                <Button type="link" onClick={() => setIsQuickSetupModalOpen(true)}>
+                <Button type="primary" onClick={() => setIsQuickSetupModalOpen(true)}>
                   <ArrowRightOutlined />
                   Get Started
                 </Button>
@@ -199,12 +204,7 @@ export default function DashboardPage(props: PageProps) {
             >
               <Carousel adaptiveHeight={false} autoplay autoplaySpeed={10000}>
                 <div>
-                  <Card
-                    style={{
-                      height: '259px',
-                      background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
-                    }}
-                  >
+                  <Card>
                     <h3>Start using {branding.productName}</h3>
                     <p>
                       {branding.productName} automates a secure superhighway between devices, clouds, virtual machines,
@@ -222,12 +222,7 @@ export default function DashboardPage(props: PageProps) {
                   </Card>
                 </div>
                 <div>
-                  <Card
-                    style={{
-                      height: '259px',
-                      background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
-                    }}
-                  >
+                  <Card>
                     <h3>Remote Access</h3>
                     <p>
                       Remote Access Gateways enable secure access to your network via Clients. The Gateway forwards
@@ -254,12 +249,7 @@ export default function DashboardPage(props: PageProps) {
                   </Card>
                 </div>
                 <div>
-                  <Card
-                    style={{
-                      height: '259px',
-                      background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
-                    }}
-                  >
+                  <Card>
                     <h3>Egress</h3>
                     <p>
                       Enable devices in your network to communicate with other devices outside the network via egress
@@ -284,12 +274,7 @@ export default function DashboardPage(props: PageProps) {
                   </Card>
                 </div>
                 <div>
-                  <Card
-                    style={{
-                      background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
-                      height: '259px',
-                    }}
-                  >
+                  <Card>
                     <h3>Relays</h3>
                     <p>
                       Enable devices in your network to communicate with otherwise unreachable devices with relays.{' '}

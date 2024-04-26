@@ -191,7 +191,7 @@ export default function AddEnrollmentKeyModal({
                 name="networks"
                 label="Networks"
                 data-nmui-intercom="add-enrollment-key-form_networks"
-                initialValue={[networkId]}
+                initialValue={networkId ? [networkId] : undefined}
               >
                 <Select
                   mode="multiple"

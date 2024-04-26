@@ -17,8 +17,6 @@ import {
   isValidIpv6Cidr,
 } from '@/utils/NetworkUtils';
 import { convertUiNetworkToNetworkPayload } from '@/utils/NetworkUtils';
-import { NetworkUsecaseString } from '@/store/networkusecase';
-import { networkUsecaseMapText } from '@/utils/Utils';
 
 interface AddNetworkModalProps {
   isOpen: boolean;
@@ -58,13 +56,10 @@ export default function AddNetworkModal({
   const createNetwork = async () => {
     try {
       const formData = await form.validateFields();
-      const usecase = formData.defaultUsecase as NetworkUsecaseString;
-      delete formData.defaultUsecase;
       const network = convertNetworkPayloadToUiNetwork(
         (await NetworksService.createNetwork(convertUiNetworkToNetworkPayload(formData as unknown as Network))).data,
       );
       store.addNetwork(network);
-      // store.updateNetworkUsecase(network.netid, usecase);
       notify.success({ message: `Network ${network.netid} created` });
       onCreateNetwork(network);
       resetModal();
@@ -84,7 +79,6 @@ export default function AddNetworkModal({
       addressrange6: isIpv6Val ? generateCIDR6() : '',
       defaultacl: 'yes',
       defaultDns: '',
-      defaultUsecase: 'remote_access_multiple_users',
     });
   }, [form, isIpv6Val]);
 
@@ -116,7 +110,6 @@ export default function AddNetworkModal({
             isipv4: true,
             isipv6: false,
             defaultacl: 'yes',
-            defaultUsecase: 'remote_access_multiple_users',
           }}
         >
           <Row ref={networkNameInputRef}>
@@ -264,37 +257,6 @@ export default function AddNetworkModal({
               </Row>
             </Col>
           </Row>
-
-          {/* <Row
-            style={{
-              border: `1px solid ${themeToken.colorBorder}`,
-              borderRadius: '8px',
-              padding: '.5rem',
-              marginBottom: '1.5rem',
-            }}
-          >
-            <Col xs={24}>
-              <Row justify="space-between" align="middle">
-                <Col>Primary usecase for network</Col>
-                <Col md={8}>
-                  <Form.Item
-                    name="defaultUsecase"
-                    style={{ marginBottom: '0px' }}
-                    rules={[{ required: false }]}
-                    data-nmui-intercom="add-network-form_usecase"
-                  >
-                    <Select
-                      size="small"
-                      style={{ width: '100%' }}
-                      options={Object.keys(networkUsecaseMapText).map((key) => {
-                        return { label: networkUsecaseMapText[key as NetworkUsecaseString], value: key };
-                      })}
-                    ></Select>
-                  </Form.Item>
-                </Col>
-              </Row>
-            </Col>
-          </Row> */}
 
           <Row>
             <Col xs={24} style={{ textAlign: 'right' }}>
