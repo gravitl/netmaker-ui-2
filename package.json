@@ -19,11 +19,11 @@
     "e2e": "playwright test"
   },
   "dependencies": {
-    "@ant-design/icons": "^5.2.6",
+    "@ant-design/icons": "^5.3.6",
     "@react-sigma/core": "^3.4.2",
     "animate.css": "^4.1.1",
     "antd": "~5.10",
-    "antd-style": "^3.6.1",
+    "antd-style": "^3.6.2",
     "axios": "^1.6.8",
     "axios-mock-adapter": "^1.22.0",
     "buffer": "^6.0.3",
@@ -52,7 +52,7 @@
   "devDependencies": {
     "@playwright/test": "^1.43.0",
     "@testing-library/jest-dom": "^5.16.5",
-    "@testing-library/react": "^14.2.2",
+    "@testing-library/react": "^15.0.2",
     "@types/lodash": "^4.17.0",
     "@types/node": "^20.12.5",
     "@types/react": "^18.2.45",
@@ -72,9 +72,9 @@
     "lint-staged": "^15.2.2",
     "prettier": "3.2.5",
     "sass": "^1.71.1",
-    "typescript": "^5.3.3",
+    "typescript": "^5.4.5",
     "vite": "^4.4.9",
-    "vitest": "^1.4.0"
+    "vitest": "^1.5.0"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": "eslint --cache --fix"
