@@ -53,6 +53,7 @@ const testNode1: Node = {
   inet_node_req: {
     inet_node_client_ids: [],
   },
+  additional_rag_ips: [],
 };
 
 const testNode2 = { ...testNode1, lastcheckin: testNode1.lastcheckin - 400 };

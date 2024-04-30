@@ -17,16 +17,13 @@ import { NodesService } from '@/services/NodesService';
 import { useStore } from '@/store/store';
 import { getExtendedNode, getNodeConnectivityStatus, isNodeRelay } from '@/utils/NodeUtils';
 import { getNetworkHostRoute, resolveAppRoute } from '@/utils/RouteUtils';
-import { download, extractErrorMsg } from '@/utils/ServiceUtils';
+import { extractErrorMsg } from '@/utils/ServiceUtils';
 import {
   CheckOutlined,
-  CloseOutlined,
   DashOutlined,
   DeleteOutlined,
   DownOutlined,
-  DownloadOutlined,
   EditOutlined,
-  // DownloadOutlined,
   ExclamationCircleFilled,
   EyeOutlined,
   GlobalOutlined,
@@ -49,14 +46,11 @@ import {
   Card,
   Checkbox,
   Col,
-  Collapse,
   Dropdown,
-  Flex,
   FloatButton,
   Form,
   Input,
   Layout,
-  List,
   MenuProps,
   Modal,
   notification,
@@ -108,10 +102,6 @@ import AddRemoteAccessGatewayModal from '@/components/modals/add-remote-access-g
 import { InternetGatewaysPage } from './internet-gateways/InternetGatewaysPage';
 import { AvailableOses } from '@/models/AvailableOses';
 import { NetworkUsage, networkUsecaseMap } from '@/constants/NetworkUseCases';
-import { filter, get, some } from 'lodash';
-import { UsersService } from '@/services/UsersService';
-import Meta from 'antd/es/card/Meta';
-import { title } from 'process';
 import { NetworkUsecaseString } from '@/store/networkusecase';
 import QuickSetupModal from '@/components/modals/quick-setup-modal/QuickSetupModal';
 
@@ -825,23 +815,6 @@ export default function NetworkDetailsPage(props: PageProps) {
     [storeFetchNodes, notify],
   );
 
-  const downloadClientData = useCallback(
-    async (client: ExternalClient) => {
-      try {
-        notify.info({ message: 'Downloading...' });
-        const qrData = (await NodesService.getExternalClientConfig(client.clientid, client.network, 'file'))
-          .data as string;
-        download(`${client.clientid}.conf`, qrData);
-      } catch (err) {
-        notify.error({
-          message: 'Failed to download client config',
-          description: extractErrorMsg(err as any),
-        });
-      }
-    },
-    [notify],
-  );
-
   const getGatewayDropdownOptions = useCallback(
     (gateway: Node) => {
       const defaultOptions: MenuProps['items'] = [
@@ -930,7 +903,16 @@ export default function NetworkDetailsPage(props: PageProps) {
       },
       {
         title: 'Endpoint',
-        dataIndex: 'endpointip',
+        render(_, node) {
+          return (
+            <Typography.Text>
+              {([] as Array<string>)
+                .concat(node.endpointip ?? '', node.endpointipv6 ?? '')
+                .filter(Boolean)
+                .join(', ')}
+            </Typography.Text>
+          );
+        },
       },
       {
         title: 'Default Client DNS',
@@ -976,7 +958,16 @@ export default function NetworkDetailsPage(props: PageProps) {
       },
       {
         title: 'Endpoint',
-        dataIndex: 'endpointip',
+        render(_, node) {
+          return (
+            <Typography.Text>
+              {([] as Array<string>)
+                .concat(node.endpointip ?? '', node.endpointipv6 ?? '')
+                .filter(Boolean)
+                .join(', ')}
+            </Typography.Text>
+          );
+        },
       },
       {
         width: '1rem',
@@ -1158,17 +1149,6 @@ export default function NetworkDetailsPage(props: PageProps) {
                     },
                   },
                   {
-                    key: 'download',
-                    label: (
-                      <Typography.Text>
-                        <DownloadOutlined /> Download
-                      </Typography.Text>
-                    ),
-                    onClick: () => {
-                      downloadClientData(client);
-                    },
-                  },
-                  {
                     key: 'delete',
                     danger: true,
                     label: (
@@ -1189,14 +1169,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       },
     ],
-    [
-      confirmDeleteClient,
-      downloadClientData,
-      networkNodes,
-      openClientDetails,
-      store.hostsCommonDetails,
-      toggleClientStatus,
-    ],
+    [confirmDeleteClient, networkNodes, openClientDetails, store.hostsCommonDetails, toggleClientStatus],
   );
 
   const relayTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(
@@ -2054,7 +2027,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         </Card>
       </div>
     );
-  }, [network, form, isEditingNetwork, themeToken.colorBorder, isIpv4Watch, isIpv6Watch, usecase]);
+  }, [network, form, isEditingNetwork, themeToken.colorBorder, isIpv4Watch, isIpv6Watch]);
 
   const getHostsContent = useCallback(() => {
     return (
@@ -2071,7 +2044,6 @@ export default function NetworkDetailsPage(props: PageProps) {
           </Col>
           <Col xs={24} md={6} className="add-host-dropdown-button">
             <Dropdown
-              // icon={<DownOutlined />}
               menu={{
                 items: [
                   {
@@ -3780,7 +3752,6 @@ export default function NetworkDetailsPage(props: PageProps) {
   }, [
     networkId,
     usecase,
-    store.networksUsecase,
     store.isSidebarCollapsed,
     networkNodes.length,
     clientGateways.length,
@@ -4101,9 +4072,7 @@ export default function NetworkDetailsPage(props: PageProps) {
             key={`view-client-${targetClient.clientid}`}
             isOpen={isClientDetailsModalOpen}
             client={targetClient}
-            // onDeleteClient={() => {
-            //   loadClients();
-            // }}
+            onViewConfig={() => setIsClientConfigModalOpen(true)}
             onUpdateClient={(updatedClient: ExternalClient) => {
               setClients((prev) => prev.map((c) => (c.clientid === targetClient.clientid ? updatedClient : c)));
               setTargetClient(updatedClient);
@@ -4111,11 +4080,12 @@ export default function NetworkDetailsPage(props: PageProps) {
             onCancel={() => setIsClientDetailsModalOpen(false)}
           />
         )}
-        {targetClient && (
+        {targetClient && selectedGateway && (
           <ClientConfigModal
             key={`view-client-config-${targetClient.clientid}`}
             isOpen={isClientConfigModalOpen}
             client={targetClient}
+            gateway={selectedGateway}
             onCancel={() => setIsClientConfigModalOpen(false)}
           />
         )}
@@ -4204,8 +4174,9 @@ export default function NetworkDetailsPage(props: PageProps) {
             isOpen={isUpdateGatewayModalOpen}
             ingress={selectedGateway}
             networkId={networkId}
-            onUpdateIngress={() => {
+            onUpdateIngress={(newNode) => {
               setIsUpdateGatewayModalOpen(false);
+              setSelectedGateway(newNode);
             }}
             onCancel={() => setIsUpdateGatewayModalOpen(false)}
           />

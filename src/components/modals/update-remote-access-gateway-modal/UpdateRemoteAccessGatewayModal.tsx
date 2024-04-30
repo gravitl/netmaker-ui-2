@@ -1,4 +1,4 @@
-import { Button, Col, Divider, Form, Input, Modal, notification, Row, Switch, Tooltip, Typography } from 'antd';
+import { Button, Col, Divider, Form, Input, Modal, notification, Row, Select, Switch, Tooltip, Typography } from 'antd';
 import { MouseEvent, useState } from 'react';
 import '../CustomModal.scss';
 import { Network } from '@/models/Network';
@@ -7,12 +7,13 @@ import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { NodesService } from '@/services/NodesService';
 import { useStore } from '@/store/store';
 import { InfoCircleOutlined } from '@ant-design/icons';
+import { isValidIp } from '@/utils/NetworkUtils';
 
 interface UpdateRemoteAccessGatewayModalProp {
   isOpen: boolean;
   networkId: Network['netid'];
   ingress: Node;
-  onUpdateIngress: () => any;
+  onUpdateIngress: (node: Node) => any;
   onOk?: (e: MouseEvent<HTMLButtonElement>) => void;
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
 }
@@ -34,6 +35,7 @@ export default function UpdateRemoteAccessGatewayModal({
   const isServerEE = store.serverConfig?.IsEE === 'yes';
 
   const storeUpdateNode = useStore().updateNode;
+  const storeFetchNodes = useStore().fetchNodes;
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const resetModal = () => {
@@ -49,11 +51,13 @@ export default function UpdateRemoteAccessGatewayModal({
           ...ingress,
           ingressdns: formData.ingressdns,
           isinternetgateway: form.getFieldValue('isinternetgateway'),
+          additional_rag_ips: form.getFieldValue('additional_rag_ips'),
         })
       ).data;
       storeUpdateNode(ingress.id, newNode);
+      storeFetchNodes();
       notify.success({ message: `Remote access gateway updated` });
-      onUpdateIngress();
+      onUpdateIngress(newNode);
     } catch (err) {
       notify.error({
         message: 'Failed to update remote access gateway',
@@ -88,6 +92,31 @@ export default function UpdateRemoteAccessGatewayModal({
             >
               <Input placeholder="DNS" />
             </Form.Item>
+
+            {isServerEE && (
+              <Form.Item
+                name="additional_rag_ips"
+                label="Additional Endpoints"
+                data-nmui-intercom="update-ingress-form_additional-endpoints"
+                rules={[
+                  {
+                    type: 'array',
+                    validator: (_: any, ips: string[]) => {
+                      if (ips.every((ip) => isValidIp(ip))) {
+                        return Promise.resolve();
+                      }
+                      return Promise.reject('Addresses must be valid IPs');
+                    },
+                  },
+                ]}
+              >
+                <Select
+                  placeholder="Additional endpoints clients can use to connect to this gateway"
+                  mode="tags"
+                  options={ingress.additional_rag_ips?.map((ip) => ({ label: ip, value: ip })) ?? []}
+                />
+              </Form.Item>
+            )}
 
             {!isServerEE && (
               <Form.Item

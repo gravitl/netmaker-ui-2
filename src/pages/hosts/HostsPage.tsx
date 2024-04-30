@@ -538,7 +538,13 @@ export default function HostsPage(props: PageProps) {
       },
       {
         title: 'Endpoint',
-        dataIndex: 'endpointip',
+        render(_, host) {
+          return (
+            <Typography.Text>
+              {([] as Array<string>).concat(host.endpointip, host.endpointipv6).filter(Boolean).join(', ')}
+            </Typography.Text>
+          );
+        },
       },
       {
         title: 'Public Port',
