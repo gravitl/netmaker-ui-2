@@ -40,7 +40,7 @@
     "rc-virtual-list": "^3.11.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-i18next": "^14.1.0",
+    "react-i18next": "^14.1.1",
     "react-router-dom": "^6.22.3",
     "react-use-intercom": "^5.1.4",
     "react-window": "^1.8.10",
