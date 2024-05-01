@@ -47,7 +47,7 @@
     "semver": "^7.6.0",
     "sigma": "^2.4.0",
     "swr": "^2.2.5",
-    "zustand": "^4.4.7"
+    "zustand": "^4.5.2"
   },
   "devDependencies": {
     "@playwright/test": "^1.43.0",
