@@ -308,7 +308,7 @@ export default function MainLayout() {
         .then((res) => res.text())
         .then((data) => {
           const githubReleasesPage = new DOMParser().parseFromString(data, 'text/html');
-          const latestVersion = githubReleasesPage.querySelectorAll('h2.sr-only')?.[0].textContent ?? '0.5';
+          const latestVersion = githubReleasesPage.querySelectorAll('h2.sr-only')?.[1].textContent ?? '0.5';
           const uiVersion = getUiVersion();
           if (latestVersion && lt(uiVersion, latestVersion)) {
             if (isServerEE) setLatestNetmakerVersion(`${latestVersion}-ee`);
