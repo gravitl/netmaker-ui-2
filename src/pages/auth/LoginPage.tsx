@@ -15,6 +15,7 @@ import { ApiRoutes } from '@/constants/ApiRoutes';
 import { resolveAppRoute, truncateQueryParamsFromCurrentUrl, useQuery } from '@/utils/RouteUtils';
 import { AppErrorBoundary } from '@/components/AppErrorBoundary';
 import { useBranding } from '@/utils/Utils';
+import UpgradeModal from '@/components/modals/upgrade-modal/UpgradeModal';
 
 interface LoginPageProps {
   isFullScreen?: boolean;
@@ -34,12 +35,15 @@ export default function LoginPage(props: LoginPageProps) {
   const location = useLocation();
   const currentTheme = store.currentTheme;
   const branding = useBranding();
+  const isServerPro = store.serverStatus?.status?.is_pro;
 
   const oauthToken = query.get('login');
   const oauthUser = query.get('user');
   const [shouldRemember, setShouldRemember] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isBasicAuthLoading, setIsBasicAuthLoading] = useState(false);
+  const [isSsoLoading, setIsSsoLoading] = useState(false);
   const [isUserLoggingIn, setIsUserLoggingIn] = useState(false);
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
 
   const getUserAndUpdateInStore = async (username: User['username']) => {
     try {
@@ -66,7 +70,7 @@ export default function LoginPage(props: LoginPageProps) {
   const onLogin = async () => {
     try {
       const formData = await form.validateFields();
-      setIsLoading(true);
+      setIsBasicAuthLoading(true);
       const data = await (await AuthService.login(formData)).data;
       store.setStore({ jwt: data.Response.AuthToken, username: data.Response.UserName });
       await storeFetchServerConfig();
@@ -76,7 +80,7 @@ export default function LoginPage(props: LoginPageProps) {
       notify.error({ message: 'Failed to login', description: errorMessage });
       checkLoginErrorMessage(errorMessage);
     } finally {
-      setIsLoading(false);
+      setIsBasicAuthLoading(false);
     }
   };
 
@@ -86,14 +90,18 @@ export default function LoginPage(props: LoginPageProps) {
   }, [navigate]);
 
   const onSSOLogin = useCallback(() => {
-    setIsLoading(true);
+    if (!isServerPro) {
+      setIsUpgradeModalOpen(true);
+      return;
+    }
+    setIsSsoLoading(true);
     if (!store.baseUrl) {
       notify.error({ message: 'Failed to login', description: 'Misconfigured Server URL' });
-      setIsLoading(false);
+      setIsSsoLoading(false);
       return;
     }
     window.location.href = `${store.baseUrl}${ApiRoutes.LOGIN_OAUTH}`;
-  }, [notify, store.baseUrl]);
+  }, [notify, store.baseUrl, isServerPro]);
 
   useEffect(() => {
     checkIfServerHasAdminAndRedirect();
@@ -208,7 +216,7 @@ export default function LoginPage(props: LoginPageProps) {
             </Typography.Text>
 
             <Form.Item style={{ marginTop: '1.5rem' }}>
-              <Button type="primary" block onClick={onLogin} loading={isLoading}>
+              <Button type="primary" block onClick={onLogin} loading={isBasicAuthLoading}>
                 {t('signin.signin')}
               </Button>
             </Form.Item>
@@ -216,16 +224,21 @@ export default function LoginPage(props: LoginPageProps) {
               <Typography.Text>{t('signin.or')}</Typography.Text>
             </Divider>
             <Form.Item style={{ marginTop: '1.5rem' }}>
-              <Button type="default" block onClick={onSSOLogin} loading={isLoading}>
+              <Button type="default" block onClick={onSSOLogin} loading={isSsoLoading}>
                 {t('signin.sso')}
               </Button>
             </Form.Item>
           </Form>
         </Layout.Content>
-
-        {/* misc */}
-        {notifyCtx}
       </Layout>
+
+      {/* misc */}
+      {notifyCtx}
+      <UpgradeModal
+        isOpen={isUpgradeModalOpen}
+        onUpgrade={() => setIsUpgradeModalOpen(false)}
+        onCancel={() => setIsUpgradeModalOpen(false)}
+      />
     </AppErrorBoundary>
   );
 }
