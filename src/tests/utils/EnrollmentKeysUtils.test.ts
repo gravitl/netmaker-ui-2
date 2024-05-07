@@ -1,7 +1,6 @@
 import {
   EnrollmentKey,
   TimeBoundEnrollmentKey,
-  UndefinedEnrollmentKey,
   UnlimitedEnrollmentKey,
   UsesBasedEnrollmentKey,
 } from '@/models/EnrollmentKey';

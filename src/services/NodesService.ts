@@ -69,6 +69,7 @@ function getExternalClientConfig(
   extClientId: ExternalClient['clientid'],
   networkId: Network['netid'],
   type: 'qr' | 'file',
+  preferredEndpoint?: string,
 ) {
   return axiosService.get<string | ArrayBuffer>(
     `${ApiRoutes.EXTERNAL_CLIENTS}/${encodeURIComponent(networkId)}/${encodeURIComponent(
@@ -76,6 +77,9 @@ function getExternalClientConfig(
     )}/${encodeURIComponent(type)}`,
     {
       responseType: type === 'qr' ? 'arraybuffer' : undefined,
+      params: {
+        preferredip: preferredEndpoint,
+      },
     },
   );
 }

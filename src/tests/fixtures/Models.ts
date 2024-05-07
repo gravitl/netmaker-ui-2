@@ -145,6 +145,7 @@ export const stubNode1: Node = {
   inet_node_req: {
     inet_node_client_ids: [],
   },
+  additional_rag_ips: [],
 };
 
 export const stubNode2: Node = {
@@ -187,6 +188,7 @@ export const stubNode2: Node = {
   inet_node_req: {
     inet_node_client_ids: undefined,
   },
+  additional_rag_ips: [],
 };
 
 export const stubNodes: Node[] = [stubNode1, stubNode2];

@@ -43,6 +43,7 @@ const testNode: Node = {
   inet_node_req: {
     inet_node_client_ids: [],
   },
+  additional_rag_ips: [],
 };
 
 const hostRegistry: Record<Host['id'], HostCommonDetails> = {
