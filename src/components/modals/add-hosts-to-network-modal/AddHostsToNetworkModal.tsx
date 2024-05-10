@@ -113,8 +113,12 @@ export default function AddHostsToNetworkModal({
                     defaultSortOrder: 'ascend',
                   },
                   {
-                    title: 'Endpoint',
+                    title: 'Endpoint (IPv4)',
                     dataIndex: 'endpointip',
+                  },
+                  {
+                    title: 'Endpoint (IPv6)',
+                    dataIndex: 'endpointipv6',
                   },
                   {
                     title: 'Public Port',
