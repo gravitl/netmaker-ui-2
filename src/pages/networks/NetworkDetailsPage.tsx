@@ -97,13 +97,13 @@ import ClientConfigModal from '@/components/modals/client-config-modal/ClientCon
 import { isSaasBuild } from '@/services/BaseService';
 import { NetworkDetailTourStep } from '@/utils/Types';
 import TourComponent, { JumpToTourStepObj } from '@/pages/networks/TourComponent';
-import DownloadRemotesAccessClientModal from '@/components/modals/remote-access-client-modal/DownloadRemoteAccessClientModal';
 import AddRemoteAccessGatewayModal from '@/components/modals/add-remote-access-gateway-modal/AddRemoteAccessGatewayModal';
 import { InternetGatewaysPage } from './internet-gateways/InternetGatewaysPage';
 import { AvailableOses } from '@/models/AvailableOses';
 import { NetworkUsage, networkUsecaseMap } from '@/constants/NetworkUseCases';
 import { NetworkUsecaseString } from '@/store/networkusecase';
 import QuickSetupModal from '@/components/modals/quick-setup-modal/QuickSetupModal';
+import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -2467,14 +2467,15 @@ export default function NetworkDetailsPage(props: PageProps) {
                   }}
                 >
                   <span>
-                    Introducing the Remote Access Client (RAC) – a graphical user interface (GUI) tool designed for
+                    Introducing the Remote Access Client (RAC) - a graphical user interface (GUI) tool designed for
                     convenient connectivity to a Netmaker network. RAC is particularly well-suited for offsite machines
-                    requiring access to a Netmaker network and is compatible with Windows, Mac, and Linux operating
-                    systems.
+                    requiring access to a Netmaker network and is compatible with Windows, Mac, Linux and mobile
+                    (Android, iOS) operating systems.
                   </span>
                   <Button
-                    href="#"
-                    onClick={() => setIsDownloadRemoteAccessClientModalOpen(true)}
+                    href={ExternalLinks.RAC_DOWNLOAD_DOCS_LINK}
+                    target="_blank"
+                    rel="noreferrer"
                     type="primary"
                     style={{
                       marginLeft: 'auto',
@@ -4215,11 +4216,6 @@ export default function NetworkDetailsPage(props: PageProps) {
             onCancel={() => setIsUpdateNodeModalOpen(false)}
           />
         )}
-        <DownloadRemotesAccessClientModal
-          isOpen={isDownloadRemoteAccessClientModalOpen}
-          onCancel={() => setIsDownloadRemoteAccessClientModalOpen(false)}
-          networkId={networkId}
-        />
       </Layout.Content>
       {/* {getNetworkSuggestionsBasedOnUsecase} */}
       {handleQuickSetupModal}

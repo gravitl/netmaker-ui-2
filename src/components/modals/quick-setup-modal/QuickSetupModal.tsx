@@ -1,4 +1,4 @@
-import { CloseOutlined, LockOutlined, PlusOutlined, SelectOutlined } from '@ant-design/icons';
+import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import {
   Col,
   Row,
@@ -16,7 +16,7 @@ import {
   Alert,
 } from 'antd';
 import { useStore } from '@/store/store';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   UsecaseQuestionsAll,
   UsecaseQuestions,
@@ -36,7 +36,7 @@ import { isValidIpCidr } from '@/utils/NetworkUtils';
 import { INTERNET_RANGE_IPV4, INTERNET_RANGE_IPV6 } from '@/constants/AppConstants';
 import { UsecaseQuestionAndAnswer } from '@/store/networkusecase';
 import AddHostsToNetworkModal from '../add-hosts-to-network-modal/AddHostsToNetworkModal';
-import { Links, Images } from '@/constants/LinkAndImageConstants';
+import { ExternalLinks, AppImages } from '@/constants/LinkAndImageConstants';
 
 interface ModalProps {
   isModalOpen: boolean;
@@ -343,11 +343,11 @@ export default function QuickSetupModal(props: ModalProps) {
     if (window.innerWidth <= 768) return <></>;
     let img = null;
     if (currentQuestion.key === 'egress') {
-      img = Images.EGRESS_IMG;
+      img = AppImages.EGRESS_IMG;
     } else if (currentQuestion.key === 'remote_access_gateways') {
-      img = Images.RAG_IMG;
+      img = AppImages.RAG_IMG;
     } else if (currentQuestion.key === 'networks') {
-      img = Images.NET_IMG;
+      img = AppImages.NET_IMG;
     } else {
       return <></>;
     }
@@ -383,7 +383,7 @@ export default function QuickSetupModal(props: ModalProps) {
             message={
               <>
                 Visit{' '}
-                <a href={Links.RAC_LINK} target="_blank" rel="noreferrer">
+                <a href={ExternalLinks.RAC_LINK} target="_blank" rel="noreferrer">
                   our docs{' '}
                 </a>{' '}
                 to find out how to use the Remote Access Client
@@ -398,7 +398,7 @@ export default function QuickSetupModal(props: ModalProps) {
             message={
               <>
                 Visit{' '}
-                <a href={Links.WIREGUARD_LINK} target="_blank" rel="noreferrer">
+                <a href={ExternalLinks.WIREGUARD_LINK} target="_blank" rel="noreferrer">
                   our docs{' '}
                 </a>{' '}
                 to find out how to use the vpn client with wireguard
