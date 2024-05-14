@@ -75,12 +75,12 @@ export default function AddNetworkModal({
     form.setFieldValue('isipv4', true);
     form.setFieldsValue({
       netid: generateNetworkName(),
-      addressrange: generateCIDR(),
+      addressrange: isIpv4Val ? generateCIDR() : '',
       addressrange6: isIpv6Val ? generateCIDR6() : '',
       defaultacl: 'yes',
       defaultDns: '',
     });
-  }, [form, isIpv6Val]);
+  }, [form, isIpv4Val, isIpv6Val]);
 
   return (
     <Modal

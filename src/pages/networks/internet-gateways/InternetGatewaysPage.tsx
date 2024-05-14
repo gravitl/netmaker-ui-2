@@ -170,7 +170,7 @@ export function InternetGatewaysPage({ network, activeTabKey }: InternetGateways
         title: 'Addresses',
         dataIndex: 'address',
         render(_, node) {
-          const addrs = `${node.address}${node.address6 ? `, ${node.address6}` : ''}`;
+          const addrs = ([] as Array<string>).concat(node.address || [], node.address6 || []).join(', ');
           return <Tooltip title={addrs}>{addrs}</Tooltip>;
         },
       },

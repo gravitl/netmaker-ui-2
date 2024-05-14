@@ -98,14 +98,16 @@ export default function UpdateNodeModal({ isOpen, node, onUpdateNode, onCancel }
       >
         <div className="scrollable-modal-body">
           <div className="CustomModalBody">
-            <Form.Item
-              label="IP Address (IPv4)"
-              name="address"
-              rules={[{ required: true }]}
-              data-nmui-intercom="update-node-form_address"
-            >
-              <Input placeholder="IPv4 address" />
-            </Form.Item>
+            {network?.isipv4 && (
+              <Form.Item
+                label="IP Address (IPv4)"
+                name="address"
+                rules={[{ required: true }]}
+                data-nmui-intercom="update-node-form_address"
+              >
+                <Input placeholder="IPv4 address" />
+              </Form.Item>
+            )}
 
             {network?.isipv6 && (
               <Form.Item
@@ -141,7 +143,7 @@ export default function UpdateNodeModal({ isOpen, node, onUpdateNode, onCancel }
                 showTime={true}
                 disabledTime={disabledDateTime}
                 style={{ width: '100%' }}
-                clearIcon={false}
+                allowClear={false}
                 format={NODE_EXP_TIME_FORMAT}
               />
             </Form.Item>
