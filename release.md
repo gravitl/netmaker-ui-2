@@ -4,18 +4,18 @@
 
 ## Whats New
 
-- New OAuth users will now join a waiting list. Admins can approve or reject these users. This is to prevent unauthorized users from joining the server, improving security.
-- Networks with over 50 hosts should now use NMCTL to manage ACLs. This is for better UX and also to circumvent performance issues.
-- UI will now notify admins of any new version to the server. This is to help admins enjoy new features and fixes in subsequent releases.
-- Instructions to add RAC mobile hosts to the network are now available in the UI. It can be accessed via the "Add new host" process.
-- QR codes available for RAC mobile download. This is to make it easier for users to download the RAC mobile app by scanning.
+- Usecase-based guided tour for new users. This is to help new users get started with Netmaker UI. (from v0.24.0 hotfix)
+- Users can now set additional endpoints for a Remote Acess Gateway (RAG). This is to enable remote clients to react a Netmaker network through multiple IP addresses an RAG supports. They then get the option to choose which endpoint to connect to with our Remote Access Client (RAC)
+- Less strict IP address validation for network creation. Users can now use any valid IP address for their Netmaker networks. This is to allow some reserved public IP ranges to be used.
+- Sign in with OAuth/OIDC is now a Pro feature. Upgrade your Netmaker server to enjoy this feature.
 
 ## What's Fixed/Improvements
 
-- Fixed bug with egress creation.
-- Automatically update server tier status; whether CE or Pro.
-- Host search now inlcudes name, IP address, ID and others.
-- Performance improvements with large networks. Especially with the ACLs page.
+- Pure IPv6 network UI/UX fixes.
+- Fix bug with restarting a faulty server.
+- Fix broken version upgrade feature, due to changes on Github.
+- Reactivity fixes on user management: transfering superadmin priviledges.
+- RAC linux download link now points to docs. Using a package manager (`apt`/`rpm`) is the recommended way to install RAC on linux.
 - Minor UI/UX bug fixes and improvements
 
 ## Known issues
