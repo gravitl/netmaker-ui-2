@@ -1,20 +1,5 @@
-import { Network } from '@/models/Network';
-import { useStore } from '@/store/store';
-import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  Button,
-  Col,
-  Divider,
-  Form,
-  Input,
-  Modal,
-  notification,
-  Row,
-  Select,
-  Table,
-  TableColumnsType,
-  Typography,
-} from 'antd';
+import { useCallback, useEffect, useState } from 'react';
+import { Button, Col, Divider, Modal, notification, Row, Select, Typography } from 'antd';
 import { User } from '@/models/User';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { UsersService } from '@/services/UsersService';
@@ -33,7 +18,6 @@ export default function TransferSuperAdminRightsModal({
   const [notify, notifyCtx] = notification.useNotification();
   const [isTransferLoading, setIsTransferLoading] = useState(false);
   const [admins, setAdmins] = useState<User[]>([]);
-  const store = useStore();
   const [selectedAdmin, setSelectedAdmin] = useState<User | null>(null);
 
   const loadUsers = useCallback(async () => {
@@ -60,6 +44,7 @@ export default function TransferSuperAdminRightsModal({
       return;
     }
     try {
+      setIsTransferLoading(true);
       await UsersService.transferSuperAdminRights(selectedAdmin.username);
       onTransferSuccessful?.();
       notify.success({
@@ -71,18 +56,20 @@ export default function TransferSuperAdminRightsModal({
         message: 'Failed to transfer super admin rights',
         description: extractErrorMsg(err as any),
       });
+    } finally {
+      setIsTransferLoading(false);
     }
   }, [notify, selectedAdmin, onCancel, onTransferSuccessful]);
 
   useEffect(() => {
     loadUsers();
-  }, [loadUsers]);
+  }, [loadUsers, isOpen]);
 
   return (
     <Modal
       title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Transfer Super Admin Rights</span>}
       open={isOpen}
-      onCancel={(ev) => {
+      onCancel={() => {
         onCancel?.();
       }}
       footer={null}
