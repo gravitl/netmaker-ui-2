@@ -103,7 +103,7 @@ import { AvailableOses } from '@/models/AvailableOses';
 import { NetworkUsage, networkUsecaseMap } from '@/constants/NetworkUseCases';
 import { NetworkUsecaseString } from '@/store/networkusecase';
 import QuickSetupModal from '@/components/modals/quick-setup-modal/QuickSetupModal';
-import { ExternalLinks } from '@/constants/LinkAndImageConstants';
+import DownloadRemotesAccessClientModal from '@/components/modals/remote-access-client-modal/DownloadRemoteAccessClientModal';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -2473,7 +2473,8 @@ export default function NetworkDetailsPage(props: PageProps) {
                     (Android, iOS) operating systems.
                   </span>
                   <Button
-                    href={ExternalLinks.RAC_DOWNLOAD_DOCS_LINK}
+                    // href={ExternalLinks.RAC_DOWNLOAD_DOCS_LINK}
+                    onClick={() => setIsDownloadRemoteAccessClientModalOpen(true)}
                     target="_blank"
                     rel="noreferrer"
                     type="primary"
@@ -4216,6 +4217,11 @@ export default function NetworkDetailsPage(props: PageProps) {
             onCancel={() => setIsUpdateNodeModalOpen(false)}
           />
         )}
+        <DownloadRemotesAccessClientModal
+          isOpen={isDownloadRemoteAccessClientModalOpen}
+          onCancel={() => setIsDownloadRemoteAccessClientModalOpen(false)}
+          networkId={networkId}
+        />
       </Layout.Content>
       {/* {getNetworkSuggestionsBasedOnUsecase} */}
       {handleQuickSetupModal}

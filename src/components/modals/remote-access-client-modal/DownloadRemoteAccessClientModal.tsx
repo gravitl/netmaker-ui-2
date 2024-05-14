@@ -186,7 +186,7 @@ export default function DownloadRemotesAccessClientModal({ isOpen, onCancel }: D
                           options={[{ label: 'AMD64', value: 'amd64' }]}
                         ></Select>
                       </Form.Item>
-                      <Button
+                      {/* <Button
                         type="primary"
                         href={getRACDownloadLink('linux', selectedArch, 'gui')[0]}
                         block
@@ -196,9 +196,9 @@ export default function DownloadRemotesAccessClientModal({ isOpen, onCancel }: D
                         Download Installer
                       </Button>
 
-                      <Divider />
+                      <Divider /> */}
                       <div className="" style={{ marginTop: '1rem', textAlign: 'center' }}>
-                        <Button type="link" href={RAC_DOCS_URL} target="_blank" rel="noreferrer">
+                        <Button type="primary" block href={RAC_DOCS_URL} target="_blank" rel="noreferrer">
                           View Docs
                         </Button>
                       </div>
