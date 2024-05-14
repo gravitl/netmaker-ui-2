@@ -759,6 +759,7 @@ export default function NewHostModal({
           setEnrollmentKeys([...enrollmentKeys, key]);
           setSelectedEnrollmentKey(key);
           setIsAddEnrollmentKeyModalOpen(false);
+          onStepChange(1);
         }}
         onCancel={() => {
           setIsAddEnrollmentKeyModalOpen(false);
