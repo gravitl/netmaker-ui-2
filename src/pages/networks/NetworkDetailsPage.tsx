@@ -2130,10 +2130,12 @@ export default function NetworkDetailsPage(props: PageProps) {
                   },
                   defaultSortOrder: 'ascend',
                 },
-                {
-                  title: 'Private Address (IPv4)',
-                  dataIndex: 'address',
-                },
+                network?.isipv4
+                  ? {
+                      title: 'Private Address (IPv4)',
+                      dataIndex: 'address',
+                    }
+                  : {},
                 network?.isipv6
                   ? {
                       title: 'Private Address (IPv6)',
@@ -2146,14 +2148,12 @@ export default function NetworkDetailsPage(props: PageProps) {
                     return getExtendedNode(node, store.hostsCommonDetails)?.endpointip ?? '';
                   },
                 },
-                network?.isipv6
-                  ? {
-                      title: 'Public Address (IPv6)',
-                      render(_, node) {
-                        return getExtendedNode(node, store.hostsCommonDetails)?.endpointipv6 ?? '';
-                      },
-                    }
-                  : {},
+                {
+                  title: 'Public Address (IPv6)',
+                  render(_, node) {
+                    return getExtendedNode(node, store.hostsCommonDetails)?.endpointipv6 ?? '';
+                  },
+                },
                 // {
                 //   title: 'Preferred DNS',
                 //   dataIndex: 'name',
