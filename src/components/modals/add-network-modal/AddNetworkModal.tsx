@@ -1,5 +1,5 @@
 import { EditOutlined } from '@ant-design/icons';
-import { Button, Col, Divider, Form, Input, InputRef, Modal, notification, Row, Select, Switch, theme } from 'antd';
+import { Button, Col, Divider, Form, Input, Modal, notification, Row, Select, Switch, theme } from 'antd';
 import { MouseEvent, MutableRefObject, Ref, useCallback } from 'react';
 import { CreateNetworkDto } from '@/services/dtos/CreateNetworkDto';
 import { NetworksService } from '@/services/NetworksService';
@@ -12,7 +12,6 @@ import {
   generateCIDR,
   generateCIDR6,
   generateNetworkName,
-  isPrivateIpCidr,
   isValidIpv4Cidr,
   isValidIpv6Cidr,
 } from '@/utils/NetworkUtils';
@@ -155,11 +154,7 @@ export default function AddNetworkModal({
                         {
                           validator: (_: any, ipv4: string) => {
                             if (isValidIpv4Cidr(ipv4)) {
-                              if (isPrivateIpCidr(ipv4)) {
-                                return Promise.resolve();
-                              } else {
-                                return Promise.reject('Address range must be a valid private IPv4 CIDR');
-                              }
+                              return Promise.resolve();
                             } else {
                               return Promise.reject('Address range must be a valid IPv4 CIDR');
                             }
@@ -205,11 +200,7 @@ export default function AddNetworkModal({
                         {
                           validator: (_: any, ipv6: string) => {
                             if (isValidIpv6Cidr(ipv6)) {
-                              if (isPrivateIpCidr(ipv6)) {
-                                return Promise.resolve();
-                              } else {
-                                return Promise.reject('Address range must be a valid private IPv6 CIDR');
-                              }
+                              return Promise.resolve();
                             } else {
                               return Promise.reject('Address range must be a valid IPv6 CIDR');
                             }
