@@ -71,7 +71,6 @@ export default function AddNetworkModal({
   };
 
   const autoFillDetails = useCallback(() => {
-    form.setFieldValue('isipv4', true);
     form.setFieldsValue({
       netid: generateNetworkName(),
       addressrange: isIpv4Val ? generateCIDR() : '',
