@@ -28,7 +28,7 @@ export function getUiVersion(): string {
 }
 
 async function restartTenant() {
-  return axiosService.get(ApiRoutes.RESTART_TENANT);
+  return axiosService.post(ApiRoutes.RESTART_TENANT);
 }
 
 export const ServerConfigService = {
