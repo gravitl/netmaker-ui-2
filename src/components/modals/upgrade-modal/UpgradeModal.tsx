@@ -3,7 +3,7 @@ import { MouseEvent } from 'react';
 import '../CustomModal.scss';
 import { getAmuiUrl, getLicenseDashboardUrl } from '@/utils/RouteUtils';
 import { isSaasBuild } from '@/services/BaseService';
-import { Links } from '@/constants/LinkAndImageConstants';
+import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 
 interface UpgradeModalProps {
   isOpen: boolean;
@@ -38,7 +38,7 @@ export default function UpgradeModal({ isOpen, onUpgrade: onOk, onCancel }: Upgr
         {!isSaasBuild && (
           <p>
             Visit{' '}
-            <a href={Links.PRO_UPGRADE_DOCS_LINK} target="_blank" rel="noreferrer">
+            <a href={ExternalLinks.PRO_UPGRADE_DOCS_LINK} target="_blank" rel="noreferrer">
               our upgrade docs
             </a>{' '}
             for more information on how to upgrade.
