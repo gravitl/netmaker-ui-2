@@ -165,6 +165,7 @@ export default function AddClientModal({
         await NodesService.createIngressNode(selectedGateway.id, networkId, {
           extclientdns: formData.extclientdns,
           is_internet_gw: isServerEE ? formData.is_internet_gw : false,
+          metadata: '',
         });
       }
 
