@@ -169,12 +169,11 @@ export default function QuickSetupModal(props: ModalProps) {
       if (!isAnswerARemoteAccessGateway) {
         try {
           setIsNextLoading(true);
-          const ingressNode = (
-            await NodesService.createIngressNode(answer, networkId, {
-              extclientdns: '',
-              is_internet_gw: false,
-            })
-          ).data;
+          await NodesService.createIngressNode(answer, networkId, {
+            extclientdns: '',
+            is_internet_gw: false,
+            metadata: '',
+          });
           props.notify.success({ message: `Remote access gateway created` });
         } catch (err) {
           props.notify.error({
@@ -198,7 +197,6 @@ export default function QuickSetupModal(props: ModalProps) {
       }
     } else if (currentQuestion.key === 'ranges') {
       try {
-        let egressNode: Node;
         const isAnswerAnEgress = egresses.find((gateway) => gateway.id === egressNodeId);
         const formData = await form.validateFields();
         console.log(formData.ranges);
@@ -213,15 +211,13 @@ export default function QuickSetupModal(props: ModalProps) {
         const newRanges = new Set(formData.ranges);
 
         if (isAnswerAnEgress) {
-          egressNode = (await NodesService.deleteEgressNode(egressNodeId, networkId)).data;
+          await NodesService.deleteEgressNode(egressNodeId, networkId);
         }
         setIsNextLoading(true);
-        egressNode = (
-          await NodesService.createEgressNode(egressNodeId, networkId, {
-            natEnabled: 'yes',
-            ranges: [...newRanges],
-          })
-        ).data;
+        await NodesService.createEgressNode(egressNodeId, networkId, {
+          natEnabled: 'yes',
+          ranges: [...newRanges],
+        });
         props.notify.success({ message: `Egress gateway created` });
       } catch (err) {
         props.notify.error({
@@ -307,7 +303,7 @@ export default function QuickSetupModal(props: ModalProps) {
     }
 
     return initialOptions;
-  }, [currentQuestion.key, store.networks, clientGateways, networkNodes, egresses]);
+  }, [currentQuestion.key, store.networks, networkNodes]);
 
   const handleSelectChange = (value: string) => {
     if (value === 'add_new') {
@@ -429,7 +425,7 @@ export default function QuickSetupModal(props: ModalProps) {
         height: '747px',
       };
     }
-  }, [window.innerWidth]);
+  }, [window.innerWidth, currentTheme]);
 
   const selectedAnswer = useMemo(() => {
     if (currentQuestion.key === 'remote_access_gateways') {

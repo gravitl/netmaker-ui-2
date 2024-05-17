@@ -52,6 +52,7 @@ export default function UpdateRemoteAccessGatewayModal({
           ingressdns: formData.ingressdns,
           isinternetgateway: form.getFieldValue('isinternetgateway'),
           additional_rag_ips: form.getFieldValue('additional_rag_ips'),
+          metadata: form.getFieldValue('metadata'),
         })
       ).data;
       storeUpdateNode(ingress.id, newNode);
@@ -71,7 +72,7 @@ export default function UpdateRemoteAccessGatewayModal({
   // TODO: add autofill for fields
   return (
     <Modal
-      title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Update Remote access Gateway</span>}
+      title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Update Remote Access Gateway</span>}
       open={isOpen}
       onCancel={(ev) => {
         resetModal();
@@ -117,6 +118,15 @@ export default function UpdateRemoteAccessGatewayModal({
                 />
               </Form.Item>
             )}
+
+            <Form.Item
+              label="Metadata"
+              name="metadata"
+              style={{ marginTop: '1rem' }}
+              data-nmui-intercom="add-ingress-form_metadata"
+            >
+              <Input placeholder="Enter a short description for this Remote Access Gateway (RAG)" />
+            </Form.Item>
 
             {!isServerEE && (
               <Form.Item
