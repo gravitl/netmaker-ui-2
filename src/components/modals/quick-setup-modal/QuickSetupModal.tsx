@@ -37,6 +37,8 @@ import { INTERNET_RANGE_IPV4, INTERNET_RANGE_IPV6 } from '@/constants/AppConstan
 import { UsecaseQuestionAndAnswer } from '@/store/networkusecase';
 import AddHostsToNetworkModal from '../add-hosts-to-network-modal/AddHostsToNetworkModal';
 import { ExternalLinks, AppImages } from '@/constants/LinkAndImageConstants';
+import { ServerConfigService } from '@/services/ServerConfigService';
+import { isSaasBuild } from '@/services/BaseService';
 
 interface ModalProps {
   isModalOpen: boolean;
@@ -339,11 +341,11 @@ export default function QuickSetupModal(props: ModalProps) {
     if (window.innerWidth <= 768) return <></>;
     let img = null;
     if (currentQuestion.key === 'egress') {
-      img = AppImages.EGRESS_IMG;
+      img = isSaasBuild ? `/${ServerConfigService.getUiVersion()}${AppImages.EGRESS_IMG}` : AppImages.EGRESS_IMG;
     } else if (currentQuestion.key === 'remote_access_gateways') {
-      img = AppImages.RAG_IMG;
+      img = isSaasBuild ? `/${ServerConfigService.getUiVersion()}${AppImages.RAG_IMG}` : AppImages.RAG_IMG;
     } else if (currentQuestion.key === 'networks') {
-      img = AppImages.NET_IMG;
+      img = isSaasBuild ? `/${ServerConfigService.getUiVersion()}${AppImages.NET_IMG}` : AppImages.NET_IMG;
     } else {
       return <></>;
     }
