@@ -159,6 +159,14 @@
   }
 }
 
+.progress-card {
+  position: absolute;
+  float: left;
+  bottom: 10px;
+  left: 10px;
+  z-index: 200;
+}
+
 // .ant-tour {
 //   width: 70%;
 // }

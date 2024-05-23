@@ -3,6 +3,7 @@ import { MouseEvent } from 'react';
 import '../CustomModal.scss';
 import { getAmuiUrl, getLicenseDashboardUrl } from '@/utils/RouteUtils';
 import { isSaasBuild } from '@/services/BaseService';
+import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 
 interface UpgradeModalProps {
   isOpen: boolean;
@@ -27,11 +28,22 @@ export default function UpgradeModal({ isOpen, onUpgrade: onOk, onCancel }: Upgr
     >
       <Divider style={{ margin: '0px 0px 2rem 0px' }} />
       <div className="CustomModalBody">
-        <h3 style={{ fontWeight: 'normal', marginBottom: '0px' }}>Professional</h3>
-        <div>
-          <span style={{ fontSize: '2rem', fontWeight: 'bold' }}>$99</span> per month
-        </div>
-        <p>Unlock unlimited networks and so much more!</p>
+        <h3>
+          <span style={{ marginBottom: '0px', fontSize: '1.7rem', fontWeight: 'bold' }}>Professional </span>
+          <span>license gives you more...</span>
+        </h3>
+        <p>
+          Unlock unlimited networks, OAuth (Social Sign-On) authentication, Internet Gateways, Relays and so much more!
+        </p>
+        {!isSaasBuild && (
+          <p>
+            Visit{' '}
+            <a href={ExternalLinks.PRO_UPGRADE_DOCS_LINK} target="_blank" rel="noreferrer">
+              our upgrade docs
+            </a>{' '}
+            for more information on how to upgrade.
+          </p>
+        )}
         <div style={{ marginTop: '2rem' }}>
           <Button type="primary" onClick={goToLicenceUpgradePage}>
             I&apos;m Ready to Upgrade

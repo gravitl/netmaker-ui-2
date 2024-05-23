@@ -277,10 +277,21 @@ export default function HostDetailsPage(props: PageProps) {
             data-nmui-intercom="host-details_endpoint"
           >
             <Col xs={12}>
-              <Typography.Text disabled>Endpoint</Typography.Text>
+              <Typography.Text disabled>Endpoint (IPv4)</Typography.Text>
             </Col>
             <Col xs={12}>
               <Typography.Text>{host.endpointip}</Typography.Text>
+            </Col>
+          </Row>
+          <Row
+            style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+            data-nmui-intercom="host-details_endpointv6"
+          >
+            <Col xs={12}>
+              <Typography.Text disabled>Endpoint (IPv6)</Typography.Text>
+            </Col>
+            <Col xs={12}>
+              <Typography.Text>{host.endpointipv6}</Typography.Text>
             </Col>
           </Row>
           <Row

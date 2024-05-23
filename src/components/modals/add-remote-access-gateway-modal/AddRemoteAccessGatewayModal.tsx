@@ -139,14 +139,15 @@ export default function AddRemoteAccessGatewayModal({
         await NodesService.createIngressNode(formData.node.id, networkId, {
           extclientdns: formData.extclientdns,
           is_internet_gw: formData.is_internet_gw,
+          metadata: formData.metadata,
         })
       ).data;
       resetModal();
-      notify.success({ message: `Client gateway created` });
+      notify.success({ message: `Remote access gateway created` });
       onCreateIngress(ingressNode);
     } catch (err) {
       notify.error({
-        message: 'Failed to create client gateway',
+        message: 'Failed to create remote access gateway',
         description: extractErrorMsg(err as any),
       });
     } finally {
@@ -344,6 +345,22 @@ export default function AddRemoteAccessGatewayModal({
                 </Col>
               </Row>
             )}
+
+            <Row>
+              <Col
+                xs={24}
+                // ref={addClientGatewayModalMetadataRef}
+              >
+                <Form.Item
+                  label="Metadata"
+                  name="metadata"
+                  style={{ marginTop: '1rem' }}
+                  data-nmui-intercom="add-ingress-form_metadata"
+                >
+                  <Input placeholder="Enter a short description for this Remote Access Gateway (RAG)" />
+                </Form.Item>
+              </Col>
+            </Row>
           </div>
         </div>
         <Divider style={{ margin: '0px 0px 2rem 0px' }} />

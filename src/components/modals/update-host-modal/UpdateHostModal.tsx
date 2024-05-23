@@ -116,10 +116,19 @@ export default function UpdateHostModal({ isOpen, host, onUpdateHost, onCancel }
             </Form.Item>
 
             <Form.Item
-              label="Endpoint IP"
+              label="Endpoint IP (IPv4)"
               name="endpointip"
               rules={[{ required: isStaticVal }]}
               data-nmui-intercom="update-host-form_endpointip"
+            >
+              <Input placeholder="Endpoint IP" disabled={!isStaticVal} />
+            </Form.Item>
+
+            <Form.Item
+              label="Endpoint IP (IPv6)"
+              name="endpointipv6"
+              rules={[{ required: isStaticVal }]}
+              data-nmui-intercom="update-host-form_endpointipv6"
             >
               <Input placeholder="Endpoint IP" disabled={!isStaticVal} />
             </Form.Item>

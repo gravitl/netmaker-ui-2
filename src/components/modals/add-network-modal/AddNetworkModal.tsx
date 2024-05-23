@@ -1,5 +1,5 @@
 import { EditOutlined } from '@ant-design/icons';
-import { Button, Col, Divider, Form, Input, InputRef, Modal, notification, Row, Select, Switch, theme } from 'antd';
+import { Button, Col, Divider, Form, Input, Modal, notification, Row, Select, Switch, theme } from 'antd';
 import { MouseEvent, MutableRefObject, Ref, useCallback } from 'react';
 import { CreateNetworkDto } from '@/services/dtos/CreateNetworkDto';
 import { NetworksService } from '@/services/NetworksService';
@@ -12,7 +12,6 @@ import {
   generateCIDR,
   generateCIDR6,
   generateNetworkName,
-  isPrivateIpCidr,
   isValidIpv4Cidr,
   isValidIpv6Cidr,
 } from '@/utils/NetworkUtils';
@@ -72,19 +71,18 @@ export default function AddNetworkModal({
   };
 
   const autoFillDetails = useCallback(() => {
-    form.setFieldValue('isipv4', true);
     form.setFieldsValue({
       netid: generateNetworkName(),
-      addressrange: generateCIDR(),
+      addressrange: isIpv4Val ? generateCIDR() : '',
       addressrange6: isIpv6Val ? generateCIDR6() : '',
       defaultacl: 'yes',
       defaultDns: '',
     });
-  }, [form, isIpv6Val]);
+  }, [form, isIpv4Val, isIpv6Val]);
 
   return (
     <Modal
-      title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Create a Network</span>}
+      title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold', width: '700px' }}>Create a Network</span>}
       open={isOpen}
       onCancel={(ev) => {
         resetModal();
@@ -106,7 +104,11 @@ export default function AddNetworkModal({
           name="add-network-form"
           form={form}
           layout="vertical"
-          initialValues={{ isipv4: true, isipv6: false, defaultacl: 'yes' }}
+          initialValues={{
+            isipv4: true,
+            isipv6: false,
+            defaultacl: 'yes',
+          }}
         >
           <Row ref={networkNameInputRef}>
             <Col xs={24}>
@@ -151,11 +153,7 @@ export default function AddNetworkModal({
                         {
                           validator: (_: any, ipv4: string) => {
                             if (isValidIpv4Cidr(ipv4)) {
-                              if (isPrivateIpCidr(ipv4)) {
-                                return Promise.resolve();
-                              } else {
-                                return Promise.reject('Address range must be a valid private IPv4 CIDR');
-                              }
+                              return Promise.resolve();
                             } else {
                               return Promise.reject('Address range must be a valid IPv4 CIDR');
                             }
@@ -201,11 +199,7 @@ export default function AddNetworkModal({
                         {
                           validator: (_: any, ipv6: string) => {
                             if (isValidIpv6Cidr(ipv6)) {
-                              if (isPrivateIpCidr(ipv6)) {
-                                return Promise.resolve();
-                              } else {
-                                return Promise.reject('Address range must be a valid private IPv6 CIDR');
-                              }
+                              return Promise.resolve();
                             } else {
                               return Promise.reject('Address range must be a valid IPv6 CIDR');
                             }

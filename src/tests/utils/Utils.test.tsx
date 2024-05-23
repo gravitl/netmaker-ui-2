@@ -53,6 +53,7 @@ const testNode1: Node = {
   inet_node_req: {
     inet_node_client_ids: [],
   },
+  additional_rag_ips: [],
 };
 
 const testNode2 = { ...testNode1, lastcheckin: testNode1.lastcheckin - 400 };
@@ -72,6 +73,7 @@ const testHost1: Host = {
   interfaces: [],
   defaultinterface: '',
   endpointip: '',
+  endpointipv6: '',
   publickey: '',
   macaddress: '',
   nodes: [],

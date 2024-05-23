@@ -1,21 +1,21 @@
 # Netmaker UI release notes
 
-## Netmaker UI v0.23.0
+## Netmaker UI v0.24.1
 
 ## Whats New
 
-- Revamped Internet Gateways: hosts and clients can now use internet gateways! More info [here](https://docs.netmaker.io/pro/internet-gateways.html)
-  On community edition, internet gateways for clients can be accessed via the Remote Access tab.
-- Metadata field for ingress nodes
-- Post up and post down script field for ext clients.
-- Remote access client setup modal.
-- Product tours.
+- Usecase-based guided tour for new users. This is to help new users get started with Netmaker UI. (from v0.24.0 hotfix)
+- Users can now set additional endpoints for a Remote Acess Gateway (RAG). This is to enable remote clients to react a Netmaker network through multiple IP addresses an RAG supports. They then get the option to choose which endpoint to connect to with our Remote Access Client (RAC)
+- Less strict IP address validation for network creation. Users can now use any valid IP address for their Netmaker networks. This is to allow some reserved public IP ranges to be used.
+- Sign in with OAuth/OIDC is now a Pro feature. Upgrade your Netmaker server to enjoy this feature.
 
 ## What's Fixed/Improvements
 
-- Client name validation should not allow spaces
-- Wrap url with `encodeUriComponent()`
-- Fixed bug with client id not being optional.
+- Pure IPv6 network UI/UX fixes.
+- Fix bug with restarting a faulty server.
+- Fix broken version upgrade feature, due to changes on Github.
+- Reactivity fixes on user management: transfering superadmin priviledges.
+- RAC linux download link now points to docs. Using a package manager (`apt`/`rpm`) is the recommended way to install RAC on linux.
 - Minor UI/UX bug fixes and improvements
 
 ## Known issues

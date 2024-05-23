@@ -5,8 +5,11 @@ import { AuthSlice, IAuthSlice } from './auth';
 import { HostSlice, IHostSlice } from './hosts';
 import { INetworkSlice, NetworkSlice } from './networks';
 import { INodeSlice, NodeSlice } from './nodes';
+import { INetworksUsecaseSlice, NetworksUsecaseSlice } from './networkusecase';
 
-export const useStore = create<INodeSlice & IAppSlice & INetworkSlice & IAuthSlice & IHostSlice>()(
+export const useStore = create<
+  INodeSlice & IAppSlice & INetworkSlice & IAuthSlice & IHostSlice & INetworksUsecaseSlice
+>()(
   devtools(
     persist(
       (...a) => ({
@@ -15,6 +18,7 @@ export const useStore = create<INodeSlice & IAppSlice & INetworkSlice & IAuthSli
         ...AuthSlice.createAuthSlice(...a),
         ...NetworkSlice.createNetworkSlice(...a),
         ...HostSlice.createHostSlice(...a),
+        ...NetworksUsecaseSlice.createNetworkUsecaseSlice(...a),
       }),
       {
         name: 'netmaker-storage',

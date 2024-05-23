@@ -43,11 +43,13 @@ const testNode: Node = {
   inet_node_req: {
     inet_node_client_ids: [],
   },
+  additional_rag_ips: [],
 };
 
 const hostRegistry: Record<Host['id'], HostCommonDetails> = {
   'test-host': {
     endpointip: '1.2.3.4',
+    endpointipv6: 'fd00::2.3.4',
     interfaces: [],
     isstatic: false,
     listenport: 0,

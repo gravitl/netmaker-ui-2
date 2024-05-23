@@ -1,33 +1,11 @@
-import {
-  ArrowLeftOutlined,
-  ArrowRightOutlined,
-  CloseOutlined,
-  QuestionCircleOutlined,
-  SearchOutlined,
-} from '@ant-design/icons';
+import { QuestionCircleOutlined } from '@ant-design/icons';
 import '../CustomModal.scss';
 import './DownloadRemoteAccessClientModal.scss';
-import {
-  Alert,
-  Button,
-  Card,
-  Col,
-  Divider,
-  Form,
-  Input,
-  Modal,
-  Row,
-  Select,
-  Steps,
-  Table,
-  Typography,
-  notification,
-} from 'antd';
-import { MouseEvent, Ref, useCallback, useEffect, useMemo, useState } from 'react';
+import { Button, Card, Col, Divider, Form, Modal, Row, Select } from 'antd';
+import { MouseEvent, useCallback, useEffect, useState } from 'react';
 import { useStore } from '@/store/store';
 import { AvailableArchs, AvailableOses } from '@/models/AvailableOses';
-import { getNetclientDownloadLink, getRACDownloadLink } from '@/utils/RouteUtils';
-import { EnrollmentKey } from '@/models/EnrollmentKey';
+import { getRACDownloadLink } from '@/utils/RouteUtils';
 import { isSaasBuild } from '@/services/BaseService';
 import { ServerConfigService } from '@/services/ServerConfigService';
 
@@ -44,22 +22,12 @@ interface DownloadRemoteAccessClientModalProps {
 
 const RAC_DOCS_URL = 'https://docs.netmaker.io/pro/rac.html';
 
-export default function DownloadRemotesAccessClientModal({
-  isOpen,
-  onCancel,
-  networkId,
-}: DownloadRemoteAccessClientModalProps) {
+export default function DownloadRemotesAccessClientModal({ isOpen, onCancel }: DownloadRemoteAccessClientModalProps) {
   const store = useStore();
-  const [notify, notifyCtx] = notification.useNotification();
 
   const theme = store.currentTheme;
-  const [currentStep, setCurrentStep] = useState(0);
-  const [keySearch, setKeySearch] = useState('');
   const [selectedOs, setSelectedOs] = useState<AvailableOses>('windows');
   const [selectedArch, setSelectedArch] = useState<AvailableArchs>('amd64');
-  const [enrollmentKeys, setEnrollmentKeys] = useState<EnrollmentKey[]>([]);
-  const [selectedEnrollmentKey, setSelectedEnrollmentKey] = useState<EnrollmentKey | null>(null);
-  const [isAddEnrollmentKeyModalOpen, setIsAddEnrollmentKeyModalOpen] = useState(false);
 
   const onShowInstallGuide = useCallback((ev: MouseEvent, os: AvailableOses) => {
     const btnSelector = '.NewHostModal .os-button';
@@ -72,9 +40,6 @@ export default function DownloadRemotesAccessClientModal({
   }, []);
 
   const resetModal = () => {
-    setCurrentStep(0);
-    setIsAddEnrollmentKeyModalOpen(false);
-    setSelectedEnrollmentKey(null);
     setSelectedOs('windows');
     setSelectedArch('amd64');
   };
@@ -221,7 +186,7 @@ export default function DownloadRemotesAccessClientModal({
                           options={[{ label: 'AMD64', value: 'amd64' }]}
                         ></Select>
                       </Form.Item>
-                      <Button
+                      {/* <Button
                         type="primary"
                         href={getRACDownloadLink('linux', selectedArch, 'gui')[0]}
                         block
@@ -231,9 +196,9 @@ export default function DownloadRemotesAccessClientModal({
                         Download Installer
                       </Button>
 
-                      <Divider />
+                      <Divider /> */}
                       <div className="" style={{ marginTop: '1rem', textAlign: 'center' }}>
-                        <Button type="link" href={RAC_DOCS_URL} target="_blank" rel="noreferrer">
+                        <Button type="primary" block href={RAC_DOCS_URL} target="_blank" rel="noreferrer">
                           View Docs
                         </Button>
                       </div>
@@ -245,8 +210,6 @@ export default function DownloadRemotesAccessClientModal({
           </Col>
         </Row>
       </div>
-      {/* misc */}
-      {notifyCtx}
     </Modal>
   );
 }

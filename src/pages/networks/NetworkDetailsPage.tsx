@@ -17,15 +17,13 @@ import { NodesService } from '@/services/NodesService';
 import { useStore } from '@/store/store';
 import { getExtendedNode, getNodeConnectivityStatus, isNodeRelay } from '@/utils/NodeUtils';
 import { getNetworkHostRoute, resolveAppRoute } from '@/utils/RouteUtils';
-import { download, extractErrorMsg } from '@/utils/ServiceUtils';
+import { extractErrorMsg } from '@/utils/ServiceUtils';
 import {
   CheckOutlined,
   DashOutlined,
   DeleteOutlined,
   DownOutlined,
-  DownloadOutlined,
   EditOutlined,
-  // DownloadOutlined,
   ExclamationCircleFilled,
   EyeOutlined,
   GlobalOutlined,
@@ -49,17 +47,20 @@ import {
   Checkbox,
   Col,
   Dropdown,
+  FloatButton,
   Form,
   Input,
   Layout,
   MenuProps,
   Modal,
   notification,
+  Progress,
   Radio,
   Row,
   Select,
   Skeleton,
   Space,
+  Steps,
   Switch,
   Table,
   TableColumnProps,
@@ -72,7 +73,7 @@ import {
 } from 'antd';
 import { AxiosError } from 'axios';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { PageProps } from '../../models/Page';
 import '@react-sigma/core/lib/react-sigma.min.css';
 import './NetworkDetailsPage.scss';
@@ -80,7 +81,7 @@ import { ControlsContainer, FullScreenControl, SearchControl, SigmaContainer, Zo
 import NetworkGraph from '@/components/NetworkGraph';
 import UpdateRelayModal from '@/components/modals/update-relay-modal/UpdateRelayModal';
 import { MetricCategories, NetworkMetrics, NodeOrClientMetric, UptimeNodeMetrics } from '@/models/Metrics';
-import { getHostHealth, isManagedHost, renderMetricValue, useBranding } from '@/utils/Utils';
+import { getHostHealth, isManagedHost, networkUsecaseMapText, renderMetricValue, useBranding } from '@/utils/Utils';
 import AddHostsToNetworkModal from '@/components/modals/add-hosts-to-network-modal/AddHostsToNetworkModal';
 import NewHostModal from '@/components/modals/new-host-modal/NewHostModal';
 import UpdateIngressModal from '@/components/modals/update-remote-access-gateway-modal/UpdateRemoteAccessGatewayModal';
@@ -96,9 +97,13 @@ import ClientConfigModal from '@/components/modals/client-config-modal/ClientCon
 import { isSaasBuild } from '@/services/BaseService';
 import { NetworkDetailTourStep } from '@/utils/Types';
 import TourComponent, { JumpToTourStepObj } from '@/pages/networks/TourComponent';
-import DownloadRemotesAccessClientModal from '@/components/modals/remote-access-client-modal/DownloadRemoteAccessClientModal';
 import AddRemoteAccessGatewayModal from '@/components/modals/add-remote-access-gateway-modal/AddRemoteAccessGatewayModal';
 import { InternetGatewaysPage } from './internet-gateways/InternetGatewaysPage';
+import { AvailableOses } from '@/models/AvailableOses';
+import { NetworkUsage, networkUsecaseMap } from '@/constants/NetworkUseCases';
+import { NetworkUsecaseString } from '@/store/networkusecase';
+import QuickSetupModal from '@/components/modals/quick-setup-modal/QuickSetupModal';
+import DownloadRemotesAccessClientModal from '@/components/modals/remote-access-client-modal/DownloadRemoteAccessClientModal';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -132,6 +137,14 @@ interface NodeMetricsTableData {
   };
 }
 
+type ItemTextMap = {
+  [key in keyof NetworkUsage]: string;
+};
+
+type ItemStepMap = {
+  [key in keyof NetworkUsage]: NetworkDetailTourStep;
+};
+
 const DNS_DOCS_URL = 'https://docs.netmaker.io/architecture.html#coredns';
 const HOSTS_DOCS_URL = 'https://docs.netmaker.io/ui-reference.html#hosts';
 const ACLS_DOCS_URL = 'https://docs.netmaker.io/acls.html';
@@ -144,6 +157,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const { networkId } = useParams<{ networkId: string }>();
   const store = useStore();
   const navigate = useNavigate();
+  const location = useLocation();
   const [notify, notifyCtx] = notification.useNotification();
   const { token: themeToken } = theme.useToken();
   const branding = useBranding();
@@ -203,6 +217,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [isDownloadRemoteAccessClientModalOpen, setIsDownloadRemoteAccessClientModalOpen] = useState(false);
   const [originalAcls, setOriginalAcls] = useState<NodeAclContainer>({});
   const [acls, setAcls] = useState<NodeAclContainer>({});
+  const [showFloatingButton, setShowFloatingButton] = useState(true);
   const [jumpTourStepObj, setJumpTourStepObj] = useState<JumpToTourStepObj>({
     overview: 0,
     hosts: 1,
@@ -213,6 +228,8 @@ export default function NetworkDetailsPage(props: PageProps) {
     acls: 6,
     graph: 7,
     metrics: 8,
+    vpnConfigs: 9,
+    // addRAGateway: 10,
   });
 
   const overviewTabContainerRef = useRef(null);
@@ -274,7 +291,11 @@ export default function NetworkDetailsPage(props: PageProps) {
       store.nodes
         .map((node) => getExtendedNode(node, store.hostsCommonDetails))
         .filter((node) => node.network === networkId)
-        .filter((node) => `${node?.name ?? ''}${node.address}`.toLowerCase().includes(searchHost.toLowerCase())),
+        .filter((node) =>
+          `${node?.name ?? ''}${node.address ?? ''}${node.address6 ?? ''}${node.id ?? ''}${node.endpointip ?? ''}${node.publickey ?? ''}`
+            .toLowerCase()
+            .includes(searchHost.toLowerCase()),
+        ),
     [store.nodes, store.hostsCommonDetails, networkId, searchHost],
   );
 
@@ -794,23 +815,6 @@ export default function NetworkDetailsPage(props: PageProps) {
     [storeFetchNodes, notify],
   );
 
-  const downloadClientData = useCallback(
-    async (client: ExternalClient) => {
-      try {
-        notify.info({ message: 'Downloading...' });
-        const qrData = (await NodesService.getExternalClientConfig(client.clientid, client.network, 'file'))
-          .data as string;
-        download(`${client.clientid}.conf`, qrData);
-      } catch (err) {
-        notify.error({
-          message: 'Failed to download client config',
-          description: extractErrorMsg(err as any),
-        });
-      }
-    },
-    [notify],
-  );
-
   const getGatewayDropdownOptions = useCallback(
     (gateway: Node) => {
       const defaultOptions: MenuProps['items'] = [
@@ -899,7 +903,16 @@ export default function NetworkDetailsPage(props: PageProps) {
       },
       {
         title: 'Endpoint',
-        dataIndex: 'endpointip',
+        render(_, node) {
+          return (
+            <Typography.Text>
+              {([] as Array<string>)
+                .concat(node.endpointip ?? '', node.endpointipv6 ?? '')
+                .filter(Boolean)
+                .join(', ')}
+            </Typography.Text>
+          );
+        },
       },
       {
         title: 'Default Client DNS',
@@ -945,7 +958,16 @@ export default function NetworkDetailsPage(props: PageProps) {
       },
       {
         title: 'Endpoint',
-        dataIndex: 'endpointip',
+        render(_, node) {
+          return (
+            <Typography.Text>
+              {([] as Array<string>)
+                .concat(node.endpointip ?? '', node.endpointipv6 ?? '')
+                .filter(Boolean)
+                .join(', ')}
+            </Typography.Text>
+          );
+        },
       },
       {
         width: '1rem',
@@ -1127,17 +1149,6 @@ export default function NetworkDetailsPage(props: PageProps) {
                     },
                   },
                   {
-                    key: 'download',
-                    label: (
-                      <Typography.Text>
-                        <DownloadOutlined /> Download
-                      </Typography.Text>
-                    ),
-                    onClick: () => {
-                      downloadClientData(client);
-                    },
-                  },
-                  {
                     key: 'delete',
                     danger: true,
                     label: (
@@ -1158,14 +1169,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       },
     ],
-    [
-      confirmDeleteClient,
-      downloadClientData,
-      networkNodes,
-      openClientDetails,
-      store.hostsCommonDetails,
-      toggleClientStatus,
-    ],
+    [confirmDeleteClient, networkNodes, openClientDetails, store.hostsCommonDetails, toggleClientStatus],
   );
 
   const relayTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(
@@ -1785,11 +1789,18 @@ export default function NetworkDetailsPage(props: PageProps) {
       switch (step) {
         case 'hosts':
           setIsTourOpen(true);
+          setActiveTabKey('hosts');
           setTourStep(jumpTourStepObj.hosts);
           break;
         case 'remote-access':
           setIsTourOpen(true);
-          setTourStep(jumpTourStepObj.remoteAccess);
+          setActiveTabKey('clients');
+          if (filteredClientGateways.length > 0) {
+            setTourStep(jumpTourStepObj.remoteAccess);
+          } else {
+            setIsAddClientGatewayModalOpen(true);
+            setTourStep(jumpTourStepObj.remoteAccess);
+          }
           break;
         case 'egress':
           setIsTourOpen(true);
@@ -1812,11 +1823,28 @@ export default function NetworkDetailsPage(props: PageProps) {
           setIsTourOpen(true);
           setTourStep(jumpTourStepObj.metrics);
           break;
+        case 'vpn-clients':
+          setIsTourOpen(true);
+          setActiveTabKey('clients');
+          setTourStep(jumpTourStepObj.vpnConfigs);
+          break;
         default:
           break;
       }
     },
     [jumpTourStepObj],
+  );
+
+  const usecase = useMemo(() => {
+    if (!networkId) return '';
+    return store.networksUsecase[networkId];
+  }, [networkId, store.networksUsecase]);
+
+  const onUpdateUsecase = useCallback(
+    async (usecase: string) => {
+      store.updateNetworkUsecase(networkId!, usecase as NetworkUsecaseString);
+    },
+    [networkId, store.updateNetworkUsecase],
   );
 
   // ui components
@@ -1830,7 +1858,7 @@ export default function NetworkDetailsPage(props: PageProps) {
             form={form}
             layout="vertical"
             initialValues={network}
-            disabled={!isEditingNetwork}
+            // disabled={!isEditingNetwork}
           >
             <Form.Item
               label="Network name"
@@ -1860,7 +1888,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                       style={{ marginBottom: '0px' }}
                       data-nmui-intercom="network-details-form_isipv4"
                     >
-                      <Switch />
+                      <Switch disabled={!isEditingNetwork} />
                     </Form.Item>
                   </Col>
                 </Row>
@@ -1872,7 +1900,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                         style={{ marginBottom: '0px' }}
                         data-nmui-intercom="network-details-form_addressrange"
                       >
-                        <Input placeholder="Enter address CIDR (eg: 192.168.1.0/24)" />
+                        <Input placeholder="Enter address CIDR (eg: 192.168.1.0/24)" disabled={!isEditingNetwork} />
                       </Form.Item>
                     </Col>
                   </Row>
@@ -1899,7 +1927,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                       style={{ marginBottom: '0px' }}
                       data-nmui-intercom="network-details-form_isipv6"
                     >
-                      <Switch />
+                      <Switch disabled={!isEditingNetwork} />
                     </Form.Item>
                   </Col>
                 </Row>
@@ -1911,7 +1939,10 @@ export default function NetworkDetailsPage(props: PageProps) {
                         style={{ marginBottom: '0px' }}
                         data-nmui-intercom="network-details-form_addressrange6"
                       >
-                        <Input placeholder="Enter address CIDR (eg: 2002::1234:abcd:ffff:c0a8:101/64)" />
+                        <Input
+                          placeholder="Enter address CIDR (eg: 2002::1234:abcd:ffff:c0a8:101/64)"
+                          disabled={!isEditingNetwork}
+                        />
                       </Form.Item>
                     </Col>
                   </Row>
@@ -1944,12 +1975,54 @@ export default function NetworkDetailsPage(props: PageProps) {
                           { label: 'ALLOW', value: 'yes' },
                           { label: 'DENY', value: 'no' },
                         ]}
+                        disabled={!isEditingNetwork}
                       ></Select>
                     </Form.Item>
                   </Col>
                 </Row>
               </Col>
             </Row>
+            {/* TODO: Bring back if needed */}
+            {/* <Row
+              style={{
+                border: `1px solid ${themeToken.colorBorder}`,
+                borderRadius: '8px',
+                padding: '.5rem',
+                marginBottom: '1.5rem',
+              }}
+            >
+              <Col xs={24}>
+                <Row justify="space-between" align="middle">
+                  {!usecase && (
+                    <Alert
+                      message="Your network is missing a usecase, please add one or if you know your way around you can ignore"
+                      type="warning"
+                      showIcon
+                      style={{ marginBottom: '1rem' }}
+                    />
+                  )}
+                  <Col>Primary usecase for network</Col>
+                  <Col md={8}>
+                    <Form.Item
+                      name="defaultUsecase"
+                      style={{ marginBottom: '0px' }}
+                      rules={[{ required: false }]}
+                      data-nmui-intercom="add-network-form_usecase"
+                      initialValue={usecase}
+                    >
+                      <Select
+                        size="small"
+                        style={{ width: '100%' }}
+                        options={Object.keys(networkUsecaseMapText).map((key) => {
+                          return { label: networkUsecaseMapText[key as NetworkUsecaseString], value: key };
+                        })}
+                        onChange={onUpdateUsecase}
+                      ></Select>
+                    </Form.Item>
+                  </Col>
+                </Row>
+              </Col>
+            </Row> */}
           </Form>
         </Card>
       </div>
@@ -1971,7 +2044,6 @@ export default function NetworkDetailsPage(props: PageProps) {
           </Col>
           <Col xs={24} md={6} className="add-host-dropdown-button">
             <Dropdown
-              // icon={<DownOutlined />}
               menu={{
                 items: [
                   {
@@ -2058,10 +2130,12 @@ export default function NetworkDetailsPage(props: PageProps) {
                   },
                   defaultSortOrder: 'ascend',
                 },
-                {
-                  title: 'Private Address (IPv4)',
-                  dataIndex: 'address',
-                },
+                network?.isipv4
+                  ? {
+                      title: 'Private Address (IPv4)',
+                      dataIndex: 'address',
+                    }
+                  : {},
                 network?.isipv6
                   ? {
                       title: 'Private Address (IPv6)',
@@ -2069,9 +2143,15 @@ export default function NetworkDetailsPage(props: PageProps) {
                     }
                   : {},
                 {
-                  title: 'Public Address',
+                  title: 'Public Address (IPv4)',
                   render(_, node) {
                     return getExtendedNode(node, store.hostsCommonDetails)?.endpointip ?? '';
+                  },
+                },
+                {
+                  title: 'Public Address (IPv6)',
+                  render(_, node) {
+                    return getExtendedNode(node, store.hostsCommonDetails)?.endpointipv6 ?? '';
                   },
                 },
                 // {
@@ -2317,11 +2397,11 @@ export default function NetworkDetailsPage(props: PageProps) {
               <Typography.Text style={{ color: 'white ' }}>
                 Remote Access Gateways enable secure access to your network via Clients. The Gateway forwards traffic
                 from the clients into the network, and from the network back to the clients. Clients are simple
-                WireGuard config files, supported on most devices. To use Clients, you must configure a Client Gateway,
-                which is typically deployed in a public cloud environment, e.g. on a server with a public IP, so that it
-                is easily reachable from the Clients. Clients are configured on this dashboard primary via client
-                configs{' '}
-                <a href="https://www.netmaker.io/features/ingress" target="_blank" rel="noreferrer">
+                WireGuard config files, supported on most devices. To use Clients, you must configure a Remote Access
+                Gateway, which is typically deployed in a public cloud environment, e.g. on a server with a public IP,
+                so that it is easily reachable from the Clients. Clients are configured on this dashboard primary via
+                client configs{' '}
+                <a href="https://www.netmaker.io/features/remote-access-gateway" target="_blank" rel="noreferrer">
                   Learn More
                 </a>
               </Typography.Text>
@@ -2356,14 +2436,14 @@ export default function NetworkDetailsPage(props: PageProps) {
                 </Row>
               </Card> */}
               <Card className="header-card" style={{ position: 'absolute', width: '100%' }}>
-                <Typography.Title level={3}>Create Client Gateway</Typography.Title>
+                <Typography.Title level={3}>Create Remote Access Gateway</Typography.Title>
                 <Typography.Text>
-                  You will need to create a client gateway for your network before you can create a client.
+                  You will need to create a remote access gateway for your network before you can create a client.
                 </Typography.Text>
                 <Row style={{ marginTop: '1rem' }}>
                   <Col>
                     <Button type="primary" size="large" onClick={() => setIsAddClientGatewayModalOpen(true)}>
-                      <PlusOutlined /> Create Client Gateway
+                      <PlusOutlined /> Create Remote Access Gateway
                     </Button>
                   </Col>
                 </Row>
@@ -2387,14 +2467,16 @@ export default function NetworkDetailsPage(props: PageProps) {
                   }}
                 >
                   <span>
-                    Introducing the Remote Access Client (RAC) – a graphical user interface (GUI) tool designed for
+                    Introducing the Remote Access Client (RAC) - a graphical user interface (GUI) tool designed for
                     convenient connectivity to a Netmaker network. RAC is particularly well-suited for offsite machines
-                    requiring access to a Netmaker network and is compatible with Windows, Mac, and Linux operating
-                    systems.
+                    requiring access to a Netmaker network and is compatible with Windows, Mac, Linux and mobile
+                    (Android, iOS) operating systems.
                   </span>
                   <Button
-                    href="#"
+                    // href={ExternalLinks.RAC_DOWNLOAD_DOCS_LINK}
                     onClick={() => setIsDownloadRemoteAccessClientModalOpen(true)}
+                    target="_blank"
+                    rel="noreferrer"
                     type="primary"
                     style={{
                       marginLeft: 'auto',
@@ -2898,147 +2980,175 @@ export default function NetworkDetailsPage(props: PageProps) {
 
   const getAclsContent = useCallback(() => {
     return (
-      <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-        <Row style={{ width: '100%' }}>
-          <Col xl={12} xs={24}>
-            <Input
-              allowClear
-              placeholder="Search host"
-              value={searchAclHost}
-              onChange={(ev) => setSearchAclHost(ev.target.value)}
-              prefix={<SearchOutlined />}
-              className="search-acl-host-input"
-            />
-            {isServerEE && (
-              <span
-                className="show-clients-toggle"
-                data-nmui-intercom="network-details-acls_showclientstoggle"
-                ref={aclTabShowClientAclsRef}
-              >
-                <label style={{ marginRight: '1rem' }} htmlFor="show-clients-acl-switch">
-                  Show Clients
-                </label>
-                <Switch
-                  id="show-clients-acl-switch"
-                  checked={showClientAcls}
-                  onChange={(newVal) => setShowClientAcls(newVal)}
+      <>
+        <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+          {networkHosts.length + clients.length > 50 ? (
+            <Row style={{ width: '100%' }}>
+              <Col xs={24}>
+                <Alert
+                  message="Too many ACLs to display"
+                  description={
+                    <>
+                      Please use{' '}
+                      <a rel="no-referrer noreferrer" href="https://docs.netmaker.io/nmctl.html#acls" target="_blank">
+                        NMCTL
+                      </a>{' '}
+                      our commandline tool to manage ACLs.
+                    </>
+                  }
+                  type="warning"
+                  showIcon
+                  style={{ marginBottom: '1rem' }}
                 />
-              </span>
-            )}
-          </Col>
-          <Col xl={12} xs={24} className="mt-10 acl-tab-buttons">
-            <Button
-              title="Allow All"
-              style={{ marginRight: '1rem', color: '#3C8618', borderColor: '#274916' }}
-              icon={<CheckOutlined />}
-              onClick={() => {
-                setAcls((prevAcls) => {
-                  const newAcls = structuredClone(prevAcls);
-                  for (const nodeId1 in newAcls) {
-                    if (Object.prototype.hasOwnProperty.call(newAcls, nodeId1)) {
-                      const nodeAcl = newAcls[nodeId1];
-                      for (const nodeId in nodeAcl) {
-                        if (Object.prototype.hasOwnProperty.call(nodeAcl, nodeId)) {
-                          nodeAcl[nodeId] = 2;
+              </Col>
+            </Row>
+          ) : (
+            <Row style={{ width: '100%' }}>
+              <Col xl={12} xs={24}>
+                <Input
+                  allowClear
+                  placeholder="Search host"
+                  value={searchAclHost}
+                  onChange={(ev) => setSearchAclHost(ev.target.value)}
+                  prefix={<SearchOutlined />}
+                  className="search-acl-host-input"
+                />
+                {isServerEE && (
+                  <span
+                    className="show-clients-toggle"
+                    data-nmui-intercom="network-details-acls_showclientstoggle"
+                    ref={aclTabShowClientAclsRef}
+                  >
+                    <label style={{ marginRight: '1rem' }} htmlFor="show-clients-acl-switch">
+                      Show Clients
+                    </label>
+                    <Switch
+                      id="show-clients-acl-switch"
+                      checked={showClientAcls}
+                      onChange={(newVal) => setShowClientAcls(newVal)}
+                    />
+                  </span>
+                )}
+              </Col>
+              <Col xl={12} xs={24} className="mt-10 acl-tab-buttons">
+                <Button
+                  title="Allow All"
+                  style={{ marginRight: '1rem', color: '#3C8618', borderColor: '#274916' }}
+                  icon={<CheckOutlined />}
+                  onClick={() => {
+                    setAcls((prevAcls) => {
+                      const newAcls = structuredClone(prevAcls);
+                      for (const nodeId1 in newAcls) {
+                        if (Object.prototype.hasOwnProperty.call(newAcls, nodeId1)) {
+                          const nodeAcl = newAcls[nodeId1];
+                          for (const nodeId in nodeAcl) {
+                            if (Object.prototype.hasOwnProperty.call(nodeAcl, nodeId)) {
+                              nodeAcl[nodeId] = 2;
+                            }
+                          }
                         }
                       }
-                    }
-                  }
-                  return newAcls;
-                });
-              }}
-              ref={aclTabAllowAllRef}
-            />
-            <Button
-              danger
-              title="Block All"
-              style={{ marginRight: '1rem' }}
-              icon={<StopOutlined />}
-              onClick={() => {
-                setAcls((prevAcls) => {
-                  const newAcls = structuredClone(prevAcls);
-                  for (const nodeId1 in newAcls) {
-                    if (Object.prototype.hasOwnProperty.call(newAcls, nodeId1)) {
-                      const nodeAcl = newAcls[nodeId1];
-                      for (const nodeId in nodeAcl) {
-                        if (Object.prototype.hasOwnProperty.call(nodeAcl, nodeId)) {
-                          nodeAcl[nodeId] = 1;
+                      return newAcls;
+                    });
+                  }}
+                  ref={aclTabAllowAllRef}
+                />
+                <Button
+                  danger
+                  title="Block All"
+                  style={{ marginRight: '1rem' }}
+                  icon={<StopOutlined />}
+                  onClick={() => {
+                    setAcls((prevAcls) => {
+                      const newAcls = structuredClone(prevAcls);
+                      for (const nodeId1 in newAcls) {
+                        if (Object.prototype.hasOwnProperty.call(newAcls, nodeId1)) {
+                          const nodeAcl = newAcls[nodeId1];
+                          for (const nodeId in nodeAcl) {
+                            if (Object.prototype.hasOwnProperty.call(nodeAcl, nodeId)) {
+                              nodeAcl[nodeId] = 1;
+                            }
+                          }
                         }
                       }
+                      return newAcls;
+                    });
+                  }}
+                  ref={aclTabDenyAllRef}
+                />
+                <Button
+                  title="Reset"
+                  style={{ marginRight: '1rem' }}
+                  icon={<ReloadOutlined />}
+                  onClick={() => {
+                    setAcls(originalAcls);
+                  }}
+                  disabled={!hasAclsBeenEdited}
+                  ref={aclTabResetRef}
+                />
+                <Button
+                  type="primary"
+                  onClick={async () => {
+                    try {
+                      if (!networkId) return;
+                      setIsSubmittingAcls(true);
+                      const newAcls = (await NetworksService.updateAclsV2(networkId, acls)).data;
+                      setOriginalAcls(newAcls);
+                      setAcls(newAcls);
+                      notify.success({
+                        message: 'ACLs updated',
+                      });
+                    } catch (err) {
+                      notify.error({
+                        message: 'Error updating ACLs',
+                        description: extractErrorMsg(err as any),
+                      });
+                    } finally {
+                      setIsSubmittingAcls(false);
                     }
-                  }
-                  return newAcls;
-                });
-              }}
-              ref={aclTabDenyAllRef}
-            />
-            <Button
-              title="Reset"
-              style={{ marginRight: '1rem' }}
-              icon={<ReloadOutlined />}
-              onClick={() => {
-                setAcls(originalAcls);
-              }}
-              disabled={!hasAclsBeenEdited}
-              ref={aclTabResetRef}
-            />
-            <Button
-              type="primary"
-              onClick={async () => {
-                try {
-                  if (!networkId) return;
-                  setIsSubmittingAcls(true);
-                  const newAcls = (await NetworksService.updateAclsV2(networkId, acls)).data;
-                  setOriginalAcls(newAcls);
-                  setAcls(newAcls);
-                  notify.success({
-                    message: 'ACLs updated',
-                  });
-                } catch (err) {
-                  notify.error({
-                    message: 'Error updating ACLs',
-                    description: extractErrorMsg(err as any),
-                  });
-                } finally {
-                  setIsSubmittingAcls(false);
-                }
-              }}
-              disabled={!hasAclsBeenEdited}
-              loading={isSubmittingAcls}
-              ref={aclTabSubmitRef}
-            >
-              Submit Changes
-            </Button>
-            <Button style={{ marginLeft: '1rem' }} onClick={() => jumpToTourStep('acls')} icon={<InfoCircleOutlined />}>
-              Take Tour
-            </Button>
-            <Button
-              title="Go to ACL documentation"
-              style={{ marginLeft: '1rem' }}
-              href={ACLS_DOCS_URL}
-              target="_blank"
-              icon={<QuestionCircleOutlined />}
-            />
-          </Col>
+                  }}
+                  disabled={!hasAclsBeenEdited}
+                  loading={isSubmittingAcls}
+                  ref={aclTabSubmitRef}
+                >
+                  Submit Changes
+                </Button>
+                <Button
+                  style={{ marginLeft: '1rem' }}
+                  onClick={() => jumpToTourStep('acls')}
+                  icon={<InfoCircleOutlined />}
+                >
+                  Take Tour
+                </Button>
+                <Button
+                  title="Go to ACL documentation"
+                  style={{ marginLeft: '1rem' }}
+                  href={ACLS_DOCS_URL}
+                  target="_blank"
+                  icon={<QuestionCircleOutlined />}
+                />
+              </Col>
 
-          <Col xs={24} style={{ paddingTop: '1rem' }}>
-            <div className="" style={{ width: '100%', overflow: 'auto' }}>
-              <VirtualisedTable
-                columns={aclTableColsV2}
-                dataSource={filteredAclDataV2}
-                className="acl-table"
-                rowKey="nodeOrClientId"
-                size="small"
-                pagination={false}
-                scroll={{
-                  x: '100%',
-                }}
-                ref={aclTabTableRef}
-              />
-            </div>
-          </Col>
-        </Row>
-      </div>
+              <Col xs={24} style={{ paddingTop: '1rem' }}>
+                <div className="" style={{ width: '100%', overflow: 'auto' }}>
+                  <VirtualisedTable
+                    columns={aclTableColsV2}
+                    dataSource={filteredAclDataV2}
+                    className="acl-table"
+                    rowKey="nodeOrClientId"
+                    size="small"
+                    pagination={false}
+                    scroll={{
+                      x: '100%',
+                    }}
+                    ref={aclTabTableRef}
+                  />
+                </div>
+              </Col>
+            </Row>
+          )}
+        </div>
+      </>
     );
   }, [
     searchAclHost,
@@ -3450,6 +3560,245 @@ export default function NetworkDetailsPage(props: PageProps) {
     setIsAddDnsModalOpen(false);
   }, []);
 
+  const getNetworkSuggestionsBasedOnUsecase = useMemo(() => {
+    // find if the current network has a usecase by checking if the network id is a key in the usecase map;
+    if (!networkId) return <></>;
+    if (!usecase) {
+      // no usecase prompty user to add usecase
+      console.log('no usecase found for this network', networkId, usecase);
+      return <></>;
+    }
+    const minimumLimits = networkUsecaseMap[usecase];
+    if (!minimumLimits) {
+      // no limits for this usecase
+      console.log('no limits for this usecase', usecase);
+    }
+
+    // const current network usage
+    const networkUsage: NetworkUsage = {
+      nodes: networkNodes.length,
+      remoteAccessGateways: clientGateways.length,
+      vpnClients: filteredClients.length,
+      egressGateways: egresses.length,
+      externalRanges: filteredExternalRoutes.length,
+      users: 0, //temporal
+      relays: relays.length,
+    };
+
+    const getUsageValue = (key: keyof NetworkUsage, usage: NetworkUsage) => {
+      return usage[key] ?? -1;
+    };
+
+    const getActualUsage = () => {
+      let count = 0;
+
+      // count the number of items that are less than the minimum limit
+      for (const item in minimumLimits) {
+        if (
+          getUsageValue(item as keyof NetworkUsage, networkUsage) <
+          getUsageValue(item as keyof NetworkUsage, minimumLimits)
+        ) {
+          count++;
+        }
+      }
+
+      return Object.keys(minimumLimits).length - count;
+    };
+
+    const getProgressBarFormat = () => {
+      return `${getActualUsage()} of ${Object.keys(minimumLimits).length}`;
+    };
+
+    const jumpToUsecaseTourStep = (item: keyof NetworkUsage) => {
+      const itemStepMap: ItemStepMap = {
+        nodes: 'hosts',
+        remoteAccessGateways: 'remote-access',
+        vpnClients: 'vpn-clients',
+      };
+
+      const step = itemStepMap[item];
+      if (step) {
+        jumpToTourStep(step);
+      } else {
+        notify.error({
+          message: 'No tour step found for this item',
+        });
+      }
+    };
+
+    const getItemText = (item: keyof NetworkUsage) => {
+      // if minimum value is 1 remove trailing s in item text map value so it reads correctly
+      const number = getUsageValue(item, minimumLimits);
+
+      const itemTextMap: ItemTextMap = {
+        nodes: 'Hosts',
+        remoteAccessGateways: 'Remote Access Gateways',
+        vpnClients: 'VPN Clients',
+        egressGateways: 'Egress Gateways',
+        externalRanges: 'External Ranges',
+        users: 'Users',
+        relays: 'Relays',
+      };
+
+      return number === 1 ? itemTextMap[item]?.slice(0, -1) ?? '' : itemTextMap[item] ?? '';
+    };
+
+    const getSteps = () => {
+      const items = Object.keys(minimumLimits).map((key: string) => {
+        const item = key as keyof NetworkUsage;
+        if (
+          getUsageValue(item, minimumLimits) != 0 &&
+          getUsageValue(item, networkUsage) < getUsageValue(item, minimumLimits)
+        ) {
+          return {
+            title: 'Waiting',
+            description: (
+              <>
+                {`Your usecase requires at least ${getUsageValue(item, minimumLimits)} ${getItemText(item)}.  `}
+                <Button type="default" size="small" onClick={() => jumpToUsecaseTourStep(item)}>
+                  Take Tour
+                </Button>
+              </>
+            ),
+          };
+        } else {
+          return {
+            title: 'Completed',
+            description: `Your usecase requires at least ${getUsageValue(item, minimumLimits)} ${getItemText(item)}.`,
+          };
+        }
+      });
+
+      return items;
+    };
+
+    const getUsageStep = () => {
+      // loop over minimum limits and find the first index that is less than the actual usage
+      return Object.keys(minimumLimits).findIndex((key: string) => {
+        const item = key as keyof NetworkUsage;
+        if (
+          getUsageValue(item, minimumLimits) != 0 &&
+          getUsageValue(item, networkUsage) < getUsageValue(item, minimumLimits)
+        ) {
+          return item;
+        }
+      });
+    };
+
+    const getStepsRemaining = () => {
+      const stepsNumber = Object.keys(minimumLimits).length - getActualUsage();
+
+      if (stepsNumber === 1) {
+        return '1 step';
+      }
+      return `${stepsNumber} steps`;
+    };
+
+    const toggleFloatingButton = () => {
+      setShowFloatingButton(!showFloatingButton);
+    };
+
+    return (
+      <>
+        {showFloatingButton && (
+          <FloatButton
+            icon={<QuestionCircleOutlined />}
+            type="primary"
+            style={{ left: store.isSidebarCollapsed ? 90 : 210 }}
+            badge={{ dot: true }}
+            onClick={toggleFloatingButton}
+          />
+        )}
+
+        {!showFloatingButton && (
+          <Card
+            style={{
+              width: '400px',
+              boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
+            }}
+            className="progress-card"
+            title={
+              <>
+                {' '}
+                Network Setup Progress
+                <Tooltip title="This is a beta feature that tracks network setup progress based on your network usage.">
+                  {' '}
+                  <InfoCircleOutlined />{' '}
+                </Tooltip>
+              </>
+            }
+            extra={
+              <Button type="text" danger onClick={toggleFloatingButton} size="small">
+                Close
+              </Button>
+            }
+          >
+            <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <Progress
+                type="dashboard"
+                percent={(getActualUsage() / Object.keys(minimumLimits).length) * 100}
+                format={getProgressBarFormat}
+                strokeColor={themeToken.colorPrimary}
+              />
+              <Typography.Text style={{ marginTop: '1rem', marginBottom: '1rem' }}>
+                You are {getStepsRemaining()} away from configuring your network for your use case,{' '}
+                {`"${networkUsecaseMapText[usecase]}"`}
+              </Typography.Text>
+
+              <Steps direction="vertical" size="small" current={getUsageStep()} items={getSteps()} />
+            </div>
+          </Card>
+        )}
+      </>
+    );
+  }, [
+    networkId,
+    usecase,
+    store.isSidebarCollapsed,
+    networkNodes.length,
+    clientGateways.length,
+    filteredClients.length,
+    egresses.length,
+    filteredExternalRoutes.length,
+    relays.length,
+    showFloatingButton,
+    themeToken.colorPrimary,
+    notify,
+    jumpToTourStep,
+  ]);
+
+  const handleQuickSetupModal = useMemo(() => {
+    let showQuickSetupModal = false;
+
+    const toggleFloatingButton = () => {
+      showQuickSetupModal = !showQuickSetupModal;
+      setShowFloatingButton(!showFloatingButton);
+    };
+
+    return (
+      <>
+        {showFloatingButton && (
+          <FloatButton
+            icon={<QuestionCircleOutlined />}
+            type="primary"
+            style={{ left: store.isSidebarCollapsed ? 90 : 210 }}
+            badge={{ dot: true }}
+            onClick={toggleFloatingButton}
+          />
+        )}
+        {!showFloatingButton && (
+          <QuickSetupModal
+            isModalOpen={!showFloatingButton}
+            notify={notify}
+            handleCancel={() => toggleFloatingButton()}
+            handleUpgrade={() => true}
+            networkId={networkId}
+          />
+        )}
+      </>
+    );
+  }, [showFloatingButton]);
+
   const promptConfirmDelete = () => {
     Modal.confirm({
       title: `Do you want to delete network ${network?.netid}?`,
@@ -3511,24 +3860,25 @@ export default function NetworkDetailsPage(props: PageProps) {
   }
 
   return (
-    <Layout.Content
-      className="NetworkDetailsPage"
-      style={{ position: 'relative', height: '100%', padding: props.isFullScreen ? 0 : 24 }}
-      key={networkId}
-    >
-      <Skeleton loading={isLoading} active className="page-padding">
-        {/* top bar */}
-        <Row className="tabbed-page-row-padding">
-          <Col xs={24}>
-            <Link to={resolveAppRoute(AppRoutes.NETWORKS_ROUTE)}>View All Networks</Link>
-            <Row>
-              <Col xs={18} lg={14}>
-                <Typography.Title level={2} style={{ marginTop: '.5rem', marginBottom: '2rem' }}>
-                  {network?.netid}
-                </Typography.Title>
-              </Col>
-              <Col xs={24} lg={10} style={{ textAlign: 'right' }} className="network-details-table-buttons">
-                {/* {!isEditingNetwork && (
+    <>
+      <Layout.Content
+        className="NetworkDetailsPage"
+        style={{ position: 'relative', height: '100%', padding: props.isFullScreen ? 0 : 24 }}
+        key={networkId}
+      >
+        <Skeleton loading={isLoading} active className="page-padding">
+          {/* top bar */}
+          <Row className="tabbed-page-row-padding">
+            <Col xs={24}>
+              <Link to={resolveAppRoute(AppRoutes.NETWORKS_ROUTE)}>View All Networks</Link>
+              <Row>
+                <Col xs={18} lg={12}>
+                  <Typography.Title level={2} style={{ marginTop: '.5rem', marginBottom: '2rem' }}>
+                    {network?.netid}
+                  </Typography.Title>
+                </Col>
+                <Col xs={24} lg={12} style={{ textAlign: 'right' }} className="network-details-table-buttons">
+                  {/* {!isEditingNetwork && (
                   <Button type="default" style={{ marginRight: '.5rem' }} onClick={() => setIsEditingNetwork(true)}>
                     Edit
                   </Button>
@@ -3548,124 +3898,126 @@ export default function NetworkDetailsPage(props: PageProps) {
                     </Button>
                   </>
                 )} */}
-                <Button
-                  style={{ marginRight: '1em' }}
-                  onClick={() => {
-                    setTourStep(0);
-                    setIsTourOpen(true);
-                  }}
-                >
-                  <InfoCircleOutlined /> Take Tour
-                </Button>
-                <Button style={{ marginRight: '1em' }} onClick={reloadNetwork}>
-                  <ReloadOutlined /> Reload
-                </Button>
-                <Dropdown
-                  menu={{
-                    items: [
-                      {
-                        key: 'delete',
-                        label: 'Delete',
-                        danger: true,
-                        icon: <DeleteOutlined />,
-                        onClick: promptConfirmDelete,
-                      },
-                    ],
-                  }}
-                >
-                  <Button>
-                    <SettingOutlined /> Network Settings
+                  <Button
+                    style={{ marginRight: '1em' }}
+                    onClick={() => {
+                      setActiveTabKey('overview');
+                      setTourStep(0);
+                      setIsTourOpen(true);
+                    }}
+                  >
+                    <InfoCircleOutlined /> Take Tour
                   </Button>
-                </Dropdown>
-              </Col>
-            </Row>
+                  <Button style={{ marginRight: '1em' }} onClick={reloadNetwork}>
+                    <ReloadOutlined /> Reload
+                  </Button>
+                  <Dropdown
+                    menu={{
+                      items: [
+                        {
+                          key: 'delete',
+                          label: 'Delete',
+                          danger: true,
+                          icon: <DeleteOutlined />,
+                          onClick: promptConfirmDelete,
+                        },
+                      ],
+                    }}
+                  >
+                    <Button>
+                      <SettingOutlined /> Network Settings
+                    </Button>
+                  </Dropdown>
+                </Col>
+              </Row>
 
-            <Tabs
-              items={networkTabs}
-              activeKey={activeTabKey}
-              onChange={(tabKey: string) => {
-                setIsInitialLoad(true);
-                setActiveTabKey(tabKey);
-              }}
-            />
-          </Col>
-        </Row>
-      </Skeleton>
+              <Tabs
+                items={networkTabs}
+                activeKey={activeTabKey}
+                onChange={(tabKey: string) => {
+                  setIsInitialLoad(true);
+                  setActiveTabKey(tabKey);
+                }}
+              />
+            </Col>
+          </Row>
+        </Skeleton>
 
-      {/* tour */}
-      <TourComponent
-        isTourOpen={isTourOpen}
-        setIsTourOpen={setIsTourOpen}
-        tourStep={tourStep}
-        setTourStep={setTourStep}
-        setIsAddClientGatewayModalOpen={setIsAddClientGatewayModalOpen}
-        setIsAddClientModalOpen={setIsAddClientModalOpen}
-        setIsAddNewHostModalOpen={setIsAddNewHostModalOpen}
-        setIsAddEgressModalOpen={setIsAddEgressModalOpen}
-        setIsAddDnsModalOpen={setIsAddDnsModalOpen}
-        setIsAddRelayModalOpen={setIsAddRelayModalOpen}
-        setIsUpdateRelayModalOpen={setIsUpdateRelayModalOpen}
-        setActiveTabKey={setActiveTabKey}
-        setCurrentMetric={setCurrentMetric}
-        setJumpToTourStepObj={setJumpTourStepObj}
-        clientGateways={clientGateways}
-        relays={relays}
-        egresses={egresses}
-        overviewTabContainerRef={overviewTabContainerRef}
-        hostsTabContainerTableRef={hostsTabContainerTableRef}
-        hostsTabContainerAddHostsRef={hostsTabContainerAddHostsRef}
-        connectHostModalEnrollmentKeysTabRef={connectHostModalEnrollmentKeysTabRef}
-        connectHostModalSelectOSTabRef={connectHostModalSelectOSTabRef}
-        connectHostModalJoinNetworkTabRef={connectHostModalJoinNetworkTabRef}
-        remoteAccessTabGatewayTableRef={remoteAccessTabGatewayTableRef}
-        remoteAccessTabAddGatewayRef={remoteAccessTabAddGatewayRef}
-        addClientGatewayModalHostRef={addClientGatewayModalHostRef}
-        addClientGatewayModalDefaultClientDNSRef={addClientGatewayModalDefaultClientDNSRef}
-        addClientGatewayModalIsInternetGatewayRef={addClientGatewayModalIsInternetGatewayRef}
-        remoteAccessTabVPNConfigTableRef={remoteAccessTabVPNConfigTableRef}
-        remoteAccessTabDisplayAllVPNConfigsRef={remoteAccessTabDisplayAllVPNConfigsRef}
-        remoteAccessTabVPNConfigCreateConfigRef={remoteAccessTabVPNConfigCreateConfigRef}
-        createClientConfigModalSelectGatewayRef={createClientConfigModalSelectGatewayRef}
-        createClientConfigModalClientIDRef={createClientConfigModalClientIDRef}
-        createClientConfigModalPublicKeyRef={createClientConfigModalPublicKeyRef}
-        createClientConfigModalDNSRef={createClientConfigModalDNSRef}
-        createClientConfigModalAdditionalAddressesRef={createClientConfigModalAdditionalAddressesRef}
-        createClientConfigModalPostDownRef={createClientConfigModalPostDownRef}
-        createClientConfigModalPostUpRef={createClientConfigModalPostUpRef}
-        relaysTabRelayTableRef={relaysTabRelayTableRef}
-        relaysTabAddRelayRef={relaysTabAddRelayRef}
-        createRelayModalSelectHostRef={createRelayModalSelectHostRef}
-        relaysTabRelayedHostsTableRef={relaysTabRelayedHostsTableRef}
-        relaysTabDisplayAllRelayedHostsRef={relaysTabDisplayAllRelayedHostsRef}
-        relaysTabAddRelayedNodesRef={relaysTabAddRelayedNodesRef}
-        addRelayedHostModalSelectHostRef={addRelayedHostModalSelectHostRef}
-        egressTabEgressTableRef={egressTabEgressTableRef}
-        egressTabAddEgressRef={egressTabAddEgressRef}
-        createEgressModalSelectHostRef={createEgressModalSelectHostRef}
-        createEgressModalEnableNATRef={createEgressModalEnableNATRef}
-        createEgressModalSelectExternalRangesRef={createEgressModalSelectExternalRangesRef}
-        egressTabExternalRoutesTableRef={egressTabExternalRoutesTableRef}
-        egressTabDisplayAllExternalRoutesRef={egressTabDisplayAllExternalRoutesRef}
-        egressTabAddExternalRouteRef={egressTabAddExternalRouteRef}
-        dnsTabDNSTableRef={dnsTabDNSTableRef}
-        dnsTabAddDNSRef={dnsTabAddDNSRef}
-        addDNSModalDNSNameRef={addDNSModalDNSNameRef}
-        addDNSModalAddressToAliasRef={addDNSModalAddressToAliasRef}
-        aclTabTableRef={aclTabTableRef}
-        aclTabShowClientAclsRef={aclTabShowClientAclsRef}
-        aclTabAllowAllRef={aclTabAllowAllRef}
-        aclTabDenyAllRef={aclTabDenyAllRef}
-        aclTabResetRef={aclTabResetRef}
-        aclTabSubmitRef={aclTabSubmitRef}
-        graphTabContainerRef={graphTabContainerRef}
-        metricsTabConnectivityStatusTableRef={metricsTabConnectivityStatusTableRef}
-        metricsTabLatencyTableRef={metricsTabLatencyTableRef}
-        metricsTabBytesSentTableRef={metricsTabBytesSentTableRef}
-        metricsTabBytesReceivedTableRef={metricsTabBytesReceivedTableRef}
-        metricsTabUptimeTableRef={metricsTabUptimeTableRef}
-        metricsTabClientsTableRef={metricsTabClientsTableRef}
-      />
-      {/* <Tour
+        {/* tour */}
+        <TourComponent
+          isTourOpen={isTourOpen}
+          setIsTourOpen={setIsTourOpen}
+          tourStep={tourStep}
+          setTourStep={setTourStep}
+          setIsAddClientGatewayModalOpen={setIsAddClientGatewayModalOpen}
+          setIsAddClientModalOpen={setIsAddClientModalOpen}
+          setIsAddNewHostModalOpen={setIsAddNewHostModalOpen}
+          setIsAddEgressModalOpen={setIsAddEgressModalOpen}
+          setIsAddDnsModalOpen={setIsAddDnsModalOpen}
+          setIsAddRelayModalOpen={setIsAddRelayModalOpen}
+          setIsUpdateRelayModalOpen={setIsUpdateRelayModalOpen}
+          setActiveTabKey={setActiveTabKey}
+          setCurrentMetric={setCurrentMetric}
+          setJumpToTourStepObj={setJumpTourStepObj}
+          clientGateways={clientGateways}
+          relays={relays}
+          egresses={egresses}
+          notify={notify}
+          overviewTabContainerRef={overviewTabContainerRef}
+          hostsTabContainerTableRef={hostsTabContainerTableRef}
+          hostsTabContainerAddHostsRef={hostsTabContainerAddHostsRef}
+          connectHostModalEnrollmentKeysTabRef={connectHostModalEnrollmentKeysTabRef}
+          connectHostModalSelectOSTabRef={connectHostModalSelectOSTabRef}
+          connectHostModalJoinNetworkTabRef={connectHostModalJoinNetworkTabRef}
+          remoteAccessTabGatewayTableRef={remoteAccessTabGatewayTableRef}
+          remoteAccessTabAddGatewayRef={remoteAccessTabAddGatewayRef}
+          addClientGatewayModalHostRef={addClientGatewayModalHostRef}
+          addClientGatewayModalDefaultClientDNSRef={addClientGatewayModalDefaultClientDNSRef}
+          addClientGatewayModalIsInternetGatewayRef={addClientGatewayModalIsInternetGatewayRef}
+          remoteAccessTabVPNConfigTableRef={remoteAccessTabVPNConfigTableRef}
+          remoteAccessTabDisplayAllVPNConfigsRef={remoteAccessTabDisplayAllVPNConfigsRef}
+          remoteAccessTabVPNConfigCreateConfigRef={remoteAccessTabVPNConfigCreateConfigRef}
+          createClientConfigModalSelectGatewayRef={createClientConfigModalSelectGatewayRef}
+          createClientConfigModalClientIDRef={createClientConfigModalClientIDRef}
+          createClientConfigModalPublicKeyRef={createClientConfigModalPublicKeyRef}
+          createClientConfigModalDNSRef={createClientConfigModalDNSRef}
+          createClientConfigModalAdditionalAddressesRef={createClientConfigModalAdditionalAddressesRef}
+          createClientConfigModalPostDownRef={createClientConfigModalPostDownRef}
+          createClientConfigModalPostUpRef={createClientConfigModalPostUpRef}
+          relaysTabRelayTableRef={relaysTabRelayTableRef}
+          relaysTabAddRelayRef={relaysTabAddRelayRef}
+          createRelayModalSelectHostRef={createRelayModalSelectHostRef}
+          relaysTabRelayedHostsTableRef={relaysTabRelayedHostsTableRef}
+          relaysTabDisplayAllRelayedHostsRef={relaysTabDisplayAllRelayedHostsRef}
+          relaysTabAddRelayedNodesRef={relaysTabAddRelayedNodesRef}
+          addRelayedHostModalSelectHostRef={addRelayedHostModalSelectHostRef}
+          egressTabEgressTableRef={egressTabEgressTableRef}
+          egressTabAddEgressRef={egressTabAddEgressRef}
+          createEgressModalSelectHostRef={createEgressModalSelectHostRef}
+          createEgressModalEnableNATRef={createEgressModalEnableNATRef}
+          createEgressModalSelectExternalRangesRef={createEgressModalSelectExternalRangesRef}
+          egressTabExternalRoutesTableRef={egressTabExternalRoutesTableRef}
+          egressTabDisplayAllExternalRoutesRef={egressTabDisplayAllExternalRoutesRef}
+          egressTabAddExternalRouteRef={egressTabAddExternalRouteRef}
+          dnsTabDNSTableRef={dnsTabDNSTableRef}
+          dnsTabAddDNSRef={dnsTabAddDNSRef}
+          addDNSModalDNSNameRef={addDNSModalDNSNameRef}
+          addDNSModalAddressToAliasRef={addDNSModalAddressToAliasRef}
+          aclTabTableRef={aclTabTableRef}
+          aclTabShowClientAclsRef={aclTabShowClientAclsRef}
+          aclTabAllowAllRef={aclTabAllowAllRef}
+          aclTabDenyAllRef={aclTabDenyAllRef}
+          aclTabResetRef={aclTabResetRef}
+          aclTabSubmitRef={aclTabSubmitRef}
+          graphTabContainerRef={graphTabContainerRef}
+          metricsTabConnectivityStatusTableRef={metricsTabConnectivityStatusTableRef}
+          metricsTabLatencyTableRef={metricsTabLatencyTableRef}
+          metricsTabBytesSentTableRef={metricsTabBytesSentTableRef}
+          metricsTabBytesReceivedTableRef={metricsTabBytesReceivedTableRef}
+          metricsTabUptimeTableRef={metricsTabUptimeTableRef}
+          metricsTabClientsTableRef={metricsTabClientsTableRef}
+        />
+        {/* <Tour
         open={isTourOpen}
         steps={networkDetailsTourStep}
         onClose={() => setIsTourOpen(false)}
@@ -3673,198 +4025,206 @@ export default function NetworkDetailsPage(props: PageProps) {
         current={tourStep}
       /> */}
 
-      {/* misc */}
-      {notifyCtx}
-      <AddDnsModal
-        isOpen={isAddDnsModalOpen}
-        networkId={networkId}
-        onCreateDns={onCreateDns}
-        onCancel={() => setIsAddDnsModalOpen(false)}
-        addDNSModalDNSNameRef={addDNSModalDNSNameRef}
-        addDNSModalAddressToAliasRef={addDNSModalAddressToAliasRef}
-      />
-      <AddClientModal
-        key={selectedGateway ? `add-client-${selectedGateway.id}` : 'add-client'}
-        isOpen={isAddClientModalOpen}
-        networkId={networkId}
-        preferredGateway={selectedGateway ?? undefined}
-        onCreateClient={() => {
-          loadClients();
-          store.fetchNodes();
-          loadAcls();
-          setIsAddClientModalOpen(false);
-        }}
-        onCancel={() => setIsAddClientModalOpen(false)}
-        createClientConfigModalSelectGatewayRef={createClientConfigModalSelectGatewayRef}
-        createClientConfigModalClientIDRef={createClientConfigModalClientIDRef}
-        createClientConfigModalPublicKeyRef={createClientConfigModalPublicKeyRef}
-        createClientConfigModalDNSRef={createClientConfigModalDNSRef}
-        createClientConfigModalAdditionalAddressesRef={createClientConfigModalAdditionalAddressesRef}
-        createClientConfigModalPostDownRef={createClientConfigModalPostDownRef}
-        createClientConfigModalPostUpRef={createClientConfigModalPostUpRef}
-        isTourOpen={isTourOpen}
-      />
-      <AddEgressModal
-        isOpen={isAddEgressModalOpen}
-        networkId={networkId}
-        onCreateEgress={(egress) => {
-          store.fetchNodes();
-          setFilteredEgress(egress);
-          setIsAddEgressModalOpen(false);
-        }}
-        onCancel={() => setIsAddEgressModalOpen(false)}
-        createEgressModalSelectHostRef={createEgressModalSelectHostRef}
-        createEgressModalEnableNATRef={createEgressModalEnableNATRef}
-        createEgressModalSelectExternalRangesRef={createEgressModalSelectExternalRangesRef}
-      />
-      {targetClient && (
-        <ClientDetailsModal
-          key={`view-client-${targetClient.clientid}`}
-          isOpen={isClientDetailsModalOpen}
-          client={targetClient}
-          // onDeleteClient={() => {
-          //   loadClients();
-          // }}
-          onUpdateClient={(updatedClient: ExternalClient) => {
-            setClients((prev) => prev.map((c) => (c.clientid === targetClient.clientid ? updatedClient : c)));
-            setTargetClient(updatedClient);
-          }}
-          onCancel={() => setIsClientDetailsModalOpen(false)}
-        />
-      )}
-      {targetClient && (
-        <ClientConfigModal
-          key={`view-client-config-${targetClient.clientid}`}
-          isOpen={isClientConfigModalOpen}
-          client={targetClient}
-          onCancel={() => setIsClientConfigModalOpen(false)}
-        />
-      )}
-      {filteredEgress && (
-        <UpdateEgressModal
-          key={`update-egress-${filteredEgress.id}`}
-          isOpen={isUpdateEgressModalOpen}
+        {/* misc */}
+        {notifyCtx}
+        <AddDnsModal
+          isOpen={isAddDnsModalOpen}
           networkId={networkId}
-          egress={filteredEgress}
-          onUpdateEgress={(node: Node) => {
+          onCreateDns={onCreateDns}
+          onCancel={() => setIsAddDnsModalOpen(false)}
+          addDNSModalDNSNameRef={addDNSModalDNSNameRef}
+          addDNSModalAddressToAliasRef={addDNSModalAddressToAliasRef}
+        />
+        <AddClientModal
+          key={selectedGateway ? `add-client-${selectedGateway.id}` : 'add-client'}
+          isOpen={isAddClientModalOpen}
+          networkId={networkId}
+          preferredGateway={selectedGateway ?? undefined}
+          onCreateClient={() => {
+            loadClients();
             store.fetchNodes();
-            setFilteredEgress(node);
-            setIsUpdateEgressModalOpen(false);
+            loadAcls();
+            setIsAddClientModalOpen(false);
           }}
-          onCancel={() => setIsUpdateEgressModalOpen(false)}
+          onCancel={() => setIsAddClientModalOpen(false)}
+          createClientConfigModalSelectGatewayRef={createClientConfigModalSelectGatewayRef}
+          createClientConfigModalClientIDRef={createClientConfigModalClientIDRef}
+          createClientConfigModalPublicKeyRef={createClientConfigModalPublicKeyRef}
+          createClientConfigModalDNSRef={createClientConfigModalDNSRef}
+          createClientConfigModalAdditionalAddressesRef={createClientConfigModalAdditionalAddressesRef}
+          createClientConfigModalPostDownRef={createClientConfigModalPostDownRef}
+          createClientConfigModalPostUpRef={createClientConfigModalPostUpRef}
+          isTourOpen={isTourOpen}
         />
-      )}
-      <AddRelayModal
-        isOpen={isAddRelayModalOpen}
-        networkId={networkId}
-        onCreateRelay={(relay) => {
-          store.fetchNodes();
-          setSelectedRelay(relay);
-          setIsAddRelayModalOpen(false);
-        }}
-        onCancel={() => setIsAddRelayModalOpen(false)}
-        createRelayModalSelectHostRef={createRelayModalSelectHostRef}
-      />
-      {selectedRelay && (
-        <UpdateRelayModal
-          key={`update-relay-${selectedRelay.id}`}
-          isOpen={isUpdateRelayModalOpen}
-          relay={selectedRelay}
+        <AddEgressModal
+          isOpen={isAddEgressModalOpen}
           networkId={networkId}
-          onUpdateRelay={(relay) => {
+          onCreateEgress={(egress) => {
+            store.fetchNodes();
+            setFilteredEgress(egress);
+            setIsAddEgressModalOpen(false);
+          }}
+          onCancel={() => setIsAddEgressModalOpen(false)}
+          createEgressModalSelectHostRef={createEgressModalSelectHostRef}
+          createEgressModalEnableNATRef={createEgressModalEnableNATRef}
+          createEgressModalSelectExternalRangesRef={createEgressModalSelectExternalRangesRef}
+        />
+        {targetClient && (
+          <ClientDetailsModal
+            key={`view-client-${targetClient.clientid}`}
+            isOpen={isClientDetailsModalOpen}
+            client={targetClient}
+            onViewConfig={() => setIsClientConfigModalOpen(true)}
+            onUpdateClient={(updatedClient: ExternalClient) => {
+              setClients((prev) => prev.map((c) => (c.clientid === targetClient.clientid ? updatedClient : c)));
+              setTargetClient(updatedClient);
+            }}
+            onCancel={() => setIsClientDetailsModalOpen(false)}
+          />
+        )}
+        {targetClient && selectedGateway && (
+          <ClientConfigModal
+            key={`view-client-config-${targetClient.clientid}`}
+            isOpen={isClientConfigModalOpen}
+            client={targetClient}
+            gateway={selectedGateway}
+            onCancel={() => setIsClientConfigModalOpen(false)}
+          />
+        )}
+        {filteredEgress && (
+          <UpdateEgressModal
+            key={`update-egress-${filteredEgress.id}`}
+            isOpen={isUpdateEgressModalOpen}
+            networkId={networkId}
+            egress={filteredEgress}
+            onUpdateEgress={(node: Node) => {
+              store.fetchNodes();
+              setFilteredEgress(node);
+              setIsUpdateEgressModalOpen(false);
+            }}
+            onCancel={() => setIsUpdateEgressModalOpen(false)}
+          />
+        )}
+        <AddRelayModal
+          isOpen={isAddRelayModalOpen}
+          networkId={networkId}
+          onCreateRelay={(relay) => {
             store.fetchNodes();
             setSelectedRelay(relay);
-            setIsUpdateRelayModalOpen(false);
+            setIsAddRelayModalOpen(false);
           }}
-          onCancel={() => setIsUpdateRelayModalOpen(false)}
-          addRelayedHostModalSelectHostRef={addRelayedHostModalSelectHostRef}
+          onCancel={() => setIsAddRelayModalOpen(false)}
+          createRelayModalSelectHostRef={createRelayModalSelectHostRef}
         />
-      )}
-      <AddHostsToNetworkModal
-        isOpen={isAddHostsToNetworkModalOpen}
-        networkId={networkId}
-        onNetworkUpdated={() => {
-          store.fetchNetworks();
-          setIsAddHostsToNetworkModalOpen(false);
-        }}
-        onCancel={() => setIsAddHostsToNetworkModalOpen(false)}
-      />
-      <NewHostModal
-        isOpen={isAddNewHostModalOpen}
-        onFinish={() => setIsAddNewHostModalOpen(false)}
-        onCancel={() => setIsAddNewHostModalOpen(false)}
-        networkId={networkId}
-        connectHostModalEnrollmentKeysTabRef={connectHostModalEnrollmentKeysTabRef}
-        connectHostModalSelectOSTabRef={connectHostModalSelectOSTabRef}
-        connectHostModalJoinNetworkTabRef={connectHostModalJoinNetworkTabRef}
-        isTourOpen={isTourOpen}
-        tourStep={tourStep}
-        page="network-details"
-      />
-      <AddRemoteAccessGatewayModal
-        isOpen={isAddClientGatewayModalOpen}
-        networkId={networkId}
-        onCreateIngress={(remoteAccessGateway) => {
-          store.fetchNodes();
-          setSelectedGateway(remoteAccessGateway);
-          setIsAddClientGatewayModalOpen(false);
-        }}
-        onCancel={() => setIsAddClientGatewayModalOpen(false)}
-        addClientGatewayModalHostRef={addClientGatewayModalHostRef}
-        addClientGatewayModalDefaultClientDNSRef={addClientGatewayModalDefaultClientDNSRef}
-        addClientGatewayModalIsInternetGatewayRef={addClientGatewayModalIsInternetGatewayRef}
-      />
-      {selectedGateway && (
-        <UpdateIngressModal
-          key={`update-ingress-${selectedGateway.id}`}
-          isOpen={isUpdateGatewayModalOpen}
-          ingress={selectedGateway}
+        {selectedRelay && (
+          <UpdateRelayModal
+            key={`update-relay-${selectedRelay.id}`}
+            isOpen={isUpdateRelayModalOpen}
+            relay={selectedRelay}
+            networkId={networkId}
+            onUpdateRelay={(relay) => {
+              store.fetchNodes();
+              setSelectedRelay(relay);
+              setIsUpdateRelayModalOpen(false);
+            }}
+            onCancel={() => setIsUpdateRelayModalOpen(false)}
+            addRelayedHostModalSelectHostRef={addRelayedHostModalSelectHostRef}
+          />
+        )}
+        <AddHostsToNetworkModal
+          isOpen={isAddHostsToNetworkModalOpen}
           networkId={networkId}
-          onUpdateIngress={() => {
-            setIsUpdateGatewayModalOpen(false);
+          onNetworkUpdated={() => {
+            store.fetchNetworks();
+            setIsAddHostsToNetworkModalOpen(false);
           }}
-          onCancel={() => setIsUpdateGatewayModalOpen(false)}
+          onCancel={() => setIsAddHostsToNetworkModalOpen(false)}
         />
-      )}
-      {selectedGateway && (
-        <UpdateIngressUsersModal
-          key={`update-ingress-users-${selectedGateway.id}`}
-          isOpen={isUpdateIngressUsersModalOpen}
-          ingress={selectedGateway}
-          networkId={networkId}
-          onCancel={() => setIsUpdateIngressUsersModalOpen(false)}
-        />
-      )}
-      {targetClient && (
-        <UpdateClientModal
-          key={`update-client-${targetClient.clientid}`}
-          isOpen={isUpdateClientModalOpen}
-          client={targetClient}
-          networkId={networkId}
-          onUpdateClient={() => {
-            loadClients();
-            setIsUpdateClientModalOpen(false);
+        <NewHostModal
+          isOpen={isAddNewHostModalOpen}
+          onFinish={(selectedOs?: AvailableOses) => {
+            setIsAddNewHostModalOpen(false);
+            if (selectedOs === 'mobile') {
+              setActiveTabKey('clients');
+            }
           }}
-          onCancel={() => setIsUpdateClientModalOpen(false)}
+          onCancel={() => setIsAddNewHostModalOpen(false)}
+          networkId={networkId}
+          connectHostModalEnrollmentKeysTabRef={connectHostModalEnrollmentKeysTabRef}
+          connectHostModalSelectOSTabRef={connectHostModalSelectOSTabRef}
+          connectHostModalJoinNetworkTabRef={connectHostModalJoinNetworkTabRef}
+          isTourOpen={isTourOpen}
+          tourStep={tourStep}
+          page="network-details"
         />
-      )}
-      {targetNode && (
-        <UpdateNodeModal
-          key={`update-node-${targetNode.id}`}
-          isOpen={isUpdateNodeModalOpen}
-          node={targetNode}
-          onUpdateNode={() => {
+        <AddRemoteAccessGatewayModal
+          isOpen={isAddClientGatewayModalOpen}
+          networkId={networkId}
+          onCreateIngress={(remoteAccessGateway) => {
             store.fetchNodes();
-            setIsUpdateNodeModalOpen(false);
+            setSelectedGateway(remoteAccessGateway);
+            setIsAddClientGatewayModalOpen(false);
           }}
-          onCancel={() => setIsUpdateNodeModalOpen(false)}
+          onCancel={() => setIsAddClientGatewayModalOpen(false)}
+          addClientGatewayModalHostRef={addClientGatewayModalHostRef}
+          addClientGatewayModalDefaultClientDNSRef={addClientGatewayModalDefaultClientDNSRef}
+          addClientGatewayModalIsInternetGatewayRef={addClientGatewayModalIsInternetGatewayRef}
         />
-      )}
-      <DownloadRemotesAccessClientModal
-        isOpen={isDownloadRemoteAccessClientModalOpen}
-        onCancel={() => setIsDownloadRemoteAccessClientModalOpen(false)}
-        networkId={networkId}
-      />
-    </Layout.Content>
+        {selectedGateway && (
+          <UpdateIngressModal
+            key={`update-ingress-${selectedGateway.id}`}
+            isOpen={isUpdateGatewayModalOpen}
+            ingress={selectedGateway}
+            networkId={networkId}
+            onUpdateIngress={(newNode) => {
+              setIsUpdateGatewayModalOpen(false);
+              setSelectedGateway(newNode);
+            }}
+            onCancel={() => setIsUpdateGatewayModalOpen(false)}
+          />
+        )}
+        {selectedGateway && (
+          <UpdateIngressUsersModal
+            key={`update-ingress-users-${selectedGateway.id}`}
+            isOpen={isUpdateIngressUsersModalOpen}
+            ingress={selectedGateway}
+            networkId={networkId}
+            onCancel={() => setIsUpdateIngressUsersModalOpen(false)}
+          />
+        )}
+        {targetClient && (
+          <UpdateClientModal
+            key={`update-client-${targetClient.clientid}`}
+            isOpen={isUpdateClientModalOpen}
+            client={targetClient}
+            networkId={networkId}
+            onUpdateClient={() => {
+              loadClients();
+              setIsUpdateClientModalOpen(false);
+            }}
+            onCancel={() => setIsUpdateClientModalOpen(false)}
+          />
+        )}
+        {targetNode && (
+          <UpdateNodeModal
+            key={`update-node-${targetNode.id}`}
+            isOpen={isUpdateNodeModalOpen}
+            node={targetNode}
+            onUpdateNode={() => {
+              store.fetchNodes();
+              setIsUpdateNodeModalOpen(false);
+            }}
+            onCancel={() => setIsUpdateNodeModalOpen(false)}
+          />
+        )}
+        <DownloadRemotesAccessClientModal
+          isOpen={isDownloadRemoteAccessClientModalOpen}
+          onCancel={() => setIsDownloadRemoteAccessClientModalOpen(false)}
+          networkId={networkId}
+        />
+      </Layout.Content>
+      {/* {getNetworkSuggestionsBasedOnUsecase} */}
+      {handleQuickSetupModal}
+    </>
   );
 }

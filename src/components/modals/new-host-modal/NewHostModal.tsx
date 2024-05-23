@@ -10,6 +10,7 @@ import {
   Form,
   Input,
   Modal,
+  QRCode,
   Row,
   Select,
   Steps,
@@ -31,11 +32,13 @@ import { ServerConfigService } from '@/services/ServerConfigService';
 import { getExtendedNode } from '@/utils/NodeUtils';
 import { ExtendedNode } from '@/models/Node';
 import { NULL_NODE, NULL_NODE_ID } from '@/constants/Types';
+import { useBranding } from '@/utils/Utils';
+import { useTheme } from 'antd-style';
 
 type PageType = 'network-details' | 'host';
 interface NewHostModal {
   isOpen: boolean;
-  onFinish?: () => void;
+  onFinish?: (selectedOs?: AvailableOses) => void;
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
   networkId?: string;
   connectHostModalEnrollmentKeysTabRef?: Ref<HTMLDivElement>;
@@ -58,6 +61,10 @@ const steps = [
   },
 ];
 
+const appleStoreLink = 'https://apps.apple.com/us/app/netmaker-rac/id6479694220?itsct=apps_box_badge&amp;itscg=30200';
+const playStoreLink =
+  'https://play.google.com/store/apps/details?id=com.net.netmaker&pli=1&utm_source=nmui&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1';
+
 export default function NewHostModal({
   isOpen,
   onCancel,
@@ -72,6 +79,8 @@ export default function NewHostModal({
 }: NewHostModal) {
   const store = useStore();
   const [notify, notifyCtx] = notification.useNotification();
+  const branding = useBranding();
+  const antdTheme = useTheme();
 
   const theme = store.currentTheme;
   const [currentStep, setCurrentStep] = useState(0);
@@ -200,12 +209,14 @@ export default function NewHostModal({
                   type="primary"
                   onClick={() => {
                     if (isOnLastStep) {
-                      notify.success({
-                        message: 'Host added successfully',
-                        description: 'It might take a moment to reflect...',
-                      });
+                      if (selectedOs !== 'mobile') {
+                        notify.success({
+                          message: 'Host added successfully',
+                          description: 'It might take a moment to reflect...',
+                        });
+                      }
                       resetModal();
-                      onFinish?.();
+                      onFinish?.(selectedOs);
                     } else onStepChange(currentStep + 1);
                   }}
                 >
@@ -292,7 +303,7 @@ export default function NewHostModal({
                     type: 'checkbox',
                     hideSelectAll: true,
                     selectedRowKeys: selectedEnrollmentKey ? [selectedEnrollmentKey.value] : [],
-                    onSelect: (record, selected) => {
+                    onSelect: (record) => {
                       if (selectedEnrollmentKey?.value === record.value) {
                         setSelectedEnrollmentKey(null);
                       } else {
@@ -334,7 +345,7 @@ export default function NewHostModal({
                 {/* os selection */}
                 <Divider />
                 <Row style={{ height: 'auto' }} justify="center" wrap={true}>
-                  <Col xs={8} md={4} style={{ textAlign: 'center' }}>
+                  <Col xs={8} md={4} lg={3} style={{ textAlign: 'center' }}>
                     <div
                       className={`os-button ${selectedOs === 'windows' ? 'active' : ''}`}
                       onClick={(ev) => onShowInstallGuide(ev, 'windows')}
@@ -349,7 +360,7 @@ export default function NewHostModal({
                       <p>Windows</p>
                     </div>
                   </Col>
-                  <Col xs={8} md={4} style={{ textAlign: 'center' }}>
+                  <Col xs={8} md={4} lg={3} style={{ textAlign: 'center' }}>
                     <div
                       className={`os-button ${selectedOs === 'macos' ? 'active' : ''}`}
                       onClick={(ev) => onShowInstallGuide(ev, 'macos')}
@@ -362,7 +373,7 @@ export default function NewHostModal({
                       <p>Mac</p>
                     </div>
                   </Col>
-                  <Col xs={8} md={4} style={{ textAlign: 'center' }}>
+                  <Col xs={8} md={4} lg={3} style={{ textAlign: 'center' }}>
                     <div
                       className={`os-button ${selectedOs === 'linux' ? 'active' : ''}`}
                       onClick={(ev) => onShowInstallGuide(ev, 'linux')}
@@ -375,7 +386,7 @@ export default function NewHostModal({
                       <p>Linux</p>
                     </div>
                   </Col>
-                  <Col xs={8} md={4} style={{ textAlign: 'center' }}>
+                  <Col xs={8} md={4} lg={3} style={{ textAlign: 'center' }}>
                     <div
                       className={`os-button ${selectedOs === 'docker' ? 'active' : ''}`}
                       onClick={(ev) => onShowInstallGuide(ev, 'docker')}
@@ -388,7 +399,20 @@ export default function NewHostModal({
                       <p>Docker</p>
                     </div>
                   </Col>
-                  <Col xs={8} md={4} style={{ textAlign: 'center' }}>
+                  <Col xs={8} md={4} lg={3} style={{ textAlign: 'center' }}>
+                    <div
+                      className={`os-button ${selectedOs === 'mobile' ? 'active' : ''}`}
+                      onClick={(ev) => onShowInstallGuide(ev, 'mobile')}
+                    >
+                      <img
+                        src={`${isSaasBuild ? `/${ServerConfigService.getUiVersion()}` : ''}/icons/mobile-${theme}.png`}
+                        alt="mobile icon"
+                        className="logo"
+                      />
+                      <p>Mobile</p>
+                    </div>
+                  </Col>
+                  <Col xs={8} md={4} lg={3} style={{ textAlign: 'center' }}>
                     <div
                       className={`os-button ${selectedOs === 'other' ? 'active' : ''}`}
                       onClick={(ev) => onShowInstallGuide(ev, 'other')}
@@ -455,11 +479,7 @@ export default function NewHostModal({
                             <>
                               We recommend using the remote access client for Mac. Go to remote access tab and you can
                               follow the instructions for setup
-                              <a
-                                href="https://docs.netmaker.io/netclient.html#remote-access-client"
-                                target="_blank"
-                                rel="noreferrer"
-                              >
+                              <a href="https://docs.netmaker.io/pro/rac.html" target="_blank" rel="noreferrer">
                                 {' '}
                                 here.
                               </a>
@@ -529,14 +549,6 @@ export default function NewHostModal({
                         <div className="" style={{ marginTop: '1rem', textAlign: 'center' }}>
                           <Button
                             type="link"
-                            href={getNetclientDownloadLink('linux', selectedArch, 'gui')[0]}
-                            target="_blank"
-                            rel="noreferrer"
-                          >
-                            Download GUI
-                          </Button>
-                          <Button
-                            type="link"
                             href="https://docs.netmaker.io/netclient.html#linux"
                             target="_blank"
                             rel="noreferrer"
@@ -554,19 +566,52 @@ export default function NewHostModal({
                     <Row>
                       <Col xs={24}>
                         <h4 style={{ marginBottom: '.5rem' }}>Installation steps on next page</h4>
-                        {/* <Typography.Title level={5}>FreeBSD 13</Typography.Title>
-                        <Typography.Text code copyable>
-                          {`fetch -o /tmp/netclient ${
-                            getNetclientDownloadLink('freebsd13', 'amd64', 'cli')[0]
-                          } && chmod +x /tmp/netclient && sudo /tmp/netclient install`}
-                        </Typography.Text>
-                        <br />
-                        <Typography.Title level={5}>FreeBSD 14</Typography.Title>
-                        <Typography.Text code copyable>
-                          {`fetch -o /tmp/netclient ${
-                            getNetclientDownloadLink('freebsd14', 'amd64', 'cli')[0]
-                          } && chmod +x /tmp/netclient && sudo /tmp/netclient install`}
-                        </Typography.Text> */}
+                      </Col>
+                    </Row>
+                  </>
+                )}
+
+                {selectedOs === 'mobile' && (
+                  <>
+                    <Row>
+                      <Col xs={24}>
+                        <h4 style={{ marginBottom: '.5rem' }}>Install our remote access client for mobile devices</h4>
+                        <Typography.Paragraph>
+                          Easily connect to your {branding.productName} network with our mobile application.
+                        </Typography.Paragraph>
+                      </Col>
+                      <Col xs={12} style={{ textAlign: 'start' }}>
+                        <QRCode value={playStoreLink} />
+                        <Typography.Paragraph style={{ marginTop: '1rem' }}>
+                          or download from store
+                        </Typography.Paragraph>
+                        <a href={playStoreLink} target="_blank" rel="noreferrer">
+                          <img
+                            alt="Get Reomte Access Client on Google Play"
+                            src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"
+                            style={{ width: '13rem', height: '5rem', marginRight: '2rem' }}
+                          />
+                        </a>
+                      </Col>
+                      <Col
+                        xs={12}
+                        style={{
+                          textAlign: 'start',
+                          borderLeft: `1px solid ${antdTheme.colorBorder}`,
+                          paddingLeft: '1rem',
+                        }}
+                      >
+                        <QRCode value={appleStoreLink} />
+                        <Typography.Paragraph style={{ marginTop: '1rem' }}>
+                          or download from store
+                        </Typography.Paragraph>
+                        <a href={appleStoreLink} target="_blank" rel="noreferrer">
+                          <img
+                            src="https://tools.applemediaservices.com/api/badges/download-on-the-app-store/white/en-us?size=250x83&amp;releaseDate=1711670400"
+                            alt="Download Remote Access Client on the App Store"
+                            style={{ borderRadius: '8px', width: '10rem', height: '5rem' }}
+                          />
+                        </a>
                       </Col>
                     </Row>
                   </>
@@ -594,37 +639,20 @@ export default function NewHostModal({
             <Col xs={24}>
               <Card>
                 <Typography.Text>Steps to join a network:</Typography.Text>
-                {(selectedOs === 'windows' || selectedOs === 'macos') && (
-                  <div>
-                    <ol>
-                      <li>Open Netclient GUI</li>
-                      <li>Select &quot;Add New Network&quot;</li>
-                      <li>Click Join via Enrollemnt Key</li>
-                      <li>
-                        Enter{' '}
-                        <Typography.Text code copyable>
-                          {`${selectedEnrollmentKey?.token ?? '<token>'}`}
-                        </Typography.Text>{' '}
-                        as enrollment key
-                      </li>
-                      <li>Click Submit and Get connected :)</li>
-                    </ol>
-                    <small>Note: It might take a few minutes for the host to show up in the network(s)</small>
-                  </div>
-                )}
-                {selectedOs === 'linux' && (
+                {(selectedOs === 'linux' || selectedOs === 'windows' || selectedOs === 'macos') && (
                   <div>
                     <ol>
                       <li>
-                        <Typography.Text>Run</Typography.Text>
+                        <Typography.Text>Run (with admin priviledges)</Typography.Text>
                         <Typography.Text code copyable>
-                          {`sudo netclient join -t ${`${selectedEnrollmentKey?.token ?? '<token>'}`}`}
+                          {`netclient join -t ${`${selectedEnrollmentKey?.token ?? '<token>'}`}`}
                         </Typography.Text>
                       </li>
                     </ol>
                     <small>Note: It might take a few minutes for the host to show up in the network(s)</small>
                   </div>
                 )}
+
                 {selectedOs === 'other' && (
                   <div style={{ marginTop: '10px' }}>
                     <Typography.Text>
@@ -652,6 +680,36 @@ export default function NewHostModal({
                         </a>
                       </li>
                     </ul>
+                  </div>
+                )}
+
+                {selectedOs === 'mobile' && (
+                  <div style={{ marginTop: '10px' }}>
+                    <ol>
+                      <li>Create a remote access gateway (if you haven&apos;t already).</li>
+                      <li>
+                        Attach users to the gateway. This is to provide controlled access to your network. Admin users
+                        will be able to connect to any gateway.
+                      </li>
+                      <li>Open RAC on your mobile and login with the attached user account.</li>
+                      <li>Select the network/gateway you wish to connect to and tap on &ldquo;Connect&rdquo;</li>
+                    </ol>
+
+                    <Typography.Text>
+                      Visit the docs on how to{' '}
+                      <a
+                        href="https://docs.netmaker.io/pro/pro-users.html#attaching-or-removing-user-from-a-remote-access-gateway"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        attach a user to a remote access gateway
+                      </a>{' '}
+                      or how to connect your mobile device to the network with the{' '}
+                      <a href="https://docs.netmaker.io/pro/rac.html" target="_blank" rel="noreferrer">
+                        Remote Access Client (RAC)
+                      </a>
+                      .
+                    </Typography.Text>
                   </div>
                 )}
 
@@ -695,11 +753,13 @@ export default function NewHostModal({
       {/* misc */}
       {notifyCtx}
       <AddEnrollmentKeyModal
+        key={`add-enrollment-key-${networkId}`}
         isOpen={isAddEnrollmentKeyModalOpen}
         onCreateKey={(key) => {
           setEnrollmentKeys([...enrollmentKeys, key]);
           setSelectedEnrollmentKey(key);
           setIsAddEnrollmentKeyModalOpen(false);
+          onStepChange(1);
         }}
         onCancel={() => {
           setIsAddEnrollmentKeyModalOpen(false);

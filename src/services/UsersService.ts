@@ -77,6 +77,22 @@ function getIngressUsers(nodeId: Node['id']) {
   return axiosService.get<GatewayUsersResDto>(`${ApiRoutes.USERS}/ingress/${encodeURIComponent(nodeId)}`);
 }
 
+function getPendingUsers() {
+  return axiosService.get<User[]>(`${ApiRoutes.PENDING_USERS}`);
+}
+
+function approvePendingUser(username: string) {
+  return axiosService.post<void>(`${ApiRoutes.PENDING_USERS}/user/${username}`);
+}
+
+function denyPendingUser(username: string) {
+  return axiosService.delete<void>(`${ApiRoutes.PENDING_USERS}/user/${username}`);
+}
+
+function denyAllPendingUsers() {
+  return axiosService.delete<void>(`${ApiRoutes.PENDING_USERS}`);
+}
+
 export const UsersService = {
   getUsers,
   getUser,
@@ -94,4 +110,8 @@ export const UsersService = {
   removeUserFromIngress,
   transferSuperAdminRights,
   getIngressUsers,
+  getPendingUsers,
+  approvePendingUser,
+  denyPendingUser,
+  denyAllPendingUsers,
 };

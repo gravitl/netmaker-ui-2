@@ -17,6 +17,7 @@ export const NULL_HOST: Host = {
   interfaces: [],
   defaultinterface: '',
   endpointip: '',
+  endpointipv6: '',
   publickey: '',
   macaddress: '',
   nodes: [],
@@ -67,6 +68,7 @@ export const NULL_NODE: Node = {
   inet_node_req: {
     inet_node_client_ids: undefined,
   },
+  additional_rag_ips: [],
 };
 
 export const NULL_NETWORK_PROSETTINGS: ProSettings = {

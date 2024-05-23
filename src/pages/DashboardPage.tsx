@@ -1,4 +1,18 @@
-import { Alert, Button, Card, Col, Dropdown, Input, Layout, Row, Space, Tooltip, Typography } from 'antd';
+import {
+  Alert,
+  Button,
+  Card,
+  Carousel,
+  Col,
+  Dropdown,
+  Input,
+  Layout,
+  Row,
+  Space,
+  Tooltip,
+  Typography,
+  notification,
+} from 'antd';
 import {
   ArrowRightOutlined,
   DownOutlined,
@@ -19,6 +33,9 @@ import { getAmuiUrl, getLicenseDashboardUrl, resolveAppRoute } from '@/utils/Rou
 import NewHostModal from '@/components/modals/new-host-modal/NewHostModal';
 import { isSaasBuild } from '@/services/BaseService';
 import { useBranding } from '@/utils/Utils';
+import QuickSetupModal from '@/components/modals/quick-setup-modal/QuickSetupModal';
+
+export type TourType = 'relays' | 'egress' | 'remoteaccess' | 'networks' | 'hosts';
 
 export default function DashboardPage(props: PageProps) {
   const navigate = useNavigate();
@@ -30,12 +47,51 @@ export default function DashboardPage(props: PageProps) {
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [isNewHostModalOpen, setIsNewHostModalOpen] = useState(false);
   const [showUpgradeAlert, setShowUpgradeAlert] = useState(false);
+  const [isQuickSetupModalOpen, setIsQuickSetupModalOpen] = useState(false);
+  const [notify, notifyCtx] = notification.useNotification();
+
+  const jumpToTourPage = (tourType: TourType) => {
+    if (store.networks.length === 0) {
+      notification.warning({
+        message: 'No networks',
+        description: 'You need to create a network before you can start a tour.',
+      });
+      setIsAddNetworkModalOpen(true);
+      return;
+    }
+    // jump to different pages and start tour
+    switch (tourType) {
+      case 'relays':
+        navigate(resolveAppRoute(`${AppRoutes.NETWORKS_ROUTE}/${store.networks[0].netid}`), {
+          state: { startTour: 'relays' },
+        });
+        break;
+      case 'egress':
+        navigate(resolveAppRoute(`${AppRoutes.NETWORKS_ROUTE}/${store.networks[0].netid}`), {
+          state: { startTour: 'egress' },
+        });
+        break;
+      case 'remoteaccess':
+        navigate(resolveAppRoute(`${AppRoutes.NETWORKS_ROUTE}/${store.networks[0].netid}`), {
+          state: { startTour: 'remoteaccess' },
+        });
+        break;
+      case 'networks':
+        navigate(resolveAppRoute(AppRoutes.NETWORKS_ROUTE), { state: { startTour: 'networks' } });
+        break;
+      case 'hosts':
+        navigate(resolveAppRoute(AppRoutes.HOSTS_ROUTE), { state: { startTour: 'hosts' } });
+        break;
+    }
+  };
 
   useEffect(() => {
     if (!isServerEE && !store.serverStatus.status?.is_on_trial_license) {
       setShowUpgradeAlert(true);
+    } else {
+      setShowUpgradeAlert(false);
     }
-  }, [isServerEE]);
+  }, [isServerEE, store.serverStatus.status?.is_on_trial_license]);
 
   return (
     <Layout.Content style={{ padding: props.isFullScreen ? 0 : 24 }}>
@@ -119,24 +175,131 @@ export default function DashboardPage(props: PageProps) {
         </Layout.Header>
       </Row>
       <Row className="dashboard-page-row-2">
-        <Col>
-          <Space direction="vertical" size="middle">
-            <Card>
-              <h3>Start using {branding.productName}</h3>
+        <Col xs={24}>
+          <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+            <Card
+              style={{
+                height: '259px',
+                background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
+              }}
+            >
+              <h3>Introducing Guided Setup</h3>
               <p>
-                {branding.productName} automates a secure superhighway between devices, clouds, virtual machines, and
-                servers using WireGuard®. It blows past any NAT’s, firewalls, or subnets that stand between them to
-                create a flat, simple network. The result is a secure overlay network that spans all your devices,
-                wherever they are. Of course, {branding.productName} does a lot more than that. With ACL’s, Ingress,
-                Egress, and Relays, you have complete control of your network.
+                Unveiling guided setup! This innovative functionality streamlines the setup process for your{' '}
+                {branding.productName} network. Now you can effortlessly configure it for a multitude of other use
+                cases.
               </p>
               <div>
-                <Button type="link" href="https://netmaker.io/demo-page" target="_blank" rel="noreferrer">
+                <Button type="primary" onClick={() => setIsQuickSetupModalOpen(true)}>
                   <ArrowRightOutlined />
-                  Take the tutorial
+                  Get Started
                 </Button>
               </div>
             </Card>
+            <div
+              style={{
+                width: '100%',
+                height: '259px',
+              }}
+            >
+              <Carousel adaptiveHeight={false} autoplay autoplaySpeed={10000}>
+                <div>
+                  <Card>
+                    <h3>Start using {branding.productName}</h3>
+                    <p>
+                      {branding.productName} automates a secure superhighway between devices, clouds, virtual machines,
+                      and servers using WireGuard®. It blows past any NAT’s, firewalls, or subnets that stand between
+                      them to create a flat, simple network. The result is a secure overlay network that spans all your
+                      devices, wherever they are. Of course, {branding.productName} does a lot more than that. With
+                      ACL’s, Remote Access Gateway, Egress, and Relays, you have complete control of your network.
+                    </p>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      <Button type="primary" href="https://netmaker.io/demo-page" target="_blank" rel="noreferrer">
+                        <ArrowRightOutlined />
+                        Take the tutorial
+                      </Button>
+                    </div>
+                  </Card>
+                </div>
+                <div>
+                  <Card>
+                    <h3>Remote Access</h3>
+                    <p>
+                      Remote Access Gateways enable secure access to your network via Clients. The Gateway forwards
+                      traffic from the clients into the network, and from the network back to the clients. Clients are
+                      simple WireGuard config files, supported on most devices. To use Clients, you must configure a
+                      Remote Access Gateway, which is typically deployed in a public cloud environment, e.g. on a server
+                      with a public IP, so that it is easily reachable from the Clients. Clients are configured on this
+                      dashboard primary via client configs{' '}
+                      <a
+                        href="https://www.netmaker.io/features/remote-access-gateway"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="tutorial-banner-link"
+                      >
+                        (Learn More)
+                      </a>
+                    </p>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      <Button type="primary" onClick={() => jumpToTourPage('remoteaccess')}>
+                        <ArrowRightOutlined />
+                        Take the tutorial
+                      </Button>
+                    </div>
+                  </Card>
+                </div>
+                <div>
+                  <Card>
+                    <h3>Egress</h3>
+                    <p>
+                      Enable devices in your network to communicate with other devices outside the network via egress
+                      gateways. An office network, home network, data center, or cloud region all become easily
+                      accessible via the Egress Gateway. You can even set a machine as an Internet Gateway to create a
+                      “traditional” VPN{' '}
+                      <a
+                        href="https://www.netmaker.io/features/egress"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="tutorial-banner-link"
+                      >
+                        {` `}(Learn more){` `}
+                      </a>
+                    </p>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      <Button type="primary" onClick={() => jumpToTourPage('egress')}>
+                        <ArrowRightOutlined />
+                        Take the tutorial
+                      </Button>
+                    </div>
+                  </Card>
+                </div>
+                <div>
+                  <Card>
+                    <h3>Relays</h3>
+                    <p>
+                      Enable devices in your network to communicate with otherwise unreachable devices with relays.{' '}
+                      {branding.productName} uses Turn servers to automatically route traffic in these scenarios, but
+                      sometimes, you’d rather specify which device should be routing the traffic
+                      <a
+                        href="https://www.netmaker.io/features/relay"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="tutorial-banner-link"
+                      >
+                        {` `}(Learn More) {` `}
+                      </a>
+                    </p>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      <Button type="primary" onClick={() => jumpToTourPage('relays')}>
+                        <ArrowRightOutlined />
+                        Take the tutorial
+                      </Button>
+                    </div>
+                  </Card>
+                </div>
+              </Carousel>
+            </div>
+
             {store.networks.length === 0 && (
               <Card style={{ maxWidth: '30%' }}>
                 <h3>Add a network</h3>
@@ -185,6 +348,13 @@ export default function DashboardPage(props: PageProps) {
         onFinish={() => navigate(resolveAppRoute(AppRoutes.HOSTS_ROUTE))}
         onCancel={() => setIsNewHostModalOpen(false)}
       />
+      <QuickSetupModal
+        isModalOpen={isQuickSetupModalOpen}
+        notify={notify}
+        handleCancel={() => setIsQuickSetupModalOpen(false)}
+        handleUpgrade={() => true}
+      />
+      {notifyCtx}
     </Layout.Content>
   );
 }
