@@ -2048,14 +2048,14 @@ export default function NetworkDetailsPage(props: PageProps) {
                 items: [
                   {
                     key: 'new-host',
-                    label: 'Add New Host',
+                    label: 'Add New Hosts',
                     onClick() {
                       setIsAddNewHostModalOpen(true);
                     },
                   },
                   {
                     key: 'existing-host',
-                    label: 'Add Existing Host',
+                    label: 'Add Existing Hosts',
                     onClick() {
                       setIsAddHostsToNetworkModalOpen(true);
                     },
@@ -2065,7 +2065,7 @@ export default function NetworkDetailsPage(props: PageProps) {
             >
               <Button type="primary" style={{ width: '170px' }} ref={hostsTabContainerAddHostsRef}>
                 <Space>
-                  Add Host
+                  Add Hosts
                   <DownOutlined />
                 </Space>
               </Button>
