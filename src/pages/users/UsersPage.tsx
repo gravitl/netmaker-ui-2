@@ -1,5 +1,14 @@
 import { useStore } from '@/store/store';
-import { MoreOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
+import {
+  CheckOutlined,
+  InfoCircleOutlined,
+  MoreOutlined,
+  PlusOutlined,
+  QuestionCircleOutlined,
+  ReloadOutlined,
+  SearchOutlined,
+  StopOutlined,
+} from '@ant-design/icons';
 import {
   Button,
   Card,
@@ -17,9 +26,11 @@ import {
   Tabs,
   TabsProps,
   Tag,
+  Tour,
+  TourProps,
   Typography,
 } from 'antd';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PageProps } from '../../models/Page';
 import './UsersPage.scss';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
@@ -32,6 +43,12 @@ import { getAmuiUrl } from '@/utils/RouteUtils';
 import TransferSuperAdminRightsModal from '@/components/modals/transfer-super-admin-rights/TransferSuperAdminRightsModal';
 import { useBranding } from '@/utils/Utils';
 
+const USERS_DOCS_URL = 'https://docs.netmaker.io/pro/pro-users.html';
+
+const usersTabKey = 'users';
+const pendingUsersTabKey = 'pending-users';
+const defaultTabKey = usersTabKey;
+
 export default function UsersPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
@@ -39,25 +56,57 @@ export default function UsersPage(props: PageProps) {
 
   const isServerEE = store.serverConfig?.IsEE === 'yes';
   const [users, setUsers] = useState<User[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [usersSearch, setUsersSearch] = useState('');
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
   const [isUpdateUserModalOpen, setIsUpdateUserModalOpen] = useState(false);
   const [isTransferSuperAdminRightsModalOpen, setIsTransferSuperAdminRightsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [isTourOpen, setIsTourOpen] = useState(false);
+  const [tourStep, setTourStep] = useState(0);
+  const [pendingUsers, setPendingUsers] = useState<User[]>([]);
+  const [isLoadingPendingUsers, setIsLoadingPendingUsers] = useState(true);
+  const [pendingUsersSearch, setPendingUsersSearch] = useState('');
+  const [activeTab, setActiveTab] = useState(defaultTabKey);
 
-  const loadUsers = useCallback(async () => {
+  const usersTableRef = useRef(null);
+  const addUserButtonRef = useRef(null);
+  const addUserNameInputRef = useRef(null);
+  const addUserPasswordInputRef = useRef(null);
+  const addUserSetAsAdminCheckboxRef = useRef(null);
+  const denyAllUsersButtonRef = useRef(null);
+  const pendingUsersTableRef = useRef(null);
+
+  const loadUsers = useCallback(
+    async (showLoading = true) => {
+      try {
+        showLoading && setIsLoadingUsers(true);
+        const users = (await UsersService.getUsers()).data;
+        setUsers(users);
+      } catch (err) {
+        notify.error({
+          message: 'Failed to load users',
+          description: extractErrorMsg(err as any),
+        });
+      } finally {
+        showLoading && setIsLoadingUsers(false);
+      }
+    },
+    [notify],
+  );
+
+  const loadPendingUsers = useCallback(async () => {
     try {
-      setIsLoading(true);
-      const users = (await UsersService.getUsers()).data;
-      setUsers(users);
+      setIsLoadingPendingUsers(true);
+      const users = (await UsersService.getPendingUsers()).data;
+      setPendingUsers(users);
     } catch (err) {
       notify.error({
-        message: 'Failed to load users',
+        message: 'Failed to load pending users',
         description: extractErrorMsg(err as any),
       });
     } finally {
-      setIsLoading(false);
+      setIsLoadingPendingUsers(false);
     }
   }, [notify]);
 
@@ -143,6 +192,70 @@ export default function UsersPage(props: PageProps) {
     [store.user, store.username],
   );
 
+  const confirmApproveUser = useCallback(
+    async (user: User) => {
+      Modal.confirm({
+        title: 'Approve user',
+        content: `Are you sure you want to approve pending user ${user.username}?`,
+        onOk: async () => {
+          try {
+            await UsersService.approvePendingUser(user.username);
+            notify.success({ message: `User ${user.username} approved` });
+            setPendingUsers((users) => users.filter((u) => u.username !== user.username));
+            loadUsers(false);
+          } catch (err) {
+            notify.error({
+              message: 'Failed to approve user',
+              description: extractErrorMsg(err as any),
+            });
+          }
+        },
+      });
+    },
+    [loadUsers, notify],
+  );
+
+  const confirmDenyUser = useCallback(
+    async (user: User) => {
+      Modal.confirm({
+        title: 'Deny user',
+        content: `Are you sure you want to deny pending user ${user.username}?`,
+        onOk: async () => {
+          try {
+            await UsersService.denyPendingUser(user.username);
+            notify.success({ message: `User ${user.username} denied` });
+            setPendingUsers((users) => users.filter((u) => u.username !== user.username));
+          } catch (err) {
+            notify.error({
+              message: 'Failed to deny user',
+              description: extractErrorMsg(err as any),
+            });
+          }
+        },
+      });
+    },
+    [notify],
+  );
+
+  const confirmDenyAllPendingUsers = useCallback(async () => {
+    Modal.confirm({
+      title: 'Deny all panding users',
+      content: `Are you sure you want to deny all pending users?`,
+      onOk: async () => {
+        try {
+          await UsersService.denyAllPendingUsers();
+          notify.success({ message: `All pending users denied access` });
+          setPendingUsers([]);
+        } catch (err) {
+          notify.error({
+            message: 'Failed to deny users',
+            description: extractErrorMsg(err as any),
+          });
+        }
+      },
+    });
+  }, [notify]);
+
   const usersTableColumns: TableColumnsType<User> = useMemo(
     () => [
       {
@@ -216,7 +329,40 @@ export default function UsersPage(props: PageProps) {
         },
       },
     ],
-    [checkIfCurrentUserCanEditOrDeleteUsers, isServerEE, store.username, onEditUser, confirmDeleteUser],
+    [checkIfCurrentUserCanEditOrDeleteUsers, store.username, onEditUser, confirmDeleteUser],
+  );
+
+  const pendingUsersTableColumns: TableColumnsType<User> = useMemo(
+    () => [
+      {
+        title: 'Username',
+        dataIndex: 'username',
+        sorter(a, b) {
+          return a.username.localeCompare(b.username);
+        },
+        defaultSortOrder: 'ascend',
+      },
+      {
+        width: '300px',
+        render(_, user) {
+          return (
+            <Row>
+              <Col>
+                <Button style={{ marginRight: '1rem' }} onClick={() => confirmApproveUser(user)}>
+                  <CheckOutlined /> Approve
+                </Button>
+              </Col>
+              <Col>
+                <Button onClick={() => confirmDenyUser(user)}>
+                  <StopOutlined /> Deny
+                </Button>
+              </Col>
+            </Row>
+          );
+        },
+      },
+    ],
+    [confirmApproveUser, confirmDenyUser],
   );
 
   const filteredUsers = useMemo(() => {
@@ -224,6 +370,12 @@ export default function UsersPage(props: PageProps) {
       return u.username.toLowerCase().includes(usersSearch.trim().toLowerCase());
     });
   }, [users, usersSearch]);
+
+  const filteredPendingUsers = useMemo(() => {
+    return pendingUsers.filter((u) => {
+      return u.username.toLowerCase().includes(pendingUsersSearch.trim().toLowerCase());
+    });
+  }, [pendingUsers, pendingUsersSearch]);
 
   const getUserAndUpdateInStore = async (username: User['username'] | undefined) => {
     if (!username) return;
@@ -247,15 +399,33 @@ export default function UsersPage(props: PageProps) {
               prefix={<SearchOutlined />}
               value={usersSearch}
               onChange={(ev) => setUsersSearch(ev.target.value)}
+              allowClear
             />
           </Col>
           <Col xs={24} md={16} style={{ textAlign: 'right' }} className="user-table-button">
+            <Button
+              size="large"
+              onClick={() => {
+                setIsTourOpen(true);
+                setTourStep(0);
+              }}
+              style={{ marginRight: '0.5em' }}
+            >
+              <InfoCircleOutlined /> Start Tour
+            </Button>
             <Button size="large" onClick={() => loadUsers()} style={{ marginRight: '0.5em' }}>
               <ReloadOutlined /> Reload users
             </Button>
-            <Button type="primary" size="large" onClick={onAddUser}>
+            <Button type="primary" size="large" onClick={onAddUser} ref={addUserButtonRef}>
               <PlusOutlined /> Add a User
             </Button>
+            <Button
+              title="Go to Users documentation"
+              style={{ marginLeft: '0.5rem' }}
+              href={USERS_DOCS_URL}
+              target="_blank"
+              icon={<QuestionCircleOutlined />}
+            />
           </Col>
         </Row>
         <Row className="" style={{ marginTop: '1rem' }}>
@@ -267,34 +437,183 @@ export default function UsersPage(props: PageProps) {
               scroll={{
                 x: true,
               }}
+              ref={usersTableRef}
+              loading={isLoadingUsers}
             />
           </Col>
         </Row>
       </>
     );
-  }, [filteredUsers, usersSearch, usersTableColumns, onAddUser]);
+  }, [usersSearch, onAddUser, usersTableColumns, filteredUsers, isLoadingUsers, loadUsers]);
+
+  const getPendingUsersContent = useCallback(() => {
+    return (
+      <>
+        <Row>
+          <Col xs={24} md={8}>
+            <Input
+              size="large"
+              placeholder="Search pending users"
+              prefix={<SearchOutlined />}
+              value={pendingUsersSearch}
+              onChange={(ev) => setPendingUsersSearch(ev.target.value)}
+              allowClear
+            />
+          </Col>
+          <Col xs={24} md={16} style={{ textAlign: 'right' }} className="pending-user-table-button">
+            <Button
+              size="large"
+              onClick={() => {
+                setIsTourOpen(true);
+                setTourStep(5);
+              }}
+              style={{ marginRight: '0.5em' }}
+            >
+              <InfoCircleOutlined /> Start Tour
+            </Button>
+            <Button size="large" onClick={() => loadPendingUsers()} style={{ marginRight: '0.5em' }}>
+              <ReloadOutlined /> Reload users
+            </Button>
+            <Button type="primary" size="large" onClick={confirmDenyAllPendingUsers} ref={denyAllUsersButtonRef}>
+              <StopOutlined /> Deny all users
+            </Button>
+            <Button
+              title="Go to Users documentation"
+              style={{ marginLeft: '0.5rem' }}
+              href={USERS_DOCS_URL}
+              target="_blank"
+              icon={<QuestionCircleOutlined />}
+            />
+          </Col>
+        </Row>
+        <Row className="" style={{ marginTop: '1rem' }}>
+          <Col xs={24}>
+            <Table
+              loading={isLoadingPendingUsers}
+              columns={pendingUsersTableColumns}
+              dataSource={filteredPendingUsers}
+              rowKey="username"
+              scroll={{
+                x: true,
+              }}
+              ref={pendingUsersTableRef}
+            />
+          </Col>
+        </Row>
+      </>
+    );
+  }, [
+    confirmDenyAllPendingUsers,
+    filteredPendingUsers,
+    isLoadingPendingUsers,
+    loadPendingUsers,
+    pendingUsersSearch,
+    pendingUsersTableColumns,
+  ]);
 
   const tabs: TabsProps['items'] = useMemo(
-    () => [
-      {
-        key: 'users',
-        label: 'Users',
-        children: getUsersContent(),
-      },
-    ],
-    [getUsersContent],
+    () =>
+      [
+        {
+          key: usersTabKey,
+          label: 'Users',
+          children: getUsersContent(),
+        },
+      ].concat(
+        isSaasBuild
+          ? []
+          : [
+              {
+                key: pendingUsersTabKey,
+                label: `Pending Users (${pendingUsers.length})`,
+                children: getPendingUsersContent(),
+              },
+            ],
+      ),
+    [getPendingUsersContent, getUsersContent, pendingUsers.length],
   );
+
+  const userTourSteps: TourProps['steps'] = [
+    {
+      title: 'Users',
+      description: 'View users and their roles, you can also edit or delete users and transfer super admin rights',
+      target: () => usersTableRef.current,
+      placement: 'bottom',
+    },
+    {
+      title: 'Add a User',
+      description: 'Click here to add a user',
+      target: () => addUserButtonRef.current,
+      placement: 'bottom',
+    },
+    {
+      title: 'Username',
+      description: 'Enter a username for the user',
+      target: () => addUserNameInputRef.current,
+      placement: 'bottom',
+    },
+    {
+      title: 'Password',
+      description: 'Enter a password for the user',
+      target: () => addUserPasswordInputRef.current,
+      placement: 'bottom',
+    },
+    {
+      title: 'Set as Admin',
+      description: 'Check this box to set the user as admin',
+      target: () => addUserSetAsAdminCheckboxRef.current,
+      placement: 'bottom',
+    },
+    {
+      title: 'Review pending users',
+      description:
+        'An admin can allow or deny access to accounts that try accessing the server via SSO from this table.',
+      target: () => pendingUsersTableRef.current,
+      placement: 'bottom',
+    },
+    {
+      title: 'Deny all pending users',
+      description: 'A quick way to deny access to all pending users.',
+      target: () => denyAllUsersButtonRef.current,
+      placement: 'bottom',
+    },
+  ];
+
+  const handleTourOnChange = (current: number) => {
+    switch (current) {
+      case 1:
+        setIsAddUserModalOpen(false);
+        break;
+      case 2:
+        setIsAddUserModalOpen(true);
+        break;
+      case 4:
+        setIsAddUserModalOpen(true);
+        setActiveTab(usersTabKey);
+        break;
+      case 5:
+        setIsAddUserModalOpen(false);
+        setActiveTab(pendingUsersTabKey);
+        break;
+      default:
+        break;
+    }
+    setTimeout(() => {
+      setTourStep(current);
+    }, 200);
+  };
 
   useEffect(() => {
     loadUsers();
-  }, [loadUsers, isServerEE]);
+    loadPendingUsers();
+  }, [loadUsers, isServerEE, loadPendingUsers]);
 
   return (
     <Layout.Content
       className="UsersPage"
       style={{ position: 'relative', height: '100%', padding: props.isFullScreen ? 0 : 24 }}
     >
-      <Skeleton loading={isLoading} active title={true} className="page-padding">
+      <Skeleton loading={isLoadingUsers} active title={true} className="page-padding">
         {users.length === 0 && (
           <>
             <Row
@@ -384,12 +703,27 @@ export default function UsersPage(props: PageProps) {
 
             <Row className="page-row-padding" justify="space-between">
               <Col xs={24}>
-                <Tabs defaultActiveKey="users" items={tabs} />
+                <Tabs
+                  defaultActiveKey={defaultTabKey}
+                  items={tabs}
+                  activeKey={activeTab}
+                  onChange={(tabKey: string) => {
+                    setActiveTab(tabKey);
+                  }}
+                />
               </Col>
             </Row>
           </>
         )}
       </Skeleton>
+
+      <Tour
+        steps={userTourSteps}
+        open={isTourOpen}
+        onClose={() => setIsTourOpen(false)}
+        onChange={handleTourOnChange}
+        current={tourStep}
+      />
 
       {/* misc */}
       {notifyCtx}
@@ -402,6 +736,10 @@ export default function UsersPage(props: PageProps) {
         onCancel={() => {
           setIsAddUserModalOpen(false);
         }}
+        addUserButtonRef={addUserButtonRef}
+        addUserNameInputRef={addUserNameInputRef}
+        addUserPasswordInputRef={addUserPasswordInputRef}
+        addUserSetAsAdminCheckboxRef={addUserSetAsAdminCheckboxRef}
       />
       {selectedUser && (
         <UpdateUserModal

@@ -1,4 +1,4 @@
-export type AvailableOses = 'windows' | 'macos' | 'linux' | 'freebsd13' | 'freebsd14' | 'docker';
+export type AvailableOses = 'windows' | 'macos' | 'linux' | 'other' | 'docker' | 'mobile';
 
 export type AvailableArchs =
   | 'amd64'

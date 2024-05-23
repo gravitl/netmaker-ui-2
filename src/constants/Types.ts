@@ -17,6 +17,7 @@ export const NULL_HOST: Host = {
   interfaces: [],
   defaultinterface: '',
   endpointip: '',
+  endpointipv6: '',
   publickey: '',
   macaddress: '',
   nodes: [],
@@ -51,7 +52,6 @@ export const NULL_NODE: Node = {
   dnson: false,
   islocal: false,
   server: '',
-  internetgateway: '',
   defaultacl: '',
   connected: false,
   failover: false,
@@ -64,6 +64,11 @@ export const NULL_NODE: Node = {
   is_fail_over: false,
   failed_over_by: '',
   fail_over_peers: [],
+  internetgw_node_id: '',
+  inet_node_req: {
+    inet_node_client_ids: undefined,
+  },
+  additional_rag_ips: [],
 };
 
 export const NULL_NETWORK_PROSETTINGS: ProSettings = {

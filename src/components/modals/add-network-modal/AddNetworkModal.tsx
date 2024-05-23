@@ -1,6 +1,6 @@
 import { EditOutlined } from '@ant-design/icons';
 import { Button, Col, Divider, Form, Input, Modal, notification, Row, Select, Switch, theme } from 'antd';
-import { MouseEvent, useCallback } from 'react';
+import { MouseEvent, MutableRefObject, Ref, useCallback } from 'react';
 import { CreateNetworkDto } from '@/services/dtos/CreateNetworkDto';
 import { NetworksService } from '@/services/NetworksService';
 import { useStore } from '@/store/store';
@@ -12,7 +12,6 @@ import {
   generateCIDR,
   generateCIDR6,
   generateNetworkName,
-  isPrivateIpCidr,
   isValidIpv4Cidr,
   isValidIpv6Cidr,
 } from '@/utils/NetworkUtils';
@@ -22,9 +21,25 @@ interface AddNetworkModalProps {
   isOpen: boolean;
   onCreateNetwork: (network: Network) => any;
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
+  autoFillButtonRef?: MutableRefObject<HTMLButtonElement | null>;
+  networkNameInputRef?: Ref<HTMLDivElement> | null;
+  ipv4InputRef?: Ref<HTMLDivElement> | null;
+  ipv6InputRef?: Ref<HTMLDivElement> | null;
+  defaultAclInputRef?: Ref<HTMLDivElement> | null;
+  submitButtonRef?: MutableRefObject<HTMLButtonElement | null>;
 }
 
-export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwork, onCancel }: AddNetworkModalProps) {
+export default function AddNetworkModal({
+  isOpen,
+  onCreateNetwork: onCreateNetwork,
+  onCancel,
+  autoFillButtonRef,
+  networkNameInputRef,
+  ipv4InputRef,
+  ipv6InputRef,
+  defaultAclInputRef,
+  submitButtonRef,
+}: AddNetworkModalProps) {
   const [form] = Form.useForm<CreateNetworkDto>();
   const { token: themeToken } = theme.useToken();
   const [notify, notifyCtx] = notification.useNotification();
@@ -56,19 +71,18 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
   };
 
   const autoFillDetails = useCallback(() => {
-    form.setFieldValue('isipv4', true);
     form.setFieldsValue({
       netid: generateNetworkName(),
-      addressrange: generateCIDR(),
+      addressrange: isIpv4Val ? generateCIDR() : '',
       addressrange6: isIpv6Val ? generateCIDR6() : '',
       defaultacl: 'yes',
       defaultDns: '',
     });
-  }, [form, isIpv6Val]);
+  }, [form, isIpv4Val, isIpv6Val]);
 
   return (
     <Modal
-      title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Create a Network</span>}
+      title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold', width: '700px' }}>Create a Network</span>}
       open={isOpen}
       onCancel={(ev) => {
         resetModal();
@@ -81,7 +95,7 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
       <Divider style={{ margin: '0px 0px 2rem 0px' }} />
       <div className="CustomModalBody">
         <div className="" style={{ marginBottom: '2rem' }}>
-          <Button onClick={() => autoFillDetails()}>
+          <Button onClick={() => autoFillDetails()} ref={autoFillButtonRef}>
             <EditOutlined /> Autofill
           </Button>
         </div>
@@ -90,16 +104,24 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
           name="add-network-form"
           form={form}
           layout="vertical"
-          initialValues={{ isipv4: true, isipv6: false, defaultacl: 'yes' }}
+          initialValues={{
+            isipv4: true,
+            isipv6: false,
+            defaultacl: 'yes',
+          }}
         >
-          <Form.Item
-            label="Network name"
-            name="netid"
-            rules={[{ required: true }]}
-            data-nmui-intercom="add-network-form_netid"
-          >
-            <Input placeholder="Network name" />
-          </Form.Item>
+          <Row ref={networkNameInputRef}>
+            <Col xs={24}>
+              <Form.Item
+                label="Network name"
+                name="netid"
+                rules={[{ required: true }]}
+                data-nmui-intercom="add-network-form_netid"
+              >
+                <Input placeholder="Network name" />
+              </Form.Item>
+            </Col>
+          </Row>
 
           {/* ipv4 */}
           <Row
@@ -109,6 +131,7 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
               padding: '.5rem',
               marginBottom: '1.5rem',
             }}
+            ref={ipv4InputRef}
           >
             <Col xs={24}>
               <Row justify="space-between" style={{ marginBottom: isIpv4Val ? '.5rem' : '0px' }}>
@@ -130,11 +153,7 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
                         {
                           validator: (_: any, ipv4: string) => {
                             if (isValidIpv4Cidr(ipv4)) {
-                              if (isPrivateIpCidr(ipv4)) {
-                                return Promise.resolve();
-                              } else {
-                                return Promise.reject('Address range must be a valid private IPv4 CIDR');
-                              }
+                              return Promise.resolve();
                             } else {
                               return Promise.reject('Address range must be a valid IPv4 CIDR');
                             }
@@ -158,6 +177,7 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
               padding: '.5rem',
               marginBottom: '1.5rem',
             }}
+            ref={ipv6InputRef}
           >
             <Col xs={24}>
               <Row justify="space-between" style={{ marginBottom: isIpv6Val ? '.5rem' : '0px' }}>
@@ -179,11 +199,7 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
                         {
                           validator: (_: any, ipv6: string) => {
                             if (isValidIpv6Cidr(ipv6)) {
-                              if (isPrivateIpCidr(ipv6)) {
-                                return Promise.resolve();
-                              } else {
-                                return Promise.reject('Address range must be a valid private IPv6 CIDR');
-                              }
+                              return Promise.resolve();
                             } else {
                               return Promise.reject('Address range must be a valid IPv6 CIDR');
                             }
@@ -206,6 +222,7 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
               padding: '.5rem',
               marginBottom: '1.5rem',
             }}
+            ref={defaultAclInputRef}
           >
             <Col xs={24}>
               <Row justify="space-between">
@@ -234,7 +251,7 @@ export default function AddNetworkModal({ isOpen, onCreateNetwork: onCreateNetwo
           <Row>
             <Col xs={24} style={{ textAlign: 'right' }}>
               <Form.Item data-nmui-intercom="add-network-form_submit">
-                <Button type="primary" onClick={createNetwork}>
+                <Button type="primary" onClick={createNetwork} ref={submitButtonRef}>
                   Create Network
                 </Button>
               </Form.Item>

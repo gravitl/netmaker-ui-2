@@ -19,7 +19,7 @@ import {
   Tooltip,
   Typography,
 } from 'antd';
-import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { MouseEvent, Ref, useCallback, useEffect, useMemo, useState } from 'react';
 import { useStore } from '@/store/store';
 import '../CustomModal.scss';
 import { Network } from '@/models/Network';
@@ -32,6 +32,7 @@ import { NodesService } from '@/services/NodesService';
 import { Host } from '@/models/Host';
 import { PUBLIC_DNS_RESOLVERS } from '@/constants/AppConstants';
 import { validateExtClientNameField } from '@/utils/Utils';
+import _ from 'lodash';
 
 interface AddClientModalProps {
   isOpen: boolean;
@@ -41,12 +42,22 @@ interface AddClientModalProps {
   closeModal?: () => void;
   onOk?: (e: MouseEvent<HTMLButtonElement>) => void;
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
+  createClientConfigModalSelectGatewayRef?: Ref<HTMLDivElement>;
+  createClientConfigModalClientIDRef?: Ref<HTMLDivElement>;
+  createClientConfigModalPublicKeyRef?: Ref<HTMLDivElement>;
+  createClientConfigModalDNSRef?: Ref<HTMLDivElement>;
+  createClientConfigModalAdditionalAddressesRef?: Ref<HTMLDivElement>;
+  createClientConfigModalPostUpRef: Ref<HTMLDivElement>;
+  createClientConfigModalPostDownRef: Ref<HTMLDivElement>;
+  isTourOpen?: boolean;
 }
 
 type AddClientFormFields = CreateExternalClientReqDto & {
   gatewayId: Node['id'];
   extclientdns: string;
   is_internet_gw: boolean;
+  postup: string;
+  postdown: string;
 };
 
 export default function AddClientModal({
@@ -55,6 +66,14 @@ export default function AddClientModal({
   onCancel,
   networkId,
   preferredGateway,
+  createClientConfigModalAdditionalAddressesRef,
+  createClientConfigModalClientIDRef,
+  createClientConfigModalDNSRef,
+  createClientConfigModalPublicKeyRef,
+  createClientConfigModalSelectGatewayRef,
+  createClientConfigModalPostUpRef,
+  createClientConfigModalPostDownRef,
+  isTourOpen,
 }: AddClientModalProps) {
   const [form] = Form.useForm<AddClientFormFields>();
   const [notify, notifyCtx] = notification.useNotification();
@@ -78,7 +97,7 @@ export default function AddClientModal({
 
   const networkHosts = useMemo<ExtendedNode[]>(() => {
     return store.nodes
-      .filter((node) => node.network === networkId)
+      .filter((node) => node.network === networkId && node.isingressgateway)
       .map((node) => ({ ...node, ...getExtendedNode(node, store.hostsCommonDetails) }));
   }, [networkId, store.hostsCommonDetails, store.nodes]);
 
@@ -97,6 +116,11 @@ export default function AddClientModal({
     return store.hosts.find((h) => h.id === selectedGateway.hostid) || null;
   }, [selectedGateway, store.hosts]);
 
+  const initialPreferredGatewayHealth = useMemo(() => {
+    if (!preferredGateway) return null;
+    return getNodeConnectivity(preferredGateway);
+  }, [preferredGateway, getNodeConnectivity]);
+
   const gatewayTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(() => {
     return [
       {
@@ -108,20 +132,14 @@ export default function AddClientModal({
       },
       {
         title: 'Address',
-        dataIndex: 'address',
-      },
-      {
-        title: 'Remote Access Gateway',
-        // dataIndex: 'name',
-        render(value, node) {
-          if (node.isingressgateway) return <Badge status="success" text="Gateway" />;
-          return <Badge status="error" text="Gateway" />;
+        render(_, gateway) {
+          const addrs = ([] as Array<string>).concat(gateway.address || [], gateway.address6 || []).join(', ');
+          return <Typography.Text>{addrs}</Typography.Text>;
         },
       },
       {
         title: 'Health status',
-        // dataIndex: 'lastcheckin',
-        render(value, node) {
+        render(_, node) {
           return getNodeConnectivity(node);
         },
       },
@@ -137,6 +155,8 @@ export default function AddClientModal({
   const createClient = async () => {
     try {
       const formData = await form.validateFields();
+      formData.postup = formData.postup?.trim();
+      formData.postdown = formData.postdown?.trim();
       setIsSubmitting(true);
 
       if (!selectedGateway) return;
@@ -145,6 +165,7 @@ export default function AddClientModal({
         await NodesService.createIngressNode(selectedGateway.id, networkId, {
           extclientdns: formData.extclientdns,
           is_internet_gw: isServerEE ? formData.is_internet_gw : false,
+          metadata: '',
         });
       }
 
@@ -168,14 +189,9 @@ export default function AddClientModal({
     if (preferredGateway) {
       setSelectedGateway(getExtendedNode(preferredGateway, store.hostsCommonDetails));
       form.setFieldValue('gatewayId', preferredGateway.id);
+      setIsAutoselectionComplete(true);
       return;
     }
-    const gateways = networkHosts.filter((node) => node.isingressgateway);
-    if (gateways.length) {
-      setSelectedGateway(gateways[0]);
-      form.setFieldValue('gatewayId', gateways[0].id);
-    }
-    setIsAutoselectionComplete(true);
   }, [form, isOpen, networkHosts, preferredGateway, store.hostsCommonDetails, isAutoselectionComplete]);
 
   // TODO: add autofill for fields
@@ -190,100 +206,128 @@ export default function AddClientModal({
       footer={null}
       className="CustomModal"
       style={{ minWidth: '50vw' }}
+      afterClose={() => {
+        resetModal();
+        setIsAutoselectionComplete(false);
+      }}
     >
       <Divider style={{ margin: '0px 0px 2rem 0px' }} />
       <Form name="add-client-form" form={form} layout="vertical">
         <div className="CustomModalBody">
-          <Form.Item
-            label="Remote Access Gateway"
-            name="gatewayId"
-            rules={[{ required: true }]}
-            data-nmui-intercom="add-client-form_gatewayId"
-          >
-            {!selectedGateway && (
-              <Select
-                placeholder="Select a host as gateway"
-                dropdownRender={() => (
-                  <div style={{ padding: '.5rem' }}>
-                    <Row style={{ marginBottom: '1rem' }}>
-                      <Col span={8}>
-                        <Input
-                          placeholder="Search host"
-                          value={gatewaySearch}
-                          onChange={(e) => setGatewaySearch(e.target.value)}
-                          prefix={<SearchOutlined />}
-                        />
+          <Row>
+            <Col xs={24} ref={createClientConfigModalSelectGatewayRef}>
+              <Form.Item
+                label="Remote Access Gateway"
+                name="gatewayId"
+                rules={[{ required: true }]}
+                data-nmui-intercom="add-client-form_gatewayId"
+              >
+                {!selectedGateway && (
+                  <Select
+                    placeholder="Select a host as gateway"
+                    dropdownRender={() => (
+                      <div style={{ padding: '.5rem' }}>
+                        <Row style={{ marginBottom: '1rem' }}>
+                          <Col span={8}>
+                            <Input
+                              placeholder="Search host"
+                              value={gatewaySearch}
+                              onChange={(e) => setGatewaySearch(e.target.value)}
+                              prefix={<SearchOutlined />}
+                            />
+                          </Col>
+                          <Col span={16} style={{ textAlign: 'right' }}>
+                            <Button
+                              type="primary"
+                              onClick={() => {
+                                setIsDropDownOpen(false);
+                              }}
+                            >
+                              Done
+                            </Button>
+                          </Col>
+                        </Row>
+                        <Row>
+                          <Col span={24}>
+                            <Table
+                              size="small"
+                              columns={gatewayTableCols}
+                              dataSource={filteredNetworkHosts}
+                              rowKey="id"
+                              onRow={(node) => {
+                                return {
+                                  onClick: () => {
+                                    form.setFieldValue('gatewayId', node.id);
+                                    setSelectedGateway(node);
+                                  },
+                                };
+                              }}
+                            />
+                          </Col>
+                        </Row>
+                      </div>
+                    )}
+                    onDropdownVisibleChange={(open) => setIsDropDownOpen(open)}
+                    suffixIcon={isDropDownOpen ? <UpOutlined /> : <DownOutlined />}
+                    open={isDropDownOpen}
+                  />
+                )}
+                {!!selectedGateway && (
+                  <>
+                    <Row
+                      style={{ border: `1px solid ${themeToken.colorBorder}`, padding: '.5rem', borderRadius: '8px' }}
+                    >
+                      <Col span={6}>{selectedGateway?.name ?? ''}</Col>
+                      <Col span={6}>
+                        {([] as Array<string>)
+                          .concat(selectedGateway.address || [], selectedGateway.address6 || [])
+                          .join(', ')}
                       </Col>
-                    </Row>
-                    <Row>
-                      <Col span={24}>
-                        <Table
+                      <Col span={6}>
+                        {selectedGateway.isingressgateway && <Badge status="success" text="Gateway" />}
+                        {!selectedGateway.isingressgateway && <Badge status="error" text="Not a Gateway" />}
+                      </Col>
+                      <Col span={5}>
+                        {_.isEqual(selectedGateway, preferredGateway)
+                          ? initialPreferredGatewayHealth
+                          : getNodeConnectivity(selectedGateway)}
+                      </Col>
+                      <Col span={1} style={{ textAlign: 'right' }}>
+                        <Button
+                          danger
                           size="small"
-                          columns={gatewayTableCols}
-                          dataSource={filteredNetworkHosts}
-                          rowKey="id"
-                          onRow={(node) => {
-                            return {
-                              onClick: () => {
-                                form.setFieldValue('gatewayId', node.id);
-                                setSelectedGateway(node);
-                              },
-                            };
+                          icon={<CloseOutlined />}
+                          type="primary"
+                          onClick={() => {
+                            form.setFieldValue('gatewayId', '');
+                            setSelectedGateway(null);
                           }}
                         />
                       </Col>
                     </Row>
-                  </div>
+                    {!selectedGateway.isingressgateway && (
+                      <Row style={{ padding: '.5rem', borderRadius: '8px' }}>
+                        <Col span={24}>
+                          <Alert type="info" message="Proceeding will turn this host into a gateway." showIcon />
+                        </Col>
+                      </Row>
+                    )}
+                    {!!selectedGatewayHost && isHostNatted(selectedGatewayHost) && (
+                      <Row style={{ padding: '.5rem', borderRadius: '8px' }}>
+                        <Col span={24}>
+                          <Alert
+                            type="warning"
+                            message="The selected host is behind a NAT gateway, which may affect reachability."
+                            showIcon
+                          />
+                        </Col>
+                      </Row>
+                    )}
+                  </>
                 )}
-                onDropdownVisibleChange={(open) => setIsDropDownOpen(open)}
-                suffixIcon={isDropDownOpen ? <UpOutlined /> : <DownOutlined />}
-              />
-            )}
-            {!!selectedGateway && (
-              <>
-                <Row style={{ border: `1px solid ${themeToken.colorBorder}`, padding: '.5rem', borderRadius: '8px' }}>
-                  <Col span={6}>{selectedGateway?.name ?? ''}</Col>
-                  <Col span={6}>{selectedGateway?.address ?? ''}</Col>
-                  <Col span={6}>
-                    {selectedGateway.isingressgateway && <Badge status="success" text="Gateway" />}
-                    {!selectedGateway.isingressgateway && <Badge status="error" text="Not a Gateway" />}
-                  </Col>
-                  <Col span={5}>{getNodeConnectivity(selectedGateway)}</Col>
-                  <Col span={1} style={{ textAlign: 'right' }}>
-                    <Button
-                      danger
-                      size="small"
-                      icon={<CloseOutlined />}
-                      type="primary"
-                      onClick={() => {
-                        form.setFieldValue('gatewayId', '');
-                        setSelectedGateway(null);
-                      }}
-                    />
-                  </Col>
-                </Row>
-                {!selectedGateway.isingressgateway && (
-                  <Row style={{ padding: '.5rem', borderRadius: '8px' }}>
-                    <Col span={24}>
-                      <Alert type="info" message="Proceeding will turn this host into a gateway." showIcon />
-                    </Col>
-                  </Row>
-                )}
-                {!!selectedGatewayHost && isHostNatted(selectedGatewayHost) && (
-                  <Row style={{ padding: '.5rem', borderRadius: '8px' }}>
-                    <Col span={24}>
-                      <Alert
-                        type="warning"
-                        message="The selected host is behind a NAT gateway, which may affect reachability."
-                        showIcon
-                      />
-                    </Col>
-                  </Row>
-                )}
-              </>
-            )}
-          </Form.Item>
-
+              </Form.Item>
+            </Col>
+          </Row>
           {selectedGateway && !selectedGateway.isingressgateway && (
             <>
               <Form.Item
@@ -325,35 +369,108 @@ export default function AddClientModal({
 
         <Divider style={{ margin: '0px 0px 2rem 0px' }} />
         <div className="CustomModalBody">
-          <Form.Item
-            label="Client ID (Optional)"
-            name="clientid"
-            rules={validateExtClientNameField}
-            data-nmui-intercom="add-client-form_clientid"
-          >
-            <Input placeholder="Unique name of client" />
-          </Form.Item>
+          <Row>
+            <Col xs={24} ref={createClientConfigModalClientIDRef}>
+              <Form.Item
+                label="Client ID (Optional)"
+                name="clientid"
+                rules={validateExtClientNameField}
+                data-nmui-intercom="add-client-form_clientid"
+              >
+                <Input placeholder="Unique name of client" />
+              </Form.Item>
+            </Col>
+          </Row>
 
-          <Collapse ghost size="small">
+          <Collapse ghost size="small" defaultActiveKey={isTourOpen ? 'details' : ''}>
             <Collapse.Panel
               key="details"
               header={<Typography.Text style={{ marginTop: '0rem' }}>Advanced Settings</Typography.Text>}
             >
-              <Form.Item label="Public Key (Optional)" name="publickey" data-nmui-intercom="add-client-form_publickey">
-                <Input placeholder="Public key" />
-              </Form.Item>
+              <Row>
+                <Col xs={24} ref={createClientConfigModalPublicKeyRef}>
+                  <Form.Item
+                    label="Public Key (Optional)"
+                    name="publickey"
+                    data-nmui-intercom="add-client-form_publickey"
+                  >
+                    <Input placeholder="Public key" />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row>
+                <Col xs={24} ref={createClientConfigModalDNSRef}>
+                  <Form.Item label="DNS (Optional)" name="dns" data-nmui-intercom="add-client-form_dns">
+                    <Input placeholder="Client DNS" />
+                  </Form.Item>
+                </Col>
+              </Row>
 
-              <Form.Item label="DNS (Optional)" name="dns" data-nmui-intercom="add-client-form_dns">
-                <Input placeholder="Client DNS" />
-              </Form.Item>
-
-              <Form.Item
-                label="Additional Addresses (Optional)"
-                name="extraallowedips"
-                data-nmui-intercom="add-client-form_extraallowedips"
-              >
-                <Select mode="tags" placeholder="Additional IP Addresses" allowClear={true} />
-              </Form.Item>
+              <Row>
+                <Col xs={24} ref={createClientConfigModalAdditionalAddressesRef}>
+                  <Form.Item
+                    label="Additional Addresses (Optional)"
+                    name="extraallowedips"
+                    data-nmui-intercom="add-client-form_extraallowedips"
+                  >
+                    <Select mode="tags" placeholder="Additional IP Addresses" allowClear={true} />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row>
+                <Col xs={24} ref={createClientConfigModalPostUpRef}>
+                  <Form.Item
+                    label={
+                      <>
+                        Post Up (Optional)
+                        <Tooltip title="PostUp serves as a lifetime hook that runs the provided script that run just after wireguard sets up the interface and the VPN connection is live">
+                          <InfoCircleOutlined style={{ marginLeft: '0.3em' }} />
+                        </Tooltip>
+                      </>
+                    }
+                    name="postup"
+                    data-nmui-intercom="add-client-form_postup"
+                    rules={[
+                      {
+                        required: false,
+                      },
+                      {
+                        max: 1024,
+                        message: 'PostUp script cannot exceed 1024 characters',
+                      },
+                    ]}
+                  >
+                    <Input placeholder="PostUp script" />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row>
+                <Col xs={24} ref={createClientConfigModalPostDownRef}>
+                  <Form.Item
+                    label={
+                      <>
+                        Post Down (Optional)
+                        <Tooltip title="PostDown serves as a lifetime hook that runs the provided script that run just after wireguard tears down the interface">
+                          <InfoCircleOutlined style={{ marginLeft: '0.3em' }} />
+                        </Tooltip>
+                      </>
+                    }
+                    name="postdown"
+                    data-nmui-intercom="add-client-form_postdown"
+                    rules={[
+                      {
+                        required: false,
+                      },
+                      {
+                        max: 1024,
+                        message: 'PostDown script cannot exceed 1024 characters',
+                      },
+                    ]}
+                  >
+                    <Input placeholder="PostDown script" />
+                  </Form.Item>
+                </Col>
+              </Row>
             </Collapse.Panel>
           </Collapse>
         </div>

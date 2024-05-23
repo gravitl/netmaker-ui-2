@@ -25,8 +25,11 @@ export interface Node {
   dnson: boolean;
   islocal: boolean;
   server: string;
-  internetgateway: string;
   isinternetgateway: boolean;
+  internetgw_node_id: Node['id'];
+  inet_node_req: {
+    inet_node_client_ids?: Node['id'][];
+  };
   defaultacl: string;
   connected: boolean;
   failover: boolean;
@@ -37,7 +40,9 @@ export interface Node {
   autoupdate: boolean;
   is_fail_over: boolean;
   failed_over_by: Node['id'];
-  fail_over_peers: Node['id'][]; // temporary don't know the type
+  fail_over_peers: Node['id'][]; // temporary don't know the type;
+  metadata?: string;
+  additional_rag_ips: string[];
 }
 
 export type AddressType = 'address' | 'address6' | 'localaddress';

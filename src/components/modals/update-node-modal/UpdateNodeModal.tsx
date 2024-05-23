@@ -5,7 +5,6 @@ import {
   Divider,
   Form,
   Input,
-  InputNumber,
   Modal,
   notification,
   Row,
@@ -17,7 +16,6 @@ import { MouseEvent } from 'react';
 import { useStore } from '@/store/store';
 import '../CustomModal.scss';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
-import { Host } from '@/models/Host';
 import { Node } from '@/models/Node';
 import { getHostRoute } from '@/utils/RouteUtils';
 import { NodesService } from '@/services/NodesService';
@@ -38,7 +36,6 @@ export default function UpdateNodeModal({ isOpen, node, onUpdateNode, onCancel }
   const navigate = useNavigate();
 
   const storeUpdateNode = store.updateNode;
-  const isStaticVal: Host['isstatic'] = Form.useWatch('isstatic', form);
 
   const network = store.networks.find((n) => n.netid === node.network);
   const host = store.hosts.find((h) => h.id === node.hostid);
@@ -95,18 +92,25 @@ export default function UpdateNodeModal({ isOpen, node, onUpdateNode, onCancel }
         name="update-node-form"
         form={form}
         layout="vertical"
-        initialValues={{ ...node, expdatetime: dayjs(node.expdatetime * 1000), endpointip: host?.endpointip ?? '' }}
+        initialValues={{
+          ...node,
+          expdatetime: dayjs(node.expdatetime * 1000),
+          endpointip: host?.endpointip ?? '',
+          endpointipv6: host?.endpointipv6 ?? '',
+        }}
       >
         <div className="scrollable-modal-body">
           <div className="CustomModalBody">
-            <Form.Item
-              label="IP Address (IPv4)"
-              name="address"
-              rules={[{ required: true }]}
-              data-nmui-intercom="update-node-form_address"
-            >
-              <Input placeholder="IPv4 address" />
-            </Form.Item>
+            {network?.isipv4 && (
+              <Form.Item
+                label="IP Address (IPv4)"
+                name="address"
+                rules={[{ required: true }]}
+                data-nmui-intercom="update-node-form_address"
+              >
+                <Input placeholder="IPv4 address" />
+              </Form.Item>
+            )}
 
             {network?.isipv6 && (
               <Form.Item
@@ -128,6 +132,7 @@ export default function UpdateNodeModal({ isOpen, node, onUpdateNode, onCancel }
                     value: iface.addressString,
                   })) ?? []
                 }
+                disabled={true}
               />
             </Form.Item>
 
@@ -141,22 +146,17 @@ export default function UpdateNodeModal({ isOpen, node, onUpdateNode, onCancel }
                 showTime={true}
                 disabledTime={disabledDateTime}
                 style={{ width: '100%' }}
-                clearIcon={false}
+                allowClear={false}
                 format={NODE_EXP_TIME_FORMAT}
               />
             </Form.Item>
 
-            <Form.Item
-              label="Endpoint IP"
-              name="endpointip"
-              rules={[{ required: isStaticVal }]}
-              data-nmui-intercom="update-node-form_endpointip"
-            >
-              <Input
-                placeholder="Endpoint IP"
-                disabled={!isStaticVal}
-                title="To edit, click Global Host Settings below"
-              />
+            <Form.Item label="Endpoint IP (IPv4)" name="endpointip" data-nmui-intercom="update-node-form_endpointip">
+              <Input placeholder="Endpoint IP" disabled title="To edit, click Global Host Settings below" />
+            </Form.Item>
+
+            <Form.Item label="Endpoint IP (IPv6)" name="endpointipv6" data-nmui-intercom="update-node-form_endpointip">
+              <Input placeholder="Endpoint IP" disabled title="To edit, click Global Host Settings below" />
             </Form.Item>
 
             <Form.Item
@@ -193,6 +193,15 @@ export default function UpdateNodeModal({ isOpen, node, onUpdateNode, onCancel }
               data-nmui-intercom="update-node-form_dnson"
             >
               <Switch />
+            </Form.Item>
+
+            <Form.Item
+              label="Metadata"
+              name="metadata"
+              data-nmui-intercom="update-node-form_metadata"
+              rules={[{ max: 255 }]}
+            >
+              <Input placeholder="Metadata" />
             </Form.Item>
           </div>
         </div>

@@ -1,0 +1,63 @@
+.NewHostModal {
+    --active-color: rgba(128, 128, 128, 0.1);
+  
+    .os-button {
+      border-radius: 4px;
+      width: 5rem;
+      height: 5rem;
+      display: flex;
+      flex-flow: column nowrap;
+      align-items: center;
+      justify-content: center;
+      gap: 0.25rem;
+      cursor: pointer;
+  
+      &.active {
+        background-color: var(--active-color);
+      }
+  
+      .logo {
+        width: 30px;
+        height: 30px;
+      }
+  
+      p {
+        margin: 0px;
+      }
+    }
+  
+    .networks-list {
+      .ant-list-item {
+        cursor: pointer;
+        border-radius: 8px;
+  
+        &:hover {
+          background-color: rgba(128, 128, 128, 0.1);
+        }
+      }
+    }
+  
+    .selected-row {
+      $bg-color: rgba(128, 107, 282);
+      $bg-color-alpha: rgba($bg-color, 0.1);
+      background-color: $bg-color-alpha !important;
+  
+      td.ant-table-column-sort {
+        background-color: transparent;
+      }
+  
+      td:first-of-type {
+        transition: all 200ms;
+        border-left: 4px solid $bg-color;
+      }
+    }
+  
+    .code-bg {
+      background-color: rgba(128, 128, 128, 0.1);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      overflow-x: auto;
+    }
+  }
+  

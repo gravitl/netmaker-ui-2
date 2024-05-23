@@ -24,6 +24,7 @@ import {
 import { isSaasBuild } from '@/services/BaseService';
 import { ServerConfigService } from '@/services/ServerConfigService';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
+import { useBranding } from '@/utils/Utils';
 
 interface ServerMalfunctionModalProps {
   isOpen: boolean;
@@ -37,6 +38,8 @@ const LICENSE_ERROR = 'your trial has ended';
 export default function ServerMalfunctionModal({ isOpen, onCancel }: ServerMalfunctionModalProps) {
   const { t } = useTranslation();
   const store = useStore();
+
+  const branding = useBranding();
 
   const getServerMalfunctions = useMemo(() => {
     const malfunctions: ServerMalfunctionType[] = [];
@@ -163,7 +166,7 @@ export default function ServerMalfunctionModal({ isOpen, onCancel }: ServerMalfu
         {!hasTrialPeriodExpired && (
           <Row>
             <Col span={24}>
-              <Typography.Title level={4}>Netmaker is not functioning properly</Typography.Title>
+              <Typography.Title level={4}>{branding.productName} is not functioning properly</Typography.Title>
             </Col>
             <Col span={24}>
               <Typography.Text strong>

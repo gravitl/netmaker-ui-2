@@ -69,6 +69,10 @@ export default function UpdateEgressModal({
     else return <Badge status="processing" text="Unknown" />;
   }, []);
 
+  const initialEgressHealth = useMemo(() => {
+    return getNodeConnectivity(extendedEgress);
+  }, [extendedEgress, getNodeConnectivity]);
+
   const resetModal = () => {
     form.resetFields();
   };
@@ -100,7 +104,6 @@ export default function UpdateEgressModal({
     }
   };
 
-  // TODO: add autofill for fields
   return (
     <Modal
       title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Update Egress</span>}
@@ -137,7 +140,7 @@ export default function UpdateEgressModal({
                       {extendedEgress?.address ?? ''} {extendedEgress?.address6 ?? ''}
                     </Col>
                     <Col span={6}>{extendedEgress?.endpointip ?? ''}</Col>
-                    <Col span={5}>{getNodeConnectivity(extendedEgress)}</Col>
+                    <Col span={5}>{initialEgressHealth}</Col>
                   </Row>
                 </>
               )}

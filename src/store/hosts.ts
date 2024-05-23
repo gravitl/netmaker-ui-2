@@ -40,6 +40,7 @@ const createHostSlice: StateCreator<IHostSlice, [], [], IHostSlice> = (set) => (
           name: host.name,
           version: host.version,
           endpointip: host.endpointip,
+          endpointipv6: host.endpointipv6,
           os: host.os,
           publickey: host.publickey,
           listenport: host.listenport,

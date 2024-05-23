@@ -1,8 +1,21 @@
 import { Network } from '@/models/Network';
 import { AppRoutes } from '@/routes';
-import { PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
-import { Button, Card, Col, Input, Layout, Row, Skeleton, Table, TableColumnsType, Typography } from 'antd';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { InfoCircleOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
+import {
+  Button,
+  Card,
+  Col,
+  Input,
+  Layout,
+  Row,
+  Skeleton,
+  Table,
+  TableColumnsType,
+  Tour,
+  TourProps,
+  Typography,
+} from 'antd';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import AddNetworkModal from '../../components/modals/add-network-modal/AddNetworkModal';
 import { PageProps } from '../../models/Page';
@@ -17,6 +30,17 @@ export default function NetworksPage(props: PageProps) {
   const networks = store.networks;
   const [isAddNetworkModalOpen, setIsAddNetworkModalOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
+  const tableColumnsNameRow = useRef(null);
+  const addNetworkButton = useRef(null);
+  const autoFillButtonRef = useRef(null);
+  const networkNameInputRef = useRef(null);
+  const ipv4InputRef = useRef(null);
+  const ipv6InputRef = useRef(null);
+  const defaultAclInputRef = useRef(null);
+  const submitButtonRef = useRef(null);
+  const [isTourOpen, setIsTourOpen] = useState(false);
+  const [tourStep, setTourStep] = useState(0);
+
   const tableColumns: TableColumnsType<Network> = [
     {
       title: 'Name',
@@ -26,7 +50,9 @@ export default function NetworksPage(props: PageProps) {
         compare: (a, b) => a.netid.localeCompare(b.netid),
       },
       defaultSortOrder: 'ascend',
-      render: (netId) => <Link to={`${resolveAppRoute(AppRoutes.NETWORKS_ROUTE)}/${encodeURIComponent(netId)}`}>{netId}</Link>,
+      render: (netId) => (
+        <Link to={`${resolveAppRoute(AppRoutes.NETWORKS_ROUTE)}/${encodeURIComponent(netId)}`}>{netId}</Link>
+      ),
     },
     {
       title: 'Address Range (IPv4)',
@@ -94,6 +120,64 @@ export default function NetworksPage(props: PageProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const tourSteps: TourProps['steps'] = [
+    {
+      title: 'Network details',
+      description:
+        'Get network information like name, address range (IPv4), address range (IPv6), hosts count, network last modified, and hosts last modified.',
+      target: () => tableColumnsNameRow.current,
+    },
+    {
+      title: 'Add a network',
+      description: 'Click here to add a network.',
+      target: () => addNetworkButton.current,
+    },
+    {
+      title: 'Autofill',
+      description: 'Click here to autofill the network details.',
+      target: () => autoFillButtonRef.current,
+    },
+    {
+      title: 'Network name',
+      description: 'Enter a name for the network.',
+      target: () => networkNameInputRef.current,
+    },
+    {
+      title: 'IPv4 address range',
+      description: 'Enter an IPv4 address range.',
+      target: () => ipv4InputRef.current,
+    },
+    {
+      title: 'IPv6 address range',
+      description: 'Enter an IPv6 address range.',
+      target: () => ipv6InputRef.current,
+    },
+    {
+      title: 'Default ACL',
+      description: 'Select a default ACL.',
+      target: () => defaultAclInputRef.current,
+    },
+    {
+      title: 'Submit',
+      description: 'Click here to submit the network details.',
+      target: () => submitButtonRef.current,
+    },
+  ];
+
+  const handleTourOnChange = (current: number) => {
+    setTourStep(current);
+    switch (current) {
+      case 1:
+        setIsAddNetworkModalOpen(false);
+        break;
+      case 2:
+        setIsAddNetworkModalOpen(true);
+        break;
+      default:
+        break;
+    }
+  };
+
   useEffect(() => {
     loadNetworks();
   }, [loadNetworks]);
@@ -119,8 +203,8 @@ export default function NetworksPage(props: PageProps) {
                 <Typography.Text style={{ color: 'white ' }}>
                   A network is how your hosts and clients communicate. Each machine gets a private IP address within the
                   defined subnet and communicates securely with all the other devices in the network. The network is
-                  your base layer. Once it&apos;s created you can add Ingress, Egress, Relay, and more. Create multiple
-                  networks and manage multiple secure domains for your devices!
+                  your base layer. Once it&apos;s created you can add Remote Access Gateway, Egress, Relay, and more.
+                  Create multiple networks and manage multiple secure domains for your devices!
                 </Typography.Text>
               </Col>
               <Col xs={24} xl={(24 * 1) / 3} style={{ position: 'relative' }}>
@@ -186,7 +270,7 @@ export default function NetworksPage(props: PageProps) {
                   <Typography.Text>
                     Add hosts to your network. Make a host into a{' '}
                     <a href="https://www.netmaker.io/features/ingress" target="_blank" rel="noreferrer">
-                      Client Gateway
+                      remote access gateway
                     </a>{' '}
                     to begin using Clients. Make a host an{' '}
                     <a href="https://www.netmaker.io/features/egress" target="_blank" rel="noreferrer">
@@ -222,10 +306,26 @@ export default function NetworksPage(props: PageProps) {
                 />
               </Col>
               <Col xs={24} md={16} style={{ textAlign: 'right' }} className="networks-table-button">
+                <Button
+                  size="large"
+                  style={{ marginRight: '0.5em' }}
+                  onClick={() => {
+                    setIsAddNetworkModalOpen(false);
+                    setIsTourOpen(true);
+                    setTourStep(0);
+                  }}
+                >
+                  <InfoCircleOutlined /> Start Tour
+                </Button>
                 <Button size="large" style={{ marginRight: '0.5em' }} onClick={() => loadNetworks()}>
                   <ReloadOutlined /> Reload Networks
                 </Button>
-                <Button type="primary" size="large" onClick={() => setIsAddNetworkModalOpen(true)}>
+                <Button
+                  type="primary"
+                  size="large"
+                  onClick={() => setIsAddNetworkModalOpen(true)}
+                  ref={addNetworkButton}
+                >
                   <PlusOutlined /> Create Network
                 </Button>
               </Col>
@@ -245,12 +345,22 @@ export default function NetworksPage(props: PageProps) {
                       },
                     };
                   }}
+                  ref={tableColumnsNameRow}
                 />
               </Col>
             </Row>
           </>
         )}
       </Skeleton>
+
+      {/* tour */}
+      <Tour
+        open={isTourOpen}
+        onClose={() => setIsTourOpen(false)}
+        steps={tourSteps}
+        onChange={handleTourOnChange}
+        current={tourStep}
+      />
 
       {/* modals */}
       <AddNetworkModal
@@ -259,6 +369,12 @@ export default function NetworksPage(props: PageProps) {
           setIsAddNetworkModalOpen(false);
         }}
         onCancel={() => setIsAddNetworkModalOpen(false)}
+        autoFillButtonRef={autoFillButtonRef}
+        networkNameInputRef={networkNameInputRef}
+        ipv4InputRef={ipv4InputRef}
+        ipv6InputRef={ipv6InputRef}
+        defaultAclInputRef={defaultAclInputRef}
+        submitButtonRef={submitButtonRef}
       />
     </Layout.Content>
   );

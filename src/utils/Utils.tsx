@@ -17,6 +17,11 @@ import { Rule } from 'antd/es/form';
 import { useStore } from '@/store/store';
 import { BrandingConfig } from '@/models/BrandingConfig';
 import { isSaasBuild } from '@/services/BaseService';
+import { NetworkUsecaseString } from '@/store/networkusecase';
+
+export type NetworkUsecaseMap = {
+  [key in NetworkUsecaseString]: string;
+};
 
 export function renderNodeHealth(health: NodeConnectivityStatus) {
   switch (health) {
@@ -350,13 +355,17 @@ const validateName = (fieldName: string): Rule[] => [
 
 const validateExtClientName = (fieldName: string): Rule[] => [
   {
-    required: true,
+    required: false,
     message: `Please enter a ${fieldName}, with a minimum of 5 characters and a maximum of 32 characters.`,
     min: 5,
     max: 32,
   },
   {
     validator: (_: any, value: string) => {
+      if (value === '') {
+        return Promise.resolve();
+      }
+
       const regex = /^[^\s]+$/;
       if (regex.test(value)) {
         return Promise.resolve();
@@ -456,3 +465,9 @@ export function useBranding(): BrandingConfig {
 
   return branding;
 }
+
+export const networkUsecaseMapText: NetworkUsecaseMap = {
+  remote_access_multiple_users: 'Remote Access Multiple Users',
+  egress_to_cloud_vpc: 'Egress to Cloud VPC',
+  // egress_to_office_lan_ips: 'Egress to Office LAN IPs',
+};

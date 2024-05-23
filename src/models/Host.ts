@@ -16,6 +16,7 @@ export interface Host {
   interfaces: Interface[];
   defaultinterface: string; // iface name
   endpointip: string;
+  endpointipv6: string;
   publickey: string;
   macaddress: string;
   nodes: Node['id'][];
@@ -29,6 +30,7 @@ export interface HostCommonDetails {
   name: Host['name'];
   version: Host['version'];
   endpointip: Host['endpointip'];
+  endpointipv6: Host['endpointipv6'];
   publickey: Host['publickey'];
   os: Host['os'];
   listenport: Host['listenport'];

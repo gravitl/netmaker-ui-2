@@ -2,9 +2,15 @@ import { Host } from '@/models/Host';
 import { AppRoutes } from '@/routes';
 import { useStore } from '@/store/store';
 import { getHostRoute, resolveAppRoute } from '@/utils/RouteUtils';
-import { MoreOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
 import {
-  Alert,
+  InfoCircleOutlined,
+  MoreOutlined,
+  PlusOutlined,
+  QuestionCircleOutlined,
+  ReloadOutlined,
+  SearchOutlined,
+} from '@ant-design/icons';
+import {
   Button,
   Card,
   Col,
@@ -23,9 +29,11 @@ import {
   Tabs,
   TabsProps,
   Tag,
+  Tour,
+  TourProps,
   Typography,
 } from 'antd';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { PageProps } from '../../models/Page';
@@ -39,6 +47,8 @@ import NewHostModal from '@/components/modals/new-host-modal/NewHostModal';
 import { lt } from 'semver';
 import { ExtendedNode } from '@/models/Node';
 import { HOST_HEALTH_STATUS } from '@/models/NodeConnectivityStatus';
+
+const HOST_DOCS_URL = 'https://docs.netmaker.io/ui-reference.html#hosts';
 
 export default function HostsPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
@@ -57,6 +67,18 @@ export default function HostsPage(props: PageProps) {
   const [hasAdvicedHosts, setHasAdvicedHosts] = useState(false);
   const [isRefreshingHosts, setIsRefreshingHosts] = useState(false);
   const [isAddNewHostModalOpen, setIsAddNewHostModalOpen] = useState(false);
+  const [isTourOpen, setIsTourOpen] = useState(false);
+  const [activeKey, setActiveKey] = useState('overview');
+  const [tourStep, setTourStep] = useState(0);
+  const hostsTableRef = useRef(null);
+  const networkAccessManagementTabRef = useRef(null);
+  const networkAccessManagementTabHostsTableRef = useRef(null);
+  const networkAccessManagementTabNetworksTableRef = useRef(null);
+  const refreshHostKeysButtonRef = useRef(null);
+  const connectHostButtonRef = useRef(null);
+  const connectHostModalEnrollmentKeysTabRef = useRef(null);
+  const connectHostModalSelectOSTabRef = useRef(null);
+  const connectHostModalJoinNetworkTabRef = useRef(null);
 
   const checkIfUpgradeButtonShouldBeDisabled = useCallback(
     (host: Host) => {
@@ -80,7 +102,9 @@ export default function HostsPage(props: PageProps) {
   const filteredHosts = useMemo(
     () =>
       hosts.filter((host) => {
-        return host.name.toLowerCase().includes(searchText.toLowerCase());
+        return `${host.name ?? ''}${host.endpointip ?? ''}${host.endpointipv6 ?? ''}${host.publickey ?? ''}${host.id ?? ''}`
+          .toLowerCase()
+          .includes(searchText.toLowerCase());
       }),
     [hosts, searchText],
   );
@@ -296,11 +320,20 @@ export default function HostsPage(props: PageProps) {
         defaultSortOrder: 'ascend',
       },
       {
-        title: 'Endpoint',
+        title: 'Endpoint (IPv4)',
         dataIndex: 'endpointip',
         render: (endpointip) => (
           <div onClick={(ev) => ev.stopPropagation()}>
             <Typography.Text>{endpointip}</Typography.Text>
+          </div>
+        ),
+      },
+      {
+        title: 'Endpoint (IPv6)',
+        dataIndex: 'endpointipv6',
+        render: (endpointipv6) => (
+          <div onClick={(ev) => ev.stopPropagation()}>
+            <Typography.Text>{endpointipv6}</Typography.Text>
           </div>
         ),
       },
@@ -505,7 +538,13 @@ export default function HostsPage(props: PageProps) {
       },
       {
         title: 'Endpoint',
-        dataIndex: 'endpointip',
+        render(_, host) {
+          return (
+            <Typography.Text>
+              {([] as Array<string>).concat(host.endpointip, host.endpointipv6).filter(Boolean).join(', ')}
+            </Typography.Text>
+          );
+        },
       },
       {
         title: 'Public Port',
@@ -670,6 +709,7 @@ export default function HostsPage(props: PageProps) {
                   navigate(getHostRoute(host));
                 },
               })}
+              ref={hostsTableRef}
             />
           </Col>
         </Row>
@@ -709,6 +749,7 @@ export default function HostsPage(props: PageProps) {
                         },
                       };
                     }}
+                    ref={networkAccessManagementTabHostsTableRef}
                   />
                 </Col>
               </Row>
@@ -729,6 +770,7 @@ export default function HostsPage(props: PageProps) {
                     scroll={{ x: true }}
                     rowKey="netid"
                     size="small"
+                    ref={networkAccessManagementTabNetworksTableRef}
                   />
                 </Col>
               </Row>
@@ -767,6 +809,95 @@ export default function HostsPage(props: PageProps) {
     await storeFetchHosts();
     await storeFetchNetworks();
     setHasLoaded(true);
+  };
+
+  const hostsTourSteps: TourProps['steps'] = [
+    {
+      title: 'Hosts',
+      description: (
+        <>
+          Hosts are your devices. Servers, devices, VM&quot;s, containers, laptops, and more can all be Hosts. You can
+          get information about your hosts on the table. Clicking on the host name will show extra host details. The
+          ellipsis button at the end of row shows additional operations such as making a host the default , editing its
+          settings, upgrading its version, deleting the host
+        </>
+      ),
+      target: () => hostsTableRef.current,
+    },
+    {
+      title: 'Network Access Management',
+      description:
+        'You can view the networks that the host is connected to and connect or disconnect the host from a network.',
+      target: () => networkAccessManagementTabRef.current,
+    },
+    {
+      title: 'Network Access Manangement - Hosts',
+      description: (
+        <>
+          You can view host information and once you select a host, you can view the networks that the host is connected
+          to and connect or disconnect the host from a network on the right side, On the end of the row you can click
+          the ellipsis button to make the host the default, edit its settings
+        </>
+      ),
+      target: () => networkAccessManagementTabHostsTableRef.current,
+    },
+    {
+      title: 'Network Access Manangement - Networks',
+      description: <>You can view a network and it&quot;s address range</>,
+      target: () => networkAccessManagementTabNetworksTableRef.current,
+    },
+    {
+      title: 'Refresh Host Keys',
+      description: 'Refresh all hosts keys',
+      target: () => refreshHostKeysButtonRef.current,
+    },
+    {
+      title: 'Connect a Host',
+      description: 'You can connect a host by clicking on the button',
+      target: () => connectHostButtonRef.current,
+    },
+    {
+      title: 'Connect a Host - Enrollment Keys',
+      description: (
+        <>
+          You can create an enrollment key which defines the networks a host has access to or you can pick an existing
+          enrollment key
+        </>
+      ),
+      target: () => connectHostModalEnrollmentKeysTabRef.current,
+    },
+    {
+      title: 'Connect a Host - Select OS',
+      description: (
+        <>You can select the OS of the host that you want to connect and follow the netclient install instructions</>
+      ),
+      target: () => connectHostModalSelectOSTabRef.current,
+    },
+    {
+      title: 'Connect a Host - Join a Network',
+      description: <>You can join a network by running the command on the terminal</>,
+      target: () => connectHostModalJoinNetworkTabRef.current,
+    },
+  ];
+
+  const handleTourOnChange = (current: number) => {
+    setTourStep(current);
+    switch (current) {
+      case 1:
+        setActiveKey('network-access');
+        break;
+      case 0:
+        setActiveKey('overview');
+        break;
+      case 5:
+        setIsAddNewHostModalOpen(false);
+        break;
+      case 6:
+        setIsAddNewHostModalOpen(true);
+        break;
+      default:
+        break;
+    }
   };
 
   useEffect(() => {
@@ -817,7 +948,7 @@ export default function HostsPage(props: PageProps) {
               </Col>
               <Col xs={24} xl={(24 * 1) / 3} style={{ position: 'relative' }}>
                 <Card className="header-card" style={{ height: '20rem', position: 'absolute', width: '100%' }}>
-                  <Typography.Title level={3}>Add a Key</Typography.Title>
+                  <Typography.Title level={3}>Add a Host</Typography.Title>
                   <Typography.Text>
                     Start creating your network by adding controllable devices as “hosts” on your platform. Servers,
                     VM’s, your laptop, and more are all fair game.
@@ -903,6 +1034,17 @@ export default function HostsPage(props: PageProps) {
                   size="large"
                   style={{ marginRight: '1rem' }}
                   onClick={() => {
+                    setActiveKey('overview');
+                    setTourStep(0);
+                    setIsTourOpen(true);
+                  }}
+                >
+                  <InfoCircleOutlined /> Start Tour
+                </Button>
+                <Button
+                  size="large"
+                  style={{ marginRight: '1rem' }}
+                  onClick={() => {
                     setHasLoaded(false);
                     fetchHostsAndNetworks();
                   }}
@@ -914,24 +1056,52 @@ export default function HostsPage(props: PageProps) {
                   style={{ marginRight: '1rem' }}
                   onClick={() => refreshAllHostKeys()}
                   loading={isRefreshingHosts}
+                  ref={refreshHostKeysButtonRef}
                 >
-                  <ReloadOutlined /> Refesh Hosts Keys
+                  <ReloadOutlined /> Refresh Hosts Keys
                 </Button>
 
-                <Button type="primary" size="large" onClick={() => setIsAddNewHostModalOpen(true)}>
+                <Button
+                  type="primary"
+                  size="large"
+                  onClick={() => setIsAddNewHostModalOpen(true)}
+                  ref={connectHostButtonRef}
+                >
                   <PlusOutlined /> Connect a host
                 </Button>
+
+                <Button
+                  title="Go to Hosts documentation"
+                  style={{ marginLeft: '0.5rem' }}
+                  href={HOST_DOCS_URL}
+                  target="_blank"
+                  icon={<QuestionCircleOutlined />}
+                />
               </Col>
             </Row>
 
             <Row className="page-row-padding" justify="space-between">
               <Col xs={24}>
-                <Tabs defaultActiveKey="1" items={tabs} />
+                <Tabs
+                  activeKey={activeKey}
+                  items={tabs}
+                  onChange={(activeKey: string) => {
+                    setActiveKey(activeKey);
+                  }}
+                />
               </Col>
             </Row>
           </>
         )}
       </Skeleton>
+
+      {/* tour */}
+      <Tour
+        open={isTourOpen}
+        onClose={() => setIsTourOpen(false)}
+        steps={hostsTourSteps}
+        onChange={handleTourOnChange}
+      />
 
       {/* misc */}
       {notifyCtx}
@@ -942,6 +1112,12 @@ export default function HostsPage(props: PageProps) {
           navigate(resolveAppRoute(AppRoutes.HOSTS_ROUTE));
         }}
         onCancel={() => setIsAddNewHostModalOpen(false)}
+        connectHostModalEnrollmentKeysTabRef={connectHostModalEnrollmentKeysTabRef}
+        connectHostModalSelectOSTabRef={connectHostModalSelectOSTabRef}
+        connectHostModalJoinNetworkTabRef={connectHostModalJoinNetworkTabRef}
+        isTourOpen={isTourOpen}
+        tourStep={tourStep}
+        page="host"
       />
     </Layout.Content>
   );

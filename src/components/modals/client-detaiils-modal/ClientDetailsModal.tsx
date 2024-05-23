@@ -1,11 +1,10 @@
-import { Button, Col, Divider, Image, Modal, notification, Row, Select, Switch, Typography } from 'antd';
-import { MouseEvent, useCallback, useEffect, useState } from 'react';
+import { Button, Col, Divider, Modal, notification, Row, Switch, Tooltip, Typography } from 'antd';
+import { MouseEvent, useCallback } from 'react';
 import '../CustomModal.scss';
-import { DownloadOutlined } from '@ant-design/icons';
-import { download, extractErrorMsg } from '@/utils/ServiceUtils';
+import { EyeOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { NodesService } from '@/services/NodesService';
 import { ExternalClient } from '@/models/ExternalClient';
-import { Buffer } from 'buffer';
 
 interface ClientDetailsModalProps {
   isOpen: boolean;
@@ -14,43 +13,17 @@ interface ClientDetailsModalProps {
   onOk?: (e: MouseEvent<HTMLButtonElement>) => void;
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
   onUpdateClient: (newClient: ExternalClient) => void;
+  onViewConfig?: () => void;
 }
 
-function convertQrCodeArrayBufferToImgString(qrData: ArrayBuffer): string {
-  return 'data:image/png;base64,' + Buffer.from(qrData).toString('base64');
-}
-
-export default function ClientDetailsModal({ client, isOpen, onCancel, onUpdateClient }: ClientDetailsModalProps) {
+export default function ClientDetailsModal({
+  client,
+  isOpen,
+  onCancel,
+  onUpdateClient,
+  onViewConfig,
+}: ClientDetailsModalProps) {
   const [notify, notifyCtx] = notification.useNotification();
-
-  const [qrCode, setQrCode] = useState(' '); // hack to allow qr code display
-
-  const downloadClientData = async () => {
-    try {
-      notify.info({ message: 'Downloading...' });
-      const qrData = (await NodesService.getExternalClientConfig(client.clientid, client.network, 'file'))
-        .data as string;
-      download(`${client.clientid}.conf`, qrData);
-    } catch (err) {
-      notify.error({
-        message: 'Failed to download client config',
-        description: extractErrorMsg(err as any),
-      });
-    }
-  };
-
-  const loadQrCode = useCallback(async () => {
-    try {
-      const qrData = (await NodesService.getExternalClientConfig(client.clientid, client.network, 'qr'))
-        .data as ArrayBuffer;
-      setQrCode(convertQrCodeArrayBufferToImgString(qrData));
-    } catch (err) {
-      notify.error({
-        message: 'Failed to load client config',
-        description: extractErrorMsg(err as any),
-      });
-    }
-  }, [client, notify]);
 
   const toggleClientStatus = useCallback(
     async (newStatus: boolean) => {
@@ -79,10 +52,6 @@ export default function ClientDetailsModal({ client, isOpen, onCancel, onUpdateC
     [client, notify, onUpdateClient],
   );
 
-  useEffect(() => {
-    loadQrCode();
-  }, [loadQrCode]);
-
   return (
     <Modal
       title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Client Information</span>}
@@ -110,15 +79,13 @@ export default function ClientDetailsModal({ client, isOpen, onCancel, onUpdateC
             <Typography.Text>Allowed IPs</Typography.Text>
           </Col>
           <Col xs={16}>
-            <Select
-              key={client.clientid}
-              mode="multiple"
-              disabled
-              placeholder="Allowed IPs"
-              defaultValue={[client.address, client.address6].concat(
-                client.extraallowedips ? client.extraallowedips : [],
-              )}
-            />
+            <Typography.Text>
+              {([] as Array<string>)
+                .concat(client.address ? client.address : [])
+                .concat(client.address6 ? client.address6 : [])
+                .concat(client.extraallowedips ? client.extraallowedips : [])
+                .join(', ')}
+            </Typography.Text>
           </Col>
         </Row>
         <Divider style={{ margin: '1rem 0px 1rem 0px' }} />
@@ -151,23 +118,36 @@ export default function ClientDetailsModal({ client, isOpen, onCancel, onUpdateC
         </Row>
         <Divider style={{ margin: '1rem 0px 1rem 0px' }} />
 
-        <Row data-nmui-intercom="client-details_qr">
-          <Col xs={24}>
-            <Image
-              loading="eager"
-              className="qr-code-container"
-              preview={{ width: 600, height: 600 }}
-              alt={`qr code for client ${client.clientid}`}
-              src={qrCode}
-              style={{ borderRadius: '8px' }}
-              width={256}
-            />
+        <Row data-nmui-intercom="client-details_dns">
+          <Col xs={8}>
+            <Typography.Text>
+              Post Up Script
+              <Tooltip title="PostUp serves as a lifetime hook that runs the provided script that run just after wireguard sets up the interface and the VPN connection is live">
+                <InfoCircleOutlined style={{ marginLeft: '0.3em' }} />
+              </Tooltip>
+            </Typography.Text>
           </Col>
+          <Col xs={16}>{client.postup && <Typography.Text copyable> {client.postup} </Typography.Text>}</Col>
         </Row>
-        <Row style={{ marginTop: '1rem' }} data-nmui-intercom="client-details_downloadbtn">
+        <Divider style={{ margin: '1rem 0px 1rem 0px' }} />
+
+        <Row data-nmui-intercom="client-details_dns">
+          <Col xs={8}>
+            <Typography.Text>
+              Post Down Script
+              <Tooltip title="PostDown serves as a lifetime hook that runs the provided script that run just after wireguard tears down the interface">
+                <InfoCircleOutlined style={{ marginLeft: '0.3em' }} />
+              </Tooltip>
+            </Typography.Text>
+          </Col>
+          <Col xs={16}>{client.postdown && <Typography.Text copyable> {client.postdown} </Typography.Text>}</Col>
+        </Row>
+        <Divider style={{ margin: '1rem 0px 1rem 0px' }} />
+
+        <Row style={{ marginTop: '2rem' }} data-nmui-intercom="client-details_downloadbtn">
           <Col xs={24}>
-            <Button onClick={downloadClientData}>
-              <DownloadOutlined /> Download config
+            <Button onClick={onViewConfig}>
+              <EyeOutlined /> View/Download config
             </Button>
           </Col>
         </Row>

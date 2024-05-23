@@ -18,6 +18,8 @@ export interface ExternalClient {
   dns: string;
   extraallowedips: string[];
   deniednodeacls?: ExtClientAcls;
+  postup?: string;
+  postdown?: string;
 }
 
 export type ExtClientAcls = Record<Node['id'] | ExternalClient['clientid'], never>;

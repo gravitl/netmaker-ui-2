@@ -13,7 +13,7 @@ import {
   Row,
   Select,
 } from 'antd';
-import { MouseEvent, useMemo, useState } from 'react';
+import { MouseEvent, Ref, useMemo, useState } from 'react';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { EnrollmentKey } from '@/models/EnrollmentKey';
 import { CreateEnrollmentKeyReqDto } from '@/services/dtos/CreateEnrollmentKeyReqDto';
@@ -29,6 +29,10 @@ interface AddEnrollmentKeyModalProps {
   onCreateKey: (key: EnrollmentKey) => any;
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
   networkId?: string;
+  keyNameInputRef?: Ref<HTMLDivElement>;
+  keyTypeSelectRef?: Ref<HTMLDivElement>;
+  keyNetworksSelectRef?: Ref<HTMLDivElement>;
+  keyRelaySelectRef?: Ref<HTMLDivElement>;
 }
 
 type AddEnrollmentKeyFormData = Modify<CreateEnrollmentKeyReqDto, { expiration: Dayjs }>;
@@ -38,6 +42,10 @@ export default function AddEnrollmentKeyModal({
   onCreateKey,
   onCancel,
   networkId,
+  keyNameInputRef,
+  keyTypeSelectRef,
+  keyNetworksSelectRef,
+  keyRelaySelectRef,
 }: AddEnrollmentKeyModalProps) {
   const [form] = Form.useForm<AddEnrollmentKeyFormData>();
   const [notify, notifyCtx] = notification.useNotification();
@@ -115,31 +123,39 @@ export default function AddEnrollmentKeyModal({
       <Divider style={{ margin: '0px 0px 2rem 0px' }} />
       <div className="CustomModalBody">
         <Form name="add-enrollment-key-form" form={form} layout="vertical">
-          <Form.Item
-            label="Name"
-            name="tags"
-            rules={[
-              { required: true, min: 3, max: 32 },
-              { whitespace: true, pattern: /^[a-zA-Z0-9- ]+$/ },
-            ]}
-            data-nmui-intercom="add-enrollment-key-form_tags"
-          >
-            {/* <Select mode="tags" style={{ width: '100%' }} placeholder="Tags" /> */}
-            <Input placeholder="Name" />
-          </Form.Item>
+          <Row ref={keyNameInputRef}>
+            <Col xs={24}>
+              <Form.Item
+                label="Name"
+                name="tags"
+                rules={[
+                  { required: true, min: 3, max: 32 },
+                  { whitespace: true, pattern: /^[a-zA-Z0-9- ]+$/ },
+                ]}
+                data-nmui-intercom="add-enrollment-key-form_tags"
+              >
+                {/* <Select mode="tags" style={{ width: '100%' }} placeholder="Tags" /> */}
+                <Input placeholder="Name" />
+              </Form.Item>
+            </Col>
+          </Row>
 
-          <Form.Item
-            label="Type"
-            name="type"
-            rules={[{ required: true }]}
-            data-nmui-intercom="add-enrollment-key-form_type"
-          >
-            <Radio.Group onChange={(e) => setType(e.target.value)} value={type}>
-              <Radio value="unlimited">Unlimited</Radio>
-              <Radio value="uses">Limited number of uses</Radio>
-              <Radio value="time">Time bound</Radio>
-            </Radio.Group>
-          </Form.Item>
+          <Row ref={keyTypeSelectRef}>
+            <Col xs={24}>
+              <Form.Item
+                label="Type"
+                name="type"
+                rules={[{ required: true }]}
+                data-nmui-intercom="add-enrollment-key-form_type"
+              >
+                <Radio.Group onChange={(e) => setType(e.target.value)} value={type}>
+                  <Radio value="unlimited">Unlimited</Radio>
+                  <Radio value="uses">Limited number of uses</Radio>
+                  <Radio value="time">Time bound</Radio>
+                </Radio.Group>
+              </Form.Item>
+            </Col>
+          </Row>
 
           {type === 'uses' && (
             <Form.Item
@@ -168,26 +184,41 @@ export default function AddEnrollmentKeyModal({
             </Form.Item>
           )}
 
-          <Form.Item name="networks" label="Networks" data-nmui-intercom="add-enrollment-key-form_networks">
-            <Select
-              mode="multiple"
-              allowClear
-              style={{ width: '100%' }}
-              placeholder="Select networks to join with key"
-              options={networkOptions}
-            />
-          </Form.Item>
+          <Row ref={keyNetworksSelectRef}>
+            {' '}
+            <Col xs={24}>
+              <Form.Item
+                name="networks"
+                label="Networks"
+                data-nmui-intercom="add-enrollment-key-form_networks"
+                initialValue={networkId ? [networkId] : undefined}
+              >
+                <Select
+                  mode="multiple"
+                  allowClear
+                  style={{ width: '100%' }}
+                  placeholder="Select networks to join with key"
+                  options={networkOptions}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
 
           {isServerEE && (
-            <Form.Item name="relay" label="Relay" data-nmui-intercom="add-enrollment-key-form_relays">
-              <Select
-                placeholder="Select relay to join with key"
-                allowClear
-                style={{ width: '100%' }}
-                options={relays.map((node) => ({ label: node.name, value: node.id }))}
-                disabled={networksVal?.length === 0}
-              />
-            </Form.Item>
+            <Row ref={keyRelaySelectRef}>
+              {' '}
+              <Col xs={24}>
+                <Form.Item name="relay" label="Relay" data-nmui-intercom="add-enrollment-key-form_relays">
+                  <Select
+                    placeholder="Select relay to join with key"
+                    allowClear
+                    style={{ width: '100%' }}
+                    options={relays.map((node) => ({ label: `${node.name} (${node.network})`, value: node.id }))}
+                    disabled={networksVal?.length === 0}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
           )}
 
           <Row>
