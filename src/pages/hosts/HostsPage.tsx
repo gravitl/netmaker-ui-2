@@ -68,7 +68,7 @@ export default function HostsPage(props: PageProps) {
   const [isRefreshingHosts, setIsRefreshingHosts] = useState(false);
   const [isAddNewHostModalOpen, setIsAddNewHostModalOpen] = useState(false);
   const [isTourOpen, setIsTourOpen] = useState(false);
-  const [activeKey, setActiveKey] = useState('overview');
+  const [activeKey, setActiveKey] = useState('network-access');
   const [tourStep, setTourStep] = useState(0);
   const hostsTableRef = useRef(null);
   const networkAccessManagementTabRef = useRef(null);
@@ -792,14 +792,14 @@ export default function HostsPage(props: PageProps) {
   const tabs: TabsProps['items'] = useMemo(
     () => [
       {
-        key: 'overview',
-        label: 'Overview',
-        children: getOverviewContent(),
-      },
-      {
         key: 'network-access',
         label: 'Network Access Management',
         children: getNetworkAccessContent(),
+      },
+      {
+        key: 'overview',
+        label: 'Overview',
+        children: getOverviewContent(),
       },
     ],
     [getOverviewContent, getNetworkAccessContent],
