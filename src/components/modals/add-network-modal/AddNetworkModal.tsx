@@ -1,5 +1,5 @@
-import { EditOutlined } from '@ant-design/icons';
-import { Button, Col, Divider, Form, Input, Modal, notification, Row, Select, Switch, theme } from 'antd';
+import { EditOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { Button, Col, Divider, Form, Input, Modal, notification, Row, Select, Switch, theme, Tooltip } from 'antd';
 import { MouseEvent, MutableRefObject, Ref, useCallback } from 'react';
 import { CreateNetworkDto } from '@/services/dtos/CreateNetworkDto';
 import { NetworksService } from '@/services/NetworksService';
@@ -72,7 +72,7 @@ export default function AddNetworkModal({
 
   const autoFillDetails = useCallback(() => {
     form.setFieldsValue({
-      netid: generateNetworkName(),
+      // netid: generateNetworkName(),
       addressrange: isIpv4Val ? generateCIDR() : '',
       addressrange6: isIpv6Val ? generateCIDR6() : '',
       defaultacl: 'yes',
@@ -226,7 +226,13 @@ export default function AddNetworkModal({
           >
             <Col xs={24}>
               <Row justify="space-between">
-                <Col>Default Access Control</Col>
+                <Col>
+                  Default Access Control{' '}
+                  <Tooltip title="The default access control rule for any device added to the the network">
+                    {' '}
+                    <InfoCircleOutlined />
+                  </Tooltip>{' '}
+                </Col>
                 <Col xs={8}>
                   <Form.Item
                     name="defaultacl"
