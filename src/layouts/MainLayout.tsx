@@ -57,7 +57,7 @@ export default function MainLayout() {
     () =>
       structuredClone(store.networks)
         .sort((a, b) => a.netid.localeCompare(b.netid))
-        .slice(0, 5),
+        .slice(0, 10),
     [store.networks],
   );
 
