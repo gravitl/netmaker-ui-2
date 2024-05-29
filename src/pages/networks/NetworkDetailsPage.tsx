@@ -914,7 +914,9 @@ export default function NetworkDetailsPage(props: PageProps) {
           const addrs = ([] as Array<string>).concat(node.address || [], node.address6 || []).join(', ');
           return (
             <Tooltip title={addrs}>
-              <Typography.Text copyable>{addrs}</Typography.Text>
+              <Typography.Text key={addrs} copyable>
+                {addrs}
+              </Typography.Text>
             </Tooltip>
           );
         },
@@ -922,13 +924,16 @@ export default function NetworkDetailsPage(props: PageProps) {
       {
         title: 'Endpoint',
         render(_, node) {
+          const addrs = ([] as Array<string>)
+            .concat(node.endpointip ?? '', node.endpointipv6 ?? '', node.additional_rag_ips ?? '')
+            .filter(Boolean)
+            .join(', ');
           return (
-            <Typography.Text copyable>
-              {([] as Array<string>)
-                .concat(node.endpointip ?? '', node.endpointipv6 ?? '', node.additional_rag_ips ?? '')
-                .filter(Boolean)
-                .join(', ')}
-            </Typography.Text>
+            <Tooltip title={addrs}>
+              <Typography.Text key={addrs} copyable>
+                {addrs}
+              </Typography.Text>
+            </Tooltip>
           );
         },
       },
@@ -1097,10 +1102,14 @@ export default function NetworkDetailsPage(props: PageProps) {
       {
         title: 'Addresses',
         render(_, client) {
-          const addrs = ([] as Array<string>).concat(client.address || [], client.address6 || []).join(', ');
+          const addrs = ([] as Array<string>)
+            .concat(client.address || [], client.address6 || [], client.extraallowedips || [])
+            .join(', ');
           return (
             <Tooltip title={addrs}>
-              <Typography.Text copyable>{addrs}</Typography.Text>
+              <Typography.Text key={addrs} copyable>
+                {addrs}
+              </Typography.Text>
             </Tooltip>
           );
         },
@@ -3378,11 +3387,6 @@ export default function NetworkDetailsPage(props: PageProps) {
   const networkTabs: TabsProps['items'] = useMemo(() => {
     const tabs: TabsProps['items'] = [
       {
-        key: 'overview',
-        label: `Info`,
-        children: network && !isRefreshingNetwork ? getOverviewContent() : <Skeleton active />,
-      },
-      {
         key: 'hosts',
         label: `Hosts (${networkHosts.length})`,
         children: network && !isRefreshingNetwork ? getHostsContent() : <Skeleton active />,
@@ -3443,6 +3447,12 @@ export default function NetworkDetailsPage(props: PageProps) {
           ),
       });
     }
+
+    tabs.push({
+      key: 'overview',
+      label: `Info`,
+      children: network && !isRefreshingNetwork ? getOverviewContent() : <Skeleton active />,
+    });
 
     return tabs;
   }, [
@@ -3917,7 +3927,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   <Button
                     style={{ marginRight: '1em' }}
                     onClick={() => {
-                      setActiveTabKey('overview');
+                      setActiveTabKey('hosts');
                       setTourStep(0);
                       setIsTourOpen(true);
                     }}
