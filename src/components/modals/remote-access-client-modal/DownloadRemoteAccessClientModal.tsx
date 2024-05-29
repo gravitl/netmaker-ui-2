@@ -179,13 +179,13 @@ export default function DownloadRemotesAccessClientModal({ isOpen, onCancel }: D
                 <>
                   <Row>
                     <Col xs={24}>
-                      <Form.Item label="Select your architecture">
+                      {/* <Form.Item label="Select your architecture">
                         <Select
                           value={selectedArch}
                           onChange={(value) => setSelectedArch(value)}
                           options={[{ label: 'AMD64', value: 'amd64' }]}
                         ></Select>
-                      </Form.Item>
+                      </Form.Item> */}
                       {/* <Button
                         type="primary"
                         href={getRACDownloadLink('linux', selectedArch, 'gui')[0]}
