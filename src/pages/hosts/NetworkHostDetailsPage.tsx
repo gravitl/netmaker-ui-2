@@ -460,6 +460,17 @@ export default function NetworkHostDetailsPage(props: PageProps) {
               </Row>
               <Row
                 style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+                data-nmui-intercom="network-host-details_hostisstaticendpoint"
+              >
+                <Col xs={12}>
+                  <Typography.Text disabled>Static Endpoint</Typography.Text>
+                </Col>
+                <Col xs={12}>
+                  <Typography.Text>{host.isstatic ? 'Yes' : 'No'}</Typography.Text>
+                </Col>
+              </Row>
+              <Row
+                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
                 data-nmui-intercom="network-host-details_hostlistenport"
               >
                 <Col xs={12}>
@@ -467,6 +478,17 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                 </Col>
                 <Col xs={12}>
                   <Typography.Text>{host.listenport}</Typography.Text>
+                </Col>
+              </Row>
+              <Row
+                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+                data-nmui-intercom="network-host-details_hostisstaticport"
+              >
+                <Col xs={12}>
+                  <Typography.Text disabled>Static Port</Typography.Text>
+                </Col>
+                <Col xs={12}>
+                  <Typography.Text>{host.isstaticport ? 'Yes' : 'No'}</Typography.Text>
                 </Col>
               </Row>
               <Row
@@ -566,17 +588,6 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                 </Col>
                 <Col xs={12}>
                   <Typography.Text>{host.isdefault ? 'Yes' : 'No'}</Typography.Text>
-                </Col>
-              </Row>
-              <Row
-                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
-                data-nmui-intercom="network-host-details_hostisstatic"
-              >
-                <Col xs={12}>
-                  <Typography.Text disabled>Static Endpoint</Typography.Text>
-                </Col>
-                <Col xs={12}>
-                  <Typography.Text>{host.isstatic ? 'Yes' : 'No'}</Typography.Text>
                 </Col>
               </Row>
               <Row
