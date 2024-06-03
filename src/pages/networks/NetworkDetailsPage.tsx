@@ -35,6 +35,7 @@ import {
   ReloadOutlined,
   SearchOutlined,
   SettingOutlined,
+  StarOutlined,
   StopOutlined,
   UserOutlined,
   WarningOutlined,
@@ -104,6 +105,7 @@ import { NetworkUsage, networkUsecaseMap } from '@/constants/NetworkUseCases';
 import { NetworkUsecaseString } from '@/store/networkusecase';
 import QuickSetupModal from '@/components/modals/quick-setup-modal/QuickSetupModal';
 import DownloadRemotesAccessClientModal from '@/components/modals/remote-access-client-modal/DownloadRemoteAccessClientModal';
+import SetNetworkFailoverModal from '@/components/modals/set-network-failover-modal/SetNetworkFailoverModal';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -231,6 +233,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     vpnConfigs: 9,
     // addRAGateway: 10,
   });
+  const [isSetNetworkFailoverModalOpen, setIsSetNetworkFailoverModalOpen] = useState(false);
 
   const overviewTabContainerRef = useRef(null);
   const hostsTabContainerTableRef = useRef(null);
@@ -290,13 +293,18 @@ export default function NetworkDetailsPage(props: PageProps) {
     () =>
       store.nodes
         .map((node) => getExtendedNode(node, store.hostsCommonDetails))
-        .filter((node) => node.network === networkId)
-        .filter((node) =>
-          `${node?.name ?? ''}${node.address ?? ''}${node.address6 ?? ''}${node.id ?? ''}${node.endpointip ?? ''}${node.publickey ?? ''}`
-            .toLowerCase()
-            .includes(searchHost.toLowerCase()),
-        ),
-    [store.nodes, store.hostsCommonDetails, networkId, searchHost],
+        .filter((node) => node.network === networkId),
+    [store.nodes, store.hostsCommonDetails, networkId],
+  );
+
+  const filteredNetworkNodes = useMemo<ExtendedNode[]>(
+    () =>
+      networkNodes.filter((node) =>
+        `${node?.name ?? ''}${node.address ?? ''}${node.address6 ?? ''}${node.id ?? ''}${node.endpointip ?? ''}${node.publickey ?? ''}`
+          .toLowerCase()
+          .includes(searchHost.toLowerCase()),
+      ),
+    [searchHost, networkNodes],
   );
 
   const internetGatewaysCount = useMemo(() => {
@@ -781,12 +789,12 @@ export default function NetworkDetailsPage(props: PageProps) {
 
   const confirmNodeFailoverStatusChange = useCallback(
     (node: ExtendedNode, makeFailover: boolean) => {
-      let title = `Mark ${node.name} as a failover node`;
-      let content = `Are you sure you want to make this node a failover node?`;
+      let title = `Set ${node.name} as the failover host`;
+      let content = `Are you sure you want to make this host the network failover host (and override the current)? Setting this will route traffic through this host in case of failure.`;
 
       if (!makeFailover) {
-        title = `Remove ${node.name} failover status`;
-        content = `Are you certain about removing the failover status from this node?`;
+        title = `Unset ${node.name} as failover host`;
+        content = `Are you sure you want to removing the failover status from this host?`;
       }
 
       Modal.confirm({
@@ -797,22 +805,27 @@ export default function NetworkDetailsPage(props: PageProps) {
         onOk: async () => {
           try {
             if (makeFailover) {
+              // remove current failover
+              const currentFailoverNode = networkNodes.find((n) => n.is_fail_over);
+              if (currentFailoverNode) {
+                await NodesService.removeNodeFailoverStatus(currentFailoverNode.id);
+              }
               await NodesService.setNodeAsFailover(node.id);
             } else {
               await NodesService.removeNodeFailoverStatus(node.id);
             }
-            notify.success({ message: 'Node failover status updated' });
+            notify.success({ message: 'Host failover status updated' });
             storeFetchNodes();
           } catch (err) {
             notify.error({
-              message: 'Error updating node failover status',
+              message: 'Error updating host failover status',
               description: extractErrorMsg(err as any),
             });
           }
         },
       });
     },
-    [storeFetchNodes, notify],
+    [notify, storeFetchNodes, networkNodes],
   );
 
   const getGatewayDropdownOptions = useCallback(
@@ -2040,6 +2053,7 @@ export default function NetworkDetailsPage(props: PageProps) {
               value={searchHost}
               onChange={(ev) => setSearchHost(ev.target.value)}
               prefix={<SearchOutlined />}
+              allowClear
             />
           </Col>
           <Col xs={24} md={6} className="add-host-dropdown-button">
@@ -2098,11 +2112,21 @@ export default function NetworkDetailsPage(props: PageProps) {
             )}
             {isServerEE && networkNodes.length > 0 && !isFailoverNodePresentInNetwork && (
               <Alert
-                message="There's no failover node present in the network. Add one for redundancy."
+                message="There's no failover host present in the network. Set one for redundancy, in case of failure."
                 type="warning"
                 showIcon
                 icon={<WarningOutlined />}
                 style={{ marginBottom: '1rem' }}
+                action={
+                  <Button
+                    type="dashed"
+                    onClick={() => {
+                      setIsSetNetworkFailoverModalOpen(true);
+                    }}
+                  >
+                    Set Failover Host
+                  </Button>
+                }
               />
             )}
             <Table
@@ -2114,11 +2138,17 @@ export default function NetworkDetailsPage(props: PageProps) {
                     const hostName = getExtendedNode(node, store.hostsCommonDetails).name;
                     return (
                       <>
-                        <Link to={getNetworkHostRoute(node.hostid, node.network)} title={node.id}>
+                        <Link to={getNetworkHostRoute(node.hostid, node.network)} title={`Network Host ID: ${node.id}`}>
                           {hostName}
                         </Link>
                         {node.pendingdelete && (
                           <Badge style={{ marginLeft: '1rem' }} status="processing" color="red" text="Removing..." />
+                        )}
+                        {isServerEE && node.is_fail_over && (
+                          <StarOutlined
+                            title="This host is acting as the network's failover host"
+                            style={{ color: branding.primaryColor, marginLeft: '.5rem' }}
+                          />
                         )}
                       </>
                     );
@@ -2154,10 +2184,6 @@ export default function NetworkDetailsPage(props: PageProps) {
                     return getExtendedNode(node, store.hostsCommonDetails)?.endpointipv6 ?? '';
                   },
                 },
-                // {
-                //   title: 'Preferred DNS',
-                //   dataIndex: 'name',
-                // },
                 {
                   title: 'Connectivity',
                   render: (_, node) => (
@@ -2189,34 +2215,6 @@ export default function NetworkDetailsPage(props: PageProps) {
                   ],
                   onFilter: (value: React.Key | boolean, record: any) => filterByHostHealthStatus(value, record),
                 },
-                isServerEE
-                  ? {
-                      title: 'Failover Node',
-                      render: (_: any, node) => {
-                        return (
-                          <>
-                            <Tooltip
-                              title={
-                                node.pendingdelete !== false || (isFailoverNodePresentInNetwork && !node.is_fail_over)
-                                  ? 'Host is being disconnected from network or failover node is already present in the network'
-                                  : ''
-                              }
-                            >
-                              <Switch
-                                checked={node.is_fail_over}
-                                onChange={() => {
-                                  confirmNodeFailoverStatusChange(node, !node.is_fail_over);
-                                }}
-                                disabled={
-                                  node.pendingdelete !== false || (isFailoverNodePresentInNetwork && !node.is_fail_over)
-                                }
-                              />
-                            </Tooltip>
-                          </>
-                        );
-                      },
-                    }
-                  : {},
                 {
                   width: '1rem',
                   align: 'right',
@@ -2224,34 +2222,52 @@ export default function NetworkDetailsPage(props: PageProps) {
                     return (
                       <Dropdown
                         menu={{
-                          items: [
-                            {
-                              key: 'edit',
-                              label: 'Edit',
-                              disabled: node.pendingdelete !== false,
-                              title: node.pendingdelete !== false ? 'Host is being removed from network' : '',
-                              onClick: () => editNode(node),
-                            },
-                            {
-                              key: 'disconnect',
-                              label: node.connected ? 'Disconnect host' : 'Connect host',
-                              disabled: node.pendingdelete !== false,
-                              title: node.pendingdelete !== false ? 'Host is being disconnected from network' : '',
+                          items: (
+                            [
+                              {
+                                key: 'edit',
+                                label: 'Edit',
+                                disabled: node.pendingdelete !== false,
+                                title: node.pendingdelete !== false ? 'Host is being removed from network' : '',
+                                onClick: () => editNode(node),
+                              },
+                            ] as any[]
+                          )
+                            .concat(
+                              isServerEE
+                                ? [
+                                    {
+                                      key: 'failover',
+                                      label: node.is_fail_over ? 'Unset as failover' : 'Set as failover',
+                                      title: node.is_fail_over
+                                        ? 'Stop this host as acting as the network failover'
+                                        : 'Make this the network failover host. Any existing failover host will be replaced.',
+                                      onClick: () => confirmNodeFailoverStatusChange(node, !node.is_fail_over),
+                                    },
+                                  ]
+                                : [],
+                            )
+                            .concat([
+                              {
+                                key: 'disconnect',
+                                label: node.connected ? 'Disconnect host' : 'Connect host',
+                                disabled: node.pendingdelete !== false,
+                                title: node.pendingdelete !== false ? 'Host is being disconnected from network' : '',
 
-                              onClick: () =>
-                                disconnectNodeFromNetwork(
-                                  !node.connected,
-                                  getExtendedNode(node, store.hostsCommonDetails),
-                                ),
-                            },
-                            {
-                              key: 'remove',
-                              label: 'Remove from network',
-                              danger: true,
-                              onClick: () =>
-                                removeNodeFromNetwork(false, getExtendedNode(node, store.hostsCommonDetails)),
-                            },
-                          ],
+                                onClick: () =>
+                                  disconnectNodeFromNetwork(
+                                    !node.connected,
+                                    getExtendedNode(node, store.hostsCommonDetails),
+                                  ),
+                              },
+                              {
+                                key: 'remove',
+                                label: 'Remove from network',
+                                danger: true,
+                                onClick: () =>
+                                  removeNodeFromNetwork(false, getExtendedNode(node, store.hostsCommonDetails)),
+                              },
+                            ]),
                         }}
                       >
                         <MoreOutlined />
@@ -2260,7 +2276,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   },
                 },
               ]}
-              dataSource={networkNodes}
+              dataSource={filteredNetworkNodes}
               rowKey="id"
               size="small"
               ref={hostsTabContainerTableRef}
@@ -2272,14 +2288,17 @@ export default function NetworkDetailsPage(props: PageProps) {
   }, [
     searchHost,
     checkIfManagedHostIsLoading,
-    isFailoverNodePresentInNetwork,
-    network?.isipv6,
     isServerEE,
-    networkNodes,
+    networkNodes.length,
+    isFailoverNodePresentInNetwork,
+    network?.isipv4,
+    network?.isipv6,
+    filteredNetworkNodes,
     jumpToTourStep,
     store.hostsCommonDetails,
-    confirmNodeFailoverStatusChange,
+    branding.primaryColor,
     editNode,
+    confirmNodeFailoverStatusChange,
     disconnectNodeFromNetwork,
     removeNodeFromNetwork,
   ]);
@@ -4222,7 +4241,16 @@ export default function NetworkDetailsPage(props: PageProps) {
           onCancel={() => setIsDownloadRemoteAccessClientModalOpen(false)}
           networkId={networkId}
         />
+        <SetNetworkFailoverModal
+          isOpen={isSetNetworkFailoverModalOpen}
+          networkId={networkId}
+          onSetFailover={() => {
+            setIsSetNetworkFailoverModalOpen(false);
+          }}
+          onCancel={() => setIsSetNetworkFailoverModalOpen(false)}
+        />
       </Layout.Content>
+
       {/* {getNetworkSuggestionsBasedOnUsecase} */}
       {handleQuickSetupModal}
     </>
