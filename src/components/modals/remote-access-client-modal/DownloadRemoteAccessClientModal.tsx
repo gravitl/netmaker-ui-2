@@ -27,7 +27,7 @@ export default function DownloadRemotesAccessClientModal({ isOpen, onCancel }: D
 
   const theme = store.currentTheme;
   const [selectedOs, setSelectedOs] = useState<AvailableOses>('windows');
-  const [selectedArch, setSelectedArch] = useState<AvailableArchs>('amd64');
+  const [selectedArch, setSelectedArch] = useState<AvailableArchs>('arm64');
 
   const onShowInstallGuide = useCallback((ev: MouseEvent, os: AvailableOses) => {
     const btnSelector = '.NewHostModal .os-button';
@@ -41,12 +41,12 @@ export default function DownloadRemotesAccessClientModal({ isOpen, onCancel }: D
 
   const resetModal = () => {
     setSelectedOs('windows');
-    setSelectedArch('amd64');
+    setSelectedArch('arm64');
   };
 
   useEffect(() => {
     // reset arch on OS change
-    setSelectedArch('amd64');
+    setSelectedArch('arm64');
   }, [selectedOs]);
 
   return (
@@ -153,8 +153,8 @@ export default function DownloadRemotesAccessClientModal({ isOpen, onCancel }: D
                           value={selectedArch}
                           onChange={(value) => setSelectedArch(value)}
                           options={[
-                            { label: 'Intel (AMD64)', value: 'amd64' },
                             { label: 'Apple Silicon (M1/ARM64)', value: 'arm64' },
+                            { label: 'Intel (AMD64)', value: 'amd64' },
                           ]}
                         ></Select>
                       </Form.Item>
