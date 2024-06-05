@@ -14,9 +14,10 @@ import {
   Input,
   Form,
   Alert,
+  Timeline,
 } from 'antd';
 import { useStore } from '@/store/store';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   UsecaseQuestionsAll,
   UsecaseQuestions,
@@ -24,6 +25,7 @@ import {
   PrimaryUsecaseQuestions,
   UsecaseKeyStringToTextMap,
   UsecaseKeyStringToTextMapForAnswers,
+  UsecaseKeyStringToTextMapForReview,
 } from '@/constants/NetworkUseCases';
 import { getExtendedNode } from '@/utils/NodeUtils';
 import { ExtendedNode, Node } from '@/models/Node';
@@ -39,6 +41,7 @@ import AddHostsToNetworkModal from '../add-hosts-to-network-modal/AddHostsToNetw
 import { ExternalLinks, AppImages } from '@/constants/LinkAndImageConstants';
 import { ServerConfigService } from '@/services/ServerConfigService';
 import { isSaasBuild } from '@/services/BaseService';
+import { use } from 'i18next';
 
 interface ModalProps {
   isModalOpen: boolean;
@@ -56,9 +59,10 @@ const RemoteAccessUsecaseQuestions: UsecaseQuestionKey[] = [
   'primary_usecase',
   'usecase',
   'networks',
-  // 'hosts',
   'remote_access_gateways',
   'users',
+  'hosts',
+  'review',
 ];
 
 const RemoteAccessUsecaseWithEgressQuestions: UsecaseQuestionKey[] = [
@@ -70,6 +74,47 @@ const RemoteAccessUsecaseWithEgressQuestions: UsecaseQuestionKey[] = [
   'users',
   'egress',
   'ranges',
+  'review',
+];
+
+const InternetGatewayUsecaseQuestions: UsecaseQuestionKey[] = [
+  'primary_usecase',
+  'networks',
+  'internet_gateway',
+  'review',
+];
+
+const ConnectToSiteUsecaseQuestions: UsecaseQuestionKey[] = [
+  'primary_usecase',
+  'networks',
+  'connect_to_site',
+  'review',
+];
+
+const ConnectToSiteUsecaseQuestionsWithExtClient: UsecaseQuestionKey[] = [
+  'primary_usecase',
+  'networks',
+  'connect_to_site',
+  'router',
+  'review',
+];
+
+const ConnectToSiteUsecaseQuestionsWithNetclient: UsecaseQuestionKey[] = [
+  'primary_usecase',
+  'networks',
+  'connect_to_site',
+  'netclient',
+  'review',
+];
+
+const NodeSelectDropdownChecks = [
+  'remote_access_gateways',
+  'egress',
+  'internet_gateway',
+  'router',
+  'hosts',
+  'netclient',
+  'review',
 ];
 
 export default function QuickSetupModal(props: ModalProps) {
@@ -107,13 +152,25 @@ export default function QuickSetupModal(props: ModalProps) {
       .map((node) => getExtendedNode(node, store.hostsCommonDetails));
   }, [networkNodes, store.hostsCommonDetails]);
 
-  const handleAddToAlreadyAskedQuestions = (answer: string) => {
+  const internetGateways = useMemo<ExtendedNode[]>(() => {
+    return networkNodes
+      .filter((node) => node.isinternetgateway)
+      .map((node) => getExtendedNode(node, store.hostsCommonDetails));
+  }, [networkNodes, store.hostsCommonDetails]);
+
+  const handleAddToAlreadyAskedQuestions = (answer: string | string[], isSecondAnswer = false) => {
     const questionsAskedMinusCurrentQuestion = userQuestionsAsked.filter(
       (ques) => ques.questionKey !== currentQuestion.key,
     );
+    const previousAnswer = currentQuestion.selectedAnswer ? currentQuestion.selectedAnswer : '';
     setUserQuestionsAsked([
       ...questionsAskedMinusCurrentQuestion,
-      { index: currentQuestionIndex, questionKey: currentQuestion.key, answer },
+      {
+        index: currentQuestionIndex,
+        questionKey: currentQuestion.key,
+        answer: isSecondAnswer ? previousAnswer : answer,
+        answer2: isSecondAnswer ? answer : [],
+      },
     ]);
   };
 
@@ -127,13 +184,33 @@ export default function QuickSetupModal(props: ModalProps) {
     form.resetFields();
   };
 
-  const handleQuestionAnswer = (answer: string) => {
+  const handleQuestionAnswer = (answer: string | string[], secondAnswer = false) => {
     // if current question is null return
     if (!currentQuestion) return;
-    handleAddToAlreadyAskedQuestions(answer);
+    handleAddToAlreadyAskedQuestions(answer, secondAnswer);
 
-    // check if current question index is 1
+    // if current question is primary usecase, set next question based on answer
+    if (currentQuestion.key === 'primary_usecase') {
+      if (answer === 'remote_access') {
+        const questions = UsecaseQuestionsAll.filter((question) =>
+          RemoteAccessUsecaseQuestions.includes(question.key as UsecaseQuestionKey),
+        );
+        setUserQuestions(questions);
+      } else if (answer === 'internet_gateway') {
+        const questions = UsecaseQuestionsAll.filter((question) =>
+          InternetGatewayUsecaseQuestions.includes(question.key as UsecaseQuestionKey),
+        );
+        setUserQuestions(questions);
+      } else if (answer === 'connect_to_site') {
+        const questions = UsecaseQuestionsAll.filter((question) =>
+          ConnectToSiteUsecaseQuestionsWithExtClient.includes(question.key as UsecaseQuestionKey),
+        );
+        setUserQuestions(questions);
+      }
+    }
+
     if (currentQuestion.key === 'usecase') {
+      console.log(answer);
       if (answer === 'specific_machines') {
         const questions = UsecaseQuestionsAll.filter((question) =>
           RemoteAccessUsecaseQuestions.includes(question.key as UsecaseQuestionKey),
@@ -147,11 +224,30 @@ export default function QuickSetupModal(props: ModalProps) {
       }
     }
 
+    if (currentQuestion.key === 'connect_to_site') {
+      if (answer === 'router') {
+        const questions = UsecaseQuestionsAll.filter((question) =>
+          ConnectToSiteUsecaseQuestionsWithExtClient.includes(question.key as UsecaseQuestionKey),
+        );
+        setUserQuestions(questions);
+      }
+      if (answer === 'route_via_netclient') {
+        const questions = UsecaseQuestionsAll.filter((question) =>
+          ConnectToSiteUsecaseQuestionsWithNetclient.includes(question.key as UsecaseQuestionKey),
+        );
+        setUserQuestions(questions);
+      }
+    }
+
     // add answer to current question
-    setCurrentQuestion({ ...currentQuestion, selectedAnswer: answer });
+    if (secondAnswer) {
+      return setCurrentQuestion({ ...currentQuestion, selectedAnswer2: answer });
+    }
+    setCurrentQuestion({ ...currentQuestion, selectedAnswer: answer, selectedAnswer2: [] });
   };
 
   const handleNextQuestion = async () => {
+    console.log('userQuestionsAsked', userQuestionsAsked);
     // if current question has no answer return and notify user
     if (!currentQuestion.selectedAnswer && currentQuestion.key !== 'ranges' && currentQuestion.key !== 'hosts') {
       props.notify.error({ message: 'Please select an answer' });
@@ -162,7 +258,7 @@ export default function QuickSetupModal(props: ModalProps) {
       // get network id
       const networkId = currentQuestion.selectedAnswer;
       // set network id
-      if (networkId) {
+      if (networkId && typeof networkId === 'string') {
         setNetworkId(networkId);
       }
     } else if (currentQuestion.key === 'remote_access_gateways') {
@@ -201,7 +297,6 @@ export default function QuickSetupModal(props: ModalProps) {
       try {
         const isAnswerAnEgress = egresses.find((gateway) => gateway.id === egressNodeId);
         const formData = await form.validateFields();
-        console.log(formData.ranges);
 
         //check if there is an empty range field
         if (formData.ranges.includes('') || formData.ranges.length === 0) {
@@ -231,6 +326,92 @@ export default function QuickSetupModal(props: ModalProps) {
       } finally {
         setIsNextLoading(false);
         store.fetchNodes();
+      }
+    } else if (currentQuestion.key === 'internet_gateway') {
+      const answer = currentQuestion.selectedAnswer as Node['id'];
+      const hostsToConnectToInternetGateway = currentQuestion.selectedAnswer2 as Node['id'][];
+      const isAnswerAnInternetGateway = networkNodes.find((gateway) => gateway.id === answer)?.isinternetgateway;
+
+      if (!isAnswerAnInternetGateway) {
+        try {
+          setIsNextLoading(true);
+          const newNode = (
+            await NodesService.createInternetGateway(answer, networkId, {
+              inet_node_client_ids: hostsToConnectToInternetGateway,
+            })
+          ).data;
+          props.notify.success({ message: `Internet gateway created` });
+        } catch (err) {
+          props.notify.error({
+            message: 'Failed to create internet gateway',
+            description: extractErrorMsg(err as any),
+          });
+          setIsNextLoading(false);
+          return;
+        } finally {
+          setIsNextLoading(false);
+          store.fetchNodes();
+        }
+      }
+    } else if (currentQuestion.key === 'router') {
+      const answer = currentQuestion.selectedAnswer as Node['id'];
+      const isAnswerARemoteAccessGateway = networkNodes.find((gateway) => gateway.id === answer)?.isingressgateway;
+      console.log(currentQuestion.selectedAnswer2);
+      if (isAnswerARemoteAccessGateway) {
+        try {
+          setIsNextLoading(true);
+          await NodesService.createExternalClient(answer, networkId, {
+            clientid: '',
+            publickey: '',
+            address: '',
+            address6: '',
+            extraallowedips:
+              currentQuestion.selectedAnswer2 && Array.isArray(currentQuestion.selectedAnswer2)
+                ? currentQuestion.selectedAnswer2
+                : [],
+          });
+          props.notify.success({ message: 'External client created' });
+        } catch (err) {
+          props.notify.error({
+            message: 'Failed to create external client',
+            description: extractErrorMsg(err as any),
+          });
+          setIsNextLoading(false);
+          return;
+        } finally {
+          setIsNextLoading(false);
+          store.fetchNodes();
+        }
+      } else {
+        try {
+          setIsNextLoading(true);
+          await NodesService.createIngressNode(answer, networkId, {
+            extclientdns: '',
+            is_internet_gw: false,
+            metadata: '',
+          });
+          await NodesService.createExternalClient(answer, networkId, {
+            clientid: '',
+            publickey: '',
+            address: '',
+            address6: '',
+            extraallowedips:
+              currentQuestion.selectedAnswer2 && Array.isArray(currentQuestion.selectedAnswer2)
+                ? currentQuestion.selectedAnswer2
+                : [],
+          });
+          props.notify.success({ message: `External client and client gateway created` });
+        } catch (err) {
+          props.notify.error({
+            message: 'Failed to create remote access gateway and external client',
+            description: extractErrorMsg(err as any),
+          });
+          setIsNextLoading(false);
+          return;
+        } finally {
+          setIsNextLoading(false);
+          store.fetchNodes();
+        }
       }
     }
 
@@ -284,19 +465,7 @@ export default function QuickSetupModal(props: ModalProps) {
         value: network.netid,
       }));
       initialOptions.push(...networkOptions);
-    } else if (currentQuestion.key === 'remote_access_gateways') {
-      const networkOptions = networkNodes.map((node) => ({
-        label: node.name ?? node.id,
-        value: node.id,
-      }));
-      initialOptions.push(connectExistingHost, ...networkOptions);
-    } else if (currentQuestion.key === 'hosts') {
-      const networkOptions = networkNodes.map((node) => ({
-        label: node.name ?? node.id,
-        value: node.id,
-      }));
-      initialOptions.push(connectExistingHost, ...networkOptions);
-    } else if (currentQuestion.key === 'egress') {
+    } else if (NodeSelectDropdownChecks.includes(currentQuestion.key)) {
       const networkOptions = networkNodes.map((node) => ({
         label: node.name ?? node.id,
         value: node.id,
@@ -306,6 +475,35 @@ export default function QuickSetupModal(props: ModalProps) {
 
     return initialOptions;
   }, [currentQuestion.key, store.networks, networkNodes]);
+
+  const secondSelectDropdownOptions = useMemo(() => {
+    const initialOptions = [
+      {
+        label: `Add new hosts`,
+        value: 'add_new',
+      },
+    ];
+
+    const connectExistingHost = {
+      label: `Connect existing host`,
+      value: 'add_existing',
+    };
+
+    if (currentQuestion.key === 'internet_gateway') {
+      //filter out already selected host
+      const networkOptions = networkNodes
+        .filter((node) => {
+          return node.id !== currentQuestion.selectedAnswer;
+        })
+        .map((node) => ({
+          label: node.name ?? node.id,
+          value: node.id,
+        }));
+      initialOptions.push(connectExistingHost, ...networkOptions);
+    }
+
+    return initialOptions;
+  }, [currentQuestion.key, store.networks, networkNodes, currentQuestion.selectedAnswer]);
 
   const handleSelectChange = (value: string) => {
     if (value === 'add_new') {
@@ -318,6 +516,20 @@ export default function QuickSetupModal(props: ModalProps) {
       setIsAddHostsToNetworkModalOpen(true);
     } else {
       handleQuestionAnswer(value);
+    }
+  };
+
+  const handleSelectChange2 = (value: string | string[]) => {
+    if (typeof value === 'string' && value === 'add_new') {
+      setIsAddNewHostModalOpen(true);
+    } else if (typeof value === 'string' && value === 'add_existing') {
+      setIsAddHostsToNetworkModalOpen(true);
+    } else {
+      if (currentQuestion.key === 'internet_gateway' && Array.isArray(value)) {
+        handleQuestionAnswer(value, true);
+      } else if (currentQuestion.key === 'router' && Array.isArray(value)) {
+        handleQuestionAnswer(value, true);
+      }
     }
   };
 
@@ -334,6 +546,20 @@ export default function QuickSetupModal(props: ModalProps) {
       return ranges;
     }
     return [];
+  };
+
+  const getAnswerText = (answer: string | string[] | undefined) => {
+    if (!answer) return '';
+    if (Array.isArray(answer)) {
+      return answer.map((ans) => UsecaseKeyStringToTextMapForAnswers[ans]).join(', ');
+    }
+    if (UsecaseKeyStringToTextMap[answer]) {
+      return UsecaseKeyStringToTextMap[answer];
+    } else {
+      // check if answer is a node id and return node name
+      const node = networkNodes.find((node) => node.id === answer);
+      return node?.name ?? answer;
+    }
   };
 
   const getCurrentQuestionImage = useMemo(() => {
@@ -452,7 +678,51 @@ export default function QuickSetupModal(props: ModalProps) {
       return answer;
     }
     return currentQuestion.selectedAnswer;
-  }, [currentQuestion.selectedAnswer, clientGateways, egresses]);
+  }, [currentQuestion.selectedAnswer, currentQuestion.key, clientGateways, egresses]);
+
+  const selectedAnswer2 = useMemo(() => {
+    if (currentQuestion.key === 'internet_gateway' && Array.isArray(currentQuestion.selectedAnswer2)) {
+      const answers = networkNodes
+        .filter((gateway) => currentQuestion.selectedAnswer2?.includes(gateway.id))
+        .map((gateway) => gateway.id);
+      // setCurrentQuestion({ ...currentQuestion, selectedAnswer2: answers });
+      return answers;
+    } else if (currentQuestion.key === 'router' && Array.isArray(currentQuestion.selectedAnswer2)) {
+      const answers = currentQuestion.selectedAnswer2;
+      return answers;
+    }
+    return currentQuestion.selectedAnswer2;
+  }, [currentQuestion.selectedAnswer2, internetGateways]);
+
+  const reviewItems = useMemo(() => {
+    const questionsAskedMinusReview = userQuestionsAsked.filter((ques) => ques.questionKey !== 'review');
+    return questionsAskedMinusReview.map((question) => {
+      const questionText = UsecaseKeyStringToTextMapForReview[question.questionKey];
+      const answerText = getAnswerText(question.answer);
+      const answerText2 = getAnswerText(question.answer2);
+      return (
+        <div key={question.index}>
+          <Typography.Title level={5}>{questionText}</Typography.Title>
+          <Typography.Paragraph>{answerText}</Typography.Paragraph>
+          <Typography.Paragraph>{answerText2}</Typography.Paragraph>
+        </div>
+      );
+    });
+  }, [currentQuestion, userQuestionsAsked]);
+
+  useEffect(() => {
+    if (!currentQuestion.selectedAnswer && currentQuestion.key === 'networks') {
+      if (store.networks.length > 0) {
+        const answer = store.networks[0].netid;
+        handleQuestionAnswer(answer);
+      }
+    } else if (!currentQuestion.selectedAnswer && NodeSelectDropdownChecks.includes(currentQuestion.key)) {
+      if (networkNodes.length > 0) {
+        const answer = networkNodes[0].id;
+        handleQuestionAnswer(answer);
+      }
+    }
+  }, [currentQuestion.key, store.networks, networkNodes]);
 
   return (
     <>
@@ -532,7 +802,11 @@ export default function QuickSetupModal(props: ModalProps) {
                 // marginTop: "auto",
               }}
             >
-              <Space direction="vertical" size="large" style={{ width: '400px' }}>
+              <Space
+                direction="vertical"
+                size="large"
+                style={{ width: '400px', maxHeight: '600px', overflowY: 'auto' }}
+              >
                 {alertIfUsecaseIsSetupAlreadyForNetwork}
                 <div>
                   <Typography.Title level={4}>{currentQuestion.question}</Typography.Title>
@@ -625,6 +899,37 @@ export default function QuickSetupModal(props: ModalProps) {
                       </Form.List>
                     </Form.Item>
                   </Form>
+                )}
+
+                {currentQuestion && currentQuestion.type === 'double_select' && (
+                  <>
+                    <Select
+                      options={selectDropdownOptions}
+                      value={selectedAnswer}
+                      style={{ width: '100%' }}
+                      onSelect={handleSelectChange}
+                      placeholder={currentQuestion.answer1Placeholder}
+                    />
+                    <Typography.Title level={5}>{currentQuestion.question2}</Typography.Title>
+
+                    <Select
+                      options={currentQuestion.secondSelectMode === 'multiple' ? secondSelectDropdownOptions : []}
+                      value={selectedAnswer2}
+                      style={{ width: '100%' }}
+                      onSelect={handleSelectChange2}
+                      onChange={handleSelectChange2}
+                      placeholder={currentQuestion.answer2Placeholder}
+                      mode={currentQuestion.secondSelectMode}
+                    />
+                  </>
+                )}
+
+                {currentQuestion && currentQuestion.key === 'review' && (
+                  <Timeline>
+                    {reviewItems.map((item, i) => (
+                      <Timeline.Item key={i}>{item}</Timeline.Item>
+                    ))}
+                  </Timeline>
                 )}
 
                 {getQuickLink}
