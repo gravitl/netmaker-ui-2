@@ -1,9 +1,11 @@
+import { UsecaseQuestionKey } from '@/constants/NetworkUseCases';
 import { MetricCategories } from '@/models/Metrics';
 import { ExtendedNode } from '@/models/Node';
 import { useStore } from '@/store/store';
 import { Tour, TourProps, notification } from 'antd';
 import { NotificationInstance } from 'antd/es/notification/interface';
 import { t } from 'i18next';
+import { current } from 'immer';
 import { useRef, Fragment, Ref, RefObject, useMemo, useCallback, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
@@ -183,6 +185,7 @@ export default function TourComponent(props: TourUtilsProps) {
     graph: 47,
     metrics: 48,
   });
+  const [selectedTourSteps, setSelectedTourSteps] = useState<TourProps['steps']>([]);
 
   const nextTourStep = () => {
     setTourStep(tourStep + 1);
@@ -192,7 +195,7 @@ export default function TourComponent(props: TourUtilsProps) {
     setTourStep(tourStep - 1);
   };
 
-  const networkDetailsTourStepsPro: TourProps['steps'] = [
+  const hostDetailsTourSteps: TourProps['steps'] = [
     {
       title: 'Hosts Table',
       description: (
@@ -252,6 +255,66 @@ export default function TourComponent(props: TourUtilsProps) {
         }
       },
     },
+  ];
+
+  const hostDetailsTourStepsCE: TourProps['steps'] = [
+    {
+      title: 'Hosts Table',
+      description: (
+        <>
+          Get host information like host name, private address, public address, connectivity status, health status and
+          failover status. You can click on a host to view more details or hover over the ellipsis at the end of the row
+          to edit, disconnect or remove a host from network.
+        </>
+      ),
+      target: hostsTabContainerTableRef.current,
+    },
+    {
+      title: 'Add Host',
+      description: 'Add a new host or an existing host to your network',
+      target: hostsTabContainerAddHostsRef.current,
+      onNext: () => {
+        nextTourStep();
+        setIsAddNewHostModalOpen(true);
+      },
+    },
+    {
+      title: 'Connect a Host - Enrollment Keys',
+      description: (
+        <>
+          You can create an enrollment key which defines the networks a host has access to or you can pick an existing
+          enrollment key
+        </>
+      ),
+      target: connectHostModalEnrollmentKeysTabRef.current,
+    },
+    {
+      title: 'Connect a Host - Select OS',
+      description: (
+        <>You can select the OS of the host that you want to connect and follow the netclient install instructions</>
+      ),
+      target: connectHostModalSelectOSTabRef.current,
+    },
+    {
+      title: 'Connect a Host - Join a Network',
+      description: <>You can join a network by running the command on the terminal</>,
+      target: connectHostModalJoinNetworkTabRef.current,
+      onNext: () => {
+        setIsAddNewHostModalOpen(false);
+        setActiveTabKey('clients');
+        // check if there are any gateways, if there are then go to the next step else
+        // go to the create gateway step
+        if (clientGateways.length > 0) {
+          nextTourStep();
+        } else {
+          setIsAddClientGatewayModalOpen(true);
+          setTourStep(8);
+        }
+      },
+    },
+  ];
+
+  const remoteAccessTourSteps: TourProps['steps'] = [
     {
       title: 'Gateway Table',
       description: (
@@ -382,389 +445,9 @@ export default function TourComponent(props: TourUtilsProps) {
         nextTourStep();
       },
     },
-    {
-      title: 'Relays Table',
-      description: (
-        <>
-          Get relay information like relay name, address and you can update the relay details by hovering over the
-          ellipsis and clicking on update relay
-        </>
-      ),
-      target: relaysTabRelayTableRef.current,
-      onPrev: () => {
-        setActiveTabKey('clients');
-      },
-    },
-    {
-      title: 'Add Relay',
-      description: 'Add a new relay to your network',
-      target: relaysTabAddRelayRef.current,
-      onNext: () => {
-        nextTourStep();
-        setIsAddRelayModalOpen(true);
-      },
-    },
-    {
-      title: 'Select Host',
-      description: 'Select a host to act as a relay',
-      target: createRelayModalSelectHostRef.current,
-      onNext: () => {
-        setIsAddRelayModalOpen(false);
-        nextTourStep();
-      },
-      onPrev: () => {
-        setIsAddRelayModalOpen(false);
-        prevTourStep();
-      },
-    },
-    // {
-    //   title: 'Relayed Hosts',
-    //   description:
-    //     'Get relayed host information like host name, relayed by, addresses and you can update a host to be stop being relayed',
-    //   target: relaysTabRelayedHostsTableRef.current,
-    //   onPrev: () => {
-    //     setIsAddRelayModalOpen(true);
-    //     setTourStep(23);
-    //   },
-    // },
-    {
-      title: 'Add Relayed Host',
-      description: 'Add a new relayed host to your selected relay',
-      target: relaysTabAddRelayedNodesRef.current,
-      onNext: () => {
-        nextTourStep();
-        setIsUpdateRelayModalOpen(true);
-      },
-      onPrev: () => {
-        setIsAddRelayModalOpen(true);
-        prevTourStep();
-      },
-    },
-    {
-      title: 'Select Host to relay',
-      description: 'Select a host to relay',
-      target: addRelayedHostModalSelectHostRef.current,
-      onNext: () => {
-        setIsUpdateRelayModalOpen(false);
-        setActiveTabKey('egress');
-        nextTourStep();
-      },
-      onPrev: () => {
-        setIsUpdateRelayModalOpen(false);
-        prevTourStep();
-      },
-    },
-
-    {
-      title: 'Egress Table',
-      description: (
-        <>
-          Get egress information like egress name, address and you can update the egress details by hovering over the
-          ellipsis and clicking on update egress and you can get more info about the egress by clicking on the egress
-          name.
-        </>
-      ),
-      target: egressTabEgressTableRef.current,
-      onPrev: () => {
-        setActiveTabKey('relays');
-        setIsUpdateRelayModalOpen(true);
-        prevTourStep();
-      },
-    },
-    {
-      title: 'Create Egress',
-      description: 'Add a new egress to your network',
-      target: egressTabAddEgressRef.current,
-      onNext: () => {
-        nextTourStep();
-        setIsAddEgressModalOpen(true);
-      },
-    },
-    {
-      title: 'Select Host',
-      description: 'Select a host to act as an egress',
-      target: createEgressModalSelectHostRef.current,
-      onPrev: () => {
-        setIsAddEgressModalOpen(false);
-        prevTourStep();
-      },
-    },
-    {
-      title: 'Enable NAT for egress traffic',
-      description: 'Check this box if you want to enable NAT for egress traffic',
-      target: createEgressModalEnableNATRef.current,
-      onNext: () => {
-        setIsAddEgressModalOpen(false);
-        nextTourStep();
-      },
-    },
-    // {
-    //   title: 'Select external ranges',
-    //   description: 'Select external ranges',
-    //   target: createEgressModalSelectExternalRangesRef.current,
-    //   onNext: () => {
-    //     setIsAddEgressModalOpen(false);
-    //     setTourStep(33);
-    //   },
-    // },
-    {
-      title: 'External Routes Table',
-      description: 'Get external route information',
-      target: egressTabExternalRoutesTableRef.current,
-      onPrev: () => {
-        setIsAddEgressModalOpen(true);
-        prevTourStep();
-      },
-    },
-    {
-      title: 'Add External Route',
-      description: 'Add a new external route to your selected egress gateway',
-      target: egressTabAddExternalRouteRef.current,
-      onNext: () => {
-        setActiveTabKey('dns');
-        nextTourStep();
-      },
-    },
-    {
-      title: 'DNS Table',
-      description: <>Get DNS entries and IP addresses for your network and you can delete a DNS entry</>,
-      target: dnsTabDNSTableRef.current,
-      onPrev: () => {
-        setActiveTabKey('egress');
-        prevTourStep();
-      },
-    },
-    {
-      title: 'Add DNS',
-      description: 'Add a new DNS entry to your network',
-      target: dnsTabAddDNSRef.current,
-      onNext: () => {
-        setIsAddDnsModalOpen(true);
-        nextTourStep();
-      },
-    },
-    {
-      title: 'DNS Name',
-      description: 'Enter a DNS name',
-      target: addDNSModalDNSNameRef.current,
-      onPrev: () => {
-        prevTourStep();
-        setIsAddDnsModalOpen(false);
-      },
-    },
-    {
-      title: 'Address To Alias',
-      description: 'Enter an address to alias',
-      target: addDNSModalAddressToAliasRef.current,
-      onNext: () => {
-        setIsAddDnsModalOpen(false);
-        setActiveTabKey('access-control');
-        nextTourStep();
-      },
-    },
-    {
-      title: 'Access Control Table',
-      description: (
-        <>
-          Show information about which machines can access which other machines on the network and you can also disable
-          the connection
-        </>
-      ),
-      target: aclTabTableRef.current,
-      onPrev: () => {
-        setActiveTabKey('dns');
-        setIsAddDnsModalOpen(true);
-        prevTourStep();
-      },
-    },
-    {
-      title: 'Show Clients',
-      description: 'Show clients in the access control table',
-      target: aclTabShowClientAclsRef.current,
-    },
-    {
-      title: 'Allow All',
-      description: 'Allow all connections',
-      target: aclTabAllowAllRef.current,
-    },
-    {
-      title: 'Block All',
-      description: 'Block all connections',
-      target: aclTabDenyAllRef.current,
-    },
-    {
-      title: 'Reset',
-      description: 'Reset the access control table',
-      target: aclTabResetRef.current,
-    },
-    {
-      title: 'Submit Changes',
-      description: 'Submit the changes to the access control table',
-      target: aclTabSubmitRef.current,
-      onNext: () => {
-        setActiveTabKey('graph');
-        nextTourStep();
-      },
-    },
-    {
-      title: 'Graph',
-      description: <> View a graph of your network </>,
-      target: graphTabContainerRef.current,
-      onPrev: () => {
-        setActiveTabKey('access-control');
-        prevTourStep();
-      },
-      onNext: () => {
-        setActiveTabKey('metrics');
-        setCurrentMetric('connectivity-status');
-        nextTourStep();
-      },
-    },
-
-    {
-      title: 'Metrics Connectivity Status',
-      description: <>View the connectivity status between nodes</>,
-      target: metricsTabConnectivityStatusTableRef.current,
-      onNext: () => {
-        setCurrentMetric('latency');
-        nextTourStep();
-      },
-      onPrev() {
-        setActiveTabKey('graph');
-        prevTourStep();
-      },
-    },
-    {
-      title: 'Metrics Latency',
-      description: 'View the latency between nodes',
-      target: metricsTabLatencyTableRef.current,
-      onNext: () => {
-        setCurrentMetric('bytes-sent');
-        nextTourStep();
-      },
-      onPrev() {
-        setCurrentMetric('connectivity-status');
-        prevTourStep();
-      },
-    },
-    {
-      title: 'Metrics Bytes Sent',
-      description: 'View the bytes sent between nodes',
-      target: metricsTabBytesSentTableRef.current,
-      onNext: () => {
-        setCurrentMetric('bytes-received');
-        nextTourStep();
-      },
-      onPrev() {
-        setCurrentMetric('latency');
-        prevTourStep();
-      },
-    },
-    {
-      title: 'Metrics Bytes Received',
-      description: 'View the bytes received between nodes',
-      target: metricsTabBytesReceivedTableRef.current,
-      onNext: () => {
-        setCurrentMetric('uptime');
-        nextTourStep();
-      },
-      onPrev() {
-        setCurrentMetric('bytes-sent');
-        prevTourStep();
-      },
-    },
-    {
-      title: 'Metrics Uptime',
-      description: 'View the uptime between nodes',
-      target: metricsTabUptimeTableRef.current,
-      onNext: () => {
-        setCurrentMetric('clients');
-        nextTourStep();
-      },
-      onPrev() {
-        setCurrentMetric('bytes-received');
-        prevTourStep();
-      },
-    },
-    {
-      title: 'Metrics Clients',
-      description: 'View the clients connected to the network',
-      target: metricsTabClientsTableRef.current,
-      onPrev() {
-        setCurrentMetric('uptime');
-        prevTourStep();
-      },
-      onNext: () => {
-        setActiveTabKey('overview');
-        nextTourStep();
-      },
-    },
-    {
-      title: 'Overview',
-      description: 'Get a quick overview of your network',
-      target: overviewTabContainerRef.current,
-      onPrev: () => {
-        prevTourStep();
-        setActiveTabKey('overview');
-      },
-    },
   ];
 
-  const networkDetailsTourStepsCE: TourProps['steps'] = [
-    {
-      title: 'Hosts Table',
-      description: (
-        <>
-          Get host information like host name, private address, public address, connectivity status, health status and
-          failover status. You can click on a host to view more details or hover over the ellipsis at the end of the row
-          to edit, disconnect or remove a host from network.
-        </>
-      ),
-      target: hostsTabContainerTableRef.current,
-    },
-    {
-      title: 'Add Host',
-      description: 'Add a new host or an existing host to your network',
-      target: hostsTabContainerAddHostsRef.current,
-      onNext: () => {
-        nextTourStep();
-        setIsAddNewHostModalOpen(true);
-      },
-    },
-    {
-      title: 'Connect a Host - Enrollment Keys',
-      description: (
-        <>
-          You can create an enrollment key which defines the networks a host has access to or you can pick an existing
-          enrollment key
-        </>
-      ),
-      target: connectHostModalEnrollmentKeysTabRef.current,
-    },
-    {
-      title: 'Connect a Host - Select OS',
-      description: (
-        <>You can select the OS of the host that you want to connect and follow the netclient install instructions</>
-      ),
-      target: connectHostModalSelectOSTabRef.current,
-    },
-    {
-      title: 'Connect a Host - Join a Network',
-      description: <>You can join a network by running the command on the terminal</>,
-      target: connectHostModalJoinNetworkTabRef.current,
-      onNext: () => {
-        setIsAddNewHostModalOpen(false);
-        setActiveTabKey('clients');
-        // check if there are any gateways, if there are then go to the next step else
-        // go to the create gateway step
-        if (clientGateways.length > 0) {
-          nextTourStep();
-        } else {
-          setIsAddClientGatewayModalOpen(true);
-          setTourStep(8);
-        }
-      },
-    },
+  const remoteAccessTourStepsCE: TourProps['steps'] = [
     {
       title: 'Gateway Table',
       description: (
@@ -897,6 +580,157 @@ export default function TourComponent(props: TourUtilsProps) {
         }
       },
     },
+  ];
+
+  const relayDetailsTourSteps: TourProps['steps'] = [
+    {
+      title: 'Relays Table',
+      description: (
+        <>
+          Get relay information like relay name, address and you can update the relay details by hovering over the
+          ellipsis and clicking on update relay
+        </>
+      ),
+      target: relaysTabRelayTableRef.current,
+      onPrev: () => {
+        setActiveTabKey('clients');
+      },
+    },
+    {
+      title: 'Add Relay',
+      description: 'Add a new relay to your network',
+      target: relaysTabAddRelayRef.current,
+      onNext: () => {
+        nextTourStep();
+        setIsAddRelayModalOpen(true);
+      },
+    },
+    {
+      title: 'Select Host',
+      description: 'Select a host to act as a relay',
+      target: createRelayModalSelectHostRef.current,
+      onNext: () => {
+        setIsAddRelayModalOpen(false);
+        nextTourStep();
+      },
+      onPrev: () => {
+        setIsAddRelayModalOpen(false);
+        prevTourStep();
+      },
+    },
+    // {
+    //   title: 'Relayed Hosts',
+    //   description:
+    //     'Get relayed host information like host name, relayed by, addresses and you can update a host to be stop being relayed',
+    //   target: relaysTabRelayedHostsTableRef.current,
+    //   onPrev: () => {
+    //     setIsAddRelayModalOpen(true);
+    //     setTourStep(23);
+    //   },
+    // },
+    {
+      title: 'Add Relayed Host',
+      description: 'Add a new relayed host to your selected relay',
+      target: relaysTabAddRelayedNodesRef.current,
+      onNext: () => {
+        nextTourStep();
+        setIsUpdateRelayModalOpen(true);
+      },
+      onPrev: () => {
+        setIsAddRelayModalOpen(true);
+        prevTourStep();
+      },
+    },
+    {
+      title: 'Select Host to relay',
+      description: 'Select a host to relay',
+      target: addRelayedHostModalSelectHostRef.current,
+      onNext: () => {
+        setIsUpdateRelayModalOpen(false);
+        setActiveTabKey('egress');
+        nextTourStep();
+      },
+      onPrev: () => {
+        setIsUpdateRelayModalOpen(false);
+        prevTourStep();
+      },
+    },
+  ];
+
+  const egressDetailsTourSteps: TourProps['steps'] = [
+    {
+      title: 'Egress Table',
+      description: (
+        <>
+          Get egress information like egress name, address and you can update the egress details by hovering over the
+          ellipsis and clicking on update egress and you can get more info about the egress by clicking on the egress
+          name.
+        </>
+      ),
+      target: egressTabEgressTableRef.current,
+      onPrev: () => {
+        setActiveTabKey('relays');
+        setIsUpdateRelayModalOpen(true);
+        prevTourStep();
+      },
+    },
+    {
+      title: 'Create Egress',
+      description: 'Add a new egress to your network',
+      target: egressTabAddEgressRef.current,
+      onNext: () => {
+        nextTourStep();
+        setIsAddEgressModalOpen(true);
+      },
+    },
+    {
+      title: 'Select Host',
+      description: 'Select a host to act as an egress',
+      target: createEgressModalSelectHostRef.current,
+      onPrev: () => {
+        setIsAddEgressModalOpen(false);
+        prevTourStep();
+      },
+    },
+    {
+      title: 'Enable NAT for egress traffic',
+      description: 'Check this box if you want to enable NAT for egress traffic',
+      target: createEgressModalEnableNATRef.current,
+      onNext: () => {
+        setIsAddEgressModalOpen(false);
+        nextTourStep();
+      },
+    },
+    // {
+    //   title: 'Select external ranges',
+    //   description: 'Select external ranges',
+    //   target: createEgressModalSelectExternalRangesRef.current,
+    //   onNext: () => {
+    //     setIsAddEgressModalOpen(false);
+    //     setTourStep(33);
+    //   },
+    // },
+    {
+      title: 'External Routes Table',
+      description: 'Get external route information',
+      target: egressTabExternalRoutesTableRef.current,
+      onPrev: () => {
+        setIsAddEgressModalOpen(true);
+        prevTourStep();
+      },
+    },
+    {
+      title: 'Add External Route',
+      description: 'Add a new external route to your selected egress gateway',
+      target: egressTabAddExternalRouteRef.current,
+      onNext: () => {
+        setActiveTabKey('dns');
+        nextTourStep();
+      },
+    },
+  ];
+
+  const egressDetailsTourStepsCE: TourProps['steps'] = [
     {
       title: 'Egress Table',
       description: (
@@ -969,6 +803,49 @@ export default function TourComponent(props: TourUtilsProps) {
         nextTourStep();
       },
     },
+  ];
+
+  const dnsDetailsTourSteps: TourProps['steps'] = [
+    {
+      title: 'DNS Table',
+      description: <>Get DNS entries and IP addresses for your network and you can delete a DNS entry</>,
+      target: dnsTabDNSTableRef.current,
+      onPrev: () => {
+        setActiveTabKey('egress');
+        prevTourStep();
+      },
+    },
+    {
+      title: 'Add DNS',
+      description: 'Add a new DNS entry to your network',
+      target: dnsTabAddDNSRef.current,
+      onNext: () => {
+        setIsAddDnsModalOpen(true);
+        nextTourStep();
+      },
+    },
+    {
+      title: 'DNS Name',
+      description: 'Enter a DNS name',
+      target: addDNSModalDNSNameRef.current,
+      onPrev: () => {
+        prevTourStep();
+        setIsAddDnsModalOpen(false);
+      },
+    },
+    {
+      title: 'Address To Alias',
+      description: 'Enter an address to alias',
+      target: addDNSModalAddressToAliasRef.current,
+      onNext: () => {
+        setIsAddDnsModalOpen(false);
+        setActiveTabKey('access-control');
+        nextTourStep();
+      },
+    },
+  ];
+
+  const dnsDetailsTourStepsCE: TourProps['steps'] = [
     {
       title: 'DNS Table',
       description: <>Get DNS entries and IP addresses for your network and you can delete a DNS entry</>,
@@ -1007,6 +884,56 @@ export default function TourComponent(props: TourUtilsProps) {
         nextTourStep();
       },
     },
+  ];
+
+  const accessControlTourSteps: TourProps['steps'] = [
+    {
+      title: 'Access Control Table',
+      description: (
+        <>
+          Show information about which machines can access which other machines on the network and you can also disable
+          the connection
+        </>
+      ),
+      target: aclTabTableRef.current,
+      onPrev: () => {
+        setActiveTabKey('dns');
+        setIsAddDnsModalOpen(true);
+        prevTourStep();
+      },
+    },
+    {
+      title: 'Show Clients',
+      description: 'Show clients in the access control table',
+      target: aclTabShowClientAclsRef.current,
+    },
+    {
+      title: 'Allow All',
+      description: 'Allow all connections',
+      target: aclTabAllowAllRef.current,
+    },
+    {
+      title: 'Block All',
+      description: 'Block all connections',
+      target: aclTabDenyAllRef.current,
+    },
+    {
+      title: 'Reset',
+      description: 'Reset the access control table',
+      target: aclTabResetRef.current,
+    },
+    {
+      title: 'Submit Changes',
+      description: 'Submit the changes to the access control table',
+      target: aclTabSubmitRef.current,
+      onNext: () => {
+        setActiveTabKey('graph');
+        nextTourStep();
+      },
+    },
+  ];
+
+  const accessControlTourStepsCE: TourProps['steps'] = [
     {
       title: 'Access Control Table',
       description: (
@@ -1046,6 +973,96 @@ export default function TourComponent(props: TourUtilsProps) {
         prevTourStep();
       },
     },
+  ];
+
+  const metricsTourSteps: TourProps['steps'] = [
+    {
+      title: 'Metrics Connectivity Status',
+      description: <>View the connectivity status between nodes</>,
+      target: metricsTabConnectivityStatusTableRef.current,
+      onNext: () => {
+        setCurrentMetric('latency');
+        nextTourStep();
+      },
+      onPrev() {
+        setActiveTabKey('graph');
+        prevTourStep();
+      },
+    },
+    {
+      title: 'Metrics Latency',
+      description: 'View the latency between nodes',
+      target: metricsTabLatencyTableRef.current,
+      onNext: () => {
+        setCurrentMetric('bytes-sent');
+        nextTourStep();
+      },
+      onPrev() {
+        setCurrentMetric('connectivity-status');
+        prevTourStep();
+      },
+    },
+    {
+      title: 'Metrics Bytes Sent',
+      description: 'View the bytes sent between nodes',
+      target: metricsTabBytesSentTableRef.current,
+      onNext: () => {
+        setCurrentMetric('bytes-received');
+        nextTourStep();
+      },
+      onPrev() {
+        setCurrentMetric('latency');
+        prevTourStep();
+      },
+    },
+    {
+      title: 'Metrics Bytes Received',
+      description: 'View the bytes received between nodes',
+      target: metricsTabBytesReceivedTableRef.current,
+      onNext: () => {
+        setCurrentMetric('uptime');
+        nextTourStep();
+      },
+      onPrev() {
+        setCurrentMetric('bytes-sent');
+        prevTourStep();
+      },
+    },
+    {
+      title: 'Metrics Uptime',
+      description: 'View the uptime between nodes',
+      target: metricsTabUptimeTableRef.current,
+      onNext: () => {
+        setCurrentMetric('clients');
+        nextTourStep();
+      },
+      onPrev() {
+        setCurrentMetric('bytes-received');
+        prevTourStep();
+      },
+    },
+    {
+      title: 'Metrics Clients',
+      description: 'View the clients connected to the network',
+      target: metricsTabClientsTableRef.current,
+      onPrev() {
+        setCurrentMetric('uptime');
+        nextTourStep();
+      },
+      onNext() {
+        setActiveTabKey('overview');
+        nextTourStep();
+      },
+    },
+  ];
+
+  const networkDetailsTourStepsPro: TourProps['steps'] = [
+    ...hostDetailsTourSteps,
+    ...remoteAccessTourSteps,
+    ...relayDetailsTourSteps,
+    ...egressDetailsTourSteps,
+    ...dnsDetailsTourSteps,
+    ...accessControlTourSteps,
     {
       title: 'Graph',
       description: <> View a graph of your network </>,
@@ -1053,6 +1070,51 @@ export default function TourComponent(props: TourUtilsProps) {
       onPrev: () => {
         setActiveTabKey('access-control');
         prevTourStep();
+      },
+      onNext: () => {
+        setActiveTabKey('metrics');
+        setCurrentMetric('connectivity-status');
+        nextTourStep();
+      },
+    },
+    ...metricsTourSteps,
+    {
+      title: 'Overview',
+      description: 'Get a quick overview of your network',
+      target: overviewTabContainerRef.current,
+      onPrev: () => {
+        prevTourStep();
+        setActiveTabKey('metrics');
+      },
+    },
+  ];
+
+  const networkDetailsTourStepsCE: TourProps['steps'] = [
+    ...hostDetailsTourStepsCE,
+    ...remoteAccessTourStepsCE,
+    ...egressDetailsTourStepsCE,
+    ...dnsDetailsTourStepsCE,
+    ...accessControlTourStepsCE,
+    {
+      title: 'Graph',
+      description: <> View a graph of your network </>,
+      target: graphTabContainerRef.current,
+      onPrev: () => {
+        setActiveTabKey('access-control');
+        prevTourStep();
+      },
+      onNext: () => {
+        setActiveTabKey('overview');
+        nextTourStep();
+      },
+    },
+    {
+      title: 'Overview',
+      description: 'Get a quick overview of your network',
+      target: overviewTabContainerRef.current,
+      onPrev: () => {
+        prevTourStep();
+        setActiveTabKey('graph');
       },
     },
     {
@@ -1070,7 +1132,10 @@ export default function TourComponent(props: TourUtilsProps) {
     setTourStep(current);
   };
 
-  const tourSteps = useMemo(() => (isServerEE ? networkDetailsTourStepsPro : networkDetailsTourStepsCE), [isServerEE]);
+  const resetTourSteps = () => {
+    const tourSteps = isServerEE ? networkDetailsTourStepsPro : networkDetailsTourStepsCE;
+    setSelectedTourSteps(tourSteps);
+  };
 
   const generateJumpToTourStepObj = useCallback(() => {
     // find the current step by index and then set the jump to tour step object
@@ -1115,14 +1180,14 @@ export default function TourComponent(props: TourUtilsProps) {
     };
 
     Texts.forEach((tab, index) => {
-      const tourStepIndex = tourSteps.findIndex((step) => step.title === tab);
+      const tourStepIndex = selectedTourSteps?.findIndex((step) => step.title === tab);
       if (tourStepIndex !== -1) {
-        jumpToTourStepObj[TextToStepMap[tab] as keyof JumpToTourStepObj] = tourStepIndex;
+        jumpToTourStepObj[TextToStepMap[tab] as keyof JumpToTourStepObj] = tourStepIndex as number;
       }
     });
 
     props.setJumpToTourStepObj(jumpToTourStepObj);
-  }, [tourSteps]);
+  }, [selectedTourSteps]);
 
   useEffect(() => {
     generateJumpToTourStepObj();
@@ -1178,11 +1243,15 @@ export default function TourComponent(props: TourUtilsProps) {
     }
   }, [location.state, jumpToTourStepObj]);
 
+  useEffect(() => {
+    resetTourSteps();
+  }, [isServerEE]);
+
   return (
     <>
       <Tour
         open={isTourOpen}
-        steps={isServerEE ? networkDetailsTourStepsPro : networkDetailsTourStepsCE}
+        steps={selectedTourSteps}
         onClose={() => setIsTourOpen(false)}
         onChange={handleTourOnChange}
         current={tourStep}

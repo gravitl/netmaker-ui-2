@@ -42,6 +42,7 @@ import { ExternalLinks, AppImages } from '@/constants/LinkAndImageConstants';
 import { ServerConfigService } from '@/services/ServerConfigService';
 import { isSaasBuild } from '@/services/BaseService';
 import { use } from 'i18next';
+import { TourType } from '@/pages/DashboardPage';
 
 interface ModalProps {
   isModalOpen: boolean;
@@ -49,6 +50,7 @@ interface ModalProps {
   notify: NotificationInstance;
   handleUpgrade: () => void;
   networkId?: string;
+  jumpToTourStep: (step: TourType) => void;
 }
 
 interface RangesFormFields {
