@@ -106,6 +106,7 @@ import { NetworkUsecaseString } from '@/store/networkusecase';
 import QuickSetupModal from '@/components/modals/quick-setup-modal/QuickSetupModal';
 import DownloadRemotesAccessClientModal from '@/components/modals/remote-access-client-modal/DownloadRemoteAccessClientModal';
 import SetNetworkFailoverModal from '@/components/modals/set-network-failover-modal/SetNetworkFailoverModal';
+import { convertNetworkPayloadToUiNetwork, convertUiNetworkToNetworkPayload } from '@/utils/NetworkUtils';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -215,7 +216,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [isRefreshingNetwork, setIsRefreshingNetwork] = useState(false);
   const [isTourOpen, setIsTourOpen] = useState(false);
   const [tourStep, setTourStep] = useState(0);
-  const [activeTabKey, setActiveTabKey] = useState('overview');
+  const [activeTabKey, setActiveTabKey] = useState('hosts');
   const [isDownloadRemoteAccessClientModalOpen, setIsDownloadRemoteAccessClientModalOpen] = useState(false);
   const [originalAcls, setOriginalAcls] = useState<NodeAclContainer>({});
   const [acls, setAcls] = useState<NodeAclContainer>({});
@@ -911,18 +912,23 @@ export default function NetworkDetailsPage(props: PageProps) {
         dataIndex: 'address',
         render(_, node) {
           const addrs = ([] as Array<string>).concat(node.address || [], node.address6 || []).join(', ');
-          return <Tooltip title={addrs}>{addrs}</Tooltip>;
+          return (
+            <Typography.Text copyable style={{ width: 200 }} ellipsis={{ tooltip: addrs }}>
+              {addrs}
+            </Typography.Text>
+          );
         },
       },
       {
         title: 'Endpoint',
         render(_, node) {
+          const addrs = ([] as Array<string>)
+            .concat(node.endpointip ?? '', node.endpointipv6 ?? '', node.additional_rag_ips ?? '')
+            .filter(Boolean)
+            .join(', ');
           return (
-            <Typography.Text>
-              {([] as Array<string>)
-                .concat(node.endpointip ?? '', node.endpointipv6 ?? '')
-                .filter(Boolean)
-                .join(', ')}
+            <Typography.Text copyable style={{ width: 150 }} ellipsis={{ tooltip: addrs }}>
+              {addrs}
             </Typography.Text>
           );
         },
@@ -1076,7 +1082,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       {
         title: 'ID',
         dataIndex: 'clientid',
-        width: 500,
+        width: 150,
         render(value, client) {
           return <Typography.Link onClick={() => openClientDetails(client)}>{value}</Typography.Link>;
         },
@@ -1084,7 +1090,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       {
         title: 'Owner',
         dataIndex: 'ownerid',
-        width: 500,
+        width: 100,
         render(value) {
           return <Typography.Text>{value || 'n/a'}</Typography.Text>;
         },
@@ -1092,8 +1098,14 @@ export default function NetworkDetailsPage(props: PageProps) {
       {
         title: 'Addresses',
         render(_, client) {
-          const addrs = ([] as Array<string>).concat(client.address || [], client.address6 || []).join(', ');
-          return <Tooltip title={addrs}>{addrs}</Tooltip>;
+          const addrs = ([] as Array<string>)
+            .concat(client.address || [], client.address6 || [], client.extraallowedips || [])
+            .join(', ');
+          return (
+            <Typography.Text key={addrs} copyable style={{ width: 150 }} ellipsis={{ tooltip: addrs }}>
+              {addrs}
+            </Typography.Text>
+          );
         },
       },
       // {
@@ -1871,7 +1883,7 @@ export default function NetworkDetailsPage(props: PageProps) {
             form={form}
             layout="vertical"
             initialValues={network}
-            // disabled={!isEditingNetwork}
+            disabled={!isEditingNetwork}
           >
             <Form.Item
               label="Network name"
@@ -1879,7 +1891,7 @@ export default function NetworkDetailsPage(props: PageProps) {
               rules={[{ required: true }]}
               data-nmui-intercom="network-details-form_netid"
             >
-              <Input placeholder="Network name" disabled />
+              <Input placeholder="Network name" disabled={!isEditingNetwork} />
             </Form.Item>
 
             {/* ipv4 */}
@@ -1940,7 +1952,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                       style={{ marginBottom: '0px' }}
                       data-nmui-intercom="network-details-form_isipv6"
                     >
-                      <Switch disabled={!isEditingNetwork} />
+                      <Switch disabled />
                     </Form.Item>
                   </Col>
                 </Row>
@@ -1988,7 +2000,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                           { label: 'ALLOW', value: 'yes' },
                           { label: 'DENY', value: 'no' },
                         ]}
-                        disabled={!isEditingNetwork}
+                        disabled
                       ></Select>
                     </Form.Item>
                   </Col>
@@ -3369,11 +3381,6 @@ export default function NetworkDetailsPage(props: PageProps) {
   const networkTabs: TabsProps['items'] = useMemo(() => {
     const tabs: TabsProps['items'] = [
       {
-        key: 'overview',
-        label: `Overview`,
-        children: network && !isRefreshingNetwork ? getOverviewContent() : <Skeleton active />,
-      },
-      {
         key: 'hosts',
         label: `Hosts (${networkHosts.length})`,
         children: network && !isRefreshingNetwork ? getHostsContent() : <Skeleton active />,
@@ -3425,17 +3432,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       });
       tabs.splice(5, 0, {
         key: 'internet-gateways',
-        label: (
-          <Badge
-            count="BETA"
-            style={{ fontWeight: 'bold' }}
-            offset={['0rem', '-.2rem']}
-            color={branding.primaryColor}
-            title="Internet Gateways is a new feature. This feature needs broader testing and improvements to covers all use cases and environments. Might be unstable."
-          >
-            <Typography.Text>Internet Gateways ({internetGatewaysCount})</Typography.Text>
-          </Badge>
-        ),
+        label: <Typography.Text>Internet Gateways ({internetGatewaysCount})</Typography.Text>,
         children:
           network && !isRefreshingNetwork ? (
             <InternetGatewaysPage network={network} activeTabKey={activeTabKey} />
@@ -3444,6 +3441,12 @@ export default function NetworkDetailsPage(props: PageProps) {
           ),
       });
     }
+
+    tabs.push({
+      key: 'overview',
+      label: `Info`,
+      children: network && !isRefreshingNetwork ? getOverviewContent() : <Skeleton active />,
+    });
 
     return tabs;
   }, [
@@ -3524,32 +3527,32 @@ export default function NetworkDetailsPage(props: PageProps) {
     setIsLoading(false);
   }, [networkId, store.networks, loadDnses, loadAcls, loadClients, isServerEE, navigate, notify, loadMetrics]);
 
-  // const onNetworkFormEdit = useCallback(async () => {
-  //   try {
-  //     const formData = await form.validateFields();
-  //     const network = store.networks.find((network) => network.netid === networkId);
-  //     if (!networkId || !network) {
-  //       throw new Error('Network not found');
-  //     }
-  //     const newNetwork = (
-  //       await NetworksService.updateNetwork(networkId, convertUiNetworkToNetworkPayload({ ...network, ...formData }))
-  //     ).data;
-  //     store.updateNetwork(networkId, convertNetworkPayloadToUiNetwork(newNetwork));
-  //     notify.success({ message: `Network ${networkId} updated` });
-  //     setIsEditingNetwork(false);
-  //   } catch (err) {
-  //     if (err instanceof AxiosError) {
-  //       notify.error({
-  //         message: 'Failed to save changes',
-  //         description: extractErrorMsg(err),
-  //       });
-  //     } else {
-  //       notify.error({
-  //         message: err instanceof Error ? err.message : 'Failed to save changes',
-  //       });
-  //     }
-  //   }
-  // }, [form, networkId, notify, store]);
+  const onNetworkFormEdit = useCallback(async () => {
+    try {
+      const formData = await form.validateFields();
+      const network = store.networks.find((network) => network.netid === networkId);
+      if (!networkId || !network) {
+        throw new Error('Network not found');
+      }
+      const newNetwork = (
+        await NetworksService.updateNetwork(networkId, convertUiNetworkToNetworkPayload({ ...network, ...formData }))
+      ).data;
+      store.updateNetwork(networkId, convertNetworkPayloadToUiNetwork(newNetwork));
+      notify.success({ message: `Network ${networkId} updated` });
+      setIsEditingNetwork(false);
+    } catch (err) {
+      if (err instanceof AxiosError) {
+        notify.error({
+          message: 'Failed to save changes',
+          description: extractErrorMsg(err),
+        });
+      } else {
+        notify.error({
+          message: err instanceof Error ? err.message : 'Failed to save changes',
+        });
+      }
+    }
+  }, [form, networkId, notify, store]);
 
   const onNetworkDelete = useCallback(async () => {
     try {
@@ -3584,13 +3587,11 @@ export default function NetworkDetailsPage(props: PageProps) {
     if (!networkId) return <></>;
     if (!usecase) {
       // no usecase prompty user to add usecase
-      console.log('no usecase found for this network', networkId, usecase);
       return <></>;
     }
     const minimumLimits = networkUsecaseMap[usecase];
     if (!minimumLimits) {
       // no limits for this usecase
-      console.log('no limits for this usecase', usecase);
     }
 
     // const current network usage
@@ -3898,29 +3899,29 @@ export default function NetworkDetailsPage(props: PageProps) {
                 </Col>
                 <Col xs={24} lg={12} style={{ textAlign: 'right' }} className="network-details-table-buttons">
                   {/* {!isEditingNetwork && (
-                  <Button type="default" style={{ marginRight: '.5rem' }} onClick={() => setIsEditingNetwork(true)}>
-                    Edit
-                  </Button>
-                )}
-                {isEditingNetwork && (
-                  <>
-                    <Button type="primary" style={{ marginRight: '.5rem' }} onClick={onNetworkFormEdit}>
-                      Save Changes
+                    <Button type="default" style={{ marginRight: '.5rem' }} onClick={() => setIsEditingNetwork(true)}>
+                      Edit
                     </Button>
-                    <Button
-                      style={{ marginRight: '.5rem' }}
-                      onClick={() => {
-                        setIsEditingNetwork(false);
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                  </>
-                )} */}
+                  )}
+                  {isEditingNetwork && (
+                    <>
+                      <Button type="primary" style={{ marginRight: '.5rem' }} onClick={onNetworkFormEdit}>
+                        Save Changes
+                      </Button>
+                      <Button
+                        style={{ marginRight: '.5rem' }}
+                        onClick={() => {
+                          setIsEditingNetwork(false);
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </>
+                  )} */}
                   <Button
                     style={{ marginRight: '1em' }}
                     onClick={() => {
-                      setActiveTabKey('overview');
+                      setActiveTabKey('hosts');
                       setTourStep(0);
                       setIsTourOpen(true);
                     }}
