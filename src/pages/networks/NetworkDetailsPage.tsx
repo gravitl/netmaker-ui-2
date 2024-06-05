@@ -913,11 +913,9 @@ export default function NetworkDetailsPage(props: PageProps) {
         render(_, node) {
           const addrs = ([] as Array<string>).concat(node.address || [], node.address6 || []).join(', ');
           return (
-            <Tooltip title={addrs}>
-              <Typography.Text key={addrs} copyable>
-                {addrs}
-              </Typography.Text>
-            </Tooltip>
+            <Typography.Text copyable style={{ width: 200 }} ellipsis={{ tooltip: addrs }}>
+              {addrs}
+            </Typography.Text>
           );
         },
       },
@@ -929,11 +927,9 @@ export default function NetworkDetailsPage(props: PageProps) {
             .filter(Boolean)
             .join(', ');
           return (
-            <Tooltip title={addrs}>
-              <Typography.Text key={addrs} copyable>
-                {addrs}
-              </Typography.Text>
-            </Tooltip>
+            <Typography.Text copyable style={{ width: 150 }} ellipsis={{ tooltip: addrs }}>
+              {addrs}
+            </Typography.Text>
           );
         },
       },
@@ -1106,11 +1102,9 @@ export default function NetworkDetailsPage(props: PageProps) {
             .concat(client.address || [], client.address6 || [], client.extraallowedips || [])
             .join(', ');
           return (
-            <Tooltip title={addrs}>
-              <Typography.Text key={addrs} copyable>
-                {addrs}
-              </Typography.Text>
-            </Tooltip>
+            <Typography.Text key={addrs} copyable style={{ width: 150 }} ellipsis={{ tooltip: addrs }}>
+              {addrs}
+            </Typography.Text>
           );
         },
       },
