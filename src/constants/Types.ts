@@ -11,6 +11,7 @@ export const NULL_HOST: Host = {
   os: '',
   debug: false,
   isstatic: false,
+  isstaticport: false,
   listenport: 0,
   localrange: '',
   mtu: 0,
