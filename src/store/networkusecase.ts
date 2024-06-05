@@ -10,7 +10,8 @@ interface NetworksUsecase {
 export interface UsecaseQuestionAndAnswer {
   index: number;
   questionKey: string;
-  answer: string;
+  answer: string | string[];
+  answer2?: string | string[];
 }
 
 interface NetworksUsecaseQuestionAndAnswer {

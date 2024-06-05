@@ -1,5 +1,6 @@
 // in this file we set network use cases and minimums for each use case
 
+import { router } from '@/routes';
 import { NetworkUsecaseString } from '@/store/networkusecase';
 import { Typography } from 'antd';
 import { ReactNode } from 'react';
@@ -27,15 +28,26 @@ export type UsecaseQuestionKey =
   | 'users'
   | 'hosts'
   | 'egress'
-  | 'ranges';
+  | 'ranges'
+  | 'connect_to_site'
+  | 'internet_gateway'
+  | 'router'
+  | 'netclient'
+  | 'review';
 export interface UsecaseQuestions {
   key: UsecaseQuestionKey;
   question: string;
+  question2?: string;
   answers: string[];
-  selectedAnswer?: string;
+  answers2?: string[];
+  selectedAnswer?: string | string[];
+  selectedAnswer2?: string | string[];
   type?: string;
   descriptionTitle?: string;
   description?: string | ReactNode;
+  answer1Placeholder?: string;
+  answer2Placeholder?: string;
+  secondSelectMode?: 'multiple' | 'tags';
 }
 
 interface UsecaseKeyStringToTextMap {
@@ -70,7 +82,7 @@ export const PrimaryUsecaseQuestions: UsecaseQuestions[] = [
   {
     key: 'primary_usecase',
     question: 'What are you trying to do?',
-    answers: ['Remote Access'],
+    answers: ['remote_access', 'internet_gateway', 'connect_to_site'],
     // selectedAnswer: 'Remote Access',
     type: 'radio',
     descriptionTitle: 'Welcome to Guided Setup',
@@ -104,31 +116,6 @@ export const UsecaseQuestionsAll: UsecaseQuestions[] = [
       All machines added to Netmaker must be added to a network to enable communication with other devices
     `,
   },
-  //   {
-  //     key: 'hosts',
-  //     question: 'Add hosts to your network',
-  //     answers: [], // hosts
-  //     type: 'select',
-  //     descriptionTitle: 'What are hosts in Netmaker?',
-  //     description: (
-  //       <>
-  //         <Typography.Paragraph className="guided-tour-text">
-  //           {` Hosts can acts as gateways and endpoints in your network. For the remote access use case, you will need at least one host,
-  //       deployed in a public environment, to act as the gateway. If deploying on-prem, you can use the existing "server" host.
-  //       If deploying from our SaaS, you can use your managed endpoint. Otherwise, please deploy at least one additional endpoint in a public environment
-  //       (e.g. cloud) with a public IP."
-  // `}
-  //         </Typography.Paragraph>
-  //         <Typography.Paragraph className="guided-tour-text">
-  //           {`
-  //           At least one host should also be deployed in the target environment for remote access, e.g. the office, data center, or edge environment.
-  //           If accessing specific endpoints, deploy one host per endpoint. If you would like to access a LAN or other subnet (or the internet),
-  //           you can deploy just one host which has access to the target range, and later, we will set it as a gateway to the target network.
-  //       `}
-  //         </Typography.Paragraph>
-  //       </>
-  //     ),
-  //   },
   {
     key: 'remote_access_gateways',
     question: 'Select a host to use as your gateway',
@@ -194,6 +181,82 @@ export const UsecaseQuestionsAll: UsecaseQuestions[] = [
     description: `An egress gateway can be configured to access one or more egress range. An egress range is simply an IP subnet range. 
       Ranges must be accessible from the device, and should not conflict with the VPN subnet range.`,
   },
+  {
+    key: 'hosts',
+    question: 'Add target machines(hosts) to your network',
+    answers: [], // hosts
+    type: 'select',
+    descriptionTitle: 'What are hosts in Netmaker?',
+    description: (
+      <>
+        <Typography.Paragraph className="guided-tour-text">
+          {` Hosts can acts as gateways and endpoints in your network. For the remote access use case, you will need at least one host,
+        deployed in a public environment, to act as the gateway. If deploying on-prem, you can use the existing "server" host.
+        If deploying from our SaaS, you can use your managed endpoint. Otherwise, please deploy at least one additional endpoint in a public environment
+        (e.g. cloud) with a public IP."
+  `}
+        </Typography.Paragraph>
+        <Typography.Paragraph className="guided-tour-text">
+          {`
+            At least one host should also be deployed in the target environment for remote access, e.g. the office, data center, or edge environment.
+            If accessing specific endpoints, deploy one host per endpoint. If you would like to access a LAN or other subnet (or the internet),
+            you can deploy just one host which has access to the target range, and later, we will set it as a gateway to the target network.
+        `}
+        </Typography.Paragraph>
+      </>
+    ),
+  },
+  {
+    key: 'connect_to_site',
+    question: 'Connect via router or route through Netclient',
+    answers: ['router', 'route_via_netclient'],
+    type: 'radio',
+    descriptionTitle: 'Connect to a Site',
+    description: '',
+  },
+  {
+    key: 'internet_gateway',
+    question: 'Select a host to act as your internet gateway',
+    question2: 'Select a hosts to route traffic through the internet gateway',
+    answers: [],
+    answers2: [],
+    type: 'double_select',
+    descriptionTitle: 'Internet Gateway',
+    description: `Internet Gateways allows Netmaker to work like a normal VPN. A gateway forwards traffic from the connected hosts to the internet and vice versa. Internet gateways can help you to hide your true IP address and bypass geo-restrictions.`,
+    answer1Placeholder: 'Select a host to act as your internet gateway',
+    answer2Placeholder: 'Select a host to route through the internet gateway',
+    secondSelectMode: 'multiple',
+  },
+  {
+    key: 'router',
+    question: 'Router Configuration',
+    answers: [],
+    type: 'double_select',
+    descriptionTitle: 'Router Configuration',
+    description: `If you have a router that supports WireGuard, you can add the configuration here. 
+      This will allow all devices on your network to connect to the VPN.`,
+    question2: 'Add additional addresses to route through the router',
+    answer1Placeholder: 'Select a host to act as the gateway to the network for the router',
+    answer2Placeholder: 'Additional addresses to route through the router',
+    secondSelectMode: 'tags',
+  },
+  {
+    key: 'netclient',
+    question: 'Netclient Configuration',
+    answers: [],
+    type: 'select',
+    descriptionTitle: 'Netclient Configuration',
+    description: `If you have a device that supports WireGuard, you can add the configuration here. 
+      This will allow the device to connect to the VPN.`,
+  },
+  {
+    key: 'review',
+    descriptionTitle: 'Review and Deploy',
+    description: 'Review your configuration and deploy your network',
+    question: 'Check what was created',
+    answers: ['Review'],
+    type: 'review',
+  },
 ];
 
 export const UsecaseKeyStringToTextMap: UsecaseKeyStringToTextMap = {
@@ -207,6 +270,11 @@ export const UsecaseKeyStringToTextMap: UsecaseKeyStringToTextMap = {
   networks_lan_or_vpc: 'Networks (LAN, VPC, Internet)',
   our_rac: 'Our Remote Access Client',
   vpn_client: 'Wireguard VPN Config Files',
+  remote_access: 'Remote Access',
+  internet_gateway: 'Internet Gateway',
+  connect_to_site: 'Connect a Site (e.g. VPC, Office Network)',
+  router: 'Connect via router',
+  route_via_netclient: 'Route via Netclient',
 };
 
 export const UsecaseKeyStringToTextMapForAnswers: UsecaseKeyStringToTextMap = {
@@ -214,4 +282,20 @@ export const UsecaseKeyStringToTextMapForAnswers: UsecaseKeyStringToTextMap = {
   hosts: 'host',
   remote_access_gateways: 'remote access gateway',
   egress: 'egress gateway',
+  internet_gateway: 'internet gateway',
+  router: 'host',
+};
+
+export const UsecaseKeyStringToTextMapForReview: UsecaseKeyStringToTextMap = {
+  primary_usecase: 'Your primary usecase?',
+  usecase: 'Your remote access usecase?',
+  networks: 'Selected Network',
+  remote_access_gateways: 'Your remote access gateway?',
+  users: 'The primary way your users will connect?',
+  egress: 'Your egress gateway?',
+  ranges: 'Your egress ranges?',
+  connect_to_site: 'Your connection method?',
+  router: 'Your router configuration?',
+  netclient: 'The netclient configuration?',
+  hosts: 'Hosts added to the network',
 };

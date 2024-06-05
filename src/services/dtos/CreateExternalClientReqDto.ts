@@ -5,4 +5,5 @@ export interface CreateExternalClientReqDto {
   publickey: ExternalClient['publickey'];
   address?: ExternalClient['address'];
   address6?: ExternalClient['address6'];
+  extraallowedips?: ExternalClient['extraallowedips'];
 }
