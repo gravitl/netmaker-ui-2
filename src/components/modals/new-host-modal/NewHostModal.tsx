@@ -542,7 +542,7 @@ export default function NewHostModal({
                         <h4 style={{ marginBottom: '.5rem' }}>Install with this command</h4>
                         <Typography.Text code copyable>
                           {`wget -O netclient ${
-                            getNetclientDownloadLink('linux', selectedArch, 'cli')[0]
+                            getNetclientDownloadLink('linux', selectedArch)[0]
                           } && chmod +x ./netclient && sudo ./netclient install`}
                         </Typography.Text>
                         <Divider />
