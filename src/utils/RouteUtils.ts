@@ -106,11 +106,7 @@ export function getNetmakerTrialPeriodDocs() {
 }
 
 // Function to get netclient download link and filename based on OS, arch and type
-export function getNetclientDownloadLink(
-  os: AvailableOses,
-  arch: AvailableArchs,
-  appType: 'gui' | 'cli' = 'gui',
-): [string, string] {
+export function getNetclientDownloadLink(os: AvailableOses, arch: AvailableArchs): [string, string] {
   const fileNamePlaceholder = ':fileName';
   const verisonPlaceholder = ':version';
   const netclientBinTemplate: string | undefined = import.meta.env.VITE_NETCLIENT_BIN_URL_TEMPLATE;
@@ -126,12 +122,9 @@ export function getNetclientDownloadLink(
 
   if (!serverVersion) return ['about:blank', ''];
 
-  if (appType === 'gui') {
-    effectiveFileName += '-gui';
-  }
   effectiveFileName += `-${platform}-${arch}`;
 
-  if (platform === 'windows') effectiveFileName = 'netclient_x86.msi';
+  if (platform === 'windows') effectiveFileName = 'netclientbundle.exe';
   else if (platform === 'darwin') {
     if (arch === 'amd64') effectiveFileName = 'Netclient-Intel.pkg';
     else if (arch === 'arm64') effectiveFileName = 'Netclient-M1.pkg';
@@ -144,11 +137,7 @@ export function getNetclientDownloadLink(
 }
 
 // Function to get rac download link and filename based on OS, arch and type
-export function getRACDownloadLink(
-  os: AvailableOses,
-  arch: AvailableArchs,
-  appType: 'gui' | 'cli' = 'gui',
-): [string, string] {
+export function getRACDownloadLink(os: AvailableOses, arch: AvailableArchs): [string, string] {
   const fileNamePlaceholder = ':fileName';
   const verisonPlaceholder = ':version';
   const netclientBinTemplate: string | undefined = import.meta.env.VITE_NETCLIENT_BIN_URL_TEMPLATE;
@@ -166,7 +155,7 @@ export function getRACDownloadLink(
 
   effectiveFileName += `-${platform}-${arch}`;
 
-  if (platform === 'windows') effectiveFileName = 'remote_access_client_x86.msi';
+  if (platform === 'windows') effectiveFileName = 'remoteclientbundle.exe';
   else if (platform === 'darwin') {
     if (arch === 'amd64') effectiveFileName = 'remote-access-client-Intel.pkg';
     else if (arch === 'arm64') effectiveFileName = 'remote-access-client-M1.pkg';
