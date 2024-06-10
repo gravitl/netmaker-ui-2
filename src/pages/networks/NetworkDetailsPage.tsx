@@ -3425,12 +3425,12 @@ export default function NetworkDetailsPage(props: PageProps) {
     );
 
     if (isServerEE) {
-      tabs.splice(3, 0, {
+      tabs.splice(2, 0, {
         key: 'relays',
         label: `Relays (${relays.length})`,
         children: network && !isRefreshingNetwork ? getRelayContent() : <Skeleton active />,
       });
-      tabs.splice(5, 0, {
+      tabs.splice(4, 0, {
         key: 'internet-gateways',
         label: <Typography.Text>Internet Gateways ({internetGatewaysCount})</Typography.Text>,
         children:
