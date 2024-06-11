@@ -158,6 +158,9 @@ export default function SetNetworkFailoverModal({
                   },
                 ]}
                 rowKey="id"
+                scroll={{
+                  x: true,
+                }}
               />
             </Col>
           </Row>

@@ -134,13 +134,15 @@ export default function UpdateIngressUsersModal({ isOpen, ingress, onCancel }: U
           />
         </Col>
         <Col xs={24}>
-          <Table
-            columns={usersTableColumns}
-            dataSource={filteredUsers}
-            rowKey="username"
-            loading={isUsersLoading}
-            size="small"
-          />
+          <div className="table-wrapper">
+            <Table
+              columns={usersTableColumns}
+              dataSource={filteredUsers}
+              rowKey="username"
+              loading={isUsersLoading}
+              size="small"
+            />
+          </div>
         </Col>
       </Row>
       {notifyCtx}

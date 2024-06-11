@@ -2141,158 +2141,165 @@ export default function NetworkDetailsPage(props: PageProps) {
                 }
               />
             )}
-            <Table
-              scroll={{ x: true }}
-              columns={[
-                {
-                  title: 'Host Name',
-                  render: (_, node) => {
-                    const hostName = getExtendedNode(node, store.hostsCommonDetails).name;
-                    return (
-                      <>
-                        <Link to={getNetworkHostRoute(node.hostid, node.network)} title={`Network Host ID: ${node.id}`}>
-                          {hostName}
-                        </Link>
-                        {node.pendingdelete && (
-                          <Badge style={{ marginLeft: '1rem' }} status="processing" color="red" text="Removing..." />
-                        )}
-                        {isServerEE && node.is_fail_over && (
-                          <StarOutlined
-                            title="This host is acting as the network's failover host"
-                            style={{ color: branding.primaryColor, marginLeft: '.5rem' }}
-                          />
-                        )}
-                      </>
-                    );
-                  },
-                  sorter: (a, b) => {
-                    const hostNameA = getExtendedNode(a, store.hostsCommonDetails).name;
-                    const hostNameB = getExtendedNode(b, store.hostsCommonDetails).name;
-                    return hostNameA?.localeCompare(hostNameB ?? '') ?? 0;
-                  },
-                  defaultSortOrder: 'ascend',
-                },
-                network?.isipv4
-                  ? {
-                      title: 'Private Address (IPv4)',
-                      dataIndex: 'address',
-                    }
-                  : {},
-                network?.isipv6
-                  ? {
-                      title: 'Private Address (IPv6)',
-                      dataIndex: 'address6',
-                    }
-                  : {},
-                {
-                  title: 'Public Address (IPv4)',
-                  render(_, node) {
-                    return getExtendedNode(node, store.hostsCommonDetails)?.endpointip ?? '';
-                  },
-                },
-                {
-                  title: 'Public Address (IPv6)',
-                  render(_, node) {
-                    return getExtendedNode(node, store.hostsCommonDetails)?.endpointipv6 ?? '';
-                  },
-                },
-                {
-                  title: 'Connectivity',
-                  render: (_, node) => (
-                    <Tag color={node.connected ? 'green' : 'red'}>{node.connected ? 'Connected' : 'Disconnected'}</Tag>
-                  ),
-                },
-                {
-                  title: 'Health Status',
-                  render(_, node) {
-                    return getHostHealth(node.hostid, [node]);
-                  },
-                  filters: [
-                    {
-                      text: 'Healthy',
-                      value: HOST_HEALTH_STATUS.healthy,
+            <div className="table-wrapper">
+              <Table
+                scroll={{ x: true }}
+                columns={[
+                  {
+                    title: 'Host Name',
+                    render: (_, node) => {
+                      const hostName = getExtendedNode(node, store.hostsCommonDetails).name;
+                      return (
+                        <>
+                          <Link
+                            to={getNetworkHostRoute(node.hostid, node.network)}
+                            title={`Network Host ID: ${node.id}`}
+                          >
+                            {hostName}
+                          </Link>
+                          {node.pendingdelete && (
+                            <Badge style={{ marginLeft: '1rem' }} status="processing" color="red" text="Removing..." />
+                          )}
+                          {isServerEE && node.is_fail_over && (
+                            <StarOutlined
+                              title="This host is acting as the network's failover host"
+                              style={{ color: branding.primaryColor, marginLeft: '.5rem' }}
+                            />
+                          )}
+                        </>
+                      );
                     },
-                    {
-                      text: 'Warning',
-                      value: HOST_HEALTH_STATUS.warning,
+                    sorter: (a, b) => {
+                      const hostNameA = getExtendedNode(a, store.hostsCommonDetails).name;
+                      const hostNameB = getExtendedNode(b, store.hostsCommonDetails).name;
+                      return hostNameA?.localeCompare(hostNameB ?? '') ?? 0;
                     },
-                    {
-                      text: 'Error',
-                      value: HOST_HEALTH_STATUS.error,
+                    defaultSortOrder: 'ascend',
+                  },
+                  network?.isipv4
+                    ? {
+                        title: 'Private Address (IPv4)',
+                        dataIndex: 'address',
+                      }
+                    : {},
+                  network?.isipv6
+                    ? {
+                        title: 'Private Address (IPv6)',
+                        dataIndex: 'address6',
+                      }
+                    : {},
+                  {
+                    title: 'Public Address (IPv4)',
+                    render(_, node) {
+                      return getExtendedNode(node, store.hostsCommonDetails)?.endpointip ?? '';
                     },
-                    {
-                      text: 'Unknown',
-                      value: HOST_HEALTH_STATUS.unknown,
+                  },
+                  {
+                    title: 'Public Address (IPv6)',
+                    render(_, node) {
+                      return getExtendedNode(node, store.hostsCommonDetails)?.endpointipv6 ?? '';
                     },
-                  ],
-                  onFilter: (value: React.Key | boolean, record: any) => filterByHostHealthStatus(value, record),
-                },
-                {
-                  width: '1rem',
-                  align: 'right',
-                  render(_: boolean, node) {
-                    return (
-                      <Dropdown
-                        menu={{
-                          items: (
-                            [
-                              {
-                                key: 'edit',
-                                label: 'Edit',
-                                disabled: node.pendingdelete !== false,
-                                title: node.pendingdelete !== false ? 'Host is being removed from network' : '',
-                                onClick: () => editNode(node),
-                              },
-                            ] as any[]
-                          )
-                            .concat(
-                              isServerEE
-                                ? [
-                                    {
-                                      key: 'failover',
-                                      label: node.is_fail_over ? 'Unset as failover' : 'Set as failover',
-                                      title: node.is_fail_over
-                                        ? 'Stop this host as acting as the network failover'
-                                        : 'Make this the network failover host. Any existing failover host will be replaced.',
-                                      onClick: () => confirmNodeFailoverStatusChange(node, !node.is_fail_over),
-                                    },
-                                  ]
-                                : [],
+                  },
+                  {
+                    title: 'Connectivity',
+                    render: (_, node) => (
+                      <Tag color={node.connected ? 'green' : 'red'}>
+                        {node.connected ? 'Connected' : 'Disconnected'}
+                      </Tag>
+                    ),
+                  },
+                  {
+                    title: 'Health Status',
+                    render(_, node) {
+                      return getHostHealth(node.hostid, [node]);
+                    },
+                    filters: [
+                      {
+                        text: 'Healthy',
+                        value: HOST_HEALTH_STATUS.healthy,
+                      },
+                      {
+                        text: 'Warning',
+                        value: HOST_HEALTH_STATUS.warning,
+                      },
+                      {
+                        text: 'Error',
+                        value: HOST_HEALTH_STATUS.error,
+                      },
+                      {
+                        text: 'Unknown',
+                        value: HOST_HEALTH_STATUS.unknown,
+                      },
+                    ],
+                    onFilter: (value: React.Key | boolean, record: any) => filterByHostHealthStatus(value, record),
+                  },
+                  {
+                    width: '1rem',
+                    align: 'right',
+                    render(_: boolean, node) {
+                      return (
+                        <Dropdown
+                          menu={{
+                            items: (
+                              [
+                                {
+                                  key: 'edit',
+                                  label: 'Edit',
+                                  disabled: node.pendingdelete !== false,
+                                  title: node.pendingdelete !== false ? 'Host is being removed from network' : '',
+                                  onClick: () => editNode(node),
+                                },
+                              ] as any[]
                             )
-                            .concat([
-                              {
-                                key: 'disconnect',
-                                label: node.connected ? 'Disconnect host' : 'Connect host',
-                                disabled: node.pendingdelete !== false,
-                                title: node.pendingdelete !== false ? 'Host is being disconnected from network' : '',
+                              .concat(
+                                isServerEE
+                                  ? [
+                                      {
+                                        key: 'failover',
+                                        label: node.is_fail_over ? 'Unset as failover' : 'Set as failover',
+                                        title: node.is_fail_over
+                                          ? 'Stop this host as acting as the network failover'
+                                          : 'Make this the network failover host. Any existing failover host will be replaced.',
+                                        onClick: () => confirmNodeFailoverStatusChange(node, !node.is_fail_over),
+                                      },
+                                    ]
+                                  : [],
+                              )
+                              .concat([
+                                {
+                                  key: 'disconnect',
+                                  label: node.connected ? 'Disconnect host' : 'Connect host',
+                                  disabled: node.pendingdelete !== false,
+                                  title: node.pendingdelete !== false ? 'Host is being disconnected from network' : '',
 
-                                onClick: () =>
-                                  disconnectNodeFromNetwork(
-                                    !node.connected,
-                                    getExtendedNode(node, store.hostsCommonDetails),
-                                  ),
-                              },
-                              {
-                                key: 'remove',
-                                label: 'Remove from network',
-                                danger: true,
-                                onClick: () =>
-                                  removeNodeFromNetwork(false, getExtendedNode(node, store.hostsCommonDetails)),
-                              },
-                            ]),
-                        }}
-                      >
-                        <MoreOutlined />
-                      </Dropdown>
-                    );
+                                  onClick: () =>
+                                    disconnectNodeFromNetwork(
+                                      !node.connected,
+                                      getExtendedNode(node, store.hostsCommonDetails),
+                                    ),
+                                },
+                                {
+                                  key: 'remove',
+                                  label: 'Remove from network',
+                                  danger: true,
+                                  onClick: () =>
+                                    removeNodeFromNetwork(false, getExtendedNode(node, store.hostsCommonDetails)),
+                                },
+                              ]),
+                          }}
+                        >
+                          <MoreOutlined />
+                        </Dropdown>
+                      );
+                    },
                   },
-                },
-              ]}
-              dataSource={filteredNetworkNodes}
-              rowKey="id"
-              size="small"
-              ref={hostsTabContainerTableRef}
-            />
+                ]}
+                dataSource={filteredNetworkNodes}
+                rowKey="id"
+                size="small"
+                ref={hostsTabContainerTableRef}
+              />
+            </div>
           </Col>
         </Row>
       </div>
@@ -2351,57 +2358,59 @@ export default function NetworkDetailsPage(props: PageProps) {
           </Col>
 
           <Col xs={24} style={{ paddingTop: '1rem' }}>
-            <Table
-              scroll={{ x: true }}
-              columns={[
-                {
-                  title: 'DNS Entry',
-                  render(_, dns) {
-                    return <Typography.Text copyable>{`${dns.name}`}</Typography.Text>;
+            <div className="table-wrapper">
+              <Table
+                scroll={{ x: true }}
+                columns={[
+                  {
+                    title: 'DNS Entry',
+                    render(_, dns) {
+                      return <Typography.Text copyable>{`${dns.name}`}</Typography.Text>;
+                    },
+                    sorter: (a, b) => a.name.localeCompare(b.name),
+                    defaultSortOrder: 'ascend',
                   },
-                  sorter: (a, b) => a.name.localeCompare(b.name),
-                  defaultSortOrder: 'ascend',
-                },
-                {
-                  title: 'IP Addresses',
-                  render(_, dns) {
-                    const addrs = ([] as Array<string>).concat(dns.address || [], dns.address6 || []).join(', ');
-                    return <Typography.Text copyable>{addrs}</Typography.Text>;
+                  {
+                    title: 'IP Addresses',
+                    render(_, dns) {
+                      const addrs = ([] as Array<string>).concat(dns.address || [], dns.address6 || []).join(', ');
+                      return <Typography.Text copyable>{addrs}</Typography.Text>;
+                    },
                   },
-                },
-                {
-                  title: '',
-                  key: 'action',
-                  width: '1rem',
-                  render: (_, dns) => (
-                    <Dropdown
-                      placement="bottomRight"
-                      menu={{
-                        items: [
-                          {
-                            key: 'delete',
-                            disabled: isDefaultDns(dns),
-                            onClick: () => (isDefaultDns(dns) ? undefined : confirmDeleteDns(dns)),
-                            danger: true,
-                            label: (
-                              <Tooltip title={isDefaultDns(dns) ? 'Cannot delete default DNS' : 'Delete DNS'}>
-                                <DeleteOutlined /> Delete
-                              </Tooltip>
-                            ),
-                          },
-                        ] as MenuProps['items'],
-                      }}
-                    >
-                      <MoreOutlined />
-                    </Dropdown>
-                  ),
-                },
-              ]}
-              dataSource={dnses.filter((dns) => dns.name.toLocaleLowerCase().includes(searchDns.toLocaleLowerCase()))}
-              rowKey="name"
-              size="small"
-              ref={dnsTabDNSTableRef}
-            />
+                  {
+                    title: '',
+                    key: 'action',
+                    width: '1rem',
+                    render: (_, dns) => (
+                      <Dropdown
+                        placement="bottomRight"
+                        menu={{
+                          items: [
+                            {
+                              key: 'delete',
+                              disabled: isDefaultDns(dns),
+                              onClick: () => (isDefaultDns(dns) ? undefined : confirmDeleteDns(dns)),
+                              danger: true,
+                              label: (
+                                <Tooltip title={isDefaultDns(dns) ? 'Cannot delete default DNS' : 'Delete DNS'}>
+                                  <DeleteOutlined /> Delete
+                                </Tooltip>
+                              ),
+                            },
+                          ] as MenuProps['items'],
+                        }}
+                      >
+                        <MoreOutlined />
+                      </Dropdown>
+                    ),
+                  },
+                ]}
+                dataSource={dnses.filter((dns) => dns.name.toLocaleLowerCase().includes(searchDns.toLocaleLowerCase()))}
+                rowKey="name"
+                size="small"
+                ref={dnsTabDNSTableRef}
+              />
+            </div>
           </Col>
         </Row>
       </div>
@@ -2573,36 +2582,38 @@ export default function NetworkDetailsPage(props: PageProps) {
                   </Row>
                   <Row style={{ marginTop: '1rem' }}>
                     <Col xs={23}>
-                      <Table
-                        columns={gatewaysTableCols}
-                        dataSource={filteredClientGateways}
-                        rowKey="id"
-                        size="small"
-                        scroll={{ x: true }}
-                        rowClassName={(gateway) => {
-                          return gateway.id === selectedGateway?.id ? 'selected-row' : '';
-                        }}
-                        onRow={(gateway) => {
-                          return {
-                            onClick: () => {
-                              setSelectedGateway(gateway);
+                      <div className="table-wrapper">
+                        <Table
+                          columns={gatewaysTableCols}
+                          dataSource={filteredClientGateways}
+                          rowKey="id"
+                          size="small"
+                          scroll={{ x: true }}
+                          rowClassName={(gateway) => {
+                            return gateway.id === selectedGateway?.id ? 'selected-row' : '';
+                          }}
+                          onRow={(gateway) => {
+                            return {
+                              onClick: () => {
+                                setSelectedGateway(gateway);
+                              },
+                            };
+                          }}
+                          ref={remoteAccessTabGatewayTableRef}
+                          rowSelection={{
+                            type: 'radio',
+                            hideSelectAll: true,
+                            selectedRowKeys: selectedGateway ? [selectedGateway.id] : [],
+                            onSelect: (gateway) => {
+                              if (selectedGateway?.id === gateway.id) {
+                                setSelectedGateway(null);
+                              } else {
+                                setSelectedGateway(gateway);
+                              }
                             },
-                          };
-                        }}
-                        ref={remoteAccessTabGatewayTableRef}
-                        rowSelection={{
-                          type: 'radio',
-                          hideSelectAll: true,
-                          selectedRowKeys: selectedGateway ? [selectedGateway.id] : [],
-                          onSelect: (gateway) => {
-                            if (selectedGateway?.id === gateway.id) {
-                              setSelectedGateway(null);
-                            } else {
-                              setSelectedGateway(gateway);
-                            }
-                          },
-                        }}
-                      />
+                          }}
+                        />
+                      </div>
                     </Col>
                   </Row>
                 </Col>
@@ -2634,14 +2645,16 @@ export default function NetworkDetailsPage(props: PageProps) {
                   </Row>
                   <Row style={{ marginTop: '1rem' }}>
                     <Col xs={24}>
-                      <Table
-                        columns={clientsTableCols}
-                        dataSource={filteredClients}
-                        rowKey="clientid"
-                        size="small"
-                        scroll={{ x: true }}
-                        ref={remoteAccessTabVPNConfigTableRef}
-                      />
+                      <div className="table-wrapper">
+                        <Table
+                          columns={clientsTableCols}
+                          dataSource={filteredClients}
+                          rowKey="clientid"
+                          size="small"
+                          scroll={{ x: true }}
+                          ref={remoteAccessTabVPNConfigTableRef}
+                        />
+                      </div>
                     </Col>
                   </Row>
                 </Col>
@@ -2753,37 +2766,39 @@ export default function NetworkDetailsPage(props: PageProps) {
               </Row>
               <Row style={{ marginTop: '1rem' }}>
                 <Col xs={23}>
-                  <Table
-                    columns={egressTableCols}
-                    dataSource={filteredEgresses}
-                    rowKey="id"
-                    size="small"
-                    scroll={{ x: true }}
-                    rowClassName={(egress) => {
-                      return egress.id === filteredEgress?.id ? 'selected-row' : '';
-                    }}
-                    onRow={(egress) => {
-                      return {
-                        onClick: () => {
-                          setFilteredEgress(egress);
+                  <div className="table-wrapper">
+                    <Table
+                      columns={egressTableCols}
+                      dataSource={filteredEgresses}
+                      rowKey="id"
+                      size="small"
+                      scroll={{ x: true }}
+                      rowClassName={(egress) => {
+                        return egress.id === filteredEgress?.id ? 'selected-row' : '';
+                      }}
+                      onRow={(egress) => {
+                        return {
+                          onClick: () => {
+                            setFilteredEgress(egress);
+                          },
+                        };
+                      }}
+                      ref={egressTabEgressTableRef}
+                      rowSelection={{
+                        type: 'radio',
+                        hideSelectAll: true,
+                        selectedRowKeys: filteredEgress ? [filteredEgress.id] : [],
+                        onSelect: (record, selected) => {
+                          if (!selected) return;
+                          if (filteredEgress?.id === record.id) {
+                            setFilteredEgress(null);
+                          } else {
+                            setFilteredEgress(record);
+                          }
                         },
-                      };
-                    }}
-                    ref={egressTabEgressTableRef}
-                    rowSelection={{
-                      type: 'radio',
-                      hideSelectAll: true,
-                      selectedRowKeys: filteredEgress ? [filteredEgress.id] : [],
-                      onSelect: (record, selected) => {
-                        if (!selected) return;
-                        if (filteredEgress?.id === record.id) {
-                          setFilteredEgress(null);
-                        } else {
-                          setFilteredEgress(record);
-                        }
-                      },
-                    }}
-                  />
+                      }}
+                    />
+                  </div>
                 </Col>
               </Row>
             </Col>
@@ -2810,14 +2825,16 @@ export default function NetworkDetailsPage(props: PageProps) {
               </Row>
               <Row style={{ marginTop: '1rem' }}>
                 <Col xs={24}>
-                  <Table
-                    columns={externalRoutesTableCols}
-                    dataSource={filteredExternalRoutes}
-                    rowKey={(range) => `${range.node?.name ?? ''}-${range.range}`}
-                    scroll={{ x: true }}
-                    size="small"
-                    ref={egressTabExternalRoutesTableRef}
-                  />
+                  <div className="table-wrapper">
+                    <Table
+                      columns={externalRoutesTableCols}
+                      dataSource={filteredExternalRoutes}
+                      rowKey={(range) => `${range.node?.name ?? ''}-${range.range}`}
+                      scroll={{ x: true }}
+                      size="small"
+                      ref={egressTabExternalRoutesTableRef}
+                    />
+                  </div>
                 </Col>
               </Row>
             </Col>
@@ -2925,37 +2942,39 @@ export default function NetworkDetailsPage(props: PageProps) {
               </Row>
               <Row style={{ marginTop: '1rem' }}>
                 <Col xs={23}>
-                  <Table
-                    columns={relayTableCols}
-                    dataSource={filteredRelays}
-                    rowKey="id"
-                    size="small"
-                    rowClassName={(relay) => {
-                      return relay.id === selectedRelay?.id ? 'selected-row' : '';
-                    }}
-                    onRow={(relay) => {
-                      return {
-                        onClick: () => {
-                          setSelectedRelay(relay);
+                  <div className="table-wrapper">
+                    <Table
+                      columns={relayTableCols}
+                      dataSource={filteredRelays}
+                      rowKey="id"
+                      size="small"
+                      rowClassName={(relay) => {
+                        return relay.id === selectedRelay?.id ? 'selected-row' : '';
+                      }}
+                      onRow={(relay) => {
+                        return {
+                          onClick: () => {
+                            setSelectedRelay(relay);
+                          },
+                        };
+                      }}
+                      scroll={{ x: true }}
+                      ref={relaysTabRelayTableRef}
+                      rowSelection={{
+                        type: 'radio',
+                        hideSelectAll: true,
+                        selectedRowKeys: selectedRelay ? [selectedRelay.id] : [],
+                        onSelect: (record, selected) => {
+                          if (!selected) return;
+                          if (selectedRelay?.id === record.id) {
+                            setSelectedRelay(null);
+                          } else {
+                            setSelectedRelay(record);
+                          }
                         },
-                      };
-                    }}
-                    scroll={{ x: true }}
-                    ref={relaysTabRelayTableRef}
-                    rowSelection={{
-                      type: 'radio',
-                      hideSelectAll: true,
-                      selectedRowKeys: selectedRelay ? [selectedRelay.id] : [],
-                      onSelect: (record, selected) => {
-                        if (!selected) return;
-                        if (selectedRelay?.id === record.id) {
-                          setSelectedRelay(null);
-                        } else {
-                          setSelectedRelay(record);
-                        }
-                      },
-                    }}
-                  />
+                      }}
+                    />
+                  </div>
                 </Col>
               </Row>
             </Col>
@@ -2982,14 +3001,16 @@ export default function NetworkDetailsPage(props: PageProps) {
               </Row>
               <Row style={{ marginTop: '1rem' }}>
                 <Col xs={24}>
-                  <Table
-                    columns={relayedTableCols}
-                    dataSource={filteredRelayedNodes}
-                    rowKey="id"
-                    size="small"
-                    scroll={{ x: true }}
-                    ref={relaysTabRelayedHostsTableRef}
-                  />
+                  <div className="table-wrapper">
+                    <Table
+                      columns={relayedTableCols}
+                      dataSource={filteredRelayedNodes}
+                      rowKey="id"
+                      size="small"
+                      scroll={{ x: true }}
+                      ref={relaysTabRelayedHostsTableRef}
+                    />
+                  </div>
                 </Col>
               </Row>
             </Col>
@@ -3290,76 +3311,88 @@ export default function NetworkDetailsPage(props: PageProps) {
           <Col xs={24} style={{ paddingTop: '1rem' }}>
             <div className="" style={{ width: '100%', overflow: 'auto' }}>
               {currentMetric === 'connectivity-status' && (
-                <Table
-                  columns={metricsTableCols}
-                  dataSource={connectivityStatusMetricsData}
-                  className="connectivity-status-metrics-table"
-                  rowKey="nodeId"
-                  size="small"
-                  pagination={{ pageSize: 100 }}
-                  scroll={{ x: true }}
-                  ref={metricsTabConnectivityStatusTableRef}
-                />
+                <div className="table-wrapper">
+                  <Table
+                    columns={metricsTableCols}
+                    dataSource={connectivityStatusMetricsData}
+                    className="connectivity-status-metrics-table"
+                    rowKey="nodeId"
+                    size="small"
+                    pagination={{ pageSize: 100 }}
+                    scroll={{ x: true }}
+                    ref={metricsTabConnectivityStatusTableRef}
+                  />
+                </div>
               )}
               {currentMetric === 'latency' && (
-                <Table
-                  columns={metricsTableCols}
-                  dataSource={latencyMetricsData}
-                  className="latency-metrics-table"
-                  rowKey="nodeId"
-                  size="small"
-                  pagination={{ pageSize: 100 }}
-                  scroll={{ x: true }}
-                  ref={metricsTabLatencyTableRef}
-                />
+                <div className="table-wrapper">
+                  <Table
+                    columns={metricsTableCols}
+                    dataSource={latencyMetricsData}
+                    className="latency-metrics-table"
+                    rowKey="nodeId"
+                    size="small"
+                    pagination={{ pageSize: 100 }}
+                    scroll={{ x: true }}
+                    ref={metricsTabLatencyTableRef}
+                  />
+                </div>
               )}
               {currentMetric === 'bytes-sent' && (
-                <Table
-                  columns={metricsTableCols}
-                  dataSource={bytesSentMetricsData}
-                  className="bytes-sent-metrics-table"
-                  rowKey="nodeId"
-                  size="small"
-                  pagination={{ pageSize: 100 }}
-                  scroll={{ x: true }}
-                  ref={metricsTabBytesSentTableRef}
-                />
+                <div className="table-wrapper">
+                  <Table
+                    columns={metricsTableCols}
+                    dataSource={bytesSentMetricsData}
+                    className="bytes-sent-metrics-table"
+                    rowKey="nodeId"
+                    size="small"
+                    pagination={{ pageSize: 100 }}
+                    scroll={{ x: true }}
+                    ref={metricsTabBytesSentTableRef}
+                  />
+                </div>
               )}
               {currentMetric === 'bytes-received' && (
-                <Table
-                  columns={metricsTableCols}
-                  dataSource={bytesReceivedMetricsData}
-                  className="bytes-received-metrics-table"
-                  rowKey="nodeId"
-                  size="small"
-                  pagination={{ pageSize: 100 }}
-                  scroll={{ x: true }}
-                  ref={metricsTabBytesReceivedTableRef}
-                />
+                <div className="table-wrapper">
+                  <Table
+                    columns={metricsTableCols}
+                    dataSource={bytesReceivedMetricsData}
+                    className="bytes-received-metrics-table"
+                    rowKey="nodeId"
+                    size="small"
+                    pagination={{ pageSize: 100 }}
+                    scroll={{ x: true }}
+                    ref={metricsTabBytesReceivedTableRef}
+                  />
+                </div>
               )}
               {currentMetric === 'uptime' && (
-                <Table
-                  columns={metricsTableCols}
-                  dataSource={latencyMetricsData}
-                  className="latency-metrics-table"
-                  rowKey="nodeId"
-                  size="small"
-                  pagination={{ pageSize: 100 }}
-                  scroll={{ x: true }}
-                  ref={metricsTabUptimeTableRef}
-                />
+                <div className="table-wrapper">
+                  <Table
+                    columns={metricsTableCols}
+                    dataSource={latencyMetricsData}
+                    className="latency-metrics-table"
+                    rowKey="nodeId"
+                    size="small"
+                    pagination={{ pageSize: 100 }}
+                    scroll={{ x: true }}
+                    ref={metricsTabUptimeTableRef}
+                  />
+                </div>
               )}
               {currentMetric === 'clients' && (
-                <Table
-                  columns={clientMetricsTableCols}
-                  dataSource={clientsMetricsData}
-                  className="clients-metrics-table"
-                  rowKey="node_name"
-                  size="small"
-                  pagination={{ pageSize: 100 }}
-                  scroll={{ x: true }}
-                  ref={metricsTabClientsTableRef}
-                />
+                <div className="table-wrapper">
+                  <Table
+                    columns={clientMetricsTableCols}
+                    dataSource={clientsMetricsData}
+                    className="clients-metrics-table"
+                    rowKey="node_name"
+                    size="small"
+                    pagination={{ pageSize: 100 }}
+                    scroll={{ x: true }}
+                    ref={metricsTabClientsTableRef}
+                  />
+                </div>
               )}
             </div>
           </Col>
