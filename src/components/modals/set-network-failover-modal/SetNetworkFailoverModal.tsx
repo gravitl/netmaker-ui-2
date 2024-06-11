@@ -111,56 +111,57 @@ export default function SetNetworkFailoverModal({
           </Row>
           <Row style={{ marginTop: '1rem' }}>
             <Col xs={24}>
-              <div className="table-wrapper">
-                <Table
-                  size="small"
-                  dataSource={filteredNetworkNodes}
-                  columns={[
-                    {
-                      title: 'Host',
-                      dataIndex: 'name',
-                      sorter: (a, b) => a.name?.localeCompare(b.name || '') ?? 0,
-                      defaultSortOrder: 'ascend',
+              <Table
+                size="small"
+                dataSource={filteredNetworkNodes}
+                columns={[
+                  {
+                    title: 'Host',
+                    dataIndex: 'name',
+                    sorter: (a, b) => a.name?.localeCompare(b.name || '') ?? 0,
+                    defaultSortOrder: 'ascend',
+                  },
+                  network?.isipv4
+                    ? {
+                        title: 'Private Address (IPv4)',
+                        dataIndex: 'address',
+                      }
+                    : {},
+                  network?.isipv6
+                    ? {
+                        title: 'Private Address (IPv6)',
+                        dataIndex: 'address6',
+                      }
+                    : {},
+                  {
+                    title: 'Endpoint',
+                    dataIndex: 'endpointip',
+                    render: (_, node) => [node.endpointip, node.endpointipv6].filter(Boolean).join(', '),
+                  },
+                  {
+                    title: 'Public Port',
+                    dataIndex: 'listenport',
+                  },
+                  {
+                    title: 'Version',
+                    dataIndex: 'version',
+                  },
+                  {
+                    align: 'right',
+                    render(_, node) {
+                      return (
+                        <Button size="small" onClick={() => setAsNetworkFailover(node)}>
+                          Set as Failover
+                        </Button>
+                      );
                     },
-                    network?.isipv4
-                      ? {
-                          title: 'Private Address (IPv4)',
-                          dataIndex: 'address',
-                        }
-                      : {},
-                    network?.isipv6
-                      ? {
-                          title: 'Private Address (IPv6)',
-                          dataIndex: 'address6',
-                        }
-                      : {},
-                    {
-                      title: 'Endpoint',
-                      dataIndex: 'endpointip',
-                      render: (_, node) => [node.endpointip, node.endpointipv6].filter(Boolean).join(', '),
-                    },
-                    {
-                      title: 'Public Port',
-                      dataIndex: 'listenport',
-                    },
-                    {
-                      title: 'Version',
-                      dataIndex: 'version',
-                    },
-                    {
-                      align: 'right',
-                      render(_, node) {
-                        return (
-                          <Button size="small" onClick={() => setAsNetworkFailover(node)}>
-                            Set as Failover
-                          </Button>
-                        );
-                      },
-                    },
-                  ]}
-                  rowKey="id"
-                />
-              </div>
+                  },
+                ]}
+                rowKey="id"
+                scroll={{
+                  x: true,
+                }}
+              />
             </Col>
           </Row>
         </div>

@@ -395,20 +395,22 @@ export default function NetworksPage(props: PageProps) {
 
             <Row className="page-row-padding" justify="space-between">
               <Col xs={24}>
-                <Table
-                  columns={tableColumns}
-                  dataSource={filteredNetworks}
-                  rowKey="netid"
-                  scroll={{ x: true }}
-                  onRow={(network) => {
-                    return {
-                      onClick: () => {
-                        navigate(getNetworkRoute(network));
-                      },
-                    };
-                  }}
-                  ref={tableColumnsNameRow}
-                />
+                <div className="table-wrapper">
+                  <Table
+                    columns={tableColumns}
+                    dataSource={filteredNetworks}
+                    rowKey="netid"
+                    scroll={{ x: true }}
+                    onRow={(network) => {
+                      return {
+                        onClick: () => {
+                          navigate(getNetworkRoute(network));
+                        },
+                      };
+                    }}
+                    ref={tableColumnsNameRow}
+                  />
+                </div>
               </Col>
             </Row>
           </>

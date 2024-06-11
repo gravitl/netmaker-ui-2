@@ -141,6 +141,7 @@ export default function AddHostsToNetworkModal({
                     },
                   ]}
                   rowKey="id"
+                  scroll={{ x: true }}
                 />
               </div>
             </Col>

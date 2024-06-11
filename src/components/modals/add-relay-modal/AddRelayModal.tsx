@@ -191,24 +191,26 @@ export default function AddRelayModal({
                         </Row>
                         <Row>
                           <Col span={24}>
-                            <Table
-                              size="small"
-                              columns={relayTableCols}
-                              dataSource={filteredNetworkNodes}
-                              rowKey="id"
-                              onRow={(node) => {
-                                return {
-                                  onClick: () => {
-                                    if (!isNodeSelectable(node)) return;
-                                    form.setFieldValue(nodeIdFormName, node.id);
-                                    setSelectedRelay(node);
-                                  },
-                                };
-                              }}
-                              rowClassName={(node) => {
-                                return isNodeSelectable(node) ? '' : 'unavailable-row';
-                              }}
-                            />
+                            <div className="table-wrapper">
+                              <Table
+                                size="small"
+                                columns={relayTableCols}
+                                dataSource={filteredNetworkNodes}
+                                rowKey="id"
+                                onRow={(node) => {
+                                  return {
+                                    onClick: () => {
+                                      if (!isNodeSelectable(node)) return;
+                                      form.setFieldValue(nodeIdFormName, node.id);
+                                      setSelectedRelay(node);
+                                    },
+                                  };
+                                }}
+                                rowClassName={(node) => {
+                                  return isNodeSelectable(node) ? '' : 'unavailable-row';
+                                }}
+                              />
+                            </div>
                           </Col>
                         </Row>
                       </div>
@@ -273,62 +275,64 @@ export default function AddRelayModal({
                       </Row>
                       <Row>
                         <Col span={24}>
-                          <Table
-                            size="small"
-                            columns={relayedTableCols}
-                            rowKey="id"
-                            dataSource={[
-                              ...networkNodes
-                                .filter(
-                                  (node) => node.name?.toLocaleLowerCase().includes(relayedSearch.toLocaleLowerCase()),
-                                )
-                                .filter((h) => h.id !== selectedRelay.id),
-                            ].sort((a, b) =>
-                              // sort non-relayed hosts to the top
-                              isNodeRelay(a) === isNodeRelay(b) ? 0 : isNodeRelay(a) ? 1 : -1,
-                            )}
-                            onRow={(node) => {
-                              return {
-                                onClick: () => {
-                                  if (!isNodeSelectable(node)) return;
+                          <div className="table-wrapper">
+                            <Table
+                              size="small"
+                              columns={relayedTableCols}
+                              rowKey="id"
+                              dataSource={[
+                                ...networkNodes
+                                  .filter(
+                                    (node) => node.name?.toLocaleLowerCase().includes(relayedSearch.toLocaleLowerCase()),
+                                  )
+                                  .filter((h) => h.id !== selectedRelay.id),
+                              ].sort((a, b) =>
+                                // sort non-relayed hosts to the top
+                                isNodeRelay(a) === isNodeRelay(b) ? 0 : isNodeRelay(a) ? 1 : -1,
+                              )}
+                              onRow={(node) => {
+                                return {
+                                  onClick: () => {
+                                    if (!isNodeSelectable(node)) return;
+                                    setSelectedRelayedIds((prev) => {
+                                      const relayedNodesIds = new Set(prev);
+                                      if (relayedNodesIds.has(node.id)) {
+                                        relayedNodesIds.delete(node.id);
+                                      } else {
+                                        relayedNodesIds.add(node.id);
+                                      }
+                                      return [...relayedNodesIds];
+                                    });
+                                    setIsSelectOpen(false);
+                                  },
+                                };
+                              }}
+                              rowClassName={(node) => {
+                                if (!isNodeSelectable(node)) return 'unavailable-row';
+                                return selectedRelayedIds.includes(node.id) ? 'selected-row' : '';
+                              }}
+                              rowSelection={{
+                                type: 'checkbox',
+                                selectedRowKeys: selectedRelayedIds,
+                                hideSelectAll: true,
+                                onSelect: (record, selected) => {
+                                  if (!isNodeSelectable(record)) return;
                                   setSelectedRelayedIds((prev) => {
                                     const relayedNodesIds = new Set(prev);
-                                    if (relayedNodesIds.has(node.id)) {
-                                      relayedNodesIds.delete(node.id);
+                                    if (relayedNodesIds.has(record.id)) {
+                                      relayedNodesIds.delete(record.id);
                                     } else {
-                                      relayedNodesIds.add(node.id);
+                                      relayedNodesIds.add(record.id);
                                     }
                                     return [...relayedNodesIds];
                                   });
-                                  setIsSelectOpen(false);
                                 },
-                              };
-                            }}
-                            rowClassName={(node) => {
-                              if (!isNodeSelectable(node)) return 'unavailable-row';
-                              return selectedRelayedIds.includes(node.id) ? 'selected-row' : '';
-                            }}
-                            rowSelection={{
-                              type: 'checkbox',
-                              selectedRowKeys: selectedRelayedIds,
-                              hideSelectAll: true,
-                              onSelect: (record, selected) => {
-                                if (!isNodeSelectable(record)) return;
-                                setSelectedRelayedIds((prev) => {
-                                  const relayedNodesIds = new Set(prev);
-                                  if (relayedNodesIds.has(record.id)) {
-                                    relayedNodesIds.delete(record.id);
-                                  } else {
-                                    relayedNodesIds.add(record.id);
-                                  }
-                                  return [...relayedNodesIds];
-                                });
-                              },
-                              getCheckboxProps: (record) => {
-                                return { disabled: !isNodeSelectable(record) };
-                              },
-                            }}
-                          />
+                                getCheckboxProps: (record) => {
+                                  return { disabled: !isNodeSelectable(record) };
+                                },
+                              }}
+                            />
+                          </div>
                         </Col>
                       </Row>
                     </div>

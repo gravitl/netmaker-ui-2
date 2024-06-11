@@ -475,17 +475,19 @@ export default function HostDetailsPage(props: PageProps) {
         </Row>
         <Row style={{ marginTop: '1rem' }}>
           <Col xs={24}>
-            <Table
-              columns={interfacesTableCols}
-              dataSource={
-                host?.interfaces?.filter((iface) =>
-                  `${iface.name}${iface.addressString}`
-                    .toLocaleLowerCase()
-                    .includes(searchText.toLocaleLowerCase().trim()),
-                ) ?? []
-              }
-              rowKey={(iface) => `${iface.name}${iface.addressString}`}
-            />
+            <div className="table-wrapper">
+              <Table
+                columns={interfacesTableCols}
+                dataSource={
+                  host?.interfaces?.filter((iface) =>
+                    `${iface.name}${iface.addressString}`
+                      .toLocaleLowerCase()
+                      .includes(searchText.toLocaleLowerCase().trim()),
+                  ) ?? []
+                }
+                rowKey={(iface) => `${iface.name}${iface.addressString}`}
+              />
+            </div>
           </Col>
         </Row>
       </>

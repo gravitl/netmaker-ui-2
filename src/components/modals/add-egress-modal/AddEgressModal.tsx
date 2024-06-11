@@ -209,27 +209,29 @@ export default function AddEgressModal({
                           </Row>
                           <Row>
                             <Col span={24}>
-                              <Table
-                                size="small"
-                                columns={egressTableCols}
-                                dataSource={filteredNetworkHosts.sort((a, b) =>
-                                  isNodeSelectable(a) === isNodeSelectable(b) ? 0 : isNodeSelectable(a) ? -1 : 1,
-                                )}
-                                rowKey="id"
-                                onRow={(node) => {
-                                  return {
-                                    onClick: () => {
-                                      if (!isNodeSelectable(node)) return;
-                                      form.setFieldValue(idFormField, node.id);
-                                      setSelectedEgress(node);
-                                    },
-                                    title: !isNodeSelectable(node) ? 'This host is already an egress gateway' : '',
-                                  };
-                                }}
-                                rowClassName={(node) => {
-                                  return isNodeSelectable(node) ? '' : 'unavailable-row';
-                                }}
-                              />
+                              <div className="table-wrapper">
+                                <Table
+                                  size="small"
+                                  columns={egressTableCols}
+                                  dataSource={filteredNetworkHosts.sort((a, b) =>
+                                    isNodeSelectable(a) === isNodeSelectable(b) ? 0 : isNodeSelectable(a) ? -1 : 1,
+                                  )}
+                                  rowKey="id"
+                                  onRow={(node) => {
+                                    return {
+                                      onClick: () => {
+                                        if (!isNodeSelectable(node)) return;
+                                        form.setFieldValue(idFormField, node.id);
+                                        setSelectedEgress(node);
+                                      },
+                                      title: !isNodeSelectable(node) ? 'This host is already an egress gateway' : '',
+                                    };
+                                  }}
+                                  rowClassName={(node) => {
+                                    return isNodeSelectable(node) ? '' : 'unavailable-row';
+                                  }}
+                                />
+                              </div>
                             </Col>
                           </Row>
                         </div>

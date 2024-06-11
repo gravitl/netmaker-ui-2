@@ -377,31 +377,33 @@ export function InternetGatewaysPage({ network, activeTabKey }: InternetGateways
             </Row>
             <Row style={{ marginTop: '1rem' }}>
               <Col xs={23}>
-                <Table
-                  columns={internetGatewaysTableCols}
-                  dataSource={filteredInternetGateways}
-                  rowKey="id"
-                  size="small"
-                  scroll={{ x: true }}
-                  rowClassName={(gateway) => {
-                    return gateway.id === selectedGateway?.id ? 'selected-row' : '';
-                  }}
-                  onRow={(gateway) => {
-                    return {
-                      onClick: () => {
+                <div className="table-wrapper">
+                  <Table
+                    columns={internetGatewaysTableCols}
+                    dataSource={filteredInternetGateways}
+                    rowKey="id"
+                    size="small"
+                    scroll={{ x: true }}
+                    rowClassName={(gateway) => {
+                      return gateway.id === selectedGateway?.id ? 'selected-row' : '';
+                    }}
+                    onRow={(gateway) => {
+                      return {
+                        onClick: () => {
+                          setSelectedGateway(gateway);
+                        },
+                      };
+                    }}
+                    rowSelection={{
+                      type: 'radio',
+                      hideSelectAll: true,
+                      selectedRowKeys: selectedGateway ? [selectedGateway.id] : [],
+                      onSelect: (gateway) => {
                         setSelectedGateway(gateway);
                       },
-                    };
-                  }}
-                  rowSelection={{
-                    type: 'radio',
-                    hideSelectAll: true,
-                    selectedRowKeys: selectedGateway ? [selectedGateway.id] : [],
-                    onSelect: (gateway) => {
-                      setSelectedGateway(gateway);
-                    },
-                  }}
-                />
+                    }}
+                  />
+                </div>
               </Col>
             </Row>
           </Col>
@@ -427,13 +429,15 @@ export function InternetGatewaysPage({ network, activeTabKey }: InternetGateways
             </Row>
             <Row style={{ marginTop: '1rem' }}>
               <Col xs={24}>
-                <Table
-                  columns={connectedHostsTableCols}
-                  dataSource={filteredConnectedHosts}
-                  rowKey="id"
-                  size="small"
-                  scroll={{ x: true }}
-                />
+                <div className="table-wrapper">
+                  <Table
+                    columns={connectedHostsTableCols}
+                    dataSource={filteredConnectedHosts}
+                    rowKey="id"
+                    size="small"
+                    scroll={{ x: true }}
+                  />
+                </div>
               </Col>
             </Row>
           </Col>
