@@ -1,6 +1,6 @@
 # Netmaker UI release notes
 
-## Netmaker UI v0.24.2
+## Netmaker UI v0.24.3
 
 ## Whats New
 
