@@ -102,45 +102,48 @@ export default function AddHostsToNetworkModal({
           </Row>
           <Row style={{ marginTop: '1rem' }}>
             <Col xs={24}>
-              <Table
-                size="small"
-                dataSource={filteredNonNetworkHosts}
-                columns={[
-                  {
-                    title: 'Host',
-                    dataIndex: 'name',
-                    sorter: (a, b) => a.name.localeCompare(b.name),
-                    defaultSortOrder: 'ascend',
-                  },
-                  {
-                    title: 'Endpoint (IPv4)',
-                    dataIndex: 'endpointip',
-                  },
-                  {
-                    title: 'Endpoint (IPv6)',
-                    dataIndex: 'endpointipv6',
-                  },
-                  {
-                    title: 'Public Port',
-                    dataIndex: 'listenport',
-                  },
-                  {
-                    title: 'Version',
-                    dataIndex: 'version',
-                  },
-                  {
-                    align: 'right',
-                    render(_, host) {
-                      return (
-                        <Button size="small" onClick={() => connectHostToNetwork(host)}>
-                          Connect
-                        </Button>
-                      );
+              <div className="table-wrapper">
+                <Table
+                  size="small"
+                  dataSource={filteredNonNetworkHosts}
+                  columns={[
+                    {
+                      title: 'Host',
+                      dataIndex: 'name',
+                      sorter: (a, b) => a.name.localeCompare(b.name),
+                      defaultSortOrder: 'ascend',
                     },
-                  },
-                ]}
-                rowKey="id"
-              />
+                    {
+                      title: 'Endpoint (IPv4)',
+                      dataIndex: 'endpointip',
+                    },
+                    {
+                      title: 'Endpoint (IPv6)',
+                      dataIndex: 'endpointipv6',
+                    },
+                    {
+                      title: 'Public Port',
+                      dataIndex: 'listenport',
+                    },
+                    {
+                      title: 'Version',
+                      dataIndex: 'version',
+                    },
+                    {
+                      align: 'right',
+                      render(_, host) {
+                        return (
+                          <Button size="small" onClick={() => connectHostToNetwork(host)}>
+                            Connect
+                          </Button>
+                        );
+                      },
+                    },
+                  ]}
+                  rowKey="id"
+                  scroll={{ x: true }}
+                />
+              </div>
             </Col>
           </Row>
         </div>

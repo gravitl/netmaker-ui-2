@@ -390,21 +390,23 @@ export default function EnrollmentKeysPage(props: PageProps) {
 
             <Row className="page-row-padding" justify="space-between">
               <Col xs={24}>
-                <Table
-                  columns={tableColumns}
-                  dataSource={filteredKeys}
-                  rowKey="value"
-                  scroll={{ x: true }}
-                  onRow={(key) => {
-                    return {
-                      onClick: () => {
-                        setSelectedKey(key);
-                        setIsKeyDetailsModalOpen(true);
-                      },
-                    };
-                  }}
-                  ref={enrollmentKeysTableRef}
-                />
+                <div className="table-wrapper">
+                  <Table
+                    columns={tableColumns}
+                    dataSource={filteredKeys}
+                    rowKey="value"
+                    scroll={{ x: true }}
+                    onRow={(key) => {
+                      return {
+                        onClick: () => {
+                          setSelectedKey(key);
+                          setIsKeyDetailsModalOpen(true);
+                        },
+                      };
+                    }}
+                    ref={enrollmentKeysTableRef}
+                  />
+                </div>
               </Col>
             </Row>
           </>

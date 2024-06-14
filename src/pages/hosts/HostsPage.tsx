@@ -699,18 +699,20 @@ export default function HostsPage(props: PageProps) {
       <Skeleton loading={!hasLoaded && store.isFetchingHosts} active title={true} className="page-padding">
         <Row className="">
           <Col xs={24}>
-            <Table
-              columns={hostsTableColumns}
-              dataSource={filteredHosts}
-              rowKey="id"
-              scroll={{ x: true }}
-              onRow={(host) => ({
-                onClick: () => {
-                  navigate(getHostRoute(host));
-                },
-              })}
-              ref={hostsTableRef}
-            />
+            <div className="table-wrapper">
+              <Table
+                columns={hostsTableColumns}
+                dataSource={filteredHosts}
+                rowKey="id"
+                scroll={{ x: true }}
+                onRow={(host) => ({
+                  onClick: () => {
+                    navigate(getHostRoute(host));
+                  },
+                })}
+                ref={hostsTableRef}
+              />
+            </div>
           </Col>
         </Row>
       </Skeleton>
@@ -732,25 +734,27 @@ export default function HostsPage(props: PageProps) {
               </Row>
               <Row style={{ marginTop: '1rem' }}>
                 <Col xs={23}>
-                  <Table
-                    columns={namHostsTableCols}
-                    dataSource={filteredHosts}
-                    rowKey="id"
-                    size="small"
-                    scroll={{ x: true }}
-                    rowClassName={(host) => {
-                      return host.id === selectedHost?.id ? 'selected-row' : '';
-                    }}
-                    onRow={(host) => {
-                      return {
-                        onClick: () => {
-                          if (selectedHost?.id === host.id) setSelectedHost(null);
-                          else setSelectedHost(host);
-                        },
-                      };
-                    }}
-                    ref={networkAccessManagementTabHostsTableRef}
-                  />
+                  <div className="table-wrapper">
+                    <Table
+                      columns={namHostsTableCols}
+                      dataSource={filteredHosts}
+                      rowKey="id"
+                      size="small"
+                      scroll={{ x: true }}
+                      rowClassName={(host) => {
+                        return host.id === selectedHost?.id ? 'selected-row' : '';
+                      }}
+                      onRow={(host) => {
+                        return {
+                          onClick: () => {
+                            if (selectedHost?.id === host.id) setSelectedHost(null);
+                            else setSelectedHost(host);
+                          },
+                        };
+                      }}
+                      ref={networkAccessManagementTabHostsTableRef}
+                    />
+                  </div>
                 </Col>
               </Row>
             </Col>
@@ -764,14 +768,16 @@ export default function HostsPage(props: PageProps) {
               </Row>
               <Row style={{ marginTop: '1rem' }}>
                 <Col xs={24}>
-                  <Table
-                    columns={networksTableCols}
-                    dataSource={filteredNetworks}
-                    scroll={{ x: true }}
-                    rowKey="netid"
-                    size="small"
-                    ref={networkAccessManagementTabNetworksTableRef}
-                  />
+                  <div className="table-wrapper">
+                    <Table
+                      columns={networksTableCols}
+                      dataSource={filteredNetworks}
+                      scroll={{ x: true }}
+                      rowKey="netid"
+                      size="small"
+                      ref={networkAccessManagementTabNetworksTableRef}
+                    />
+                  </div>
                 </Col>
               </Row>
             </Col>
