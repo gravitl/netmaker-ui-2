@@ -237,7 +237,7 @@ export const UsecaseQuestionsAll: UsecaseQuestions[] = [
       This will allow all devices on your network to connect to the VPN.`,
     question2: 'Add additional addresses to route through the router',
     answer1Placeholder: 'Select a host to act as the gateway to the network for the router',
-    answer2Placeholder: 'Additional addresses to route through the router',
+    answer2Placeholder: 'Specify the local LAN address behind the router',
     secondSelectMode: 'tags',
   },
   {
@@ -246,7 +246,7 @@ export const UsecaseQuestionsAll: UsecaseQuestions[] = [
     answers: [],
     type: 'select',
     descriptionTitle: 'Netclient Configuration',
-    description: `If you have a device that supports WireGuard, you can add the configuration here. 
+    description: `If you have a device that supports WireGuard, you can setup netclient on the device. 
       This will allow the device to connect to the VPN.`,
   },
   {
@@ -296,6 +296,6 @@ export const UsecaseKeyStringToTextMapForReview: UsecaseKeyStringToTextMap = {
   ranges: 'Your egress ranges?',
   connect_to_site: 'Your connection method?',
   router: 'Your router configuration?',
-  netclient: 'The netclient configuration?',
+  netclient: 'Your selected device',
   hosts: 'Hosts added to the network',
 };
