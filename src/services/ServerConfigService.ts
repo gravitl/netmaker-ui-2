@@ -12,7 +12,7 @@ function getServerStatus() {
 }
 
 /**
- * Obtains the current UI version from package.json. This function returns the semver version prepended with 'v'. Eg: v0.24.2
+ * Obtains the current UI version from package.json. This function returns the semver version prepended with 'v'. Eg: v0.24.3
  * It returns 'latest' if the version field is not specified in package.json
  *
  * @returns current version of UI
