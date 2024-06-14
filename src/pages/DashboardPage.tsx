@@ -36,7 +36,16 @@ import { useBranding } from '@/utils/Utils';
 import QuickSetupModal from '@/components/modals/quick-setup-modal/QuickSetupModal';
 import { UsecaseQuestionKey } from '@/constants/NetworkUseCases';
 
-export type TourType = 'relays' | 'egress' | 'remoteaccess' | 'networks' | 'hosts' | 'quicksetup';
+export type TourType =
+  | 'relays'
+  | 'egress'
+  | 'remoteaccess'
+  | 'networks'
+  | 'hosts'
+  | 'quicksetup'
+  | 'remoteaccess_specificmachines'
+  | 'remoteaccess_withegress'
+  | 'internetgateway';
 
 export default function DashboardPage(props: PageProps) {
   const navigate = useNavigate();
@@ -51,7 +60,7 @@ export default function DashboardPage(props: PageProps) {
   const [isQuickSetupModalOpen, setIsQuickSetupModalOpen] = useState(false);
   const [notify, notifyCtx] = notification.useNotification();
 
-  const jumpToTourPage = (tourType: TourType, questionKeys?: UsecaseQuestionKey[]) => {
+  const jumpToTourPage = (tourType: TourType, netId?: string) => {
     if (store.networks.length === 0) {
       notification.warning({
         message: 'No networks',
@@ -83,13 +92,10 @@ export default function DashboardPage(props: PageProps) {
       case 'hosts':
         navigate(resolveAppRoute(AppRoutes.HOSTS_ROUTE), { state: { startTour: 'hosts' } });
         break;
-      case 'quicksetup':
-        if (questionKeys) {
-          const netId = questionKeys.find((q) => q === 'networks');
-          navigate(resolveAppRoute(`${AppRoutes.NETWORKS_ROUTE}/${netId}`), {
-            state: { startTour: 'quicksetup', questionKeys: questionKeys },
-          });
-        }
+      default:
+        navigate(resolveAppRoute(`${AppRoutes.NETWORKS_ROUTE}/${netId}`), {
+          state: { startTour: tourType },
+        });
         break;
     }
   };

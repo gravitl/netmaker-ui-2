@@ -50,7 +50,7 @@ interface ModalProps {
   notify: NotificationInstance;
   handleUpgrade: () => void;
   networkId?: string;
-  jumpToTourStep: (step: TourType) => void;
+  jumpToTourStep: (step: TourType, netId?: string) => void;
 }
 
 interface RangesFormFields {
@@ -132,6 +132,8 @@ export default function QuickSetupModal(props: ModalProps) {
   const [isAddHostsToNetworkModalOpen, setIsAddHostsToNetworkModalOpen] = useState<boolean>(false);
   const [isNextLoading, setIsNextLoading] = useState<boolean>(false);
   const [egressNodeId, setEgressNodeId] = useState<string>('');
+  const [tourType, setTourType] = useState<TourType>('remoteaccess_specificmachines');
+
   const [form] = Form.useForm<RangesFormFields>();
 
   const networkNodes = useMemo(
@@ -202,6 +204,7 @@ export default function QuickSetupModal(props: ModalProps) {
         const questions = UsecaseQuestionsAll.filter((question) =>
           InternetGatewayUsecaseQuestions.includes(question.key as UsecaseQuestionKey),
         );
+        setTourType('internetgateway');
         setUserQuestions(questions);
       } else if (answer === 'connect_to_site') {
         const questions = UsecaseQuestionsAll.filter((question) =>
@@ -212,16 +215,17 @@ export default function QuickSetupModal(props: ModalProps) {
     }
 
     if (currentQuestion.key === 'usecase') {
-      console.log(answer);
       if (answer === 'specific_machines') {
         const questions = UsecaseQuestionsAll.filter((question) =>
           RemoteAccessUsecaseQuestions.includes(question.key as UsecaseQuestionKey),
         );
+        setTourType('remoteaccess_specificmachines');
         setUserQuestions(questions);
       } else {
         const questions = UsecaseQuestionsAll.filter((question) =>
           RemoteAccessUsecaseWithEgressQuestions.includes(question.key as UsecaseQuestionKey),
         );
+        setTourType('remoteaccess_withegress');
         setUserQuestions(questions);
       }
     }
@@ -249,7 +253,6 @@ export default function QuickSetupModal(props: ModalProps) {
   };
 
   const handleNextQuestion = async () => {
-    console.log('userQuestionsAsked', userQuestionsAsked);
     // if current question has no answer return and notify user
     if (!currentQuestion.selectedAnswer && currentQuestion.key !== 'ranges' && currentQuestion.key !== 'hosts') {
       props.notify.error({ message: 'Please select an answer' });
@@ -358,7 +361,6 @@ export default function QuickSetupModal(props: ModalProps) {
     } else if (currentQuestion.key === 'router') {
       const answer = currentQuestion.selectedAnswer as Node['id'];
       const isAnswerARemoteAccessGateway = networkNodes.find((gateway) => gateway.id === answer)?.isingressgateway;
-      console.log(currentQuestion.selectedAnswer2);
       if (isAnswerARemoteAccessGateway) {
         try {
           setIsNextLoading(true);
@@ -422,6 +424,7 @@ export default function QuickSetupModal(props: ModalProps) {
       store.updateNetworkUsecaseQuestionAndAnswer(networkId, userQuestionsAsked);
       props.notify.success({ message: 'Network setup complete' });
       resetModal();
+      props.jumpToTourStep(tourType, networkId);
       props.handleCancel();
       return;
     }
@@ -702,13 +705,16 @@ export default function QuickSetupModal(props: ModalProps) {
       const questionText = UsecaseKeyStringToTextMapForReview[question.questionKey];
       const answerText = getAnswerText(question.answer);
       const answerText2 = getAnswerText(question.answer2);
-      return (
-        <div key={question.index}>
-          <Typography.Title level={5}>{questionText}</Typography.Title>
-          <Typography.Paragraph>{answerText}</Typography.Paragraph>
-          <Typography.Paragraph>{answerText2}</Typography.Paragraph>
-        </div>
-      );
+      return {
+        // label: questionText,
+        children: (
+          <>
+            {questionText && <Typography.Paragraph strong>{questionText}</Typography.Paragraph>}
+            {answerText && <Typography.Text>{answerText}</Typography.Text>}
+            {answerText2 && <Typography.Text>{answerText2}</Typography.Text>}
+          </>
+        ),
+      };
     });
   }, [currentQuestion, userQuestionsAsked]);
 
@@ -926,13 +932,7 @@ export default function QuickSetupModal(props: ModalProps) {
                   </>
                 )}
 
-                {currentQuestion && currentQuestion.key === 'review' && (
-                  <Timeline>
-                    {reviewItems.map((item, i) => (
-                      <Timeline.Item key={i}>{item}</Timeline.Item>
-                    ))}
-                  </Timeline>
-                )}
+                {currentQuestion && currentQuestion.key === 'review' && <Timeline items={reviewItems} />}
 
                 {getQuickLink}
                 <div

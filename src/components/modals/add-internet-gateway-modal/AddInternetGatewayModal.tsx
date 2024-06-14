@@ -33,6 +33,8 @@ interface AddInternetGatewayModalProps {
   closeModal?: () => void;
   onOk?: (e: MouseEvent<HTMLButtonElement>) => void;
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
+  selectHostRef?: React.RefObject<HTMLDivElement>;
+  selectConnectedHostsRef?: React.RefObject<HTMLDivElement>;
 }
 
 const nodeIdFormName = 'nodeid';
@@ -46,6 +48,8 @@ export default function AddInternetGatewayModal({
   onCreateInternetGateway,
   onCancel,
   networkId,
+  selectConnectedHostsRef,
+  selectHostRef,
 }: AddInternetGatewayModalProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
@@ -153,98 +157,99 @@ export default function AddInternetGatewayModal({
       <Divider style={{ margin: '0px 0px 2rem 0px' }} />
       <Form name="add-internet-gateway-form" form={form} layout="vertical">
         <div className="CustomModalBody">
-          <Form.Item
-            label="Select host (Linux only)"
-            name={nodeIdFormName}
-            rules={[{ required: true, message: 'Please select a host' }]}
-            data-nmui-intercom="add-internet-gateway-form_nodeid"
-          >
-            {!selectedGateway && (
-              <Select
-                placeholder="Select host"
-                dropdownRender={() => (
-                  <div style={{ padding: '.5rem' }}>
-                    <Row style={{ marginBottom: '1rem' }}>
-                      <Col span={8}>
-                        <Input
-                          placeholder="Search host..."
-                          value={gatewaySearch}
-                          onChange={(e) => setGatewaySearch(e.target.value)}
-                          prefix={<SearchOutlined />}
-                        />
-                      </Col>
-                    </Row>
-                    <Row>
-                      <Col span={24}>
-                        <div className="table-wrapper">
-                          <Table
-                            size="small"
-                            columns={gatewayTableCols}
-                            dataSource={filteredNetworkNodes
-                              .filter((node) => node.os === 'linux')
-                              .sort((a, b) =>
-                                // sort unconnected hosts to the top
-                                !!a.internetgw_node_id && !!b.internetgw_node_id ? 0 : a.internetgw_node_id ? 1 : -1,
-                              )}
-                            rowKey="id"
-                            onRow={(node) => {
-                              return {
-                                onClick: () => {
-                                  if (!isNodeSelectable(node)) return;
-                                  form.setFieldValue(nodeIdFormName, node.id);
-                                  setSelectedGateway(node);
-                                },
-                                title: !isNodeSelectable(node)
-                                  ? 'Host is already connected to an internet gateway or is an internet gateway itself'
-                                  : '',
-                              };
-                            }}
-                            rowClassName={(node) => {
-                              return isNodeSelectable(node) ? '' : 'unavailable-row';
-                            }}
+          <div ref={selectHostRef}>
+            <Form.Item
+              label="Select host (Linux only)"
+              name={nodeIdFormName}
+              rules={[{ required: true, message: 'Please select a host' }]}
+              data-nmui-intercom="add-internet-gateway-form_nodeid"
+            >
+              {!selectedGateway && (
+                <Select
+                  placeholder="Select host"
+                  dropdownRender={() => (
+                    <div style={{ padding: '.5rem' }}>
+                      <Row style={{ marginBottom: '1rem' }}>
+                        <Col span={8}>
+                          <Input
+                            placeholder="Search host..."
+                            value={gatewaySearch}
+                            onChange={(e) => setGatewaySearch(e.target.value)}
+                            prefix={<SearchOutlined />}
                           />
-                        </div>
-                      </Col>
-                    </Row>
-                  </div>
-                )}
-                onDropdownVisibleChange={(open) => setIsDropDownOpen(open)}
-                suffixIcon={isDropDownOpen ? <UpOutlined /> : <DownOutlined />}
-              />
-            )}
-            {!!selectedGateway && (
-              <>
-                <Row
-                  style={{
-                    border: `1px solid ${themeToken.colorBorder}`,
-                    padding: '.5rem',
-                    borderRadius: '8px',
-                  }}
-                >
-                  <Col span={6}>{selectedGateway?.name ?? ''}</Col>
-                  <Col span={6}>{selectedGateway?.address ?? ''}</Col>
-                  <Col span={6}>{selectedGateway?.endpointip ?? ''}</Col>
-                  <Col span={5}>{selectedGateway && getNodeConnectivity(selectedGateway)}</Col>
-                  <Col span={1} style={{ textAlign: 'right' }}>
-                    <Button
-                      danger
-                      size="small"
-                      title="Unselect"
-                      type="primary"
-                      icon={<CloseOutlined />}
-                      onClick={() => {
-                        form.setFieldValue(nodeIdFormName, '');
-                        setSelectedGateway(null);
-                      }}
-                    />
-                  </Col>
-                </Row>
-              </>
-            )}
-          </Form.Item>
-
+                        </Col>
+                      </Row>
+                      <Row>
+                        <Col span={24}>
+                          <div className="table-wrapper">
+                            <Table
+                              size="small"
+                              columns={gatewayTableCols}
+                              dataSource={filteredNetworkNodes
+                                .filter((node) => node.os === 'linux')
+                                .sort((a, b) =>
+                                  // sort unconnected hosts to the top
+                                  !!a.internetgw_node_id && !!b.internetgw_node_id ? 0 : a.internetgw_node_id ? 1 : -1,
+                                )}
+                              rowKey="id"
+                              onRow={(node) => {
+                                return {
+                                  onClick: () => {
+                                    if (!isNodeSelectable(node)) return;
+                                    form.setFieldValue(nodeIdFormName, node.id);
+                                    setSelectedGateway(node);
+                                  },
+                                  title: !isNodeSelectable(node)
+                                    ? 'Host is already connected to an internet gateway or is an internet gateway itself'
+                                    : '',
+                                };
+                              }}
+                              rowClassName={(node) => {
+                                return isNodeSelectable(node) ? '' : 'unavailable-row';
+                              }}
+                            />
+                          </div>
+                        </Col>
+                      </Row>
+                    </div>
+                  )}
+                  onDropdownVisibleChange={(open) => setIsDropDownOpen(open)}
+                  suffixIcon={isDropDownOpen ? <UpOutlined /> : <DownOutlined />}
+                />
+              )}
+              {!!selectedGateway && (
+                <>
+                  <Row
+                    style={{
+                      border: `1px solid ${themeToken.colorBorder}`,
+                      padding: '.5rem',
+                      borderRadius: '8px',
+                    }}
+                  >
+                    <Col span={6}>{selectedGateway?.name ?? ''}</Col>
+                    <Col span={6}>{selectedGateway?.address ?? ''}</Col>
+                    <Col span={6}>{selectedGateway?.endpointip ?? ''}</Col>
+                    <Col span={5}>{selectedGateway && getNodeConnectivity(selectedGateway)}</Col>
+                    <Col span={1} style={{ textAlign: 'right' }}>
+                      <Button
+                        danger
+                        size="small"
+                        title="Unselect"
+                        type="primary"
+                        icon={<CloseOutlined />}
+                        onClick={() => {
+                          form.setFieldValue(nodeIdFormName, '');
+                          setSelectedGateway(null);
+                        }}
+                      />
+                    </Col>
+                  </Row>
+                </>
+              )}
+            </Form.Item>
+          </div>
           {selectedGateway && (
-            <>
+            <div ref={selectConnectedHostsRef}>
               <Form.Item
                 label="Select hosts to connect (optional)"
                 data-nmui-intercom="add-internet-gateway-form_connected-hosts"
@@ -362,7 +367,7 @@ export default function AddInternetGatewayModal({
                   </Col>
                 </Row>
               ))}
-            </>
+            </div>
           )}
         </div>
 
