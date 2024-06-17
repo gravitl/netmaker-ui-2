@@ -37,7 +37,7 @@
     "i18next": "^23.11.5",
     "immer": "^10.1.1",
     "lodash": "^4.17.21",
-    "rc-virtual-list": "^3.11.4",
+    "rc-virtual-list": "^3.14.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-i18next": "^14.1.1",
