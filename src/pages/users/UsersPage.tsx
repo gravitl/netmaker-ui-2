@@ -42,10 +42,14 @@ import { isSaasBuild } from '@/services/BaseService';
 import { getAmuiUrl } from '@/utils/RouteUtils';
 import TransferSuperAdminRightsModal from '@/components/modals/transfer-super-admin-rights/TransferSuperAdminRightsModal';
 import { useBranding } from '@/utils/Utils';
+import RolesPage from './RolesPage';
+import GroupsPage from './GroupsPage';
 
 const USERS_DOCS_URL = 'https://docs.netmaker.io/pro/pro-users.html';
 
 const usersTabKey = 'users';
+const rolesTabKey = 'roles';
+const groupsTabKey = 'groups';
 const pendingUsersTabKey = 'pending-users';
 const defaultTabKey = usersTabKey;
 
@@ -267,9 +271,15 @@ export default function UsersPage(props: PageProps) {
         defaultSortOrder: 'ascend',
       },
       {
-        title: 'Role',
+        title: 'Platform Role',
         render(_, user) {
-          return <Tag color={getUserTagColor(user)}>{getUserTagText(user)}</Tag>;
+          return 'superadmin';
+        },
+      },
+      {
+        title: 'Groups',
+        render(_, user) {
+          return 'all';
         },
       },
       {
@@ -416,9 +426,25 @@ export default function UsersPage(props: PageProps) {
             <Button size="large" onClick={() => loadUsers()} style={{ marginRight: '0.5em' }}>
               <ReloadOutlined /> Reload users
             </Button>
-            <Button type="primary" size="large" onClick={onAddUser} ref={addUserButtonRef}>
+            {/* <Button type="primary" size="large" onClick={onAddUser} ref={addUserButtonRef}>
               <PlusOutlined /> Add a User
-            </Button>
+            </Button> */}
+            <Dropdown.Button
+              size="large"
+              type="primary"
+              onClick={onAddUser}
+              menu={{
+                items: [
+                  {
+                    key: '',
+                    label: 'Add a User',
+                    onClick: () => {},
+                  },
+                ],
+              }}
+            >
+              Invite User
+            </Dropdown.Button>
             <Button
               title="Go to Users documentation"
               style={{ marginLeft: '0.5rem' }}
@@ -516,24 +542,28 @@ export default function UsersPage(props: PageProps) {
   ]);
 
   const tabs: TabsProps['items'] = useMemo(
-    () =>
-      [
-        {
-          key: usersTabKey,
-          label: 'Users',
-          children: getUsersContent(),
-        },
-      ].concat(
-        isSaasBuild
-          ? []
-          : [
-              {
-                key: pendingUsersTabKey,
-                label: `Pending Users (${pendingUsers.length})`,
-                children: getPendingUsersContent(),
-              },
-            ],
-      ),
+    () => [
+      {
+        key: usersTabKey,
+        label: 'Users',
+        children: getUsersContent(),
+      },
+      {
+        key: rolesTabKey,
+        label: 'Roles',
+        children: <RolesPage isFullScreen />,
+      },
+      {
+        key: groupsTabKey,
+        label: 'Groups',
+        children: <GroupsPage isFullScreen />,
+      },
+      {
+        key: pendingUsersTabKey,
+        label: `Pending Users (${pendingUsers.length})`,
+        children: getPendingUsersContent(),
+      },
+    ],
     [getPendingUsersContent, getUsersContent, pendingUsers.length],
   );
 
@@ -628,19 +658,18 @@ export default function UsersPage(props: PageProps) {
             >
               <Col xs={24} xl={(24 * 2) / 3}>
                 <Typography.Title level={3} style={{ color: 'white ' }}>
-                  Users
+                  User Management
                 </Typography.Title>
                 <Typography.Text style={{ color: 'white ' }}>
-                  {branding.productName} allows you to perform Identity and Access Management (IAM) with users. You can
-                  create multiple profiles and restrict access to networks.
+                  {branding.productName} allows you to perform Identity and Access Management (IAM) with users, roles
+                  and groups. You can create multiple users, assign them roles and groups to restrict access to
+                  networks, devices and other resources.
                 </Typography.Text>
               </Col>
               <Col xs={24} xl={(24 * 1) / 3} style={{ position: 'relative' }}>
                 <Card className="header-card" style={{ height: '20rem', position: 'absolute', width: '100%' }}>
                   <Typography.Title level={3}>Add a User</Typography.Title>
-                  <Typography.Text>
-                    Users access the {branding.productName} UI to configure their networks.
-                  </Typography.Text>
+                  <Typography.Text>Users can access the this dashboard to configure their networks.</Typography.Text>
                   <Row style={{ marginTop: 'auto' }}>
                     <Col>
                       <Button type="primary" size="large" onClick={onAddUser}>
@@ -663,19 +692,19 @@ export default function UsersPage(props: PageProps) {
                     Manage access to {branding.productName}
                   </Typography.Title>
                   <Typography.Text>
-                    {branding.productName} allows you to perform Identity and Access Management (IAM) with users. You
-                    can create multiple profiles and restrict access to networks.
+                    {branding.productName} allows you to perform Identity and Access Management (IAM) with users, roles
+                    and groups. You can create multiple profiles and restrict access to networks.
                   </Typography.Text>
                 </Card>
               </Col>
               <Col xs={24} xl={7} style={{ marginRight: '1rem' }}>
                 <Card>
                   <Typography.Title level={4} style={{ marginTop: '0px' }}>
-                    User Groups
+                    User Groups and Roles
                   </Typography.Title>
                   <Typography.Text>
-                    Easily manage access to a {branding.productName} resources by creating user groups. You can create
-                    multiple groups and assign users to them, then control access to the groups. This is a{' '}
+                    Easily manage access to a {branding.productName} resources by creating user groups and roles. You
+                    can create multiple groups and assign users to them, then control access to the groups. This is a{' '}
                     <a href={getAmuiUrl('upgrade')} referrerPolicy="no-referrer">
                       Pro
                     </a>{' '}
@@ -701,7 +730,7 @@ export default function UsersPage(props: PageProps) {
           <>
             <Row className="page-row-padding">
               <Col xs={24}>
-                <Typography.Title level={3}>Users</Typography.Title>
+                <Typography.Title level={3}>User Management</Typography.Title>
               </Col>
             </Row>
 

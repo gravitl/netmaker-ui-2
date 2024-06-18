@@ -143,7 +143,7 @@ export default function MainLayout() {
                 {
                   key: 'users',
                   icon: UserOutlined,
-                  label: 'Users',
+                  label: 'User Management',
                 },
               ]
             : [],
