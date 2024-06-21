@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  AppstoreOutlined,
   CloudSyncOutlined,
   DatabaseOutlined,
   GlobalOutlined,
@@ -127,11 +128,11 @@ export default function MainLayout() {
                 {
                   key: 'amui',
                   icon: UserOutlined,
-                  label: 'Manage Account',
+                  label: 'Manage Tenant',
                 },
                 {
                   key: 'amuitenants',
-                  icon: RightOutlined,
+                  icon: AppstoreOutlined,
                   label: 'Tenants',
                 },
               ]
