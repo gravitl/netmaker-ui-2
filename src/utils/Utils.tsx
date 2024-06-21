@@ -405,9 +405,14 @@ export const isManagedHost = (name: string): boolean => {
   // check if host name matches the pattern: tenant-<TENANT_ID>-mgm-endpoint-<SOME_UUID>
   // check if host name starts with tenant-
   // check if host name has -mgm-endpoint-
+  // check if host name matches the pattern: managed-endpoint-<REGION>-<NUMBER>
+  // check if host name starts with managed-endpoint-
+  // check if host name has a number at the end
   const regex1 = /^tenant-/;
   const regex2 = /-mgm-endpoint-/;
-  return regex1.test(name) && regex2.test(name);
+  const regex3 = /^managed-endpoint-/;
+  const regex4 = /\d+$/;
+  return (regex1.test(name) && regex2.test(name)) || (regex3.test(name) && regex4.test(name));
 };
 
 const validateIfHostNameIsNotManagedHost = (_: any, value: string) => {
