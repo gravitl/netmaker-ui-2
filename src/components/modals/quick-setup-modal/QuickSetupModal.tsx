@@ -637,6 +637,36 @@ export default function QuickSetupModal(props: ModalProps) {
             showIcon
           />
         )}
+        {currentQuestion.key === 'connect_to_site' && currentQuestion.selectedAnswer === 'router' && (
+          <Alert
+            message={
+              <>
+                Visit{' '}
+                <a href={ExternalLinks.INTEGRATING_NON_NATIVE_DEVICES_LINK} target="_blank" rel="noreferrer">
+                  our docs{' '}
+                </a>{' '}
+                to find out how to integrate a router
+              </>
+            }
+            type="info"
+            showIcon
+          />
+        )}
+        {currentQuestion.key === 'connect_to_site' && currentQuestion.selectedAnswer === 'route_via_netclient' && (
+          <Alert
+            message={
+              <>
+                Visit{' '}
+                <a href={ExternalLinks.ROUTE_LOCAL_NETWORK_TRAFFIC_LINK} target="_blank" rel="noreferrer">
+                  our docs{' '}
+                </a>{' '}
+                to find out how to route local network traffic through netclient
+              </>
+            }
+            type="info"
+            showIcon
+          />
+        )}
       </>
     );
   }, [currentQuestion]);

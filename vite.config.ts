@@ -4,7 +4,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-const assetBasePath = '###ASSET_BASE_PATH###';
+const assetBasePath = '/';
 
 // https://vitejs.dev/config/
 export default defineConfig({
