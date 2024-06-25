@@ -78,7 +78,7 @@ export default function LoginPage(props: LoginPageProps) {
     } catch (err) {
       const errorMessage = extractErrorMsg(err as any);
       notify.error({ message: 'Failed to login', description: errorMessage });
-      checkLoginErrorMessage(errorMessage);
+      // checkLoginErrorMessage(errorMessage);
     } finally {
       setIsBasicAuthLoading(false);
     }

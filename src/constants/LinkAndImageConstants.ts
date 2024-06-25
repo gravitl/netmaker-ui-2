@@ -2,6 +2,7 @@ const RAC_LINK = 'https://docs.netmaker.io/pro/rac.html';
 const WIREGUARD_LINK = 'https://docs.netmaker.io/integrating-non-native-devices.html';
 const PRO_UPGRADE_DOCS_LINK = 'https://docs.netmaker.io/pro/pro-setup.html';
 const RAC_DOWNLOAD_DOCS_LINK = 'https://docs.netmaker.io/pro/rac.html#download-installation';
+const USER_MGMT_DOCS_URL = 'https://docs.netmaker.io/#';
 
 const EGRESS_IMG = '/egress.webp';
 const RAG_IMG = '/rag.webp';
@@ -12,6 +13,7 @@ export const ExternalLinks = {
   WIREGUARD_LINK,
   PRO_UPGRADE_DOCS_LINK,
   RAC_DOWNLOAD_DOCS_LINK,
+  USER_MGMT_DOCS_URL,
 };
 
 export const AppImages = {
