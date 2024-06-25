@@ -1,6 +1,7 @@
 import { Host } from '@/models/Host';
 import { Node } from '@/models/Node';
 import { ProSettings } from '@/models/ProSettings';
+import { NewUser } from '@/models/User';
 
 export const NULL_HOST: Host = {
   id: '',
@@ -81,3 +82,47 @@ export const NULL_NETWORK_PROSETTINGS: ProSettings = {
 };
 
 export const NULL_NODE_ID = '00000000-0000-0000-0000-000000000000';
+
+export const mockNewUserWithGroup: NewUser = {
+  username: 'mock-user',
+  groups: ['all'],
+  platformRole: {
+    id: '1',
+    name: 'platform-admin',
+    type: 'platform',
+    permissions: ['superadmin'],
+  },
+  networkRoles: [
+    {
+      id: '1',
+      name: 'network-admin',
+      type: 'network',
+      permissions: ['network-admin'],
+    },
+  ],
+};
+
+export const mockNewUserWithoutGroup: NewUser = {
+  username: 'mock-user',
+  groups: [],
+  platformRole: {
+    id: '1',
+    name: 'platform-admin',
+    type: 'platform',
+    permissions: ['superadmin'],
+  },
+  networkRoles: [
+    {
+      id: '1',
+      name: 'network-admin',
+      type: 'network',
+      permissions: ['network-admin'],
+    },
+    {
+      id: '1',
+      name: 'network-user',
+      type: 'network',
+      permissions: ['network-user'],
+    },
+  ],
+};

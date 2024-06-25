@@ -25,6 +25,7 @@ import {
   TableColumnsType,
   Tabs,
   TabsProps,
+  Tag,
   Tour,
   TourProps,
   Typography,
@@ -43,18 +44,14 @@ import TransferSuperAdminRightsModal from '@/components/modals/transfer-super-ad
 import { useBranding } from '@/utils/Utils';
 import RolesPage from './RolesPage';
 import GroupsPage from './GroupsPage';
-import UserDetailsModal from '@/components/modals/user-details-modal/UserDetailsModal';
-import { mockNewUserWithGroup, mockNewUserWithoutGroup } from '@/constants/Types';
 
 const USERS_DOCS_URL = 'https://docs.netmaker.io/pro/pro-users.html';
 
-const usersTabKey = 'users';
-const rolesTabKey = 'roles';
-const groupsTabKey = 'groups';
-const pendingUsersTabKey = 'pending-users';
-const defaultTabKey = usersTabKey;
+const credentialsTabKey = 'credentials';
+const netAdminTabKey = 'net-admin';
+const defaultTabKey = credentialsTabKey;
 
-export default function UsersPage(props: PageProps) {
+export default function NewUserPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
   const branding = useBranding();
@@ -64,7 +61,6 @@ export default function UsersPage(props: PageProps) {
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [usersSearch, setUsersSearch] = useState('');
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
-  const [isUserDetailsModalOpen, setIsUserDetailsModalOpen] = useState(false);
   const [isUpdateUserModalOpen, setIsUpdateUserModalOpen] = useState(false);
   const [isTransferSuperAdminRightsModalOpen, setIsTransferSuperAdminRightsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -267,18 +263,6 @@ export default function UsersPage(props: PageProps) {
       {
         title: 'Username',
         dataIndex: 'username',
-        render(username: string, user) {
-          return (
-            <Typography.Link
-              onClick={() => {
-                setSelectedUser(user);
-                setIsUserDetailsModalOpen(true);
-              }}
-            >
-              {username}
-            </Typography.Link>
-          );
-        },
         sorter(a, b) {
           return a.username.localeCompare(b.username);
         },
@@ -288,6 +272,12 @@ export default function UsersPage(props: PageProps) {
         title: 'Platform Role',
         render(_, user) {
           return 'superadmin';
+        },
+      },
+      {
+        title: 'Groups',
+        render(_, user) {
+          return 'all';
         },
       },
       {
@@ -442,27 +432,26 @@ export default function UsersPage(props: PageProps) {
             <Button size="large" onClick={() => loadUsers()} style={{ marginRight: '0.5rem' }}>
               <ReloadOutlined /> Reload users
             </Button>
-            <Dropdown
-              placement="bottomRight"
+            <Dropdown.Button
+              size="large"
+              type="primary"
+              onClick={onAddUser}
+              style={{ display: 'inline', marginRight: '0.5rem' }}
               menu={{
                 items: [
                   {
-                    key: 'add',
+                    key: '',
                     label: 'Add a User',
-                    onClick: onAddUser,
-                  },
-                  {
-                    key: 'invite',
-                    label: 'Invite a User',
                     onClick: () => {},
                   },
                 ],
               }}
             >
-              <Button size="large" type="primary" style={{ display: 'inline', marginRight: '0.5rem' }}>
-                <PlusOutlined /> Add a User
-              </Button>
-            </Dropdown>
+              Invite User
+            </Dropdown.Button>
+            {/* <Button type="primary" size="large" onClick={onAddUser} ref={addUserButtonRef}>
+              <PlusOutlined /> Add a User
+            </Button> */}
           </Col>
         </Row>
         <Row className="" style={{ marginTop: '1rem' }}>
@@ -555,24 +544,14 @@ export default function UsersPage(props: PageProps) {
   const tabs: TabsProps['items'] = useMemo(
     () => [
       {
-        key: usersTabKey,
+        key: credentialsTabKey,
         label: 'Users',
         children: getUsersContent(),
       },
       {
-        key: rolesTabKey,
-        label: 'Roles',
+        key: netAdminTabKey,
+        label: 'Network Administration',
         children: <RolesPage />,
-      },
-      {
-        key: groupsTabKey,
-        label: 'Groups',
-        children: <GroupsPage />,
-      },
-      {
-        key: pendingUsersTabKey,
-        label: `Pending Users (${pendingUsers.length})`,
-        children: getPendingUsersContent(),
       },
     ],
     [getPendingUsersContent, getUsersContent, pendingUsers.length],
@@ -634,11 +613,11 @@ export default function UsersPage(props: PageProps) {
         break;
       case 4:
         setIsAddUserModalOpen(true);
-        setActiveTab(usersTabKey);
+        setActiveTab(credentialsTabKey);
         break;
-      case 5:
-        setIsAddUserModalOpen(false);
-        setActiveTab(pendingUsersTabKey);
+        // case 5:
+        //   setIsAddUserModalOpen(false);
+        //   setActiveTab(pendingUsersTabKey);
         break;
       default:
         break;
@@ -785,22 +764,6 @@ export default function UsersPage(props: PageProps) {
         addUserPasswordInputRef={addUserPasswordInputRef}
         addUserSetAsAdminCheckboxRef={addUserSetAsAdminCheckboxRef}
       />
-      {selectedUser && (
-        <UserDetailsModal
-          isOpen={isUserDetailsModalOpen}
-          key={selectedUser.username}
-          user={mockNewUserWithoutGroup}
-          onUpdateUser={() => {
-            // loadUsers();
-            // setUsers(users.map((u) => (u.username === newUser.username ? newUser : u)));
-            // setIsUpdateUserModalOpen(false);
-          }}
-          onCancel={() => {
-            // setIsUpdateUserModalOpen(false);
-            // setSelectedUser(null);
-          }}
-        />
-      )}
       {selectedUser && (
         <UpdateUserModal
           isOpen={isUpdateUserModalOpen}

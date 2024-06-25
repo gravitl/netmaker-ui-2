@@ -1,11 +1,23 @@
-import { Button, Col, Divider, Form, Input, Modal, notification, Row, Select, Switch } from 'antd';
-import { MouseEvent, Ref, useCallback, useEffect, useState } from 'react';
+import {
+  Button,
+  Col,
+  Divider,
+  Form,
+  Input,
+  Modal,
+  notification,
+  Radio,
+  Row,
+  Select,
+  Table,
+  TableColumnProps,
+} from 'antd';
+import { MouseEvent, Ref, useState } from 'react';
 import { useStore } from '@/store/store';
 import '../CustomModal.scss';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { User } from '@/models/User';
 import { UsersService } from '@/services/UsersService';
-import { isSaasBuild } from '@/services/BaseService';
 
 interface AddUserModalProps {
   isOpen: boolean;
@@ -18,6 +30,12 @@ interface AddUserModalProps {
 }
 
 type CreateUserForm = User & { password: string; 'confirm-password': string };
+
+interface NetworkRoles {
+  id: string;
+  network: string;
+  roles: string[];
+}
 
 export default function AddUserModal({
   isOpen,
@@ -33,9 +51,52 @@ export default function AddUserModal({
   const store = useStore();
 
   const isServerEE = store.serverConfig?.IsEE === 'yes';
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isSwitchDisabled, setIsSwitchDisabled] = useState(false);
   const passwordVal = Form.useWatch('password', form);
+  const [networkRoles, setNetworkRoles] = useState<NetworkRoles[]>([
+    {
+      id: '1',
+      network: 'netmaker',
+      roles: ['network-user', 'network-admin', 'custom-role'],
+    },
+    {
+      id: '2',
+      network: 'private',
+      roles: ['network-user', 'network-admin', 'custom-role'],
+    },
+    {
+      id: '3',
+      network: 'remote-net',
+      roles: ['network-user', 'network-admin', 'field-worker'],
+    },
+  ]);
+
+  const roleAssignmentTypeVal = Form.useWatch('role-assignment-type', form);
+
+  const networkRolesTableCols: TableColumnProps<NetworkRoles>[] = [
+    {
+      title: 'Network',
+      dataIndex: 'network',
+      width: '30%',
+      // render(network: string) {
+      //   return <Select placeholder="Select network" value={network} disabled />;
+      // },
+    },
+    {
+      title: 'Role',
+      dataIndex: 'roles',
+      width: '70%',
+      render(roles) {
+        return (
+          <Select
+            mode="multiple"
+            placeholder="Select user roles for this network"
+            allowClear
+            options={roles.map((r: any) => ({ value: r, label: r }))}
+          />
+        );
+      },
+    },
+  ];
 
   const resetModal = () => {
     form.resetFields();
@@ -58,24 +119,9 @@ export default function AddUserModal({
     }
   };
 
-  const checkIfSwitchShouldBeDisabled = useCallback(() => {
-    if (store.user?.issuperadmin && isServerEE) {
-      setIsSwitchDisabled(false);
-    } else if (!isServerEE && !isSaasBuild) {
-      setIsAdmin(true);
-      setIsSwitchDisabled(true);
-    } else {
-      setIsSwitchDisabled(true);
-    }
-  }, [store.user, isServerEE]);
-
-  useEffect(() => {
-    checkIfSwitchShouldBeDisabled();
-  }, [store.user, checkIfSwitchShouldBeDisabled]);
-
   return (
     <Modal
-      title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Create a User</span>}
+      title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold', minWidth: '60vw' }}>Create a User</span>}
       open={isOpen}
       onCancel={(ev) => {
         resetModal();
@@ -84,12 +130,12 @@ export default function AddUserModal({
       footer={null}
       centered
       className="CustomModal"
+      style={{ minWidth: '60vw' }}
     >
       <Divider style={{ margin: '0px 0px 2rem 0px' }} />
-      <div className="CustomModalBody">
-        <Form name="add-user-form" form={form} layout="vertical" initialValues={{ isadmin: isAdmin }}>
+      <div className="CustomModalBody" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
+        <Form name="add-user-form" form={form} layout="vertical">
           <Row ref={addUserNameInputRef}>
-            {' '}
             <Col xs={24}>
               <Form.Item label="Username" name="username" rules={[{ required: true }]}>
                 <Input placeholder="Username" />
@@ -98,7 +144,6 @@ export default function AddUserModal({
           </Row>
 
           <Row ref={addUserPasswordInputRef}>
-            {' '}
             <Col xs={24}>
               <Form.Item label="Password" name="password" rules={[{ required: true }]}>
                 <Input placeholder="Password" type="password" />
@@ -125,25 +170,64 @@ export default function AddUserModal({
           >
             <Input placeholder="Confirm Password" type="password" />
           </Form.Item>
-          <Row ref={addUserSetAsAdminCheckboxRef}>
-            {' '}
+
+          <Divider />
+
+          <Row>
             <Col xs={24}>
-              <Form.Item label="Is admin" name="isadmin" valuePropName="checked">
-                <Switch disabled={isSwitchDisabled} />
+              <Form.Item
+                required
+                name="role-assignment-type"
+                label="How would you like to assign network roles to the user?"
+              >
+                <Radio.Group>
+                  <Radio value="by-group">Assign user to a group (user will inherit the group permissions)</Radio>
+                  <Radio value="by-manual">Manually set user roles per network</Radio>
+                </Radio.Group>
               </Form.Item>
             </Col>
           </Row>
 
-          <Row>
-            <Col xs={24} style={{ textAlign: 'right' }}>
-              <Form.Item>
-                <Button type="primary" onClick={createUser}>
-                  Create User
-                </Button>
-              </Form.Item>
-            </Col>
-          </Row>
+          {roleAssignmentTypeVal === 'by-group' && (
+            <Row>
+              <Col xs={24}>
+                <Form.Item name="user-groups" label="Which groups will the user join">
+                  <Select
+                    mode="multiple"
+                    placeholder="Select groups"
+                    options={[
+                      { label: 'group-1', value: 'Group 1' },
+                      { label: 'group-2', value: 'Group 2' },
+                    ]}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+          )}
+
+          {roleAssignmentTypeVal === 'by-manual' && (
+            <Row>
+              <Col xs={24}>
+                <Form.Item label="Select the user's roles for each network">
+                  <Table columns={networkRolesTableCols} dataSource={networkRoles} rowKey="id" />
+                </Form.Item>
+              </Col>
+            </Row>
+          )}
         </Form>
+      </div>
+
+      <div className="CustomModalBody">
+        <Divider style={{ margin: '0px 0px 2rem 0px' }} />
+        <Row>
+          <Col xs={24} style={{ textAlign: 'right' }}>
+            <Form.Item>
+              <Button type="primary" onClick={createUser}>
+                Create User
+              </Button>
+            </Form.Item>
+          </Col>
+        </Row>
       </div>
 
       {/* notify */}
