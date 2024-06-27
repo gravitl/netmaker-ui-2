@@ -17,7 +17,7 @@ import {
   Timeline,
 } from 'antd';
 import { useStore } from '@/store/store';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   UsecaseQuestionsAll,
   UsecaseQuestions,
@@ -133,6 +133,7 @@ export default function QuickSetupModal(props: ModalProps) {
   const [isNextLoading, setIsNextLoading] = useState<boolean>(false);
   const [egressNodeId, setEgressNodeId] = useState<string>('');
   const [tourType, setTourType] = useState<TourType>('remoteaccess_specificmachines');
+  const isServerEE = store.serverConfig?.IsEE === 'yes';
 
   const [form] = Form.useForm<RangesFormFields>();
 
@@ -671,6 +672,80 @@ export default function QuickSetupModal(props: ModalProps) {
     );
   }, [currentQuestion]);
 
+  const getQuickLinkForReview = useCallback(
+    (selectedAnswer: string) => {
+      return (
+        <>
+          {selectedAnswer === 'our_rac' && (
+            <Alert
+              message={
+                <>
+                  Visit{' '}
+                  <a href={ExternalLinks.RAC_LINK} target="_blank" rel="noreferrer">
+                    our docs{' '}
+                  </a>{' '}
+                  to find out how to use the Remote Access Client
+                </>
+              }
+              type="info"
+              showIcon
+              style={{ marginTop: '1rem' }}
+            />
+          )}
+          {selectedAnswer === 'vpn_client' && (
+            <Alert
+              message={
+                <>
+                  Visit{' '}
+                  <a href={ExternalLinks.WIREGUARD_LINK} target="_blank" rel="noreferrer">
+                    our docs{' '}
+                  </a>{' '}
+                  to find out how to use the vpn client with wireguard
+                </>
+              }
+              type="info"
+              showIcon
+              style={{ marginTop: '1rem' }}
+            />
+          )}
+          {selectedAnswer === 'router' && (
+            <Alert
+              message={
+                <>
+                  Visit{' '}
+                  <a href={ExternalLinks.INTEGRATING_NON_NATIVE_DEVICES_LINK} target="_blank" rel="noreferrer">
+                    our docs{' '}
+                  </a>{' '}
+                  to find out how to integrate a router
+                </>
+              }
+              type="info"
+              showIcon
+              style={{ marginTop: '1rem' }}
+            />
+          )}
+          {selectedAnswer === 'route_via_netclient' && (
+            <Alert
+              message={
+                <>
+                  Visit{' '}
+                  <a href={ExternalLinks.ROUTE_LOCAL_NETWORK_TRAFFIC_LINK} target="_blank" rel="noreferrer">
+                    our docs{' '}
+                  </a>{' '}
+                  to find out how to route local network traffic through netclient
+                </>
+              }
+              type="info"
+              showIcon
+              style={{ marginTop: '1rem' }}
+            />
+          )}
+        </>
+      );
+    },
+    [currentQuestion],
+  );
+
   const getBodyStyle = useMemo(() => {
     if (window.innerWidth <= 768) {
       return {
@@ -741,12 +816,31 @@ export default function QuickSetupModal(props: ModalProps) {
           <>
             {questionText && <Typography.Paragraph strong>{questionText}</Typography.Paragraph>}
             {answerText && <Typography.Text>{answerText}</Typography.Text>}
+            {typeof question.answer === 'string' && getQuickLinkForReview(question.answer)}
             {answerText2 && <Typography.Text>{answerText2}</Typography.Text>}
           </>
         ),
       };
     });
-  }, [currentQuestion, userQuestionsAsked]);
+  }, [getAnswerText, getQuickLinkForReview, userQuestionsAsked]);
+
+  const currentQuestionDescription = useMemo(() => {
+    if (
+      currentQuestion.type === 'radio' &&
+      currentQuestion.subDescription &&
+      typeof currentQuestion.selectedAnswer === 'string'
+    ) {
+      const descriptionIndex = currentQuestion.answers.findIndex((answer) => answer === currentQuestion.selectedAnswer);
+      return currentQuestion.subDescription[descriptionIndex];
+    }
+    return currentQuestion.description;
+  }, [
+    currentQuestion.answers,
+    currentQuestion.description,
+    currentQuestion.selectedAnswer,
+    currentQuestion.subDescription,
+    currentQuestion.type,
+  ]);
 
   useEffect(() => {
     if (!currentQuestion.selectedAnswer && currentQuestion.key === 'networks') {
@@ -803,7 +897,7 @@ export default function QuickSetupModal(props: ModalProps) {
             }}
           >
             <Space direction="vertical" size="large" style={{ width: '400px' }}>
-              <div>
+              <div style={{ minHeight: '166px' }}>
                 <Typography.Title level={4}>{currentQuestion.descriptionTitle}</Typography.Title>
 
                 <Typography.Text
@@ -814,7 +908,7 @@ export default function QuickSetupModal(props: ModalProps) {
                     color: currentTheme === 'dark' ? '#FFFFFFA6' : '#00000073',
                   }}
                 >
-                  {currentQuestion.description}
+                  {currentQuestionDescription}
                 </Typography.Text>
                 {getCurrentQuestionImage}
               </div>
@@ -853,7 +947,7 @@ export default function QuickSetupModal(props: ModalProps) {
                     <Radio.Group onChange={onChange} value={currentQuestion.selectedAnswer}>
                       <Space direction="vertical">
                         {currentQuestion.answers.map((answer, i) => (
-                          <Radio value={answer} key={i}>
+                          <Radio value={answer} key={i} disabled={answer === 'internet_gateway' && !isServerEE}>
                             {UsecaseKeyStringToTextMap[answer] ?? answer}
                           </Radio>
                         ))}

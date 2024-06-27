@@ -40,7 +40,10 @@ interface TourUtilsProps {
   addClientGatewayModalIsInternetGatewayRef: RefObject<HTMLDivElement>;
   remoteAccessTabVPNConfigTableRef: RefObject<HTMLDivElement>;
   remoteAccessTabDisplayAllVPNConfigsRef: RefObject<HTMLDivElement>;
+  remoteAccessTabDownloadClientRef: RefObject<HTMLDivElement>;
   remoteAccessTabVPNConfigCreateConfigRef: RefObject<HTMLDivElement>;
+  remoteAccessAddOrRemoveUsersRef: RefObject<HTMLDivElement>;
+  remoteAccessManageUsersRef: RefObject<HTMLDivElement>;
   createClientConfigModalSelectGatewayRef: RefObject<HTMLDivElement>;
   createClientConfigModalClientIDRef: RefObject<HTMLDivElement>;
   createClientConfigModalPublicKeyRef: RefObject<HTMLDivElement>;
@@ -107,6 +110,7 @@ interface TourUtilsProps {
   notify: NotificationInstance;
   isAddInternetGatewayModalOpen: boolean;
   setIsAddInternetGatewayModalOpen: (isOpen: boolean) => void;
+  setIsUpdateIngressUsersModalOpen: (isOpen: boolean) => void;
 }
 
 export default function TourComponent(props: TourUtilsProps) {
@@ -124,7 +128,10 @@ export default function TourComponent(props: TourUtilsProps) {
     addClientGatewayModalIsInternetGatewayRef,
     remoteAccessTabVPNConfigTableRef,
     remoteAccessTabDisplayAllVPNConfigsRef,
+    remoteAccessTabDownloadClientRef,
     remoteAccessTabVPNConfigCreateConfigRef,
+    remoteAccessAddOrRemoveUsersRef,
+    remoteAccessManageUsersRef,
     createClientConfigModalSelectGatewayRef,
     createClientConfigModalClientIDRef,
     createClientConfigModalPublicKeyRef,
@@ -189,6 +196,7 @@ export default function TourComponent(props: TourUtilsProps) {
     notify,
     isAddInternetGatewayModalOpen,
     setIsAddInternetGatewayModalOpen,
+    setIsUpdateIngressUsersModalOpen,
   } = props;
   const store = useStore();
   const isServerEE = store.serverConfig?.IsEE === 'yes';
@@ -1270,68 +1278,25 @@ export default function TourComponent(props: TourUtilsProps) {
         title: 'Hosts Table',
         description: (
           <>
-            Get host information like host name, private address, public address, connectivity status, health status and
-            failover status. You can click on a host to view more details or hover over the ellipsis at the end of the
-            row to edit, disconnect or remove a host from network.
+            These are the nodes of your VPN, get host information like host name, private address, public address,
+            connectivity status, health status and failover status. You can click on a host to view more details or
+            hover over the ellipsis at the end of the row to edit, disconnect or remove a host from network.
           </>
         ),
         target: hostsTabContainerTableRef.current,
-      },
-      {
-        title: 'Add Host',
-        description: 'Add a new host or an existing host to your network',
-        target: hostsTabContainerAddHostsRef.current,
         onNext: () => {
-          nextTourStep();
-          setIsAddNewHostModalOpen(true);
-        },
-      },
-      {
-        title: 'Connect a Host - Enrollment Keys',
-        description: (
-          <>
-            You can create an enrollment key which defines the networks a host has access to or you can pick an existing
-            enrollment key
-          </>
-        ),
-        target: connectHostModalEnrollmentKeysTabRef.current,
-        onPrev: () => {
-          setIsAddNewHostModalOpen(false);
-          setActiveTabKey('hosts');
-          prevTourStep();
-        },
-      },
-      {
-        title: 'Connect a Host - Select OS',
-        description: (
-          <>You can select the OS of the host that you want to connect and follow the netclient install instructions</>
-        ),
-        target: connectHostModalSelectOSTabRef.current,
-      },
-      {
-        title: 'Connect a Host - Join a Network',
-        description: <>You can join a network by running the command on the terminal</>,
-        target: connectHostModalJoinNetworkTabRef.current,
-        onNext: () => {
-          setIsAddNewHostModalOpen(false);
           setActiveTabKey('clients');
-          // check if there are any gateways, if there are then go to the next step else
-          // go to the create gateway step
-          if (clientGateways.length > 0) {
-            nextTourStep();
-          } else {
-            setIsAddClientGatewayModalOpen(true);
-            setTourStep(jumpToTourStepObj.remoteAccessGatewayModal);
-          }
+          nextTourStep();
         },
       },
       {
         title: 'Gateway Table',
         description: (
           <>
-            Get gateway information like gateway name, private address, endpoint , default client DNS, and you can view
-            the gateway details by clicking on the gateway name and hover over the ellipsis to edit it or remove it from
-            the network and add a user or remove a user from the gateway.
+            This is the gateway for users into the network, get gateway information like gateway name, private address,
+            endpoint , default client DNS, and you can view the gateway details by clicking on the gateway name and
+            hover over the ellipsis to edit it or remove it from the network and add a user or remove a user from the
+            gateway.
           </>
         ),
         target: remoteAccessTabGatewayTableRef.current,
@@ -1342,51 +1307,42 @@ export default function TourComponent(props: TourUtilsProps) {
         },
       },
       {
-        title: 'Add Gateway',
-        description: 'Add a new gateway to your network',
-        target: remoteAccessTabAddGatewayRef.current,
+        title: 'Download the Remote Access Client',
+        description: (
+          <>
+            Download the remote access client for your OS, you can also view the instructions on how to install the
+            client
+          </>
+        ),
+        target: remoteAccessTabDownloadClientRef.current,
+      },
+      {
+        title: 'Add / Remove Users from the Gateway',
+        description: (
+          <>You can add / remove users from the gateway by clicking on the ellipsis and selecting add / remove users.</>
+        ),
+        target: remoteAccessAddOrRemoveUsersRef.current,
         onNext: () => {
-          setIsAddClientGatewayModalOpen(true);
+          setIsUpdateIngressUsersModalOpen(true);
           nextTourStep();
         },
       },
       {
-        title: 'Select Host',
-        description: 'Select a host to act as a gateway',
-        target: addClientGatewayModalHostRef.current,
-        onPrev: () => {
-          setIsAddClientGatewayModalOpen(false);
-
-          // check if there are any gateways, if there are then go to the next step else
-          // go to hosts
-          if (clientGateways.length > 0) {
-            nextTourStep();
-          } else {
-            setActiveTabKey('hosts');
-            setTourStep(jumpToTourStepObj.hosts);
-          }
-        },
-      },
-      {
-        title: 'Default DNS',
-        description: 'Select a default DNS for your gateway',
-        target: addClientGatewayModalDefaultClientDNSRef.current,
-      },
-      {
-        title: 'Internet Gateway Check',
-        description: 'Check this box if you want to use this gateway as an internet gateway',
-        target: addClientGatewayModalIsInternetGatewayRef.current,
+        title: 'How to Manage Users on a Gateway',
+        description: (
+          <>
+            You can add a new user by clicking on the add user button. After you can attach or detach the user from the
+            gateway.
+          </>
+        ),
+        target: remoteAccessManageUsersRef.current,
         onNext: () => {
-          setIsAddClientGatewayModalOpen(false);
-
-          // check if there are any gateways, if there are then go to the next step else we go to
-          // the create client config
-          if (clientGateways.length > 0) {
-            nextTourStep();
-          } else {
-            setTourStep(jumpToTourStepObj.remoteAccessVPNConfigModal);
-            setIsAddClientModalOpen(true);
-          }
+          setIsUpdateIngressUsersModalOpen(false);
+          nextTourStep();
+        },
+        onPrev: () => {
+          setIsUpdateIngressUsersModalOpen(false);
+          prevTourStep();
         },
       },
       {
@@ -1399,56 +1355,6 @@ export default function TourComponent(props: TourUtilsProps) {
           </>
         ),
         target: remoteAccessTabVPNConfigTableRef.current,
-      },
-      {
-        title: 'Create Config',
-        description: 'Create a new VPN config file for a client',
-        target: remoteAccessTabVPNConfigCreateConfigRef.current,
-        onNext: () => {
-          nextTourStep();
-          setIsAddClientModalOpen(true);
-        },
-      },
-      {
-        title: 'Select Remote Access Gateway',
-        description: 'Select a gateway to create a VPN config for',
-        target: createClientConfigModalSelectGatewayRef.current,
-        onPrev: () => {
-          setIsAddClientModalOpen(false);
-          prevTourStep();
-        },
-      },
-      {
-        title: 'Client ID',
-        description: 'Enter a client ID',
-        target: createClientConfigModalClientIDRef.current,
-      },
-      {
-        title: 'Public Key',
-        description: 'Enter a public key',
-        target: createClientConfigModalPublicKeyRef.current,
-      },
-      {
-        title: 'DNS',
-        description: 'Enter a DNS',
-        target: createClientConfigModalDNSRef.current,
-      },
-      {
-        title: 'Additional Addresses',
-        description: 'Enter additional addresses',
-        target: createClientConfigModalAdditionalAddressesRef.current,
-      },
-      {
-        title: 'Post Up',
-        description:
-          'PostUp serves as a lifetime hook that runs the provided script that run just after wireguard sets up the interface and the VPN connection is live',
-        target: createClientConfigModalPostUpRef.current,
-      },
-      {
-        title: 'Post Down',
-        description:
-          'PostDown serves as a lifetime hook that runs the provided script that run just after wireguard tears down the interface',
-        target: createClientConfigModalPostDownRef.current,
       },
     ],
     [
@@ -1491,68 +1397,25 @@ export default function TourComponent(props: TourUtilsProps) {
         title: 'Hosts Table',
         description: (
           <>
-            Get host information like host name, private address, public address, connectivity status, health status and
-            failover status. You can click on a host to view more details or hover over the ellipsis at the end of the
-            row to edit, disconnect or remove a host from network.
+            These are the nodes of your VPN, get host information like host name, private address, public address,
+            connectivity status, health status and failover status. You can click on a host to view more details or
+            hover over the ellipsis at the end of the row to edit, disconnect or remove a host from network.
           </>
         ),
         target: hostsTabContainerTableRef.current,
-      },
-      {
-        title: 'Add Host',
-        description: 'Add a new host or an existing host to your network',
-        target: hostsTabContainerAddHostsRef.current,
         onNext: () => {
-          nextTourStep();
-          setIsAddNewHostModalOpen(true);
-        },
-      },
-      {
-        title: 'Connect a Host - Enrollment Keys',
-        description: (
-          <>
-            You can create an enrollment key which defines the networks a host has access to or you can pick an existing
-            enrollment key
-          </>
-        ),
-        target: connectHostModalEnrollmentKeysTabRef.current,
-        onPrev: () => {
-          setIsAddNewHostModalOpen(false);
-          setActiveTabKey('hosts');
-          prevTourStep();
-        },
-      },
-      {
-        title: 'Connect a Host - Select OS',
-        description: (
-          <>You can select the OS of the host that you want to connect and follow the netclient install instructions</>
-        ),
-        target: connectHostModalSelectOSTabRef.current,
-      },
-      {
-        title: 'Connect a Host - Join a Network',
-        description: <>You can join a network by running the command on the terminal</>,
-        target: connectHostModalJoinNetworkTabRef.current,
-        onNext: () => {
-          setIsAddNewHostModalOpen(false);
           setActiveTabKey('clients');
-          // check if there are any gateways, if there are then go to the next step else
-          // go to the create gateway step
-          if (clientGateways.length > 0) {
-            nextTourStep();
-          } else {
-            setIsAddClientGatewayModalOpen(true);
-            setTourStep(jumpToTourStepObj.remoteAccessGatewayModal);
-          }
+          nextTourStep();
         },
       },
       {
         title: 'Gateway Table',
         description: (
           <>
-            Get gateway information like gateway name, private address, endpoint , default client DNS, and you can view
-            the gateway details by clicking on the gateway name and hover over the ellipsis to edit it or remove it from
-            the network and add a user or remove a user from the gateway.
+            This is the gateway for users into the network, get gateway information like gateway name, private address,
+            endpoint , default client DNS, and you can view the gateway details by clicking on the gateway name and
+            hover over the ellipsis to edit it or remove it from the network and add a user or remove a user from the
+            gateway.
           </>
         ),
         target: remoteAccessTabGatewayTableRef.current,
@@ -1563,51 +1426,42 @@ export default function TourComponent(props: TourUtilsProps) {
         },
       },
       {
-        title: 'Add Gateway',
-        description: 'Add a new gateway to your network',
-        target: remoteAccessTabAddGatewayRef.current,
+        title: 'Download the Remote Access Client',
+        description: (
+          <>
+            Download the remote access client for your OS, you can also view the instructions on how to install the
+            client
+          </>
+        ),
+        target: remoteAccessTabDownloadClientRef.current,
+      },
+      {
+        title: 'Add / Remove Users from the Gateway',
+        description: (
+          <>You can add / remove users from the gateway by clicking on the ellipsis and selecting add / remove users.</>
+        ),
+        target: remoteAccessAddOrRemoveUsersRef.current,
         onNext: () => {
-          setIsAddClientGatewayModalOpen(true);
+          setIsUpdateIngressUsersModalOpen(true);
           nextTourStep();
         },
       },
       {
-        title: 'Select Host',
-        description: 'Select a host to act as a gateway',
-        target: addClientGatewayModalHostRef.current,
-        onPrev: () => {
-          setIsAddClientGatewayModalOpen(false);
-
-          // check if there are any gateways, if there are then go to the next step else
-          // go to hosts
-          if (clientGateways.length > 0) {
-            nextTourStep();
-          } else {
-            setActiveTabKey('hosts');
-            setTourStep(jumpToTourStepObj.hosts);
-          }
-        },
-      },
-      {
-        title: 'Default DNS',
-        description: 'Select a default DNS for your gateway',
-        target: addClientGatewayModalDefaultClientDNSRef.current,
-      },
-      {
-        title: 'Internet Gateway Check',
-        description: 'Check this box if you want to use this gateway as an internet gateway',
-        target: addClientGatewayModalIsInternetGatewayRef.current,
+        title: 'How to Manage Users on a Gateway',
+        description: (
+          <>
+            You can add a new user by clicking on the add user button. After you can attach or detach the user from the
+            gateway.
+          </>
+        ),
+        target: remoteAccessManageUsersRef.current,
         onNext: () => {
-          setIsAddClientGatewayModalOpen(false);
-
-          // check if there are any gateways, if there are then go to the next step else we go to
-          // the create client config
-          if (clientGateways.length > 0) {
-            nextTourStep();
-          } else {
-            setTourStep(jumpToTourStepObj.remoteAccessVPNConfigModal);
-            setIsAddClientModalOpen(true);
-          }
+          setIsUpdateIngressUsersModalOpen(false);
+          nextTourStep();
+        },
+        onPrev: () => {
+          setIsUpdateIngressUsersModalOpen(false);
+          prevTourStep();
         },
       },
       {
@@ -1620,169 +1474,48 @@ export default function TourComponent(props: TourUtilsProps) {
           </>
         ),
         target: remoteAccessTabVPNConfigTableRef.current,
-      },
-      {
-        title: 'Create Config',
-        description: 'Create a new VPN config file for a client',
-        target: remoteAccessTabVPNConfigCreateConfigRef.current,
-        onNext: () => {
-          nextTourStep();
-          setIsAddClientModalOpen(true);
-        },
-      },
-      {
-        title: 'Select Remote Access Gateway',
-        description: 'Select a gateway to create a VPN config for',
-        target: createClientConfigModalSelectGatewayRef.current,
-        onPrev: () => {
-          setIsAddClientModalOpen(false);
-          prevTourStep();
-        },
-      },
-      {
-        title: 'Client ID',
-        description: 'Enter a client ID',
-        target: createClientConfigModalClientIDRef.current,
-      },
-      {
-        title: 'Public Key',
-        description: 'Enter a public key',
-        target: createClientConfigModalPublicKeyRef.current,
-      },
-      {
-        title: 'DNS',
-        description: 'Enter a DNS',
-        target: createClientConfigModalDNSRef.current,
-      },
-      {
-        title: 'Additional Addresses',
-        description: 'Enter additional addresses',
-        target: createClientConfigModalAdditionalAddressesRef.current,
-      },
-      {
-        title: 'Post Up',
-        description:
-          'PostUp serves as a lifetime hook that runs the provided script that run just after wireguard sets up the interface and the VPN connection is live',
-        target: createClientConfigModalPostUpRef.current,
-      },
-      {
-        title: 'Post Down',
-        description:
-          'PostDown serves as a lifetime hook that runs the provided script that run just after wireguard tears down the interface',
-        target: createClientConfigModalPostDownRef.current,
         onNext: () => {
           setActiveTabKey('egress');
-          setIsAddClientModalOpen(false);
-          setTourStep(jumpToTourStepObj.egress);
+          nextTourStep();
         },
       },
       {
         title: 'Egress Table',
         description: (
           <>
-            Get egress information like egress name, address and you can update the egress details by hovering over the
-            ellipsis and clicking on update egress and you can get more info about the egress by clicking on the egress
-            name.
+            These are the devices sending traffic to your network, get egress information like egress name, address and
+            you can update the egress details by hovering over the ellipsis and clicking on update egress and you can
+            get more info about the egress by clicking on the egress name.
           </>
         ),
         target: egressTabEgressTableRef.current,
         onPrev: () => {
           setActiveTabKey('clients');
-          setIsAddClientModalOpen(true);
           setTourStep(jumpToTourStepObj.remoteAccess);
         },
       },
       {
-        title: 'Create Egress',
-        description: 'Add a new egress to your network',
-        target: egressTabAddEgressRef.current,
-        onNext: () => {
-          nextTourStep();
-          setIsAddEgressModalOpen(true);
-        },
-      },
-      {
-        title: 'Select Host',
-        description: 'Select a host to act as an egress',
-        target: createEgressModalSelectHostRef.current,
-        onPrev: () => {
-          setIsAddEgressModalOpen(false);
-          prevTourStep();
-        },
-      },
-      {
-        title: 'Enable NAT for egress traffic',
-        description: 'Check this box if you want to enable NAT for egress traffic',
-        target: createEgressModalEnableNATRef.current,
-        onNext: () => {
-          setIsAddEgressModalOpen(false);
-          nextTourStep();
-        },
-      },
-      // {
-      //   title: 'Select external ranges',
-      //   description: 'Select external ranges',
-      //   target: createEgressModalSelectExternalRangesRef.current,
-      //   onNext: () => {
-      //     setIsAddEgressModalOpen(false);
-      //     setTourStep(33);
-      //   },
-      // },
-      {
         title: 'External Routes Table',
-        description: 'Get external route information',
+        description: 'These are the ranges been forwarded by the egress',
         target: egressTabExternalRoutesTableRef.current,
-        onPrev: () => {
-          setIsAddEgressModalOpen(true);
-          prevTourStep();
-        },
-      },
-      {
-        title: 'Add External Route',
-        description: 'Add a new external route to your selected egress gateway',
-        target: egressTabAddExternalRouteRef.current,
       },
     ],
     [
       hostsTabContainerTableRef,
-      hostsTabContainerAddHostsRef,
-      connectHostModalEnrollmentKeysTabRef,
-      connectHostModalSelectOSTabRef,
-      connectHostModalJoinNetworkTabRef,
       remoteAccessTabGatewayTableRef,
-      remoteAccessTabAddGatewayRef,
-      addClientGatewayModalHostRef,
-      addClientGatewayModalDefaultClientDNSRef,
-      addClientGatewayModalIsInternetGatewayRef,
+      remoteAccessTabDownloadClientRef,
+      remoteAccessAddOrRemoveUsersRef,
+      remoteAccessManageUsersRef,
       remoteAccessTabVPNConfigTableRef,
-      remoteAccessTabVPNConfigCreateConfigRef,
-      createClientConfigModalSelectGatewayRef,
-      createClientConfigModalClientIDRef,
-      createClientConfigModalPublicKeyRef,
-      createClientConfigModalDNSRef,
-      createClientConfigModalAdditionalAddressesRef,
-      createClientConfigModalPostUpRef,
-      createClientConfigModalPostDownRef,
       egressTabEgressTableRef,
-      egressTabAddEgressRef,
-      createEgressModalSelectHostRef,
-      createEgressModalEnableNATRef,
       egressTabExternalRoutesTableRef,
-      egressTabAddExternalRouteRef,
+      setActiveTabKey,
       nextTourStep,
       setIsAddNewHostModalOpen,
-      setActiveTabKey,
       prevTourStep,
-      clientGateways.length,
-      setIsAddClientGatewayModalOpen,
+      setIsUpdateIngressUsersModalOpen,
       setTourStep,
-      jumpToTourStepObj.remoteAccessGatewayModal,
-      jumpToTourStepObj.hosts,
-      jumpToTourStepObj.remoteAccessVPNConfigModal,
-      jumpToTourStepObj.egress,
       jumpToTourStepObj.remoteAccess,
-      setIsAddClientModalOpen,
-      setIsAddEgressModalOpen,
     ],
   );
 
@@ -1792,63 +1525,25 @@ export default function TourComponent(props: TourUtilsProps) {
         title: 'Hosts Table',
         description: (
           <>
-            Get host information like host name, private address, public address, connectivity status, health status and
-            failover status. You can click on a host to view more details or hover over the ellipsis at the end of the
-            row to edit, disconnect or remove a host from network.
+            These are the nodes of your VPN, get host information like host name, private address, public address,
+            connectivity status, health status and failover status. You can click on a host to view more details or
+            hover over the ellipsis at the end of the row to edit, disconnect or remove a host from network.
           </>
         ),
         target: hostsTabContainerTableRef.current,
-      },
-      {
-        title: 'Add Host',
-        description: 'Add a new host or an existing host to your network',
-        target: hostsTabContainerAddHostsRef.current,
         onNext: () => {
-          nextTourStep();
-          setIsAddNewHostModalOpen(true);
-        },
-      },
-      {
-        title: 'Connect a Host - Enrollment Keys',
-        description: (
-          <>
-            You can create an enrollment key which defines the networks a host has access to or you can pick an existing
-            enrollment key
-          </>
-        ),
-        target: connectHostModalEnrollmentKeysTabRef.current,
-      },
-      {
-        title: 'Connect a Host - Select OS',
-        description: (
-          <>You can select the OS of the host that you want to connect and follow the netclient install instructions</>
-        ),
-        target: connectHostModalSelectOSTabRef.current,
-      },
-      {
-        title: 'Connect a Host - Join a Network',
-        description: <>You can join a network by running the command on the terminal</>,
-        target: connectHostModalJoinNetworkTabRef.current,
-        onNext: () => {
-          setIsAddNewHostModalOpen(false);
           setActiveTabKey('clients');
-          // check if there are any gateways, if there are then go to the next step else
-          // go to the create gateway step
-          if (clientGateways.length > 0) {
-            nextTourStep();
-          } else {
-            setIsAddClientGatewayModalOpen(true);
-            setTourStep(jumpToTourStepObj.remoteAccessGatewayModal);
-          }
+          nextTourStep();
         },
       },
       {
         title: 'Gateway Table',
         description: (
           <>
-            Get gateway information like gateway name, private address, endpoint , default client DNS, and you can view
-            the gateway details by clicking on the gateway name and hover over the ellipsis to edit it or remove it from
-            the network and add a user or remove a user from the gateway.
+            This is the gateway for users into the network, get gateway information like gateway name, private address,
+            endpoint , default client DNS, and you can view the gateway details by clicking on the gateway name and
+            hover over the ellipsis to edit it or remove it from the network and add a user or remove a user from the
+            gateway.
           </>
         ),
         target: remoteAccessTabGatewayTableRef.current,
@@ -1859,46 +1554,42 @@ export default function TourComponent(props: TourUtilsProps) {
         },
       },
       {
-        title: 'Add Gateway',
-        description: 'Add a new gateway to your network',
-        target: remoteAccessTabAddGatewayRef.current,
+        title: 'Download the Remote Access Client',
+        description: (
+          <>
+            Download the remote access client for your OS, you can also view the instructions on how to install the
+            client
+          </>
+        ),
+        target: remoteAccessTabDownloadClientRef.current,
+      },
+      {
+        title: 'Add / Remove Users from the Gateway',
+        description: (
+          <>You can add / remove users from the gateway by clicking on the ellipsis and selecting add / remove users.</>
+        ),
+        target: remoteAccessAddOrRemoveUsersRef.current,
         onNext: () => {
-          setIsAddClientGatewayModalOpen(true);
+          setIsUpdateIngressUsersModalOpen(true);
           nextTourStep();
         },
       },
       {
-        title: 'Select Host',
-        description: 'Select a host to act as a gateway',
-        target: addClientGatewayModalHostRef.current,
-        onPrev: () => {
-          setIsAddClientGatewayModalOpen(false);
-
-          // check if there are any gateways, if there are then go to the next step else
-          // go to hosts
-          if (clientGateways.length > 0) {
-            prevTourStep();
-          } else {
-            setActiveTabKey('hosts');
-            setTourStep(jumpToTourStepObj.hosts);
-          }
-        },
-      },
-      {
-        title: 'Default DNS',
-        description: 'Select a default DNS for your gateway',
-        target: addClientGatewayModalDefaultClientDNSRef.current,
+        title: 'How to Manage Users on a Gateway',
+        description: (
+          <>
+            You can add a new user by clicking on the add user button. After you can attach or detach the user from the
+            gateway.
+          </>
+        ),
+        target: remoteAccessManageUsersRef.current,
         onNext: () => {
-          setIsAddClientGatewayModalOpen(false);
-
-          // check if there are any gateways, if there are then go to the next step else we go to
-          // the create client config
-          if (clientGateways.length > 0) {
-            nextTourStep();
-          } else {
-            setTourStep(jumpToTourStepObj.remoteAccessVPNConfigModal);
-            setIsAddClientModalOpen(true);
-          }
+          setIsUpdateIngressUsersModalOpen(false);
+          nextTourStep();
+        },
+        onPrev: () => {
+          setIsUpdateIngressUsersModalOpen(false);
+          prevTourStep();
         },
       },
       {
@@ -1912,60 +1603,11 @@ export default function TourComponent(props: TourUtilsProps) {
         ),
         target: remoteAccessTabVPNConfigTableRef.current,
       },
-      {
-        title: 'Create Config',
-        description: 'Create a new VPN config file for a client',
-        target: remoteAccessTabVPNConfigCreateConfigRef.current,
-        onNext: () => {
-          nextTourStep();
-          setIsAddClientModalOpen(true);
-        },
-      },
-      {
-        title: 'Select Remote Access Gateway',
-        description: 'Select a gateway to create a VPN config for',
-        target: createClientConfigModalSelectGatewayRef.current,
-        onPrev: () => {
-          setIsAddClientModalOpen(false);
-          prevTourStep();
-        },
-      },
-      {
-        title: 'Client ID',
-        description: 'Enter a client ID',
-        target: createClientConfigModalClientIDRef.current,
-      },
-      {
-        title: 'Public Key',
-        description: 'Enter a public key',
-        target: createClientConfigModalPublicKeyRef.current,
-      },
-      {
-        title: 'DNS',
-        description: 'Enter a DNS',
-        target: createClientConfigModalDNSRef.current,
-      },
-      {
-        title: 'Additional Addresses',
-        description: 'Enter additional addresses',
-        target: createClientConfigModalAdditionalAddressesRef.current,
-      },
-      {
-        title: 'Post Up',
-        description:
-          'PostUp serves as a lifetime hook that runs the provided script that run just after wireguard sets up the interface and the VPN connection is live',
-        target: createClientConfigModalPostUpRef.current,
-      },
-      {
-        title: 'Post Down',
-        description:
-          'PostDown serves as a lifetime hook that runs the provided script that run just after wireguard tears down the interface',
-        target: createClientConfigModalPostDownRef.current,
-      },
     ],
     [
       addClientGatewayModalDefaultClientDNSRef,
       addClientGatewayModalHostRef,
+      addClientGatewayModalIsInternetGatewayRef,
       clientGateways.length,
       connectHostModalEnrollmentKeysTabRef,
       connectHostModalJoinNetworkTabRef,
@@ -2002,63 +1644,25 @@ export default function TourComponent(props: TourUtilsProps) {
         title: 'Hosts Table',
         description: (
           <>
-            Get host information like host name, private address, public address, connectivity status, health status and
-            failover status. You can click on a host to view more details or hover over the ellipsis at the end of the
-            row to edit, disconnect or remove a host from network.
+            These are the nodes of your VPN, get host information like host name, private address, public address,
+            connectivity status, health status and failover status. You can click on a host to view more details or
+            hover over the ellipsis at the end of the row to edit, disconnect or remove a host from network.
           </>
         ),
         target: hostsTabContainerTableRef.current,
-      },
-      {
-        title: 'Add Host',
-        description: 'Add a new host or an existing host to your network',
-        target: hostsTabContainerAddHostsRef.current,
         onNext: () => {
-          nextTourStep();
-          setIsAddNewHostModalOpen(true);
-        },
-      },
-      {
-        title: 'Connect a Host - Enrollment Keys',
-        description: (
-          <>
-            You can create an enrollment key which defines the networks a host has access to or you can pick an existing
-            enrollment key
-          </>
-        ),
-        target: connectHostModalEnrollmentKeysTabRef.current,
-      },
-      {
-        title: 'Connect a Host - Select OS',
-        description: (
-          <>You can select the OS of the host that you want to connect and follow the netclient install instructions</>
-        ),
-        target: connectHostModalSelectOSTabRef.current,
-      },
-      {
-        title: 'Connect a Host - Join a Network',
-        description: <>You can join a network by running the command on the terminal</>,
-        target: connectHostModalJoinNetworkTabRef.current,
-        onNext: () => {
-          setIsAddNewHostModalOpen(false);
           setActiveTabKey('clients');
-          // check if there are any gateways, if there are then go to the next step else
-          // go to the create gateway step
-          if (clientGateways.length > 0) {
-            nextTourStep();
-          } else {
-            setIsAddClientGatewayModalOpen(true);
-            setTourStep(8);
-          }
+          nextTourStep();
         },
       },
       {
         title: 'Gateway Table',
         description: (
           <>
-            Get gateway information like gateway name, private address, endpoint , default client DNS, and you can view
-            the gateway details by clicking on the gateway name and hover over the ellipsis to edit it or remove it from
-            the network and add a user or remove a user from the gateway.
+            This is the gateway for users into the network, get gateway information like gateway name, private address,
+            endpoint , default client DNS, and you can view the gateway details by clicking on the gateway name and
+            hover over the ellipsis to edit it or remove it from the network and add a user or remove a user from the
+            gateway.
           </>
         ),
         target: remoteAccessTabGatewayTableRef.current,
@@ -2069,46 +1673,42 @@ export default function TourComponent(props: TourUtilsProps) {
         },
       },
       {
-        title: 'Add Gateway',
-        description: 'Add a new gateway to your network',
-        target: remoteAccessTabAddGatewayRef.current,
+        title: 'Download the Remote Access Client',
+        description: (
+          <>
+            Download the remote access client for your OS, you can also view the instructions on how to install the
+            client
+          </>
+        ),
+        target: remoteAccessTabDownloadClientRef.current,
+      },
+      {
+        title: 'Add / Remove Users from the Gateway',
+        description: (
+          <>You can add / remove users from the gateway by clicking on the ellipsis and selecting add / remove users.</>
+        ),
+        target: remoteAccessAddOrRemoveUsersRef.current,
         onNext: () => {
-          setIsAddClientGatewayModalOpen(true);
+          setIsUpdateIngressUsersModalOpen(true);
           nextTourStep();
         },
       },
       {
-        title: 'Select Host',
-        description: 'Select a host to act as a gateway',
-        target: addClientGatewayModalHostRef.current,
-        onPrev: () => {
-          setIsAddClientGatewayModalOpen(false);
-
-          // check if there are any gateways, if there are then go to the next step else
-          // go to hosts
-          if (clientGateways.length > 0) {
-            prevTourStep();
-          } else {
-            setActiveTabKey('hosts');
-            setTourStep(jumpToTourStepObj.hosts);
-          }
-        },
-      },
-      {
-        title: 'Default DNS',
-        description: 'Select a default DNS for your gateway',
-        target: addClientGatewayModalDefaultClientDNSRef.current,
+        title: 'How to Manage Users on a Gateway',
+        description: (
+          <>
+            You can add a new user by clicking on the add user button. After you can attach or detach the user from the
+            gateway.
+          </>
+        ),
+        target: remoteAccessManageUsersRef.current,
         onNext: () => {
-          setIsAddClientGatewayModalOpen(false);
-
-          // check if there are any gateways, if there are then go to the next step else we go to
-          // the create client config
-          if (clientGateways.length > 0) {
-            nextTourStep();
-          } else {
-            setTourStep(jumpToTourStepObj.remoteAccessVPNConfigModal);
-            setIsAddClientModalOpen(true);
-          }
+          setIsUpdateIngressUsersModalOpen(false);
+          nextTourStep();
+        },
+        onPrev: () => {
+          setIsUpdateIngressUsersModalOpen(false);
+          prevTourStep();
         },
       },
       {
@@ -2121,181 +1721,48 @@ export default function TourComponent(props: TourUtilsProps) {
           </>
         ),
         target: remoteAccessTabVPNConfigTableRef.current,
-      },
-      {
-        title: 'Create Config',
-        description: 'Create a new VPN config file for a client',
-        target: remoteAccessTabVPNConfigCreateConfigRef.current,
-        onNext: () => {
-          nextTourStep();
-          setIsAddClientModalOpen(true);
-        },
-      },
-      {
-        title: 'Select Remote Access Gateway',
-        description: 'Select a gateway to create a VPN config for',
-        target: createClientConfigModalSelectGatewayRef.current,
-        onPrev: () => {
-          setIsAddClientModalOpen(false);
-          prevTourStep();
-        },
-      },
-      {
-        title: 'Client ID',
-        description: 'Enter a client ID',
-        target: createClientConfigModalClientIDRef.current,
-      },
-      {
-        title: 'Public Key',
-        description: 'Enter a public key',
-        target: createClientConfigModalPublicKeyRef.current,
-      },
-      {
-        title: 'DNS',
-        description: 'Enter a DNS',
-        target: createClientConfigModalDNSRef.current,
-      },
-      {
-        title: 'Additional Addresses',
-        description: 'Enter additional addresses',
-        target: createClientConfigModalAdditionalAddressesRef.current,
-      },
-      {
-        title: 'Post Up',
-        description:
-          'PostUp serves as a lifetime hook that runs the provided script that run just after wireguard sets up the interface and the VPN connection is live',
-        target: createClientConfigModalPostUpRef.current,
-      },
-      {
-        title: 'Post Down',
-        description:
-          'PostDown serves as a lifetime hook that runs the provided script that run just after wireguard tears down the interface',
-        target: createClientConfigModalPostDownRef.current,
         onNext: () => {
           setActiveTabKey('egress');
-          // if there are any egresses then go to the next step else go to create egress
-          if (egresses.length > 0) {
-            setIsAddClientModalOpen(false);
-            nextTourStep();
-          } else {
-            setTourStep(23);
-            setIsAddClientModalOpen(false);
-            setIsAddEgressModalOpen(true);
-          }
+          nextTourStep();
         },
       },
       {
         title: 'Egress Table',
         description: (
           <>
-            Get egress information like egress name, address and you can update the egress details by hovering over the
-            ellipsis and clicking on update egress and you can get more info about the egress by clicking on the egress
-            name.
+            These are the devices sending traffic to your network, get egress information like egress name, address and
+            you can update the egress details by hovering over the ellipsis and clicking on update egress and you can
+            get more info about the egress by clicking on the egress name.
           </>
         ),
         target: egressTabEgressTableRef.current,
         onPrev: () => {
           setActiveTabKey('clients');
-          prevTourStep();
-        },
-      },
-      {
-        title: 'Create Egress',
-        description: 'Add a new egress to your network',
-        target: egressTabAddEgressRef.current,
-        onNext: () => {
-          nextTourStep();
-          setIsAddEgressModalOpen(true);
-        },
-      },
-      {
-        title: 'Select Host',
-        description: 'Select a host to act as an egress',
-        target: createEgressModalSelectHostRef.current,
-        onPrev: () => {
-          setIsAddEgressModalOpen(false);
-          prevTourStep();
-        },
-      },
-      {
-        title: 'Enable NAT for egress traffic',
-        description: 'Check this box if you want to enable NAT for egress traffic',
-        target: createEgressModalEnableNATRef.current,
-      },
-      {
-        title: 'Select external ranges',
-        description: 'Select external ranges',
-        target: createEgressModalSelectExternalRangesRef.current,
-        onNext: () => {
-          // if there are any egresses then go to the next step else go to dns
-          if (egresses.length > 0) {
-            nextTourStep();
-            setIsAddEgressModalOpen(false);
-          } else {
-            setTourStep(jumpToTourStepObj.dns);
-            setActiveTabKey('dns');
-            setIsAddEgressModalOpen(false);
-          }
+          setTourStep(jumpToTourStepObj.remoteAccess);
         },
       },
       {
         title: 'External Routes Table',
-        description: 'Get external route information',
+        description: 'These are the ranges been forwarded by the egress',
         target: egressTabExternalRoutesTableRef.current,
-        onPrev: () => {
-          setIsAddEgressModalOpen(true);
-          prevTourStep();
-        },
-      },
-      {
-        title: 'Add External Route',
-        description: 'Add a new external route to your selected egress gateway',
-        target: egressTabAddExternalRouteRef.current,
-        onNext: () => {
-          setActiveTabKey('dns');
-          nextTourStep();
-        },
       },
     ],
     [
-      addClientGatewayModalDefaultClientDNSRef,
-      addClientGatewayModalHostRef,
-      clientGateways.length,
-      connectHostModalEnrollmentKeysTabRef,
-      connectHostModalJoinNetworkTabRef,
-      connectHostModalSelectOSTabRef,
-      createClientConfigModalAdditionalAddressesRef,
-      createClientConfigModalClientIDRef,
-      createClientConfigModalDNSRef,
-      createClientConfigModalPostDownRef,
-      createClientConfigModalPostUpRef,
-      createClientConfigModalPublicKeyRef,
-      createClientConfigModalSelectGatewayRef,
-      createEgressModalEnableNATRef,
-      createEgressModalSelectExternalRangesRef,
-      createEgressModalSelectHostRef,
-      egressTabAddEgressRef,
-      egressTabAddExternalRouteRef,
+      hostsTabContainerTableRef,
+      remoteAccessTabGatewayTableRef,
+      remoteAccessTabDownloadClientRef,
+      remoteAccessAddOrRemoveUsersRef,
+      remoteAccessManageUsersRef,
+      remoteAccessTabVPNConfigTableRef,
       egressTabEgressTableRef,
       egressTabExternalRoutesTableRef,
-      egresses.length,
-      hostsTabContainerAddHostsRef,
-      hostsTabContainerTableRef,
-      jumpToTourStepObj.dns,
-      jumpToTourStepObj.hosts,
-      jumpToTourStepObj.remoteAccessVPNConfigModal,
-      nextTourStep,
-      prevTourStep,
-      remoteAccessTabAddGatewayRef,
-      remoteAccessTabGatewayTableRef,
-      remoteAccessTabVPNConfigCreateConfigRef,
-      remoteAccessTabVPNConfigTableRef,
       setActiveTabKey,
-      setIsAddClientGatewayModalOpen,
-      setIsAddClientModalOpen,
-      setIsAddEgressModalOpen,
+      nextTourStep,
       setIsAddNewHostModalOpen,
+      prevTourStep,
+      setIsUpdateIngressUsersModalOpen,
       setTourStep,
+      jumpToTourStepObj.remoteAccess,
     ],
   );
 
@@ -2303,35 +1770,8 @@ export default function TourComponent(props: TourUtilsProps) {
     () => [
       {
         title: 'Internet Gateways Table',
-        description: 'List of internet gateways',
+        description: 'These are the devices that allow your network to connect to the internet',
         target: internetGatewaysTableRef.current,
-      },
-      {
-        title: 'Create Internet Gateway',
-        description: 'Create a new internet gateway',
-        target: createInternetGatewayButtonRef.current,
-        onNext: () => {
-          setIsAddInternetGatewayModalOpen(true);
-          nextTourStep();
-        },
-      },
-      {
-        title: 'Select Host for Internet Gateway',
-        description: 'Select a host to act as an internet gateway',
-        target: createInternetGatewayModalSelectHostRef.current,
-        onPrev: () => {
-          setIsAddInternetGatewayModalOpen(false);
-          prevTourStep();
-        },
-      },
-      {
-        title: 'Select Connected Hosts',
-        description: 'Select connected hosts for the internet gateway',
-        target: createInternetGatewayModalSelectConnectedHostsRef.current,
-        onNext: () => {
-          setIsAddInternetGatewayModalOpen(false);
-          nextTourStep();
-        },
       },
       {
         title: 'View Connected Hosts',
@@ -2343,18 +1783,7 @@ export default function TourComponent(props: TourUtilsProps) {
         },
       },
     ],
-    [
-      createInternetGatewayButtonRef,
-      createInternetGatewayModalSelectConnectedHostsRef,
-      createInternetGatewayModalSelectHostRef,
-      internetGatewaysConnectedHostsTableRef,
-      internetGatewaysTableRef,
-      nextTourStep,
-      prevTourStep,
-      setActiveTabKey,
-      setIsAddDnsModalOpen,
-      setIsAddInternetGatewayModalOpen,
-    ],
+    [internetGatewaysConnectedHostsTableRef, internetGatewaysTableRef, prevTourStep, setIsAddInternetGatewayModalOpen],
   );
 
   const handleTourOnChange = useCallback(
@@ -2540,6 +1969,7 @@ export default function TourComponent(props: TourUtilsProps) {
         onFinish={() => {
           handleModalClose();
         }}
+        mask={false}
       />
     </>
   );
