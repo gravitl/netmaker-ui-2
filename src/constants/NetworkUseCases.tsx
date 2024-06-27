@@ -48,6 +48,7 @@ export interface UsecaseQuestions {
   answer1Placeholder?: string;
   answer2Placeholder?: string;
   secondSelectMode?: 'multiple' | 'tags';
+  subDescription?: string[] | ReactNode[];
 }
 
 interface UsecaseKeyStringToTextMap {
@@ -89,6 +90,11 @@ export const PrimaryUsecaseQuestions: UsecaseQuestions[] = [
     description: `This opinionated setup process will help get your use case configured in as few steps as possible. 
       Currently, only remote access is offered. Use this to set up remote access to specific resources, sites, or the internet. 
       Estimated time to completion is 10 minutes.`,
+    subDescription: [
+      'Remote Access scenarios typically involve configuring access to resources at a remote site (office, cloud, data center)',
+      'Internet Gateway scenarios typically involve configuring access to the internet from a private network',
+      'Connect to Site scenarios typically involve configuring access to a specific network or subnet',
+    ],
   },
   {
     key: 'usecase',
@@ -99,6 +105,10 @@ export const PrimaryUsecaseQuestions: UsecaseQuestions[] = [
     description: `Remote Access scenarios typically involve configuring access to resources at a remote site (office, cloud, data center). 
     This guide will have you set up a remote access gateway, which grants access to the resources, and endpoints at the remote destination.
     `,
+    subDescription: [
+      'Specific Machines scenarios typically involve configuring access to specific machines or endpoints',
+      'Networks (LAN, VPC, Internet) scenarios typically involve configuring access to a network or subnet',
+    ],
   },
 ];
 
@@ -213,6 +223,10 @@ export const UsecaseQuestionsAll: UsecaseQuestions[] = [
     type: 'radio',
     descriptionTitle: 'Connect to a Site',
     description: '',
+    subDescription: [
+      'Connect via router: If you have a router that supports WireGuard, you can add the configuration here. This will allow all devices on your network to connect to the VPN.',
+      'Route via Netclient: If you have a device that supports WireGuard, you can setup netclient on the device. This will allow the device to connect to the VPN.',
+    ],
   },
   {
     key: 'internet_gateway',
@@ -251,8 +265,8 @@ export const UsecaseQuestionsAll: UsecaseQuestions[] = [
   },
   {
     key: 'review',
-    descriptionTitle: 'Review and Deploy',
-    description: 'Review your configuration and deploy your network',
+    descriptionTitle: 'Review',
+    description: `Once you've reviewed your configuration, click "Finish" to proceed with the tour and see your newly created setup.`,
     question: 'Check what was created',
     answers: ['Review'],
     type: 'review',
