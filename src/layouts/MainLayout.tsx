@@ -356,6 +356,9 @@ export default function MainLayout() {
     // check if managed host is loading
     const isNewTenant = store.isNewTenant;
     const isManagedHostLoaded = store.hosts.some((host) => isManagedHost(host.name));
+    console.log('isNewTenant', isNewTenant);
+    console.log('isManagedHostLoaded', isManagedHostLoaded);
+    console.log('isSaasBuild', isSaasBuild);
     return isSaasBuild && isNewTenant && !isManagedHostLoaded;
   }, [store.isNewTenant, store.hosts]);
 
