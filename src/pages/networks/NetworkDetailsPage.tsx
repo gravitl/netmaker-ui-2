@@ -48,6 +48,7 @@ import {
   Checkbox,
   Col,
   Dropdown,
+  Flex,
   FloatButton,
   Form,
   Input,
@@ -235,6 +236,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     // addRAGateway: 10,
   });
   const [isSetNetworkFailoverModalOpen, setIsSetNetworkFailoverModalOpen] = useState(false);
+  const [selectedGatewayTabKey, setSelectedGatewayTabKey] = useState('vpn-config');
 
   const overviewTabContainerRef = useRef(null);
   const hostsTabContainerTableRef = useRef(null);
@@ -940,14 +942,32 @@ export default function NetworkDetailsPage(props: PageProps) {
       {
         render(_, gateway) {
           return (
-            <Dropdown
-              placement="bottomRight"
-              menu={{
-                items: getGatewayDropdownOptions(gateway),
-              }}
-            >
-              <Button type="text" icon={<MoreOutlined />} />
-            </Dropdown>
+            <Flex>
+              {isServerEE && (
+                <Button
+                  type="primary"
+                  onClick={(info) => {
+                    setSelectedGateway(gateway);
+                    setIsUpdateIngressUsersModalOpen(true);
+                    info.stopPropagation();
+                  }}
+                  icon={<UserOutlined />}
+                  style={{ marginRight: '0.5rem' }}
+                >
+                  {' '}
+                  Add / Remove Users
+                </Button>
+              )}
+
+              <Dropdown
+                placement="bottomRight"
+                menu={{
+                  items: getGatewayDropdownOptions(gateway),
+                }}
+              >
+                <Button type="text" icon={<MoreOutlined />} />
+              </Dropdown>
+            </Flex>
           );
         },
       },
@@ -2618,45 +2638,47 @@ export default function NetworkDetailsPage(props: PageProps) {
                   </Row>
                 </Col>
                 <Col xs={24} xl={12}>
-                  <Row style={{ width: '100%' }}>
-                    <Col xs={24} md={12}>
-                      <Typography.Title style={{ marginTop: '0px' }} level={5}>
-                        VPN Config Files
-                      </Typography.Title>
-                    </Col>
-                    <Col xs={24} md={12} style={{ textAlign: 'right' }}>
-                      <Button
-                        type="primary"
-                        style={{ marginRight: '1rem' }}
-                        onClick={() => setIsAddClientModalOpen(true)}
-                        className="full-width-button-xs"
-                        ref={remoteAccessTabVPNConfigCreateConfigRef}
-                      >
-                        <PlusOutlined /> Create Config
-                      </Button>
-                      <Button
-                        title="Go to client documentation"
-                        style={{ marginLeft: '1rem' }}
-                        href={CLIENTS_DOCS_URL}
-                        target="_blank"
-                        icon={<QuestionCircleOutlined />}
-                      />
-                    </Col>
-                  </Row>
-                  <Row style={{ marginTop: '1rem' }}>
-                    <Col xs={24}>
-                      <div className="table-wrapper">
-                        <Table
-                          columns={clientsTableCols}
-                          dataSource={filteredClients}
-                          rowKey="clientid"
-                          size="small"
-                          scroll={{ x: true }}
-                          ref={remoteAccessTabVPNConfigTableRef}
+                  <>
+                    <Row style={{ width: '100%' }}>
+                      <Col xs={24} md={12}>
+                        <Typography.Title style={{ marginTop: '0px' }} level={5}>
+                          VPN Config Files
+                        </Typography.Title>
+                      </Col>
+                      <Col xs={24} md={12} style={{ textAlign: 'right' }}>
+                        <Button
+                          type="primary"
+                          style={{ marginRight: '1rem' }}
+                          onClick={() => setIsAddClientModalOpen(true)}
+                          className="full-width-button-xs"
+                          ref={remoteAccessTabVPNConfigCreateConfigRef}
+                        >
+                          <PlusOutlined /> Create Config
+                        </Button>
+                        <Button
+                          title="Go to client documentation"
+                          style={{ marginLeft: '1rem' }}
+                          href={CLIENTS_DOCS_URL}
+                          target="_blank"
+                          icon={<QuestionCircleOutlined />}
                         />
-                      </div>
-                    </Col>
-                  </Row>
+                      </Col>
+                    </Row>
+                    <Row style={{ marginTop: '1rem' }}>
+                      <Col xs={24}>
+                        <div className="table-wrapper">
+                          <Table
+                            columns={clientsTableCols}
+                            dataSource={filteredClients}
+                            rowKey="clientid"
+                            size="small"
+                            scroll={{ x: true }}
+                            ref={remoteAccessTabVPNConfigTableRef}
+                          />
+                        </div>
+                      </Col>
+                    </Row>
+                  </>
                 </Col>
               </Row>
             </Row>
