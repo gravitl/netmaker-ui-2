@@ -1,7 +1,7 @@
 import { Network } from '@/models/Network';
 import { useStore } from '@/store/store';
 import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
-import { Col, Input, Modal, notification, Row, Table, TableColumnsType, Typography } from 'antd';
+import { Col, Input, Modal, notification, Row, Table, TableColumnsType, Tooltip, Typography } from 'antd';
 import { User } from '@/models/User';
 import { Node } from '@/models/Node';
 import { UsersService } from '@/services/UsersService';
@@ -31,8 +31,8 @@ export default function UpdateIngressUsersModal({ isOpen, ingress, onCancel }: U
       const users = (await UsersService.getUsers()).data;
       const usersAttachedToIngress = (await UsersService.getIngressUsers(ingress.id)).data.users;
       // remove admins and the superadmin from the list
-      const filteredUsers = users.filter((user) => !user.isadmin && !user.issuperadmin);
-      setUsers(filteredUsers);
+      // const filteredUsers = users.filter((user) => !user.isadmin && !user.issuperadmin);
+      setUsers(users);
       setIngressUsers(usersAttachedToIngress);
     } catch (err) {
       notify.error({
@@ -94,7 +94,22 @@ export default function UpdateIngressUsersModal({ isOpen, ingress, onCancel }: U
       {
         title: 'Actions',
         render(_, user) {
-          return <Typography.Link onClick={() => confirmAttachOrRemoveUser(user)}>{getLinkText(user)}</Typography.Link>;
+          return (
+            <Tooltip
+              title={
+                user.isadmin || user.issuperadmin
+                  ? 'Admins can access the gateway directly without needing to detach or attach permissions.'
+                  : ''
+              }
+            >
+              <Typography.Link
+                onClick={() => confirmAttachOrRemoveUser(user)}
+                disabled={user.isadmin || user.issuperadmin}
+              >
+                {getLinkText(user)}
+              </Typography.Link>
+            </Tooltip>
+          );
         },
       },
     ],

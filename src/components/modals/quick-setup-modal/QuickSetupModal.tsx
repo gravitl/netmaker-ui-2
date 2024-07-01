@@ -32,7 +32,7 @@ import NewHostModal from '../new-host-modal/NewHostModal';
 import { NodesService } from '@/services/NodesService';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { NotificationInstance } from 'antd/es/notification/interface';
-import { isValidIpCidr } from '@/utils/NetworkUtils';
+import { isPrivateIpCidr, isValidIpCidr } from '@/utils/NetworkUtils';
 import { INTERNET_RANGE_IPV4, INTERNET_RANGE_IPV6 } from '@/constants/AppConstants';
 import { UsecaseQuestionAndAnswer } from '@/store/networkusecase';
 import AddHostsToNetworkModal from '../add-hosts-to-network-modal/AddHostsToNetworkModal';
