@@ -45,7 +45,9 @@ export type TourType =
   | 'quicksetup'
   | 'remoteaccess_specificmachines'
   | 'remoteaccess_withegress'
-  | 'internetgateway';
+  | 'internetgateway'
+  | 'connecttosite_router'
+  | 'connecttosite_netclient';
 
 export default function DashboardPage(props: PageProps) {
   const navigate = useNavigate();

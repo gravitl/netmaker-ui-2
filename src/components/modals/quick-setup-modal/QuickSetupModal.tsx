@@ -43,6 +43,7 @@ import { ServerConfigService } from '@/services/ServerConfigService';
 import { isSaasBuild } from '@/services/BaseService';
 import { use } from 'i18next';
 import { TourType } from '@/pages/DashboardPage';
+import { ExternalClient } from '@/models/ExternalClient';
 
 interface ModalProps {
   isModalOpen: boolean;
@@ -88,24 +89,25 @@ const InternetGatewayUsecaseQuestions: UsecaseQuestionKey[] = [
 
 const ConnectToSiteUsecaseQuestions: UsecaseQuestionKey[] = [
   'primary_usecase',
-  'networks',
   'connect_to_site',
+  'networks',
   'review',
 ];
 
 const ConnectToSiteUsecaseQuestionsWithExtClient: UsecaseQuestionKey[] = [
   'primary_usecase',
-  'networks',
   'connect_to_site',
+  'networks',
   'router',
   'review',
 ];
 
 const ConnectToSiteUsecaseQuestionsWithNetclient: UsecaseQuestionKey[] = [
   'primary_usecase',
-  'networks',
   'connect_to_site',
-  'netclient',
+  'networks',
+  'egress',
+  'ranges',
   'review',
 ];
 
@@ -199,17 +201,30 @@ export default function QuickSetupModal(props: ModalProps) {
       if (answer === 'remote_access') {
         const questions = UsecaseQuestionsAll.filter((question) =>
           RemoteAccessUsecaseQuestions.includes(question.key as UsecaseQuestionKey),
+        ).sort(
+          (a, b) =>
+            RemoteAccessUsecaseQuestions.indexOf(a.key as UsecaseQuestionKey) -
+            RemoteAccessUsecaseQuestions.indexOf(b.key as UsecaseQuestionKey),
         );
+
         setUserQuestions(questions);
       } else if (answer === 'internet_gateway') {
         const questions = UsecaseQuestionsAll.filter((question) =>
           InternetGatewayUsecaseQuestions.includes(question.key as UsecaseQuestionKey),
+        ).sort(
+          (a, b) =>
+            InternetGatewayUsecaseQuestions.indexOf(a.key as UsecaseQuestionKey) -
+            InternetGatewayUsecaseQuestions.indexOf(b.key as UsecaseQuestionKey),
         );
         setTourType('internetgateway');
         setUserQuestions(questions);
       } else if (answer === 'connect_to_site') {
         const questions = UsecaseQuestionsAll.filter((question) =>
-          ConnectToSiteUsecaseQuestionsWithExtClient.includes(question.key as UsecaseQuestionKey),
+          ConnectToSiteUsecaseQuestions.includes(question.key as UsecaseQuestionKey),
+        ).sort(
+          (a, b) =>
+            ConnectToSiteUsecaseQuestions.indexOf(a.key as UsecaseQuestionKey) -
+            ConnectToSiteUsecaseQuestions.indexOf(b.key as UsecaseQuestionKey),
         );
         setUserQuestions(questions);
       }
@@ -219,12 +234,20 @@ export default function QuickSetupModal(props: ModalProps) {
       if (answer === 'specific_machines') {
         const questions = UsecaseQuestionsAll.filter((question) =>
           RemoteAccessUsecaseQuestions.includes(question.key as UsecaseQuestionKey),
+        ).sort(
+          (a, b) =>
+            RemoteAccessUsecaseQuestions.indexOf(a.key as UsecaseQuestionKey) -
+            RemoteAccessUsecaseQuestions.indexOf(b.key as UsecaseQuestionKey),
         );
         setTourType('remoteaccess_specificmachines');
         setUserQuestions(questions);
       } else {
         const questions = UsecaseQuestionsAll.filter((question) =>
           RemoteAccessUsecaseWithEgressQuestions.includes(question.key as UsecaseQuestionKey),
+        ).sort(
+          (a, b) =>
+            RemoteAccessUsecaseWithEgressQuestions.indexOf(a.key as UsecaseQuestionKey) -
+            RemoteAccessUsecaseWithEgressQuestions.indexOf(b.key as UsecaseQuestionKey),
         );
         setTourType('remoteaccess_withegress');
         setUserQuestions(questions);
@@ -235,12 +258,21 @@ export default function QuickSetupModal(props: ModalProps) {
       if (answer === 'router') {
         const questions = UsecaseQuestionsAll.filter((question) =>
           ConnectToSiteUsecaseQuestionsWithExtClient.includes(question.key as UsecaseQuestionKey),
+        ).sort(
+          (a, b) =>
+            ConnectToSiteUsecaseQuestionsWithExtClient.indexOf(a.key as UsecaseQuestionKey) -
+            ConnectToSiteUsecaseQuestionsWithExtClient.indexOf(b.key as UsecaseQuestionKey),
         );
+        setTourType('connecttosite_router');
         setUserQuestions(questions);
       }
       if (answer === 'route_via_netclient') {
         const questions = UsecaseQuestionsAll.filter((question) =>
           ConnectToSiteUsecaseQuestionsWithNetclient.includes(question.key as UsecaseQuestionKey),
+        ).sort(
+          (a, b) =>
+            ConnectToSiteUsecaseQuestionsWithNetclient.indexOf(a.key as UsecaseQuestionKey) -
+            ConnectToSiteUsecaseQuestionsWithNetclient.indexOf(b.key as UsecaseQuestionKey),
         );
         setUserQuestions(questions);
       }
@@ -248,14 +280,52 @@ export default function QuickSetupModal(props: ModalProps) {
 
     // add answer to current question
     if (secondAnswer) {
-      return setCurrentQuestion({ ...currentQuestion, selectedAnswer2: answer });
+      setCurrentQuestion({ ...currentQuestion, selectedAnswer2: answer });
+      return;
     }
     setCurrentQuestion({ ...currentQuestion, selectedAnswer: answer, selectedAnswer2: [] });
   };
 
+  const checkIfAnswerIsEmpty = (answer: string | string[] | undefined) => {
+    if (!answer) return true;
+    if (Array.isArray(answer) && answer.length === 0) {
+      return true;
+    }
+    if (typeof answer === 'string' && answer === '') {
+      return true;
+    }
+    return false;
+  };
+
+  const checkIfQuestionIsUnAnswered = (question: UsecaseQuestions) => {
+    const questionsWithSingleAnswer: UsecaseQuestionKey[] = [
+      'primary_usecase',
+      'usecase',
+      'networks',
+      'remote_access_gateways',
+      'users',
+      'egress',
+    ];
+
+    const questionWithMultipleAnswers: UsecaseQuestionKey[] = ['internet_gateway', 'router'];
+
+    if (questionsWithSingleAnswer.includes(question.key) && !question.selectedAnswer) {
+      return true;
+    }
+
+    if (
+      questionWithMultipleAnswers.includes(question.key) &&
+      (checkIfAnswerIsEmpty(question.selectedAnswer) || checkIfAnswerIsEmpty(question.selectedAnswer2))
+    ) {
+      return true;
+    }
+
+    return false;
+  };
+
   const handleNextQuestion = async () => {
     // if current question has no answer return and notify user
-    if (!currentQuestion.selectedAnswer && currentQuestion.key !== 'ranges' && currentQuestion.key !== 'hosts') {
+    if (checkIfQuestionIsUnAnswered(currentQuestion)) {
       props.notify.error({ message: 'Please select an answer' });
       return;
     }
@@ -554,19 +624,31 @@ export default function QuickSetupModal(props: ModalProps) {
     return [];
   };
 
-  const getAnswerText = (answer: string | string[] | undefined) => {
-    if (!answer) return '';
-    if (Array.isArray(answer)) {
-      return answer.map((ans) => UsecaseKeyStringToTextMapForAnswers[ans]).join(', ');
-    }
-    if (UsecaseKeyStringToTextMap[answer]) {
-      return UsecaseKeyStringToTextMap[answer];
-    } else {
-      // check if answer is a node id and return node name
-      const node = networkNodes.find((node) => node.id === answer);
-      return node?.name ?? answer;
-    }
-  };
+  const getAnswerText = useCallback(
+    (answer: string | string[] | undefined) => {
+      if (!answer) return '';
+      if (Array.isArray(answer)) {
+        return answer
+          .map((ans) => {
+            if (UsecaseKeyStringToTextMapForAnswers[ans]) {
+              return UsecaseKeyStringToTextMapForAnswers[ans];
+            } else {
+              const node = networkNodes.find((node) => node.id === ans);
+              return node?.name ?? ans;
+            }
+          })
+          .join(', ');
+      }
+      if (UsecaseKeyStringToTextMap[answer]) {
+        return UsecaseKeyStringToTextMap[answer];
+      } else {
+        // check if answer is a node id and return node name
+        const node = networkNodes.find((node) => node.id === answer);
+        return node?.name ?? answer;
+      }
+    },
+    [networkNodes],
+  );
 
   const getCurrentQuestionImage = useMemo(() => {
     //return <></> if screen size is less than 768px
@@ -609,19 +691,36 @@ export default function QuickSetupModal(props: ModalProps) {
     return (
       <>
         {currentQuestion.key === 'users' && currentQuestion.selectedAnswer === 'our_rac' && (
-          <Alert
-            message={
-              <>
-                Visit{' '}
-                <a href={ExternalLinks.RAC_LINK} target="_blank" rel="noreferrer">
-                  our docs{' '}
-                </a>{' '}
-                to find out how to use the Remote Access Client
-              </>
-            }
-            type="info"
-            showIcon
-          />
+          <>
+            <Alert
+              message={
+                <>
+                  Visit{' '}
+                  <a href={ExternalLinks.RAC_LINK} target="_blank" rel="noreferrer">
+                    our docs{' '}
+                  </a>{' '}
+                  to find out how to use the Remote Access Client
+                </>
+              }
+              type="info"
+              showIcon
+            />
+
+            <Alert
+              message={
+                <>
+                  Visit this{' '}
+                  <a href={ExternalLinks.HOW_TO_ADD_USERS_TO_NETWORK} target="_blank" rel="noreferrer">
+                    blog post{' '}
+                  </a>{' '}
+                  to find out how to add users.
+                </>
+              }
+              type="info"
+              style={{ marginTop: '1rem' }}
+              showIcon
+            />
+          </>
         )}
         {currentQuestion.key === 'users' && currentQuestion.selectedAnswer === 'vpn_client' && (
           <Alert
@@ -677,20 +776,36 @@ export default function QuickSetupModal(props: ModalProps) {
       return (
         <>
           {selectedAnswer === 'our_rac' && (
-            <Alert
-              message={
-                <>
-                  Visit{' '}
-                  <a href={ExternalLinks.RAC_LINK} target="_blank" rel="noreferrer">
-                    our docs{' '}
-                  </a>{' '}
-                  to find out how to use the Remote Access Client
-                </>
-              }
-              type="info"
-              showIcon
-              style={{ marginTop: '1rem' }}
-            />
+            <>
+              <Alert
+                message={
+                  <>
+                    Visit{' '}
+                    <a href={ExternalLinks.RAC_LINK} target="_blank" rel="noreferrer">
+                      our docs{' '}
+                    </a>{' '}
+                    to find out how to use the Remote Access Client
+                  </>
+                }
+                type="info"
+                showIcon
+                style={{ marginTop: '1rem' }}
+              />
+              <Alert
+                message={
+                  <>
+                    Visit this{' '}
+                    <a href={ExternalLinks.HOW_TO_ADD_USERS_TO_NETWORK} target="_blank" rel="noreferrer">
+                      blog post{' '}
+                    </a>{' '}
+                    to find out how to add users.
+                  </>
+                }
+                type="info"
+                style={{ marginTop: '1rem' }}
+                showIcon
+              />
+            </>
           )}
           {selectedAnswer === 'vpn_client' && (
             <Alert
@@ -724,7 +839,7 @@ export default function QuickSetupModal(props: ModalProps) {
               style={{ marginTop: '1rem' }}
             />
           )}
-          {selectedAnswer === 'route_via_netclient' && (
+          {/* {selectedAnswer === 'route_via_netclient' && (
             <Alert
               message={
                 <>
@@ -739,7 +854,7 @@ export default function QuickSetupModal(props: ModalProps) {
               showIcon
               style={{ marginTop: '1rem' }}
             />
-          )}
+          )} */}
         </>
       );
     },
@@ -802,12 +917,13 @@ export default function QuickSetupModal(props: ModalProps) {
       return answers;
     }
     return currentQuestion.selectedAnswer2;
-  }, [currentQuestion.selectedAnswer2, internetGateways]);
+  }, [currentQuestion.selectedAnswer2, currentQuestion.key, internetGateways]);
 
   const reviewItems = useMemo(() => {
     const questionsAskedMinusReview = userQuestionsAsked.filter((ques) => ques.questionKey !== 'review');
     return questionsAskedMinusReview.map((question) => {
       const questionText = UsecaseKeyStringToTextMapForReview[question.questionKey];
+      const questionText2 = UsecaseKeyStringToTextMapForReview[`${question.questionKey}_2`];
       const answerText = getAnswerText(question.answer);
       const answerText2 = getAnswerText(question.answer2);
       return {
@@ -817,6 +933,11 @@ export default function QuickSetupModal(props: ModalProps) {
             {questionText && <Typography.Paragraph strong>{questionText}</Typography.Paragraph>}
             {answerText && <Typography.Text>{answerText}</Typography.Text>}
             {typeof question.answer === 'string' && getQuickLinkForReview(question.answer)}
+            {questionText2 && (
+              <Typography.Paragraph strong style={{ marginTop: '10px' }}>
+                {questionText2}
+              </Typography.Paragraph>
+            )}
             {answerText2 && <Typography.Text>{answerText2}</Typography.Text>}
           </>
         ),
@@ -841,6 +962,18 @@ export default function QuickSetupModal(props: ModalProps) {
     currentQuestion.subDescription,
     currentQuestion.type,
   ]);
+
+  const nextButtonText = useMemo(() => {
+    if (
+      currentQuestion.key === 'ranges' ||
+      currentQuestion.key === 'internet_gateway' ||
+      currentQuestion.key === 'remote_access_gateways'
+    ) {
+      return 'Create';
+    } else {
+      return 'Next';
+    }
+  }, [currentQuestion.key]);
 
   useEffect(() => {
     if (!currentQuestion.selectedAnswer && currentQuestion.key === 'networks') {
@@ -1079,7 +1212,9 @@ export default function QuickSetupModal(props: ModalProps) {
                     loading={isNextLoading}
                     style={{ marginLeft: '10px' }}
                   >
-                    {currentQuestionIndex == 1 || currentQuestionIndex < userQuestions.length - 1 ? 'Next' : 'Finish'}
+                    {currentQuestionIndex == 1 || currentQuestionIndex < userQuestions.length - 1
+                      ? nextButtonText
+                      : 'Finish'}
                   </Button>
                 </div>
               </Space>

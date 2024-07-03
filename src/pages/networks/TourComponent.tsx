@@ -1786,6 +1786,28 @@ export default function TourComponent(props: TourUtilsProps) {
     [internetGatewaysConnectedHostsTableRef, internetGatewaysTableRef, prevTourStep, setIsAddInternetGatewayModalOpen],
   );
 
+  const egressGatewayTourSteps: TourProps['steps'] = useMemo(
+    () => [
+      {
+        title: 'Egress Table',
+        description: (
+          <>
+            These are the devices sending traffic to your network, get egress information like egress name, address and
+            you can update the egress details by hovering over the ellipsis and clicking on update egress and you can
+            get more info about the egress by clicking on the egress name.
+          </>
+        ),
+        target: egressTabEgressTableRef.current,
+      },
+      {
+        title: 'External Routes Table',
+        description: 'These are the ranges been forwarded by the egress',
+        target: egressTabExternalRoutesTableRef.current,
+      },
+    ],
+    [egressTabEgressTableRef, egressTabExternalRoutesTableRef],
+  );
+
   const handleTourOnChange = useCallback(
     (current: number) => {
       setTourStep(current);
@@ -1808,7 +1830,12 @@ export default function TourComponent(props: TourUtilsProps) {
         return remoteAccessWithEgressTourStepsCE;
       }
       if (location.state.startTour === 'internetgateway') {
+        setActiveTabKey('internet-gateways');
         return internetGatewayTourSteps;
+      }
+      if (location.state.startTour === 'connecttosite_netclient') {
+        setActiveTabKey('egress');
+        return egressGatewayTourSteps;
       }
     }
 
@@ -1817,6 +1844,7 @@ export default function TourComponent(props: TourUtilsProps) {
     }
     return networkDetailsTourStepsCE;
   }, [
+    egressGatewayTourSteps,
     internetGatewayTourSteps,
     isServerEE,
     location.state,
@@ -1826,6 +1854,7 @@ export default function TourComponent(props: TourUtilsProps) {
     remoteAccessWithEgressTourStepsCE,
     remoteAccessWithEgressTourStepsPro,
     remoteAccessWithSpecificMachinesTourStepsCE,
+    setActiveTabKey,
   ]);
 
   const handleModalClose = useCallback(() => {

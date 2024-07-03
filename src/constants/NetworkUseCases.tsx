@@ -88,12 +88,12 @@ export const PrimaryUsecaseQuestions: UsecaseQuestions[] = [
     type: 'radio',
     descriptionTitle: 'Welcome to Guided Setup',
     description: `This opinionated setup process will help get your use case configured in as few steps as possible. 
-      Currently, only remote access is offered. Use this to set up remote access to specific resources, sites, or the internet. 
+      Use this to set up remote access to specific resources, sites, or the internet. 
       Estimated time to completion is 10 minutes.`,
     subDescription: [
       'Remote Access scenarios typically involve configuring access to resources at a remote site (office, cloud, data center)',
       'Internet Gateway scenarios typically involve configuring access to the internet from a private network',
-      'Connect to Site scenarios typically involve configuring access to a specific network or subnet',
+      'Connect a Site scenarios typically involve configuring access to a specific network or subnet',
     ],
   },
   {
@@ -236,9 +236,9 @@ export const UsecaseQuestionsAll: UsecaseQuestions[] = [
     answers2: [],
     type: 'double_select',
     descriptionTitle: 'Internet Gateway',
-    description: `Internet Gateways allows Netmaker to work like a normal VPN. A gateway forwards traffic from the connected hosts to the internet and vice versa. Internet gateways can help you to hide your true IP address and bypass geo-restrictions.`,
+    description: `Internet Gateways allow Netmaker to work like a normal VPN. A gateway forwards traffic from the connected hosts to the internet and vice versa. Internet gateways can help you hide your true IP address and bypass geo-restrictions.`,
     answer1Placeholder: 'Select a host to act as your internet gateway',
-    answer2Placeholder: 'Select a host to route through the internet gateway',
+    answer2Placeholder: 'Select a host to route traffic through the internet gateway',
     secondSelectMode: 'multiple',
   },
   {
@@ -309,7 +309,10 @@ export const UsecaseKeyStringToTextMapForReview: UsecaseKeyStringToTextMap = {
   egress: 'Your egress gateway?',
   ranges: 'Your egress ranges?',
   connect_to_site: 'Your connection method?',
-  router: 'Your router configuration?',
+  router: 'Your remote access gateway?',
+  router_2: 'Your local LAN addresses behind the router',
   netclient: 'Your selected device',
   hosts: 'Hosts added to the network',
+  internet_gateway: 'Your internet gateway?',
+  internet_gateway_2: 'Your internet clients?',
 };

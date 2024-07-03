@@ -8,6 +8,7 @@ const IPTABLES_DOCS_LINK = 'https://ioflood.com/blog/install-iptables-command-li
 const INTEGRATING_NON_NATIVE_DEVICES_LINK =
   'https://docs.netmaker.io/integrating-non-native-devices.html#integrating-non-native-devices--page-root';
 const ROUTE_LOCAL_NETWORK_TRAFFIC_LINK = 'https://docs.netmaker.io/'; /// NEED TO ADD LINK
+const HOW_TO_ADD_USERS_TO_NETWORK = 'https://www.netmaker.io/resources/how-to-add-users-to-netmaker-saas';
 
 const EGRESS_IMG = '/egress.webp';
 const RAG_IMG = '/rag.webp';
@@ -23,6 +24,7 @@ export const ExternalLinks = {
   IPTABLES_DOCS_LINK,
   INTEGRATING_NON_NATIVE_DEVICES_LINK,
   ROUTE_LOCAL_NETWORK_TRAFFIC_LINK,
+  HOW_TO_ADD_USERS_TO_NETWORK,
 };
 
 export const AppImages = {
