@@ -11,19 +11,19 @@ export const useStore = create<
   INodeSlice & IAppSlice & INetworkSlice & IAuthSlice & IHostSlice & INetworksUsecaseSlice
 >()(
   devtools(
-    persist(
-      (...a) => ({
-        ...NodeSlice.createNodeSlice(...a),
-        ...AppSlice.createAppSlice(...a),
-        ...AuthSlice.createAuthSlice(...a),
-        ...NetworkSlice.createNetworkSlice(...a),
-        ...HostSlice.createHostSlice(...a),
-        ...NetworksUsecaseSlice.createNetworkUsecaseSlice(...a),
-      }),
-      {
-        name: 'netmaker-storage',
-      },
-    ),
+    // persist(
+    (...a) => ({
+      ...NodeSlice.createNodeSlice(...a),
+      ...AppSlice.createAppSlice(...a),
+      ...AuthSlice.createAuthSlice(...a),
+      ...NetworkSlice.createNetworkSlice(...a),
+      ...HostSlice.createHostSlice(...a),
+      ...NetworksUsecaseSlice.createNetworkUsecaseSlice(...a),
+    }),
+    //   {
+    //     name: 'netmaker-storage',
+    //   },
+    // ),
   ),
 );
 
