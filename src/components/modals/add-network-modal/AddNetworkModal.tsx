@@ -79,6 +79,7 @@ export default function AddNetworkModal({
       defaultacl: 'yes',
       defaultDns: '',
     });
+    form.validateFields();
   }, [form, isIpv4Val, isIpv6Val]);
 
   return (
