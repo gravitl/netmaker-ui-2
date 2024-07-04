@@ -1823,7 +1823,7 @@ export default function TourComponent(props: TourUtilsProps) {
         }
         return remoteAccessWithSpecificMachinesTourStepsCE;
       }
-      if (location.state.startTour === 'remoteaccess_egress') {
+      if (location.state.startTour === 'remoteaccess_withegress') {
         if (isServerEE) {
           return remoteAccessWithEgressTourStepsPro;
         }

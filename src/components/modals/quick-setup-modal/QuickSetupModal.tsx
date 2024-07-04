@@ -902,6 +902,14 @@ export default function QuickSetupModal(props: ModalProps) {
 
       return answer;
     }
+
+    // handle hosts
+    if (currentQuestion.key === 'hosts') {
+      const answer = networkNodes
+        .filter((node) => currentQuestion.selectedAnswer?.includes(node.id))
+        .map((node) => node.id);
+      return answer;
+    }
     return currentQuestion.selectedAnswer;
   }, [currentQuestion.selectedAnswer, currentQuestion.key, clientGateways, egresses]);
 
