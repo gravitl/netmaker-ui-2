@@ -49,6 +49,7 @@ const createHostSlice: StateCreator<IHostSlice, [], [], IHostSlice> = (set) => (
           mtu: host.mtu,
           interfaces: host.interfaces ?? [],
           macaddress: host.macaddress,
+          firewallinuse: host.firewallinuse,
         };
       });
       set(() => ({ hosts: hosts, hostsCommonDetails: commonDetails, isFetchingHosts: false }));
