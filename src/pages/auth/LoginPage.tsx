@@ -7,7 +7,13 @@ import { Alert, Button, Checkbox, Col, Divider, Form, Image, Input, Layout, noti
 import { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { AMUI_URL, isSaasBuild } from '../../services/BaseService';
+import {
+  AMUI_URL,
+  NMUI_ACCESS_TOKEN_LOCALSTORAGE_KEY,
+  NMUI_USERNAME_LOCALSTORAGE_KEY,
+  NMUI_USER_LOCALSTORAGE_KEY,
+  isSaasBuild,
+} from '../../services/BaseService';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { UsersService } from '@/services/UsersService';
 import { User, UserRole } from '@/models/User';
@@ -57,19 +63,13 @@ export default function LoginPage(props: LoginPageProps) {
         setIsUserDeniedFromDashboard(true);
         return;
       }
-      store.setStore({ user, userPlatformRole });
+
+      store.setStore({ user });
+      window?.localStorage?.setItem(NMUI_USER_LOCALSTORAGE_KEY, JSON.stringify(user));
     } catch (err) {
       notify.error({ message: 'Failed to get user details', description: extractErrorMsg(err as any) });
     }
   };
-
-  // const checkLoginErrorMessage = (err: string) => {
-  //   if (err.toLowerCase() === USER_ERROR_MESSAGE.toLowerCase()) {
-  //     setIsUserLoggingIn(true);
-  //     return;
-  //   }
-  //   setIsUserLoggingIn(false);
-  // };
 
   const onLogin = async () => {
     try {
@@ -77,6 +77,8 @@ export default function LoginPage(props: LoginPageProps) {
       setIsBasicAuthLoading(true);
       const data = await (await AuthService.login(formData)).data;
       store.setStore({ jwt: data.Response.AuthToken, username: data.Response.UserName });
+      window?.localStorage?.setItem(NMUI_ACCESS_TOKEN_LOCALSTORAGE_KEY, data.Response.AuthToken);
+      window?.localStorage?.setItem(NMUI_USERNAME_LOCALSTORAGE_KEY, data.Response.UserName);
       await storeFetchServerConfig();
       await getUserAndUpdateInStore(data.Response.UserName);
     } catch (err) {

@@ -1,7 +1,16 @@
 import { StateCreator } from 'zustand';
 import { TenantConfig } from '../models/ServerConfig';
 import { User, UserRole } from '@/models/User';
-import { isSaasBuild } from '@/services/BaseService';
+import {
+  NMUI_ACCESS_TOKEN_LOCALSTORAGE_KEY,
+  NMUI_AMUI_USER_ID_LOCALSTORAGE_KEY,
+  NMUI_BASE_URL_LOCALSTORAGE_KEY,
+  NMUI_TENANT_ID_LOCALSTORAGE_KEY,
+  NMUI_TENANT_NAME_LOCALSTORAGE_KEY,
+  NMUI_USERNAME_LOCALSTORAGE_KEY,
+  NMUI_USER_LOCALSTORAGE_KEY,
+  isSaasBuild,
+} from '@/services/BaseService';
 import { isValidJwt } from '@/utils/Utils';
 
 export interface IAuthSlice {
@@ -39,7 +48,10 @@ const createAuthSlice: StateCreator<IAuthSlice, [], [], IAuthSlice> = (set, get)
   isLoggedIn() {
     // TODO: fix username retrieval for SaaS
     return (
-      !!get().jwt && isValidJwt(get().jwt || '') && (!isSaasBuild ? !!get().user && !!get().userPlatformRole : true)
+      !!get().baseUrl &&
+      !!get().jwt &&
+      isValidJwt(get().jwt || '') &&
+      (!isSaasBuild ? !!get().user && !!get().userPlatformRole : true)
     );
   },
   setStore(config) {
@@ -57,6 +69,13 @@ const createAuthSlice: StateCreator<IAuthSlice, [], [], IAuthSlice> = (set, get)
       user: null,
       userPlatformRole: null,
     });
+    window?.localStorage?.removeItem(NMUI_ACCESS_TOKEN_LOCALSTORAGE_KEY);
+    window?.localStorage?.removeItem(NMUI_USERNAME_LOCALSTORAGE_KEY);
+    window?.localStorage?.removeItem(NMUI_BASE_URL_LOCALSTORAGE_KEY);
+    window?.localStorage?.removeItem(NMUI_TENANT_ID_LOCALSTORAGE_KEY);
+    window?.localStorage?.removeItem(NMUI_TENANT_NAME_LOCALSTORAGE_KEY);
+    window?.localStorage?.removeItem(NMUI_AMUI_USER_ID_LOCALSTORAGE_KEY);
+    window?.localStorage?.removeItem(NMUI_USER_LOCALSTORAGE_KEY);
   },
 });
 
