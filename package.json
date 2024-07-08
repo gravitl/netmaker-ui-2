@@ -22,7 +22,7 @@
     "@ant-design/icons": "^5.3.7",
     "@react-sigma/core": "^3.4.2",
     "animate.css": "^4.1.1",
-    "antd": "~5.10",
+    "antd": "~5.19",
     "antd-style": "^3.6.2",
     "axios": "^1.6.8",
     "axios-mock-adapter": "^1.22.0",
