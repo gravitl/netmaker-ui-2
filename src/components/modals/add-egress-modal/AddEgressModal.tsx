@@ -28,6 +28,7 @@ import { AxiosError } from 'axios';
 import { NodesService } from '@/services/NodesService';
 import { CreateEgressNodeDto } from '@/services/dtos/CreateEgressNodeDto';
 import './AddEgressModal.styles.scss';
+import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 
 interface AddEgressModalProps {
   isOpen: boolean;
@@ -109,6 +110,10 @@ export default function AddEgressModal({
       {
         title: 'Endpoint',
         dataIndex: 'endpointip',
+      },
+      {
+        title: 'Firewall',
+        dataIndex: 'firewallinuse',
       },
       {
         title: 'Health status',
@@ -250,8 +255,9 @@ export default function AddEgressModal({
                     <Col span={6}>
                       {selectedEgress?.address ?? ''} {selectedEgress?.address6 ?? ''}
                     </Col>
-                    <Col span={6}>{selectedEgress?.endpointip ?? ''}</Col>
-                    <Col span={5}>{getNodeConnectivity(selectedEgress)}</Col>
+                    <Col span={5}>{selectedEgress?.endpointip ?? ''}</Col>
+                    <Col span={3}>{selectedEgress.firewallinuse}</Col>
+                    <Col span={3}>{getNodeConnectivity(selectedEgress)}</Col>
                     <Col span={1} style={{ textAlign: 'right' }}>
                       <Button
                         danger
@@ -265,6 +271,42 @@ export default function AddEgressModal({
                       />
                     </Col>
                   </Row>
+                  {selectedEgress.firewallinuse === 'none' && (
+                    <Row>
+                      <Col xs={24}>
+                        <Alert
+                          type="warning"
+                          message={
+                            <>
+                              <Typography.Text>
+                                Netmaker requires nftables or iptables to be configured on the host for egress to
+                                function.
+                                <br />
+                                Need help setting up? visit these links to install{' '}
+                                <Typography.Link
+                                  href={ExternalLinks.NFTABLES_DOCS_LINK}
+                                  rel="noopener noreferrer"
+                                  target="_blank"
+                                >
+                                  nftables
+                                </Typography.Link>{' '}
+                                or{' '}
+                                <Typography.Link
+                                  href={ExternalLinks.IPTABLES_DOCS_LINK}
+                                  rel="noopener noreferrer"
+                                  target="_blank"
+                                >
+                                  iptables
+                                </Typography.Link>{' '}
+                                on your linux host.
+                              </Typography.Text>
+                            </>
+                          }
+                          style={{ marginTop: '1rem', width: '100%' }}
+                        />
+                      </Col>
+                    </Row>
+                  )}
                 </>
               )}
             </Form.Item>
