@@ -44,6 +44,9 @@ import { isSaasBuild } from '@/services/BaseService';
 import { use } from 'i18next';
 import { TourType } from '@/pages/DashboardPage';
 import { ExternalClient } from '@/models/ExternalClient';
+import { User } from '@/models/User';
+import { UsersService } from '@/services/UsersService';
+import AddUserModal from '../add-user-modal/AddUserModal';
 
 interface ModalProps {
   isModalOpen: boolean;
@@ -58,23 +61,47 @@ interface RangesFormFields {
   ranges: Node['egressgatewayranges'];
 }
 
-const RemoteAccessUsecaseQuestions: UsecaseQuestionKey[] = [
+const RemoteAccessUsecaseQuestionsWithVpnConfig: UsecaseQuestionKey[] = [
   'primary_usecase',
   'usecase',
   'networks',
   'remote_access_gateways',
   'users',
+  // 'remote_access_gateways_with_ext_client',
   'hosts',
   'review',
 ];
 
-const RemoteAccessUsecaseWithEgressQuestions: UsecaseQuestionKey[] = [
+const RemoteAccessUsecaseWithEgressQuestionsWithVpnConfig: UsecaseQuestionKey[] = [
   'primary_usecase',
   'usecase',
   'networks',
-  // 'hosts',
   'remote_access_gateways',
   'users',
+  // 'remote_access_gateways_with_ext_client',
+  'egress',
+  'ranges',
+  'review',
+];
+
+const RemoteAccessUsecaseQuestionsWithUsers: UsecaseQuestionKey[] = [
+  'primary_usecase',
+  'usecase',
+  'networks',
+  'remote_access_gateways',
+  'users',
+  'gateway_users',
+  'hosts',
+  'review',
+];
+
+const RemoteAccessUsecaseWithEgressQuestionsWithUsers: UsecaseQuestionKey[] = [
+  'primary_usecase',
+  'usecase',
+  'networks',
+  'remote_access_gateways',
+  'users',
+  'gateway_users',
   'egress',
   'ranges',
   'review',
@@ -121,6 +148,8 @@ const NodeSelectDropdownChecks = [
   'review',
 ];
 
+const NodeSelectDropdownChecks2 = ['gateway_users'];
+
 export default function QuickSetupModal(props: ModalProps) {
   const store = useStore();
   const { currentTheme } = store;
@@ -133,9 +162,14 @@ export default function QuickSetupModal(props: ModalProps) {
   const [isAddNewHostModalOpen, setIsAddNewHostModalOpen] = useState<boolean>(false);
   const [isAddHostsToNetworkModalOpen, setIsAddHostsToNetworkModalOpen] = useState<boolean>(false);
   const [isNextLoading, setIsNextLoading] = useState<boolean>(false);
+  const [ingressNodeId, setIngressNodeId] = useState<string>('');
   const [egressNodeId, setEgressNodeId] = useState<string>('');
   const [tourType, setTourType] = useState<TourType>('remoteaccess_specificmachines');
   const isServerEE = store.serverConfig?.IsEE === 'yes';
+  const [users, setUsers] = useState<User[]>([]);
+  const [ingressUsers, setIngressUsers] = useState<User[]>([]);
+  const [isUsersLoading, setIsUsersLoading] = useState(false);
+  const [isAddNewUserModalOpen, setIsAddNewUserModalOpen] = useState(false);
 
   const [form] = Form.useForm<RangesFormFields>();
 
@@ -165,6 +199,28 @@ export default function QuickSetupModal(props: ModalProps) {
       .map((node) => getExtendedNode(node, store.hostsCommonDetails));
   }, [networkNodes, store.hostsCommonDetails]);
 
+  const loadUsers = useCallback(
+    async (nodeId: string) => {
+      try {
+        setIsUsersLoading(true);
+        const users = (await UsersService.getUsers()).data;
+        const usersAttachedToIngress = (await UsersService.getIngressUsers(nodeId)).data.users;
+        // remove admins and the superadmin from the list
+        const filteredUsers = users.filter((user) => !user.isadmin && !user.issuperadmin);
+        setUsers(filteredUsers);
+        setIngressUsers(usersAttachedToIngress);
+      } catch (err) {
+        props.notify.error({
+          message: 'Failed to load users',
+          description: extractErrorMsg(err as any),
+        });
+      } finally {
+        setIsUsersLoading(false);
+      }
+    },
+    [props.notify],
+  );
+
   const handleAddToAlreadyAskedQuestions = (answer: string | string[], isSecondAnswer = false) => {
     const questionsAskedMinusCurrentQuestion = userQuestionsAsked.filter(
       (ques) => ques.questionKey !== currentQuestion.key,
@@ -188,6 +244,9 @@ export default function QuickSetupModal(props: ModalProps) {
     setCurrentQuestionIndex(0);
     setNetworkId('');
     setEgressNodeId('');
+    setUsers([]);
+    setIngressUsers([]);
+    setIngressNodeId('');
     form.resetFields();
   };
 
@@ -200,11 +259,11 @@ export default function QuickSetupModal(props: ModalProps) {
     if (currentQuestion.key === 'primary_usecase') {
       if (answer === 'remote_access') {
         const questions = UsecaseQuestionsAll.filter((question) =>
-          RemoteAccessUsecaseQuestions.includes(question.key as UsecaseQuestionKey),
+          RemoteAccessUsecaseQuestionsWithUsers.includes(question.key as UsecaseQuestionKey),
         ).sort(
           (a, b) =>
-            RemoteAccessUsecaseQuestions.indexOf(a.key as UsecaseQuestionKey) -
-            RemoteAccessUsecaseQuestions.indexOf(b.key as UsecaseQuestionKey),
+            RemoteAccessUsecaseQuestionsWithUsers.indexOf(a.key as UsecaseQuestionKey) -
+            RemoteAccessUsecaseQuestionsWithUsers.indexOf(b.key as UsecaseQuestionKey),
         );
 
         setUserQuestions(questions);
@@ -230,27 +289,53 @@ export default function QuickSetupModal(props: ModalProps) {
       }
     }
 
-    if (currentQuestion.key === 'usecase') {
-      if (answer === 'specific_machines') {
-        const questions = UsecaseQuestionsAll.filter((question) =>
-          RemoteAccessUsecaseQuestions.includes(question.key as UsecaseQuestionKey),
-        ).sort(
-          (a, b) =>
-            RemoteAccessUsecaseQuestions.indexOf(a.key as UsecaseQuestionKey) -
-            RemoteAccessUsecaseQuestions.indexOf(b.key as UsecaseQuestionKey),
-        );
-        setTourType('remoteaccess_specificmachines');
-        setUserQuestions(questions);
+    if (currentQuestion.key === 'users') {
+      const answerForUsecase = userQuestionsAsked.find((ques) => ques.questionKey === 'usecase')?.answer;
+
+      if (answer === 'our_rac') {
+        if (answerForUsecase === 'specific_machines') {
+          const questions = UsecaseQuestionsAll.filter((question) =>
+            RemoteAccessUsecaseQuestionsWithUsers.includes(question.key as UsecaseQuestionKey),
+          ).sort(
+            (a, b) =>
+              RemoteAccessUsecaseQuestionsWithUsers.indexOf(a.key as UsecaseQuestionKey) -
+              RemoteAccessUsecaseQuestionsWithUsers.indexOf(b.key as UsecaseQuestionKey),
+          );
+          setTourType('remoteaccess_specificmachines');
+          setUserQuestions(questions);
+        } else {
+          const questions = UsecaseQuestionsAll.filter((question) =>
+            RemoteAccessUsecaseWithEgressQuestionsWithUsers.includes(question.key as UsecaseQuestionKey),
+          ).sort(
+            (a, b) =>
+              RemoteAccessUsecaseWithEgressQuestionsWithUsers.indexOf(a.key as UsecaseQuestionKey) -
+              RemoteAccessUsecaseWithEgressQuestionsWithUsers.indexOf(b.key as UsecaseQuestionKey),
+          );
+          setTourType('remoteaccess_withegress');
+          setUserQuestions(questions);
+        }
       } else {
-        const questions = UsecaseQuestionsAll.filter((question) =>
-          RemoteAccessUsecaseWithEgressQuestions.includes(question.key as UsecaseQuestionKey),
-        ).sort(
-          (a, b) =>
-            RemoteAccessUsecaseWithEgressQuestions.indexOf(a.key as UsecaseQuestionKey) -
-            RemoteAccessUsecaseWithEgressQuestions.indexOf(b.key as UsecaseQuestionKey),
-        );
-        setTourType('remoteaccess_withegress');
-        setUserQuestions(questions);
+        if (answerForUsecase === 'specific_machines') {
+          const questions = UsecaseQuestionsAll.filter((question) =>
+            RemoteAccessUsecaseQuestionsWithVpnConfig.includes(question.key as UsecaseQuestionKey),
+          ).sort(
+            (a, b) =>
+              RemoteAccessUsecaseQuestionsWithVpnConfig.indexOf(a.key as UsecaseQuestionKey) -
+              RemoteAccessUsecaseQuestionsWithVpnConfig.indexOf(b.key as UsecaseQuestionKey),
+          );
+          setTourType('remoteaccess_withegress');
+          setUserQuestions(questions);
+        } else {
+          const questions = UsecaseQuestionsAll.filter((question) =>
+            RemoteAccessUsecaseWithEgressQuestionsWithVpnConfig.includes(question.key as UsecaseQuestionKey),
+          ).sort(
+            (a, b) =>
+              RemoteAccessUsecaseWithEgressQuestionsWithVpnConfig.indexOf(a.key as UsecaseQuestionKey) -
+              RemoteAccessUsecaseWithEgressQuestionsWithVpnConfig.indexOf(b.key as UsecaseQuestionKey),
+          );
+          setTourType('remoteaccess_withegress');
+          setUserQuestions(questions);
+        }
       }
     }
 
@@ -283,6 +368,7 @@ export default function QuickSetupModal(props: ModalProps) {
       setCurrentQuestion({ ...currentQuestion, selectedAnswer2: answer });
       return;
     }
+
     setCurrentQuestion({ ...currentQuestion, selectedAnswer: answer, selectedAnswer2: [] });
   };
 
@@ -349,6 +435,7 @@ export default function QuickSetupModal(props: ModalProps) {
             metadata: '',
           });
           props.notify.success({ message: `Remote access gateway created` });
+          setIngressNodeId(answer);
         } catch (err) {
           props.notify.error({
             message: 'Failed to create remote access gateway',
@@ -361,6 +448,8 @@ export default function QuickSetupModal(props: ModalProps) {
           store.fetchNodes();
         }
       }
+      setIngressNodeId(answer);
+      loadUsers(answer);
     } else if (currentQuestion.key === 'egress') {
       const answer = currentQuestion.selectedAnswer as Node['id'];
       setEgressNodeId(answer);
@@ -488,6 +577,48 @@ export default function QuickSetupModal(props: ModalProps) {
           store.fetchNodes();
         }
       }
+    } else if (currentQuestion.key === 'gateway_users') {
+      const answer = currentQuestion.selectedAnswer as string[];
+      const previouslyAddedUsers = ingressUsers.filter((user) => {
+        const isAttached = user.remote_gw_ids?.[ingressNodeId];
+        return isAttached;
+      });
+      const newlyAddedUsers = answer.filter(
+        (user) => !previouslyAddedUsers.map((user) => user.username).includes(user),
+      );
+      const usersToRemove = ingressUsers.filter((user) => !answer.includes(user.username));
+
+      usersToRemove.forEach(async (user) => {
+        try {
+          setIsNextLoading(true);
+          await UsersService.removeUserFromIngress(user.username, ingressNodeId);
+        } catch (err) {
+          props.notify.error({
+            message: `Failed to remove ${user} from remote access gateway`,
+            description: extractErrorMsg(err as any),
+          });
+          setIsNextLoading(false);
+          return;
+        } finally {
+          setIsNextLoading(false);
+        }
+      });
+
+      newlyAddedUsers.forEach(async (user) => {
+        try {
+          setIsNextLoading(true);
+          await UsersService.attachUserToIngress(user, ingressNodeId);
+        } catch (err) {
+          props.notify.error({
+            message: `Failed to attach ${user} to remote access gateway`,
+            description: extractErrorMsg(err as any),
+          });
+          setIsNextLoading(false);
+          return;
+        } finally {
+          setIsNextLoading(false);
+        }
+      });
     }
 
     // if current question index is the last question
@@ -547,6 +678,12 @@ export default function QuickSetupModal(props: ModalProps) {
         value: node.id,
       }));
       initialOptions.push(connectExistingHost, ...networkOptions);
+    } else if (currentQuestion.key === 'gateway_users') {
+      const userOptions = users.map((user) => ({
+        label: user.username,
+        value: user.username,
+      }));
+      initialOptions.push(...userOptions);
     }
 
     return initialOptions;
@@ -581,16 +718,22 @@ export default function QuickSetupModal(props: ModalProps) {
     return initialOptions;
   }, [currentQuestion.key, store.networks, networkNodes, currentQuestion.selectedAnswer]);
 
-  const handleSelectChange = (value: string) => {
+  const handleSelectChange = (value: string | string[]) => {
     if (value === 'add_new') {
       if (currentQuestion.key === 'networks') {
         setIsAddNetworkModalOpen(true);
+      } else if (currentQuestion.key === 'gateway_users') {
+        setIsAddNewUserModalOpen(true);
       } else {
         setIsAddNewHostModalOpen(true);
       }
     } else if (value === 'add_existing') {
       setIsAddHostsToNetworkModalOpen(true);
     } else {
+      // if expected value is an array and value is not an array return
+      if (NodeSelectDropdownChecks2.includes(currentQuestion.key) && !Array.isArray(value)) {
+        return;
+      }
       handleQuestionAnswer(value);
     }
   };
@@ -910,8 +1053,22 @@ export default function QuickSetupModal(props: ModalProps) {
         .map((node) => node.id);
       return answer;
     }
+
+    if (currentQuestion.key === 'gateway_users') {
+      const answer = ingressUsers
+        .filter((user) => {
+          if (currentQuestion.selectedAnswer?.includes(user.username)) {
+            return true;
+          }
+
+          const attached = user?.remote_gw_ids?.[ingressNodeId];
+          return attached;
+        })
+        .map((user) => user.username);
+      return answer;
+    }
     return currentQuestion.selectedAnswer;
-  }, [currentQuestion.selectedAnswer, currentQuestion.key, clientGateways, egresses]);
+  }, [currentQuestion.selectedAnswer, currentQuestion.key, clientGateways, egresses, ingressNodeId]);
 
   const selectedAnswer2 = useMemo(() => {
     if (currentQuestion.key === 'internet_gateway' && Array.isArray(currentQuestion.selectedAnswer2)) {
@@ -932,8 +1089,13 @@ export default function QuickSetupModal(props: ModalProps) {
     return questionsAskedMinusReview.map((question) => {
       const questionText = UsecaseKeyStringToTextMapForReview[question.questionKey];
       const questionText2 = UsecaseKeyStringToTextMapForReview[`${question.questionKey}_2`];
-      const answerText = getAnswerText(question.answer);
+      let answerText = getAnswerText(question.answer);
       const answerText2 = getAnswerText(question.answer2);
+
+      // if question key is hosts list all hosts
+      if (question.questionKey === 'hosts') {
+        answerText = networkNodes.map((node) => node.name).join(', ');
+      }
       return {
         // label: questionText,
         children: (
@@ -1100,9 +1262,12 @@ export default function QuickSetupModal(props: ModalProps) {
                 {currentQuestion && currentQuestion.type === 'select' && (
                   <Select
                     options={selectDropdownOptions}
-                    value={selectedAnswer}
+                    value={currentQuestion.key === 'gateway_users' ? undefined : selectedAnswer}
+                    defaultValue={currentQuestion.key === 'gateway_users' ? selectedAnswer : undefined}
                     style={{ width: '100%' }}
                     onSelect={handleSelectChange}
+                    onChange={handleSelectChange}
+                    mode={currentQuestion.selectMode || undefined}
                   />
                 )}
 
@@ -1172,6 +1337,37 @@ export default function QuickSetupModal(props: ModalProps) {
                       </Form.List>
                     </Form.Item>
                   </Form>
+                )}
+
+                {currentQuestion && currentQuestion.type === 'host_select' && (
+                  <Space direction="vertical">
+                    <Row>
+                      <Col span={24}>
+                        <Button type="primary" onClick={() => setIsAddNewHostModalOpen(true)}>
+                          Add new host
+                        </Button>
+                        <Button
+                          style={{
+                            marginLeft: '10px',
+                          }}
+                          type="primary"
+                          onClick={() => setIsAddHostsToNetworkModalOpen(true)}
+                        >
+                          Connect existing host
+                        </Button>
+                      </Col>
+                    </Row>
+                    <Row style={{ marginTop: '10px' }}>
+                      <Col span={24}>
+                        <Typography.Title level={5}>Connected Hosts</Typography.Title>
+                        <ul>
+                          {networkNodes.map((node, i) => (
+                            <li key={i}> {node.name}</li>
+                          ))}
+                        </ul>
+                      </Col>
+                    </Row>
+                  </Space>
                 )}
 
                 {currentQuestion && currentQuestion.type === 'double_select' && (
@@ -1268,6 +1464,17 @@ export default function QuickSetupModal(props: ModalProps) {
           setIsAddHostsToNetworkModalOpen(false);
         }}
         onCancel={() => setIsAddHostsToNetworkModalOpen(false)}
+      />
+
+      <AddUserModal
+        isOpen={isAddNewUserModalOpen}
+        onCreateUser={(user) => {
+          setUsers([...users, user]);
+          setIsAddNewUserModalOpen(false);
+        }}
+        onCancel={() => {
+          setIsAddNewUserModalOpen(false);
+        }}
       />
     </>
   );

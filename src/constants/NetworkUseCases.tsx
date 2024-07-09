@@ -33,7 +33,9 @@ export type UsecaseQuestionKey =
   | 'internet_gateway'
   | 'router'
   | 'netclient'
-  | 'review';
+  | 'review'
+  | 'gateway_users'
+  | 'remote_access_gateways_with_ext_client';
 export interface UsecaseQuestions {
   key: UsecaseQuestionKey;
   question: string;
@@ -47,6 +49,7 @@ export interface UsecaseQuestions {
   description?: string | ReactNode;
   answer1Placeholder?: string;
   answer2Placeholder?: string;
+  selectMode?: 'multiple' | 'tags';
   secondSelectMode?: 'multiple' | 'tags';
   subDescription?: string[] | ReactNode[];
 }
@@ -195,7 +198,7 @@ export const UsecaseQuestionsAll: UsecaseQuestions[] = [
     key: 'hosts',
     question: 'Add target machines(hosts) to your network',
     answers: [], // hosts
-    type: 'select',
+    type: 'host_select',
     descriptionTitle: 'What are hosts in Netmaker?',
     description: (
       <>
@@ -215,6 +218,15 @@ export const UsecaseQuestionsAll: UsecaseQuestions[] = [
         </Typography.Paragraph>
       </>
     ),
+  },
+  {
+    key: 'gateway_users',
+    question: 'Add users to the gateway',
+    answers: [],
+    type: 'select',
+    selectMode: 'multiple',
+    descriptionTitle: 'Add Users to the Gateway',
+    description: `Users can be added to the gateway to grant them access to the network. `,
   },
   {
     key: 'connect_to_site',
@@ -298,6 +310,7 @@ export const UsecaseKeyStringToTextMapForAnswers: UsecaseKeyStringToTextMap = {
   egress: 'egress gateway',
   internet_gateway: 'internet gateway',
   router: 'host',
+  gateway_users: 'user',
 };
 
 export const UsecaseKeyStringToTextMapForReview: UsecaseKeyStringToTextMap = {
@@ -315,4 +328,5 @@ export const UsecaseKeyStringToTextMapForReview: UsecaseKeyStringToTextMap = {
   hosts: 'Hosts added to the network',
   internet_gateway: 'Your internet gateway?',
   internet_gateway_2: 'Your internet clients?',
+  gateway_users: 'Users added to the gateway',
 };
