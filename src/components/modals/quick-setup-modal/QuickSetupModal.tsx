@@ -164,7 +164,7 @@ export default function QuickSetupModal(props: ModalProps) {
   const [isNextLoading, setIsNextLoading] = useState<boolean>(false);
   const [ingressNodeId, setIngressNodeId] = useState<string>('');
   const [egressNodeId, setEgressNodeId] = useState<string>('');
-  const [tourType, setTourType] = useState<TourType>('remoteaccess_specificmachines');
+  const [tourType, setTourType] = useState<TourType>('remoteaccess_specificmachines_our_rac');
   const isServerEE = store.serverConfig?.IsEE === 'yes';
   const [users, setUsers] = useState<User[]>([]);
   const [ingressUsers, setIngressUsers] = useState<User[]>([]);
@@ -301,7 +301,7 @@ export default function QuickSetupModal(props: ModalProps) {
               RemoteAccessUsecaseQuestionsWithUsers.indexOf(a.key as UsecaseQuestionKey) -
               RemoteAccessUsecaseQuestionsWithUsers.indexOf(b.key as UsecaseQuestionKey),
           );
-          setTourType('remoteaccess_specificmachines');
+          setTourType('remoteaccess_specificmachines_our_rac');
           setUserQuestions(questions);
         } else {
           const questions = UsecaseQuestionsAll.filter((question) =>
@@ -311,7 +311,7 @@ export default function QuickSetupModal(props: ModalProps) {
               RemoteAccessUsecaseWithEgressQuestionsWithUsers.indexOf(a.key as UsecaseQuestionKey) -
               RemoteAccessUsecaseWithEgressQuestionsWithUsers.indexOf(b.key as UsecaseQuestionKey),
           );
-          setTourType('remoteaccess_withegress');
+          setTourType('remoteaccess_withegress_our_rac');
           setUserQuestions(questions);
         }
       } else {
@@ -323,7 +323,7 @@ export default function QuickSetupModal(props: ModalProps) {
               RemoteAccessUsecaseQuestionsWithVpnConfig.indexOf(a.key as UsecaseQuestionKey) -
               RemoteAccessUsecaseQuestionsWithVpnConfig.indexOf(b.key as UsecaseQuestionKey),
           );
-          setTourType('remoteaccess_withegress');
+          setTourType('remoteaccess_withegress_vpn_config');
           setUserQuestions(questions);
         } else {
           const questions = UsecaseQuestionsAll.filter((question) =>
@@ -333,7 +333,7 @@ export default function QuickSetupModal(props: ModalProps) {
               RemoteAccessUsecaseWithEgressQuestionsWithVpnConfig.indexOf(a.key as UsecaseQuestionKey) -
               RemoteAccessUsecaseWithEgressQuestionsWithVpnConfig.indexOf(b.key as UsecaseQuestionKey),
           );
-          setTourType('remoteaccess_withegress');
+          setTourType('remoteaccess_withegress_vpn_config');
           setUserQuestions(questions);
         }
       }
@@ -1259,11 +1259,21 @@ export default function QuickSetupModal(props: ModalProps) {
                   )}
                 </div>
 
-                {currentQuestion && currentQuestion.type === 'select' && (
+                {currentQuestion && currentQuestion.type === 'select' && currentQuestion.key !== 'gateway_users' && (
                   <Select
                     options={selectDropdownOptions}
-                    value={currentQuestion.key === 'gateway_users' ? undefined : selectedAnswer}
-                    defaultValue={currentQuestion.key === 'gateway_users' ? selectedAnswer : undefined}
+                    value={selectedAnswer}
+                    style={{ width: '100%' }}
+                    onSelect={handleSelectChange}
+                    onChange={handleSelectChange}
+                    mode={currentQuestion.selectMode || undefined}
+                  />
+                )}
+
+                {currentQuestion && currentQuestion.type === 'select' && currentQuestion.key === 'gateway_users' && (
+                  <Select
+                    options={selectDropdownOptions}
+                    defaultValue={selectedAnswer}
                     style={{ width: '100%' }}
                     onSelect={handleSelectChange}
                     onChange={handleSelectChange}

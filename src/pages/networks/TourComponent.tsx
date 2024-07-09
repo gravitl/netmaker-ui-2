@@ -1301,7 +1301,6 @@ export default function TourComponent(props: TourUtilsProps) {
         ),
         target: remoteAccessTabGatewayTableRef.current,
         onPrev: () => {
-          setIsAddNewHostModalOpen(true);
           setActiveTabKey('hosts');
           prevTourStep();
         },
@@ -1808,6 +1807,164 @@ export default function TourComponent(props: TourUtilsProps) {
     [egressTabEgressTableRef, egressTabExternalRoutesTableRef],
   );
 
+  const remoteAccessSpecificMachinesTourStepsWithVpnConfig: TourProps['steps'] = useMemo(
+    () => [
+      {
+        title: 'Hosts Table',
+        description: (
+          <>
+            These are the nodes of your VPN, get host information like host name, private address, public address,
+            connectivity status, health status and failover status. You can click on a host to view more details or
+            hover over the ellipsis at the end of the row to edit, disconnect or remove a host from network.
+          </>
+        ),
+        target: hostsTabContainerTableRef.current,
+        onNext: () => {
+          setActiveTabKey('clients');
+          nextTourStep();
+        },
+      },
+      {
+        title: 'Gateway Table',
+        description: (
+          <>
+            This is the gateway for users into the network, get gateway information like gateway name, private address,
+            endpoint , default client DNS, and you can view the gateway details by clicking on the gateway name and
+            hover over the ellipsis to edit it or remove it from the network and add a user or remove a user from the
+            gateway.
+          </>
+        ),
+        target: remoteAccessTabGatewayTableRef.current,
+        onPrev: () => {
+          setActiveTabKey('hosts');
+          prevTourStep();
+        },
+      },
+      {
+        title: 'VPN Config Files Table',
+        description: (
+          <>
+            Get VPN config files for clients, you can view the owner, address and gateway of the client, if its enabled
+            and by clicking on the ellipsis you can download the config file, edit the client or remove the client from
+            the gateway you can also see extra information about the client by clicking on the client name.
+          </>
+        ),
+        target: remoteAccessTabVPNConfigTableRef.current,
+      },
+      {
+        title: 'Create Config',
+        description: 'Create a new VPN config file for a client',
+        target: remoteAccessTabVPNConfigCreateConfigRef.current,
+        onNext: () => {
+          setActiveTabKey('egress');
+          nextTourStep();
+          setIsAddClientModalOpen(true);
+        },
+      },
+    ],
+    [
+      hostsTabContainerTableRef,
+      nextTourStep,
+      prevTourStep,
+      remoteAccessTabGatewayTableRef,
+      remoteAccessTabVPNConfigCreateConfigRef,
+      remoteAccessTabVPNConfigTableRef,
+      setActiveTabKey,
+      setIsAddClientModalOpen,
+    ],
+  );
+
+  const remoteAccessWithEgressTourStepsWithVpnConfig: TourProps['steps'] = useMemo(
+    () => [
+      {
+        title: 'Hosts Table',
+        description: (
+          <>
+            These are the nodes of your VPN, get host information like host name, private address, public address,
+            connectivity status, health status and failover status. You can click on a host to view more details or
+            hover over the ellipsis at the end of the row to edit, disconnect or remove a host from network.
+          </>
+        ),
+        target: hostsTabContainerTableRef.current,
+        onNext: () => {
+          setActiveTabKey('clients');
+          nextTourStep();
+        },
+      },
+      {
+        title: 'Gateway Table',
+        description: (
+          <>
+            This is the gateway for users into the network, get gateway information like gateway name, private address,
+            endpoint , default client DNS, and you can view the gateway details by clicking on the gateway name and
+            hover over the ellipsis to edit it or remove it from the network and add a user or remove a user from the
+            gateway.
+          </>
+        ),
+        target: remoteAccessTabGatewayTableRef.current,
+        onPrev: () => {
+          setActiveTabKey('hosts');
+          prevTourStep();
+        },
+      },
+      {
+        title: 'VPN Config Files Table',
+        description: (
+          <>
+            Get VPN config files for clients, you can view the owner, address and gateway of the client, if its enabled
+            and by clicking on the ellipsis you can download the config file, edit the client or remove the client from
+            the gateway you can also see extra information about the client by clicking on the client name.
+          </>
+        ),
+        target: remoteAccessTabVPNConfigTableRef.current,
+      },
+      {
+        title: 'Create Config',
+        description: 'Create a new VPN config file for a client',
+        target: remoteAccessTabVPNConfigCreateConfigRef.current,
+        onNext: () => {
+          setActiveTabKey('egress');
+          nextTourStep();
+          setIsAddClientModalOpen(true);
+        },
+      },
+      {
+        title: 'Egress Table',
+        description: (
+          <>
+            These are the devices sending traffic to your network, get egress information like egress name, address and
+            you can update the egress details by hovering over the ellipsis and clicking on update egress and you can
+            get more info about the egress by clicking on the egress name.
+          </>
+        ),
+        target: egressTabEgressTableRef.current,
+        onPrev: () => {
+          setActiveTabKey('clients');
+          setTourStep(jumpToTourStepObj.remoteAccess);
+        },
+      },
+      {
+        title: 'External Routes Table',
+        description: 'These are the ranges been forwarded by the egress',
+        target: egressTabExternalRoutesTableRef.current,
+      },
+    ],
+    [
+      egressTabEgressTableRef,
+      egressTabExternalRoutesTableRef,
+      hostsTabContainerTableRef,
+      jumpToTourStepObj.remoteAccess,
+      nextTourStep,
+      prevTourStep,
+      remoteAccessTabGatewayTableRef,
+      remoteAccessTabVPNConfigCreateConfigRef,
+      remoteAccessTabVPNConfigTableRef,
+      setActiveTabKey,
+      setIsAddClientModalOpen,
+      setTourStep,
+    ],
+  );
+
   const handleTourOnChange = useCallback(
     (current: number) => {
       setTourStep(current);
@@ -1817,17 +1974,23 @@ export default function TourComponent(props: TourUtilsProps) {
 
   const tourSteps = useMemo(() => {
     if (location.state) {
-      if (location.state.startTour === 'remoteaccess_specificmachines') {
+      if (location.state.startTour === 'remoteaccess_specificmachines_our_rac') {
         if (isServerEE) {
           return remoteAccessSpecificMachinesTourStepsPro;
         }
         return remoteAccessWithSpecificMachinesTourStepsCE;
       }
-      if (location.state.startTour === 'remoteaccess_withegress') {
+      if (location.state.startTour === 'remoteaccess_specificmachines_vpn_client') {
+        return remoteAccessSpecificMachinesTourStepsWithVpnConfig;
+      }
+      if (location.state.startTour === 'remoteaccess_withegress_our_rac') {
         if (isServerEE) {
           return remoteAccessWithEgressTourStepsPro;
         }
         return remoteAccessWithEgressTourStepsCE;
+      }
+      if (location.state.startTour === 'remoteaccess_withegress_vpn_client') {
+        return remoteAccessWithEgressTourStepsWithVpnConfig;
       }
       if (location.state.startTour === 'internetgateway') {
         setActiveTabKey('internet-gateways');

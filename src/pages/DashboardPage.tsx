@@ -43,8 +43,10 @@ export type TourType =
   | 'networks'
   | 'hosts'
   | 'quicksetup'
-  | 'remoteaccess_specificmachines'
-  | 'remoteaccess_withegress'
+  | 'remoteaccess_specificmachines_our_rac'
+  | 'remoteaccess_withegress_our_rac'
+  | 'remoteaccess_specificmachines_vpn_config'
+  | 'remoteaccess_withegress_vpn_config'
   | 'internetgateway'
   | 'connecttosite_router'
   | 'connecttosite_netclient';
