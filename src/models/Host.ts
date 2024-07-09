@@ -40,4 +40,5 @@ export interface HostCommonDetails {
   mtu: Host['mtu'];
   interfaces: Host['interfaces'];
   macaddress: Host['macaddress'];
+  firewallinuse: Host['firewallinuse'];
 }

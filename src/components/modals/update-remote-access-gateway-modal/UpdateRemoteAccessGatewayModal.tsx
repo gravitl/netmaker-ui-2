@@ -120,12 +120,12 @@ export default function UpdateRemoteAccessGatewayModal({
             )}
 
             <Form.Item
-              label="Metadata"
+              label="Network Info"
               name="metadata"
               style={{ marginTop: '1rem' }}
               data-nmui-intercom="add-ingress-form_metadata"
             >
-              <Input placeholder="Enter a short description for this Remote Access Gateway (RAG)" />
+              <Input.TextArea placeholder="Enter information that users can view about the network, such as the purpose, internal domains and IP's of significance, etc" />
             </Form.Item>
 
             {!isServerEE && (
