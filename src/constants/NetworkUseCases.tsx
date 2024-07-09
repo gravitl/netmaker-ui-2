@@ -227,6 +227,7 @@ export const UsecaseQuestionsAll: UsecaseQuestions[] = [
     selectMode: 'multiple',
     descriptionTitle: 'Add Users to the Gateway',
     description: `Users can be added to the gateway to grant them access to the network. `,
+    selectedAnswer: undefined,
   },
   {
     key: 'connect_to_site',

@@ -391,6 +391,7 @@ export default function QuickSetupModal(props: ModalProps) {
       'remote_access_gateways',
       'users',
       'egress',
+      'gateway_users',
     ];
 
     const questionWithMultipleAnswers: UsecaseQuestionKey[] = ['internet_gateway', 'router'];
@@ -477,6 +478,7 @@ export default function QuickSetupModal(props: ModalProps) {
         }
         setIsNextLoading(true);
         await NodesService.createEgressNode(egressNodeId, networkId, {
+          nodeId: egressNodeId,
           natEnabled: 'yes',
           ranges: [...newRanges],
         });
@@ -588,7 +590,7 @@ export default function QuickSetupModal(props: ModalProps) {
       );
       const usersToRemove = ingressUsers.filter((user) => !answer.includes(user.username));
 
-      usersToRemove.forEach(async (user) => {
+      for (const user of usersToRemove) {
         try {
           setIsNextLoading(true);
           await UsersService.removeUserFromIngress(user.username, ingressNodeId);
@@ -602,9 +604,9 @@ export default function QuickSetupModal(props: ModalProps) {
         } finally {
           setIsNextLoading(false);
         }
-      });
+      }
 
-      newlyAddedUsers.forEach(async (user) => {
+      for (const user of newlyAddedUsers) {
         try {
           setIsNextLoading(true);
           await UsersService.attachUserToIngress(user, ingressNodeId);
@@ -618,7 +620,7 @@ export default function QuickSetupModal(props: ModalProps) {
         } finally {
           setIsNextLoading(false);
         }
-      });
+      }
     }
 
     // if current question index is the last question
@@ -718,7 +720,13 @@ export default function QuickSetupModal(props: ModalProps) {
     return initialOptions;
   }, [currentQuestion.key, store.networks, networkNodes, currentQuestion.selectedAnswer]);
 
-  const handleSelectChange = (value: string | string[]) => {
+  const handleSelectChange = (val: string | string[]) => {
+    let value = val;
+    if (Array.isArray(val)) {
+      // remove add_new and add_existing from the array
+      value = val.filter((v) => v !== 'add_new' && v !== 'add_existing');
+    }
+
     if (value === 'add_new') {
       if (currentQuestion.key === 'networks') {
         setIsAddNetworkModalOpen(true);
@@ -1055,12 +1063,13 @@ export default function QuickSetupModal(props: ModalProps) {
     }
 
     if (currentQuestion.key === 'gateway_users') {
+      if (currentQuestion.selectedAnswer) {
+        const answer = currentQuestion.selectedAnswer;
+        return answer;
+      }
+
       const answer = ingressUsers
         .filter((user) => {
-          if (currentQuestion.selectedAnswer?.includes(user.username)) {
-            return true;
-          }
-
           const attached = user?.remote_gw_ids?.[ingressNodeId];
           return attached;
         })
@@ -1259,21 +1268,11 @@ export default function QuickSetupModal(props: ModalProps) {
                   )}
                 </div>
 
-                {currentQuestion && currentQuestion.type === 'select' && currentQuestion.key !== 'gateway_users' && (
+                {currentQuestion && currentQuestion.type === 'select' && (
                   <Select
                     options={selectDropdownOptions}
                     value={selectedAnswer}
-                    style={{ width: '100%' }}
-                    onSelect={handleSelectChange}
-                    onChange={handleSelectChange}
-                    mode={currentQuestion.selectMode || undefined}
-                  />
-                )}
-
-                {currentQuestion && currentQuestion.type === 'select' && currentQuestion.key === 'gateway_users' && (
-                  <Select
-                    options={selectDropdownOptions}
-                    defaultValue={selectedAnswer}
+                    // defaultValue={currentQuestion.key === 'gateway_users' ? selectedAnswer : undefined}
                     style={{ width: '100%' }}
                     onSelect={handleSelectChange}
                     onChange={handleSelectChange}
