@@ -323,7 +323,7 @@ export default function QuickSetupModal(props: ModalProps) {
               RemoteAccessUsecaseQuestionsWithVpnConfig.indexOf(a.key as UsecaseQuestionKey) -
               RemoteAccessUsecaseQuestionsWithVpnConfig.indexOf(b.key as UsecaseQuestionKey),
           );
-          setTourType('remoteaccess_withegress_vpn_config');
+          setTourType('remoteaccess_specificmachines_vpn_config');
           setUserQuestions(questions);
         } else {
           const questions = UsecaseQuestionsAll.filter((question) =>
@@ -359,6 +359,7 @@ export default function QuickSetupModal(props: ModalProps) {
             ConnectToSiteUsecaseQuestionsWithNetclient.indexOf(a.key as UsecaseQuestionKey) -
             ConnectToSiteUsecaseQuestionsWithNetclient.indexOf(b.key as UsecaseQuestionKey),
         );
+        setTourType('connecttosite_netclient');
         setUserQuestions(questions);
       }
     }
@@ -479,7 +480,7 @@ export default function QuickSetupModal(props: ModalProps) {
         setIsNextLoading(true);
         await NodesService.createEgressNode(egressNodeId, networkId, {
           nodeId: egressNodeId,
-          natEnabled: 'yes',
+          natEnabled: tourType === 'connecttosite_netclient' ? 'no' : 'yes',
           ranges: [...newRanges],
         });
         props.notify.success({ message: `Egress gateway created` });

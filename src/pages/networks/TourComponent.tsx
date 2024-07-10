@@ -1768,6 +1768,21 @@ export default function TourComponent(props: TourUtilsProps) {
   const internetGatewayTourSteps: TourProps['steps'] = useMemo(
     () => [
       {
+        title: 'Hosts Table',
+        description: (
+          <>
+            These are the nodes of your VPN, get host information like host name, private address, public address,
+            connectivity status, health status and failover status. You can click on a host to view more details or
+            hover over the ellipsis at the end of the row to edit, disconnect or remove a host from network.
+          </>
+        ),
+        target: hostsTabContainerTableRef.current,
+        onNext: () => {
+          setActiveTabKey('internet-gateways');
+          nextTourStep();
+        },
+      },
+      {
         title: 'Internet Gateways Table',
         description: 'These are the devices that allow your network to connect to the internet',
         target: internetGatewaysTableRef.current,
@@ -1980,7 +1995,7 @@ export default function TourComponent(props: TourUtilsProps) {
         }
         return remoteAccessWithSpecificMachinesTourStepsCE;
       }
-      if (location.state.startTour === 'remoteaccess_specificmachines_vpn_client') {
+      if (location.state.startTour === 'remoteaccess_specificmachines_vpn_config') {
         return remoteAccessSpecificMachinesTourStepsWithVpnConfig;
       }
       if (location.state.startTour === 'remoteaccess_withegress_our_rac') {
@@ -1989,12 +2004,15 @@ export default function TourComponent(props: TourUtilsProps) {
         }
         return remoteAccessWithEgressTourStepsCE;
       }
-      if (location.state.startTour === 'remoteaccess_withegress_vpn_client') {
+      if (location.state.startTour === 'remoteaccess_withegress_vpn_config') {
         return remoteAccessWithEgressTourStepsWithVpnConfig;
       }
       if (location.state.startTour === 'internetgateway') {
         setActiveTabKey('internet-gateways');
         return internetGatewayTourSteps;
+      }
+      if (location.state.startTour === 'connecttosite_router') {
+        return remoteAccessWithEgressTourStepsWithVpnConfig;
       }
       if (location.state.startTour === 'connecttosite_netclient') {
         setActiveTabKey('egress');
