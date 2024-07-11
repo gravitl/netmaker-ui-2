@@ -29,7 +29,7 @@ export default function UpdateIngressUsersModal({ isOpen, ingress, onCancel }: U
     try {
       setIsUsersLoading(true);
       const users = (await UsersService.getUsers()).data;
-      const usersAttachedToIngress = (await UsersService.getIngressUsers(ingress.id)).data.users;
+      const usersAttachedToIngress = (await UsersService.getIngressUsers(ingress.id)).data.users ?? [];
       // remove admins and the superadmin from the list
       // const filteredUsers = users.filter((user) => !user.isadmin && !user.issuperadmin);
       setUsers(users);
