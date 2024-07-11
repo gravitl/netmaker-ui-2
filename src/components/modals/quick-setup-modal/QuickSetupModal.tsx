@@ -208,7 +208,7 @@ export default function QuickSetupModal(props: ModalProps) {
         // remove admins and the superadmin from the list
         const filteredUsers = users.filter((user) => !user.isadmin && !user.issuperadmin);
         setUsers(filteredUsers);
-        setIngressUsers(usersAttachedToIngress);
+        setIngressUsers(usersAttachedToIngress ?? []);
       } catch (err) {
         props.notify.error({
           message: 'Failed to load users',

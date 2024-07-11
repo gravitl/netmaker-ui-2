@@ -259,7 +259,7 @@ export const UsecaseQuestionsAll: UsecaseQuestions[] = [
     question: 'Router Configuration',
     answers: [],
     type: 'double_select',
-    descriptionTitle: 'Router Configuration',
+    descriptionTitle: 'Gateway Host',
     description: `If you have a router that supports WireGuard, you can add the configuration here. 
       This will allow all devices on your network to connect to the VPN.`,
     question2: 'Add additional addresses to route through the router',

@@ -1803,6 +1803,21 @@ export default function TourComponent(props: TourUtilsProps) {
   const egressGatewayTourSteps: TourProps['steps'] = useMemo(
     () => [
       {
+        title: 'Hosts Table',
+        description: (
+          <>
+            These are the nodes of your VPN, get host information like host name, private address, public address,
+            connectivity status, health status and failover status. You can click on a host to view more details or
+            hover over the ellipsis at the end of the row to edit, disconnect or remove a host from network.
+          </>
+        ),
+        target: hostsTabContainerTableRef.current,
+        onNext: () => {
+          setActiveTabKey('egress');
+          nextTourStep();
+        },
+      },
+      {
         title: 'Egress Table',
         description: (
           <>
@@ -1870,11 +1885,6 @@ export default function TourComponent(props: TourUtilsProps) {
         title: 'Create Config',
         description: 'Create a new VPN config file for a client',
         target: remoteAccessTabVPNConfigCreateConfigRef.current,
-        onNext: () => {
-          setActiveTabKey('egress');
-          nextTourStep();
-          setIsAddClientModalOpen(true);
-        },
       },
     ],
     [
@@ -1885,7 +1895,67 @@ export default function TourComponent(props: TourUtilsProps) {
       remoteAccessTabVPNConfigCreateConfigRef,
       remoteAccessTabVPNConfigTableRef,
       setActiveTabKey,
-      setIsAddClientModalOpen,
+    ],
+  );
+
+  const remoteAccessWithConnectToSiteTourSteps: TourProps['steps'] = useMemo(
+    () => [
+      {
+        title: 'Hosts Table',
+        description: (
+          <>
+            These are the nodes of your VPN, get host information like host name, private address, public address,
+            connectivity status, health status and failover status. You can click on a host to view more details or
+            hover over the ellipsis at the end of the row to edit, disconnect or remove a host from network.
+          </>
+        ),
+        target: hostsTabContainerTableRef.current,
+        onNext: () => {
+          setActiveTabKey('clients');
+          nextTourStep();
+        },
+      },
+      {
+        title: 'Gateway Table',
+        description: (
+          <>
+            This is the gateway for users into the network, get gateway information like gateway name, private address,
+            endpoint , default client DNS, and you can view the gateway details by clicking on the gateway name and
+            hover over the ellipsis to edit it or remove it from the network and add a user or remove a user from the
+            gateway.
+          </>
+        ),
+        target: remoteAccessTabGatewayTableRef.current,
+        onPrev: () => {
+          setActiveTabKey('hosts');
+          prevTourStep();
+        },
+      },
+      {
+        title: 'VPN Config Files Table',
+        description: (
+          <>
+            Get VPN config files for clients, you can view the owner, address and gateway of the client, if its enabled
+            and by clicking on the ellipsis you can download the config file, edit the client or remove the client from
+            the gateway you can also see extra information about the client by clicking on the client name.
+          </>
+        ),
+        target: remoteAccessTabVPNConfigTableRef.current,
+      },
+      {
+        title: 'Create Config',
+        description: 'Create a new VPN config file for a client',
+        target: remoteAccessTabVPNConfigCreateConfigRef.current,
+      },
+    ],
+    [
+      hostsTabContainerTableRef,
+      nextTourStep,
+      prevTourStep,
+      remoteAccessTabGatewayTableRef,
+      remoteAccessTabVPNConfigCreateConfigRef,
+      remoteAccessTabVPNConfigTableRef,
+      setActiveTabKey,
     ],
   );
 
@@ -1940,7 +2010,6 @@ export default function TourComponent(props: TourUtilsProps) {
         onNext: () => {
           setActiveTabKey('egress');
           nextTourStep();
-          setIsAddClientModalOpen(true);
         },
       },
       {
@@ -1975,7 +2044,6 @@ export default function TourComponent(props: TourUtilsProps) {
       remoteAccessTabVPNConfigCreateConfigRef,
       remoteAccessTabVPNConfigTableRef,
       setActiveTabKey,
-      setIsAddClientModalOpen,
       setTourStep,
     ],
   );
@@ -2008,14 +2076,12 @@ export default function TourComponent(props: TourUtilsProps) {
         return remoteAccessWithEgressTourStepsWithVpnConfig;
       }
       if (location.state.startTour === 'internetgateway') {
-        setActiveTabKey('internet-gateways');
         return internetGatewayTourSteps;
       }
       if (location.state.startTour === 'connecttosite_router') {
-        return remoteAccessWithEgressTourStepsWithVpnConfig;
+        return remoteAccessWithConnectToSiteTourSteps;
       }
       if (location.state.startTour === 'connecttosite_netclient') {
-        setActiveTabKey('egress');
         return egressGatewayTourSteps;
       }
     }
@@ -2032,10 +2098,12 @@ export default function TourComponent(props: TourUtilsProps) {
     networkDetailsTourStepsCE,
     networkDetailsTourStepsPro,
     remoteAccessSpecificMachinesTourStepsPro,
+    remoteAccessSpecificMachinesTourStepsWithVpnConfig,
+    remoteAccessWithConnectToSiteTourSteps,
     remoteAccessWithEgressTourStepsCE,
     remoteAccessWithEgressTourStepsPro,
+    remoteAccessWithEgressTourStepsWithVpnConfig,
     remoteAccessWithSpecificMachinesTourStepsCE,
-    setActiveTabKey,
   ]);
 
   const handleModalClose = useCallback(() => {
