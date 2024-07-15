@@ -108,6 +108,7 @@ import QuickSetupModal from '@/components/modals/quick-setup-modal/QuickSetupMod
 import DownloadRemotesAccessClientModal from '@/components/modals/remote-access-client-modal/DownloadRemoteAccessClientModal';
 import SetNetworkFailoverModal from '@/components/modals/set-network-failover-modal/SetNetworkFailoverModal';
 import { convertNetworkPayloadToUiNetwork, convertUiNetworkToNetworkPayload } from '@/utils/NetworkUtils';
+import { TourType } from '../DashboardPage';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -233,10 +234,13 @@ export default function NetworkDetailsPage(props: PageProps) {
     graph: 7,
     metrics: 8,
     vpnConfigs: 9,
-    // addRAGateway: 10,
+    addEgressModal: 10,
+    remoteAccessGatewayModal: 11,
+    remoteAccessVPNConfigModal: 14,
   });
   const [isSetNetworkFailoverModalOpen, setIsSetNetworkFailoverModalOpen] = useState(false);
   const [selectedGatewayTabKey, setSelectedGatewayTabKey] = useState('vpn-config');
+  const [isAddInternetGatewayModalOpen, setIsAddInternetGatewayModalOpen] = useState(false);
 
   const overviewTabContainerRef = useRef(null);
   const hostsTabContainerTableRef = useRef(null);
@@ -252,6 +256,9 @@ export default function NetworkDetailsPage(props: PageProps) {
   const remoteAccessTabVPNConfigTableRef = useRef(null);
   const remoteAccessTabDisplayAllVPNConfigsRef = useRef(null);
   const remoteAccessTabVPNConfigCreateConfigRef = useRef(null);
+  const remoteAccessManageUsersRef = useRef(null);
+  const remoteAccessTabDownloadClientRef = useRef(null);
+  const remoteAccessAddOrRemoveUsersRef = useRef(null);
   const createClientConfigModalSelectGatewayRef = useRef(null);
   const createClientConfigModalClientIDRef = useRef(null);
   const createClientConfigModalPublicKeyRef = useRef(null);
@@ -291,6 +298,13 @@ export default function NetworkDetailsPage(props: PageProps) {
   const metricsTabBytesReceivedTableRef = useRef(null);
   const metricsTabUptimeTableRef = useRef(null);
   const metricsTabClientsTableRef = useRef(null);
+  const internetGatewaysTableRef = useRef(null);
+  const createInternetGatewayButtonRef = useRef(null);
+  const internetGatewaysConnectedHostsTableRef = useRef(null);
+  const internetGatewaysUpdateConnectedHostsRef = useRef(null);
+  const createInternetGatewayModalSelectHostRef = useRef(null);
+  const createInternetGatewayModalSelectConnectedHostsRef = useRef(null);
+  const updateInternetGatewayModalSelectConnectedHostsRef = useRef(null);
 
   const networkNodes = useMemo(
     () =>
@@ -965,7 +979,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   items: getGatewayDropdownOptions(gateway),
                 }}
               >
-                <Button type="text" icon={<MoreOutlined />} />
+                <Button type="text" icon={<MoreOutlined />} ref={remoteAccessAddOrRemoveUsersRef} />
               </Dropdown>
             </Flex>
           );
@@ -2541,6 +2555,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                     style={{
                       marginLeft: 'auto',
                     }}
+                    ref={remoteAccessTabDownloadClientRef}
                   >
                     {' '}
                     Download RAC
@@ -3490,7 +3505,19 @@ export default function NetworkDetailsPage(props: PageProps) {
         label: <Typography.Text>Internet Gateways ({internetGatewaysCount})</Typography.Text>,
         children:
           network && !isRefreshingNetwork ? (
-            <InternetGatewaysPage network={network} activeTabKey={activeTabKey} />
+            <InternetGatewaysPage
+              network={network}
+              activeTabKey={activeTabKey}
+              internetGatewaysTableRef={internetGatewaysTableRef}
+              createInternetGatewayButtonRef={createInternetGatewayButtonRef}
+              internetGatewaysConnectedHostsTableRef={internetGatewaysConnectedHostsTableRef}
+              internetGatewaysUpdateConnectedHostsRef={internetGatewaysUpdateConnectedHostsRef}
+              createInternetGatewayModalSelectHostRef={createInternetGatewayModalSelectHostRef}
+              createInternetGatewayModalSelectConnectedHostsRef={createInternetGatewayModalSelectConnectedHostsRef}
+              updateInternetGatewayModalSelectConnectedHostsRef={updateInternetGatewayModalSelectConnectedHostsRef}
+              isAddInternetGatewayModalOpen={isAddInternetGatewayModalOpen}
+              setIsAddInternetGatewayModalOpen={setIsAddInternetGatewayModalOpen}
+            />
           ) : (
             <Skeleton active />
           ),
@@ -3868,6 +3895,7 @@ export default function NetworkDetailsPage(props: PageProps) {
             handleCancel={() => toggleFloatingButton()}
             handleUpgrade={() => true}
             networkId={networkId}
+            jumpToTourStep={(ty: TourType) => {}}
           />
         )}
       </>
@@ -4046,12 +4074,15 @@ export default function NetworkDetailsPage(props: PageProps) {
           connectHostModalJoinNetworkTabRef={connectHostModalJoinNetworkTabRef}
           remoteAccessTabGatewayTableRef={remoteAccessTabGatewayTableRef}
           remoteAccessTabAddGatewayRef={remoteAccessTabAddGatewayRef}
+          remoteAccessManageUsersRef={remoteAccessManageUsersRef}
           addClientGatewayModalHostRef={addClientGatewayModalHostRef}
           addClientGatewayModalDefaultClientDNSRef={addClientGatewayModalDefaultClientDNSRef}
           addClientGatewayModalIsInternetGatewayRef={addClientGatewayModalIsInternetGatewayRef}
           remoteAccessTabVPNConfigTableRef={remoteAccessTabVPNConfigTableRef}
           remoteAccessTabDisplayAllVPNConfigsRef={remoteAccessTabDisplayAllVPNConfigsRef}
           remoteAccessTabVPNConfigCreateConfigRef={remoteAccessTabVPNConfigCreateConfigRef}
+          remoteAccessTabDownloadClientRef={remoteAccessTabDownloadClientRef}
+          remoteAccessAddOrRemoveUsersRef={remoteAccessAddOrRemoveUsersRef}
           createClientConfigModalSelectGatewayRef={createClientConfigModalSelectGatewayRef}
           createClientConfigModalClientIDRef={createClientConfigModalClientIDRef}
           createClientConfigModalPublicKeyRef={createClientConfigModalPublicKeyRef}
@@ -4091,6 +4122,16 @@ export default function NetworkDetailsPage(props: PageProps) {
           metricsTabBytesReceivedTableRef={metricsTabBytesReceivedTableRef}
           metricsTabUptimeTableRef={metricsTabUptimeTableRef}
           metricsTabClientsTableRef={metricsTabClientsTableRef}
+          internetGatewaysTableRef={internetGatewaysTableRef}
+          createInternetGatewayButtonRef={createInternetGatewayButtonRef}
+          internetGatewaysConnectedHostsTableRef={internetGatewaysConnectedHostsTableRef}
+          internetGatewaysUpdateConnectedHostsRef={internetGatewaysUpdateConnectedHostsRef}
+          createInternetGatewayModalSelectHostRef={createInternetGatewayModalSelectHostRef}
+          createInternetGatewayModalSelectConnectedHostsRef={createInternetGatewayModalSelectConnectedHostsRef}
+          updateInternetGatewayModalSelectConnectedHostsRef={updateInternetGatewayModalSelectConnectedHostsRef}
+          isAddInternetGatewayModalOpen={isAddInternetGatewayModalOpen}
+          setIsAddInternetGatewayModalOpen={setIsAddInternetGatewayModalOpen}
+          setIsUpdateIngressUsersModalOpen={setIsUpdateIngressUsersModalOpen}
         />
         {/* <Tour
         open={isTourOpen}
@@ -4265,6 +4306,7 @@ export default function NetworkDetailsPage(props: PageProps) {
             ingress={selectedGateway}
             networkId={networkId}
             onCancel={() => setIsUpdateIngressUsersModalOpen(false)}
+            remoteAccessManageUsersRef={remoteAccessManageUsersRef}
           />
         )}
         {targetClient && (

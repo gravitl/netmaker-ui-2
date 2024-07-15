@@ -16,23 +16,43 @@ import {
 } from '@ant-design/icons';
 import { Button, Card, Col, Dropdown, Input, Modal, Row, Table, TableColumnProps, Tooltip, Typography } from 'antd';
 import useNotification from 'antd/es/notification/useNotification';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { RefObject, useCallback, useEffect, useMemo, useState } from 'react';
 
 interface InternetGatewaysPageProps {
   network: Network;
   activeTabKey: string;
+  internetGatewaysTableRef: RefObject<HTMLDivElement>;
+  createInternetGatewayButtonRef: RefObject<HTMLDivElement>;
+  internetGatewaysConnectedHostsTableRef: RefObject<HTMLDivElement>;
+  internetGatewaysUpdateConnectedHostsRef: RefObject<HTMLDivElement>;
+  createInternetGatewayModalSelectHostRef: RefObject<HTMLDivElement>;
+  createInternetGatewayModalSelectConnectedHostsRef: RefObject<HTMLDivElement>;
+  updateInternetGatewayModalSelectConnectedHostsRef: RefObject<HTMLDivElement>;
+  isAddInternetGatewayModalOpen: boolean;
+  setIsAddInternetGatewayModalOpen: (isOpen: boolean) => void;
 }
 
 const INTERNET_GATEWAYS_DOCS_URL = 'https://docs.netmaker.io/pro/internet-gateways.html';
 
-export function InternetGatewaysPage({ network, activeTabKey }: InternetGatewaysPageProps) {
+export function InternetGatewaysPage({
+  network,
+  activeTabKey,
+  internetGatewaysTableRef,
+  createInternetGatewayButtonRef,
+  internetGatewaysConnectedHostsTableRef,
+  internetGatewaysUpdateConnectedHostsRef,
+  createInternetGatewayModalSelectHostRef,
+  createInternetGatewayModalSelectConnectedHostsRef,
+  updateInternetGatewayModalSelectConnectedHostsRef,
+  isAddInternetGatewayModalOpen,
+  setIsAddInternetGatewayModalOpen,
+}: InternetGatewaysPageProps) {
   const store = useStore();
   const [notify, notifyCtx] = useNotification();
 
   const [searchConnectedHosts, setSearchConnectedHosts] = useState('');
   const [searchInternetGateways, setSearchInternetGateways] = useState('');
   const [selectedGateway, setSelectedGateway] = useState<Node | null>(null);
-  const [isAddInternetGatewayModalOpen, setIsAddInternetGatewayModalOpen] = useState(false);
   const [isUpdateInternetGatewayModalOpen, setIsUpdateInternetGatewayModalOpen] = useState(false);
 
   const networkNodesMap = useMemo(
@@ -362,6 +382,7 @@ export function InternetGatewaysPage({ network, activeTabKey }: InternetGateways
                   type="primary"
                   onClick={() => setIsAddInternetGatewayModalOpen(true)}
                   className="full-width-button-xs"
+                  ref={createInternetGatewayButtonRef}
                 >
                   <PlusOutlined /> Create Gateway
                 </Button>
@@ -381,6 +402,7 @@ export function InternetGatewaysPage({ network, activeTabKey }: InternetGateways
                   <Table
                     columns={internetGatewaysTableCols}
                     dataSource={filteredInternetGateways}
+                    ref={internetGatewaysTableRef}
                     rowKey="id"
                     size="small"
                     scroll={{ x: true }}
@@ -421,6 +443,7 @@ export function InternetGatewaysPage({ network, activeTabKey }: InternetGateways
                     style={{ marginRight: '1rem' }}
                     onClick={() => setIsUpdateInternetGatewayModalOpen(true)}
                     className="full-width-button-xs"
+                    ref={internetGatewaysUpdateConnectedHostsRef}
                   >
                     <EditOutlined /> Update Connected Hosts
                   </Button>
@@ -436,6 +459,7 @@ export function InternetGatewaysPage({ network, activeTabKey }: InternetGateways
                     rowKey="id"
                     size="small"
                     scroll={{ x: true }}
+                    ref={internetGatewaysConnectedHostsTableRef}
                   />
                 </div>
               </Col>
@@ -456,6 +480,8 @@ export function InternetGatewaysPage({ network, activeTabKey }: InternetGateways
         onCancel={() => {
           setIsAddInternetGatewayModalOpen(false);
         }}
+        selectHostRef={createInternetGatewayModalSelectHostRef}
+        selectConnectedHostsRef={createInternetGatewayModalSelectConnectedHostsRef}
       />
       {selectedGateway && (
         <UpdateInternetGatewayModal
@@ -470,6 +496,7 @@ export function InternetGatewaysPage({ network, activeTabKey }: InternetGateways
           onCancel={() => {
             setIsUpdateInternetGatewayModalOpen(false);
           }}
+          selectConnectedHostsRef={updateInternetGatewayModalSelectConnectedHostsRef}
         />
       )}
       {notifyCtx}
