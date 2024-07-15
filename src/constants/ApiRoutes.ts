@@ -13,8 +13,12 @@ export class ApiRoutes {
   static USERS_ADMIN = '/users/adm';
   static USERS = '/users';
   static PENDING_USERS = '/users_pending';
-  static USER_GROUPS = '/usergroups';
+  // static USER_GROUPS = '/usergroups';
   static METRICS = '/metrics';
   static METRICS_EXTERNAL_CLIENT = '/metrics-ext';
   static RESTART_TENANT = '/server/shutdown';
+  static USER_ROLES = '/v1/users/roles';
+  static USER_ROLE = '/v1/users/role';
+  static USER_GROUPS = '/v1/users/groups';
+  static USER_GROUP = '/v1/users/group';
 }

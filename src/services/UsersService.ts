@@ -1,11 +1,12 @@
 import { ApiRoutes } from '@/constants/ApiRoutes';
 import { axiosService } from './BaseService';
-import { User } from '@/models/User';
+import { User, UserRolePermissionTemplate } from '@/models/User';
 import { UpdateUserReqDto } from './dtos/UserDtos';
 import { UserGroup } from '@/models/UserGroup';
 import { CreateUserReqDto } from './dtos/UserDtos';
 import { Node } from '@/models/Node';
 import { GatewayUsersResDto } from './dtos/GatewayUsersResDto';
+import { GenericResponseDto } from './dtos/GenericDto';
 
 function getUsers() {
   return axiosService.get<User[]>(ApiRoutes.USERS);
@@ -43,19 +44,19 @@ function deleteUser(username: User['username']) {
   return axiosService.delete<void>(`${ApiRoutes.USERS}/${encodeURIComponent(username)}`);
 }
 
-function createUserGroup(userGroupName: UserGroup) {
-  return axiosService.post<void>(`${ApiRoutes.USER_GROUPS}/${encodeURIComponent(userGroupName)}`);
-}
+// function createUserGroup(userGroupName: UserGroup) {
+//   return axiosService.post<void>(`${ApiRoutes.USER_GROUPS}/${encodeURIComponent(userGroupName)}`);
+// }
 
-function getUserGroups(): Promise<UserGroup[]> {
-  return axiosService
-    .get<Record<UserGroup, never>>(`${ApiRoutes.USER_GROUPS}`)
-    .then((userGroups) => Object.keys(userGroups.data));
-}
+// function getUserGroups(): Promise<UserGroup[]> {
+//   return axiosService
+//     .get<Record<UserGroup, never>>(`${ApiRoutes.USER_GROUPS}`)
+//     .then((userGroups) => Object.keys(userGroups.data));
+// }
 
-function deleteUserGroup(userGroupName: UserGroup) {
-  return axiosService.delete<void>(`${ApiRoutes.USER_GROUPS}/${encodeURIComponent(userGroupName)}`);
-}
+// function deleteUserGroup(userGroupName: UserGroup) {
+//   return axiosService.delete<void>(`${ApiRoutes.USER_GROUPS}/${encodeURIComponent(userGroupName)}`);
+// }
 
 function attachUserToIngress(username: User['username'], ingressId: Node['id']) {
   return axiosService.post<void>(
@@ -93,6 +94,38 @@ function denyAllPendingUsers() {
   return axiosService.delete<void>(`${ApiRoutes.PENDING_USERS}`);
 }
 
+function createRole(role: UserRolePermissionTemplate) {
+  return axiosService.post<UserRolePermissionTemplate>(ApiRoutes.USER_ROLE, role);
+}
+
+function getRoles() {
+  return axiosService.get<GenericResponseDto<UserRolePermissionTemplate[]>>(ApiRoutes.USER_ROLES);
+}
+
+function updateRole(role: UserRolePermissionTemplate) {
+  return axiosService.put<UserRolePermissionTemplate>(ApiRoutes.USER_ROLE, role);
+}
+
+function deleteRole(roleId: string) {
+  return axiosService.delete<void>(`${ApiRoutes.USER_ROLE}/${roleId}`);
+}
+
+function createGroup(group: UserGroup) {
+  return axiosService.post<UserGroup>(ApiRoutes.USER_GROUP, group);
+}
+
+function getGroups() {
+  return axiosService.get<UserGroup[]>(ApiRoutes.USER_GROUPS);
+}
+
+function updateGroup(group: UserGroup) {
+  return axiosService.put<UserGroup>(ApiRoutes.USER_GROUP, group);
+}
+
+function deleteGroup(groupId: string) {
+  return axiosService.delete<void>(`${ApiRoutes.USER_GROUP}/${groupId}`);
+}
+
 export const UsersService = {
   getUsers,
   getUser,
@@ -103,9 +136,9 @@ export const UsersService = {
   updateUserDetails,
   updateAdminUser,
   deleteUser,
-  createUserGroup,
-  getUserGroups,
-  deleteUserGroup,
+  // createUserGroup,
+  // getUserGroups,
+  // deleteUserGroup,
   attachUserToIngress,
   removeUserFromIngress,
   transferSuperAdminRights,
@@ -114,4 +147,12 @@ export const UsersService = {
   approvePendingUser,
   denyPendingUser,
   denyAllPendingUsers,
+  getRoles,
+  createRole,
+  updateRole,
+  deleteRole,
+  createGroup,
+  getGroups,
+  updateGroup,
+  deleteGroup,
 };

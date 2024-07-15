@@ -384,15 +384,19 @@ export default function UsersPage(props: PageProps) {
   );
 
   const filteredUsers = useMemo(() => {
-    return users.filter((u) => {
-      return u.username.toLowerCase().includes(usersSearch.trim().toLowerCase());
-    });
+    return (
+      users?.filter((u) => {
+        return u.username.toLowerCase().includes(usersSearch.trim().toLowerCase());
+      }) ?? []
+    );
   }, [users, usersSearch]);
 
   const filteredPendingUsers = useMemo(() => {
-    return pendingUsers.filter((u) => {
-      return u.username.toLowerCase().includes(pendingUsersSearch.trim().toLowerCase());
-    });
+    return (
+      pendingUsers?.filter((u) => {
+        return u.username.toLowerCase().includes(pendingUsersSearch.trim().toLowerCase());
+      }) ?? []
+    );
   }, [pendingUsers, pendingUsersSearch]);
 
   const getUserAndUpdateInStore = async (username: User['username'] | undefined) => {
