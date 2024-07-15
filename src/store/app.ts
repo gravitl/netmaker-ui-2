@@ -2,6 +2,7 @@ import { ServerConfig, ServerStatus } from '@/models/ServerConfig';
 import { StateCreator } from 'zustand';
 import { AvailableThemes } from '../models/AvailableThemes';
 import { ServerConfigService } from '@/services/ServerConfigService';
+import { SIDE_NAV_EXPANDED_WIDTH } from '@/layouts/MainLayout';
 
 export interface IAppSlice {
   currentTheme: AvailableThemes;
@@ -10,6 +11,7 @@ export interface IAppSlice {
   serverStatus: { status: ServerStatus | null; isHealthy: boolean };
   serverConfig: ServerConfig | null;
   isSidebarCollapsed: boolean;
+  sidebarWidth: string;
 
   // methods
   setCurrentTheme: (theme: AvailableThemes) => void;
@@ -18,6 +20,7 @@ export interface IAppSlice {
   setServerStatus: (status: ServerStatus) => void;
   fetchServerConfig: () => Promise<[Boolean, ServerConfig | null]>; // eslint-disable-line @typescript-eslint/ban-types
   setIsSidebarCollapsed: (isCollapsed: boolean) => void;
+  setSidebarWidth: (width: string) => void;
 }
 
 const createAppSlice: StateCreator<IAppSlice, [], [], IAppSlice> = (set) => ({
@@ -27,6 +30,7 @@ const createAppSlice: StateCreator<IAppSlice, [], [], IAppSlice> = (set) => ({
   serverStatus: { status: null, isHealthy: true },
   serverConfig: null,
   isSidebarCollapsed: false,
+  sidebarWidth: SIDE_NAV_EXPANDED_WIDTH,
 
   setCurrentTheme: (theme) => set(() => ({ currentTheme: theme })),
   setLogoUrl: (url) => set(() => ({ logoUrl: url })),
@@ -49,6 +53,7 @@ const createAppSlice: StateCreator<IAppSlice, [], [], IAppSlice> = (set) => ({
     }
   },
   setIsSidebarCollapsed: (isCollapsed) => set(() => ({ isSidebarCollapsed: isCollapsed })),
+  setSidebarWidth: (width) => set(() => ({ sidebarWidth: width })),
 });
 
 export const AppSlice = {

@@ -26,8 +26,8 @@ import { lt } from 'semver';
 
 const { Content, Sider } = Layout;
 
-const SIDE_NAV_EXPANDED_WIDTH = '200px';
-const SIDE_NAV_COLLAPSED_WIDTH = '80px';
+export const SIDE_NAV_EXPANDED_WIDTH = '200px';
+export const SIDE_NAV_COLLAPSED_WIDTH = '80px';
 
 // const SELECTED_COLOR = '#1668dc';
 
@@ -339,7 +339,7 @@ export default function MainLayout() {
   const contentMarginLeft = useMemo(() => {
     if (isSidebarCollapsed) {
       if (isSmallScreen) {
-        return 0;
+        return '0px';
       }
       return SIDE_NAV_COLLAPSED_WIDTH;
     }
@@ -358,6 +358,10 @@ export default function MainLayout() {
     const isManagedHostLoaded = store.hosts.some((host) => isManagedHost(host.name));
     return isSaasBuild && isNewTenant && !isManagedHostLoaded;
   }, [store.isNewTenant, store.hosts]);
+
+  useEffect(() => {
+    store.setSidebarWidth(contentMarginLeft);
+  }, [contentMarginLeft]);
 
   useEffect(() => {
     if (store.serverStatus?.status?.trial_end_date) {
@@ -393,14 +397,13 @@ export default function MainLayout() {
         <Sider
           collapsible
           collapsed={isSidebarCollapsed}
-          onCollapse={(value) => {
-            setIsSidebarCollapsed(value);
-            store.setIsSidebarCollapsed(value);
+          onCollapse={(isCollapsed) => {
+            setIsSidebarCollapsed(isCollapsed);
+            store.setIsSidebarCollapsed(isCollapsed);
           }}
           collapsedWidth={isSmallScreen ? 0 : SIDE_NAV_COLLAPSED_WIDTH}
           width={SIDE_NAV_EXPANDED_WIDTH}
           theme="light"
-          breakpoint="lg"
           style={{
             height: '100vh',
             position: 'fixed',
@@ -417,7 +420,10 @@ export default function MainLayout() {
             color: branding.primaryColor,
             top: 0,
           }}
-          onBreakpoint={(broken: boolean) => setIsSmallScreen(broken)}
+          breakpoint="lg"
+          onBreakpoint={(broken: boolean) => {
+            setIsSmallScreen(broken);
+          }}
         >
           {/* logo */}
           <Link to={resolveAppRoute(AppRoutes.DASHBOARD_ROUTE)}>

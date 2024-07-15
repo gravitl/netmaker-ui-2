@@ -18,16 +18,49 @@ export interface NewUser {
   networkRoles: UserRole[];
 }
 
-export interface UserRole {
-  id: string;
-  name: string;
-  type: 'platform' | 'network';
-  permissions?: string[];
+export type UserRole = 'super_admin' | 'admin' | 'user' | 'network_admin' | 'network_user' | string;
+
+export type RsrcType =
+  | 'hosts'
+  | 'relays'
+  | 'remote_access_gw'
+  | 'extclients'
+  | 'inet_gw'
+  | 'egress'
+  | 'networks'
+  | 'enrollment_key'
+  | 'users'
+  | 'acl'
+  | 'dns'
+  | 'fail_over';
+
+type RsrcID =
+  | 'all_host'
+  | 'all_relay'
+  | 'all_remote_access_gw'
+  | 'all_extclients'
+  | 'all_inet_gw'
+  | 'all_egress'
+  | 'all_network'
+  | 'all_enrollment_key'
+  | 'all_user'
+  | 'all_dns'
+  | 'all_fail_over'
+  | 'all_acls';
+
+export interface RsrcPermissionScope {
+  Read: 'read';
+  Write: 'write';
+  Execute: 'execute';
+  None: 'none';
 }
 
-export interface UserGroup {
-  id: string;
-  name: string;
-  networkRoles: UserRole[];
-  members: User['username'][];
+export interface UserRolePermissionTemplate {
+  id: UserRole;
+  default: boolean;
+  denyDashboardAccess: boolean;
+  fullAccess: boolean;
+  networkID: string;
+  networkLevelAccess: { [key in RsrcType]: { [key in RsrcID]: RsrcPermissionScope } };
+  globalLevelAccess: { [key in RsrcType]: { [key in RsrcID]: RsrcPermissionScope } };
 }

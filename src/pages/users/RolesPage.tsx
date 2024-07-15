@@ -1,5 +1,8 @@
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
-import { UserRole } from '@/models/User';
+import { UserRole, UserRolePermissionTemplate } from '@/models/User';
+import { AppRoutes } from '@/routes';
+import { UsersService } from '@/services/UsersService';
+import { resolveAppRoute } from '@/utils/RouteUtils';
 import {
   DeleteOutlined,
   EditOutlined,
@@ -16,57 +19,55 @@ import {
   Input,
   Modal,
   Row,
+  Skeleton,
   Table,
   TableColumnProps,
   Typography,
   notification,
 } from 'antd';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface RolesPageProps {}
 
 export default function RolesPage(props: RolesPageProps) {
   const [notify, notifyCtx] = notification.useNotification();
+  const navigate = useNavigate();
 
-  const [userRoles, setUserRoles] = useState<UserRole[]>([
-    { id: '1', name: 'Network User', type: 'network' },
-    { id: '2', name: 'Network Admin', type: 'network' },
-    { id: '3', name: 'User', type: 'platform' },
-    { id: '4', name: 'Admin', type: 'platform' },
-    { id: '5', name: 'Superadmin', type: 'platform' },
-  ]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [userRoles, setUserRoles] = useState<UserRolePermissionTemplate[]>([]);
   const [searchRoles, setSearchRoles] = useState('');
-  const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
+  const [selectedRole, setSelectedRole] = useState<UserRolePermissionTemplate | null>(null);
 
   const filteredRoles = useMemo(() => {
     return userRoles
       .filter((role) => {
-        return role.name?.toLowerCase().includes(searchRoles.toLowerCase());
+        return role.id?.toLowerCase().includes(searchRoles.toLowerCase());
       })
-      .sort((a, b) => a.name?.localeCompare(b.name ?? '') ?? 0);
+      .sort((a, b) => a.id?.localeCompare(b.id ?? '') ?? 0);
   }, [searchRoles, userRoles]);
 
   const confirmDeleteRole = useCallback(
-    (role: UserRole) => {
+    (role: UserRolePermissionTemplate) => {
       Modal.confirm({
         title: 'Delete Role',
-        content: `Are you sure you want to delete the role "${role.name}"? This will remove the role from all users/groups, and they will lose any associated permissions.`,
+        content: `Are you sure you want to delete the role "${role.id}"? This will remove the role from all users/groups, and they will lose any associated permissions.`,
         onOk: () => {
           setUserRoles((roles) => roles.filter((r) => r.id !== role.id));
           setSelectedRole(null);
-          notify.success({ message: `Role "${role.name}" deleted` });
+          notify.success({ message: `Role "${role.id}" deleted` });
         },
       });
     },
     [notify],
   );
 
-  const roleTableColumns = useMemo<TableColumnProps<UserRole>[]>(
+  const roleTableColumns = useMemo<TableColumnProps<UserRolePermissionTemplate>[]>(
     () => [
       {
         title: 'Name',
-        dataIndex: 'name',
+        dataIndex: 'id',
         render(name) {
           return (
             <>
@@ -74,12 +75,18 @@ export default function RolesPage(props: RolesPageProps) {
             </>
           );
         },
-        sorter: (a, b) => a.name?.localeCompare(b.name ?? '') ?? 0,
+        sorter: (a, b) => a.id?.localeCompare(b.id ?? '') ?? 0,
         defaultSortOrder: 'ascend',
       },
       {
         title: 'Type',
-        dataIndex: 'type',
+        render(_, role) {
+          return (
+            <>
+              <Typography.Text>{role.networkID ? 'Network Role' : 'Platform Role'}</Typography.Text>
+            </>
+          );
+        },
       },
       {
         width: '1rem',
@@ -92,25 +99,32 @@ export default function RolesPage(props: RolesPageProps) {
                 items: [
                   {
                     key: 'update',
+                    disabled: role.default,
                     label: (
-                      <Typography.Text>
+                      <Typography.Text
+                        disabled={role.default}
+                        title={role.default ? 'Cannot delete a defaul role' : ''}
+                      >
                         <EditOutlined /> Update
                       </Typography.Text>
                     ),
                     onClick: (info) => {
+                      if (role.default) return;
                       setSelectedRole(role);
                       info.domEvent.stopPropagation();
                     },
                   },
                   {
                     key: 'delete',
+                    disabled: role.default,
                     danger: true,
                     label: (
-                      <>
+                      <span title={role.default ? 'Cannot delete a default role' : ''}>
                         <DeleteOutlined /> Delete
-                      </>
+                      </span>
                     ),
                     onClick: (info) => {
+                      if (role.default) return;
                       confirmDeleteRole(role);
                       info.domEvent.stopPropagation();
                     },
@@ -127,9 +141,25 @@ export default function RolesPage(props: RolesPageProps) {
     [confirmDeleteRole],
   );
 
+  const loadRoles = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const roles = (await UsersService.getRoles()).data.Response;
+      setUserRoles(roles);
+    } catch (error) {
+      notify.error({ message: 'Failed to load roles' });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [notify]);
+
+  useEffect(() => {
+    loadRoles();
+  }, [loadRoles]);
+
   const isEmpty = userRoles.length === 0;
   return (
-    <div className="" style={{ width: '100%' }}>
+    <Skeleton loading={isLoading} active className="" style={{ width: '100%' }}>
       {isEmpty && (
         <Row
           className="page-padding"
@@ -168,15 +198,17 @@ export default function RolesPage(props: RolesPageProps) {
                   <Dropdown
                     menu={{
                       items: [
-                        {
-                          key: 'create-platform-role',
-                          label: 'Create a Platform Role',
-                          onClick: () => {},
-                        },
+                        // {
+                        //   key: 'create-platform-role',
+                        //   label: 'Create a Platform Role',
+                        //   onClick: () => {},
+                        // },
                         {
                           key: 'create-network-role',
-                          label: 'Create a Network Role',
-                          onClick: () => {},
+                          label: <Typography.Text>Create a Network Role</Typography.Text>,
+                          onClick: () => {
+                            navigate(resolveAppRoute(AppRoutes.CREATE_NETWORK_ROLE_ROUTE));
+                          },
                         },
                       ],
                     }}
@@ -219,15 +251,17 @@ export default function RolesPage(props: RolesPageProps) {
                 placement="bottomRight"
                 menu={{
                   items: [
-                    {
-                      key: 'create-platform-role',
-                      label: 'Create a Platform Role',
-                      onClick: () => {},
-                    },
+                    // {
+                    //   key: 'create-platform-role',
+                    //   label: 'Create a Platform Role',
+                    //   onClick: () => {},
+                    // },
                     {
                       key: 'create-network-role',
                       label: 'Create a Network Role',
-                      onClick: () => {},
+                      onClick: () => {
+                        navigate(resolveAppRoute(AppRoutes.CREATE_NETWORK_ROLE_ROUTE));
+                      },
                     },
                   ],
                 }}
@@ -274,6 +308,6 @@ export default function RolesPage(props: RolesPageProps) {
 
       {/* misc */}
       {notifyCtx}
-    </div>
+    </Skeleton>
   );
 }
