@@ -2,7 +2,7 @@ import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 import { UserRole, UserRolePermissionTemplate } from '@/models/User';
 import { AppRoutes } from '@/routes';
 import { UsersService } from '@/services/UsersService';
-import { resolveAppRoute } from '@/utils/RouteUtils';
+import { getNetworkRoleRoute, resolveAppRoute } from '@/utils/RouteUtils';
 import {
   DeleteOutlined,
   EditOutlined,
@@ -53,10 +53,15 @@ export default function RolesPage(props: RolesPageProps) {
       Modal.confirm({
         title: 'Delete Role',
         content: `Are you sure you want to delete the role "${role.id}"? This will remove the role from all users/groups, and they will lose any associated permissions.`,
-        onOk: () => {
-          setUserRoles((roles) => roles.filter((r) => r.id !== role.id));
-          setSelectedRole(null);
-          notify.success({ message: `Role "${role.id}" deleted` });
+        onOk: async () => {
+          try {
+            await UsersService.deleteRole(role.id);
+            setUserRoles((roles) => roles.filter((r) => r.id !== role.id));
+            setSelectedRole(null);
+            notify.success({ message: `Role "${role.id}" deleted` });
+          } catch (error) {
+            notify.error({ message: `Failed to delete role "${role.id}"` });
+          }
         },
       });
     },
@@ -83,7 +88,7 @@ export default function RolesPage(props: RolesPageProps) {
         render(_, role) {
           return (
             <>
-              <Typography.Text>{role.networkID ? 'Network Role' : 'Platform Role'}</Typography.Text>
+              <Typography.Text>{role.network_id ? 'Network Role' : 'Platform Role'}</Typography.Text>
             </>
           );
         },
@@ -281,6 +286,7 @@ export default function RolesPage(props: RolesPageProps) {
                   rowKey="id"
                   size="small"
                   scroll={{ x: true }}
+                  pagination={{ hideOnSinglePage: true, defaultPageSize: 25 }}
                   // rowClassName={(role) => {
                   //   return role.id === selectedRole?.id ? 'selected-row' : '';
                   // }}
@@ -288,6 +294,7 @@ export default function RolesPage(props: RolesPageProps) {
                     return {
                       onClick: () => {
                         setSelectedRole(role);
+                        navigate(getNetworkRoleRoute(role));
                       },
                     };
                   }}

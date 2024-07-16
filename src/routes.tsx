@@ -16,7 +16,8 @@ import { isSaasBuild } from './services/BaseService';
 import NetworkHostDetailsPage from './pages/hosts/NetworkHostDetailsPage';
 import HostDetailsPage from './pages/hosts/HostDetailsPage';
 import { ServerConfigService } from './services/ServerConfigService';
-import NewNetworkRolePage from './pages/users/NewNetworkRolePage';
+import CreateNetworkRolePage from './pages/users/CreateNetworkRolePage';
+import NetworkRoleDetailsPage from './pages/users/NetworkRoleDetailsPage';
 
 export const AppRoutes = {
   DASHBOARD_ROUTE: '/',
@@ -34,6 +35,7 @@ export const AppRoutes = {
   USERS_ROUTE: '/users',
   SIGNUP_ROUTE: '/signup',
   CREATE_NETWORK_ROLE_ROUTE: '/users/create-network-role',
+  NETWORK_ROLE_DETAILS_ROUTE: '/users/network-role/:roleId',
 };
 
 function generateRoutePair(path: string, element: JSX.Element): RouteObject[] {
@@ -117,8 +119,12 @@ const routes: RouteObject[] = [
       ...generateRoutePair(
         AppRoutes.CREATE_NETWORK_ROLE_ROUTE.split('/').slice(1).join('/'),
         <ProtectedRoute>
-          <NewNetworkRolePage isFullScreen />
+          <CreateNetworkRolePage isFullScreen />
         </ProtectedRoute>,
+      ),
+      ...generateRoutePair(
+        AppRoutes.NETWORK_ROLE_DETAILS_ROUTE.split('/').slice(1).join('/'),
+        <NetworkRoleDetailsPage isFullScreen />,
       ),
     ],
   },

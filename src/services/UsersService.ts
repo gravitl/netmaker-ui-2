@@ -94,12 +94,16 @@ function denyAllPendingUsers() {
   return axiosService.delete<void>(`${ApiRoutes.PENDING_USERS}`);
 }
 
-function createRole(role: UserRolePermissionTemplate) {
+function createRole(role: Partial<UserRolePermissionTemplate>) {
   return axiosService.post<UserRolePermissionTemplate>(ApiRoutes.USER_ROLE, role);
 }
 
 function getRoles() {
   return axiosService.get<GenericResponseDto<UserRolePermissionTemplate[]>>(ApiRoutes.USER_ROLES);
+}
+
+function getRole(roleId: UserRolePermissionTemplate['id']) {
+  return axiosService.get<GenericResponseDto<UserRolePermissionTemplate>>(`${ApiRoutes.USER_ROLE}/${roleId}`);
 }
 
 function updateRole(role: UserRolePermissionTemplate) {
@@ -117,6 +121,10 @@ function createGroup(group: UserGroup) {
 function getGroups() {
   return axiosService.get<UserGroup[]>(ApiRoutes.USER_GROUPS);
 }
+
+// function getGroup(groupId: UserGroup['id']) {
+//   return axiosService.get<UserGroup>(`${ApiRoutes.USER_GROUP}/${groupId}`);
+// }
 
 function updateGroup(group: UserGroup) {
   return axiosService.put<UserGroup>(ApiRoutes.USER_GROUP, group);
@@ -148,6 +156,7 @@ export const UsersService = {
   denyPendingUser,
   denyAllPendingUsers,
   getRoles,
+  getRole,
   createRole,
   updateRole,
   deleteRole,
