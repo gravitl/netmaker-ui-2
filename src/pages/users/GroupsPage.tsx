@@ -1,13 +1,9 @@
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
-import { UserGroup, UserRole } from '@/models/User';
-import {
-  DeleteOutlined,
-  EditOutlined,
-  MoreOutlined,
-  PlusOutlined,
-  QuestionCircleOutlined,
-  SearchOutlined,
-} from '@ant-design/icons';
+import { UserGroup } from '@/models/User';
+import { AppRoutes } from '@/routes';
+import { UsersService } from '@/services/UsersService';
+import { resolveAppRoute } from '@/utils/RouteUtils';
+import { DeleteOutlined, MoreOutlined, PlusOutlined, QuestionCircleOutlined, SearchOutlined } from '@ant-design/icons';
 import {
   Button,
   Card,
@@ -16,44 +12,49 @@ import {
   Input,
   Modal,
   Row,
+  Skeleton,
   Table,
   TableColumnProps,
   Typography,
   notification,
 } from 'antd';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface GroupPageProps {}
 
 export default function GroupsPage(props: GroupPageProps) {
   const [notify, notifyCtx] = notification.useNotification();
+  const navigate = useNavigate();
 
-  const [userGroups, setUserGroups] = useState<UserGroup[]>([
-    { id: '1', name: 'all', networkRoles: [], members: ['aceix', 'kwesi@netmaker.io', 'philip@netmaker.io'] },
-    { id: '2', name: 'Remote Workers', networkRoles: [], members: [] },
-    { id: '5', name: 'Group 2', networkRoles: [], members: [] },
-  ]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [userGroups, setUserGroups] = useState<UserGroup[]>([]);
   const [searchGroups, setSearchGroup] = useState('');
   const [selectedGroup, setSelectedGroup] = useState<UserGroup | null>(null);
 
   const filteredGroups = useMemo(() => {
     return userGroups
       .filter((role) => {
-        return role.name?.toLowerCase().includes(searchGroups.toLowerCase());
+        return role.id?.toLowerCase().includes(searchGroups.trim().toLowerCase());
       })
-      .sort((a, b) => a.name?.localeCompare(b.name ?? '') ?? 0);
+      .sort((a, b) => a.id?.localeCompare(b.id ?? '') ?? 0);
   }, [searchGroups, userGroups]);
 
   const confirmDeleteGroup = useCallback(
     (group: UserGroup) => {
       Modal.confirm({
         title: 'Delete Group',
-        content: `Are you sure you want to delete the group "${group.name}"? All users will be removed from the group and will lose any associated permissions.`,
-        onOk: () => {
-          setUserGroups((roles) => roles.filter((r) => r.id !== group.id));
-          setSelectedGroup(null);
-          notify.success({ message: `Group "${group.name}" deleted` });
+        content: `Are you sure you want to delete the group "${group.id}"? All users will be removed from the group and will lose any associated permissions.`,
+        onOk: async () => {
+          try {
+            await UsersService.deleteGroup(group.id);
+            setUserGroups((roles) => roles.filter((r) => r.id !== group.id));
+            setSelectedGroup(null);
+            notify.success({ message: `Group "${group.id}" successfully deleted` });
+          } catch (error) {
+            notify.error({ message: 'Failed to delete group' });
+          }
         },
       });
     },
@@ -64,7 +65,7 @@ export default function GroupsPage(props: GroupPageProps) {
     () => [
       {
         title: 'Name',
-        dataIndex: 'name',
+        dataIndex: 'id',
         render(name) {
           return (
             <>
@@ -72,15 +73,15 @@ export default function GroupsPage(props: GroupPageProps) {
             </>
           );
         },
-        sorter: (a, b) => a.name?.localeCompare(b.name ?? '') ?? 0,
+        sorter: (a, b) => a.id?.localeCompare(b.id ?? '') ?? 0,
         defaultSortOrder: 'ascend',
       },
-      {
-        title: 'Member Count',
-        render(_, group) {
-          return <Typography.Text>{group.members?.length ?? 0}</Typography.Text>;
-        },
-      },
+      // {
+      //   title: 'Member Count',
+      //   render(_, group) {
+      //     return <Typography.Text>{group.members?.length ?? 0}</Typography.Text>;
+      //   },
+      // },
       {
         width: '1rem',
         align: 'end',
@@ -90,18 +91,18 @@ export default function GroupsPage(props: GroupPageProps) {
               placement="bottomRight"
               menu={{
                 items: [
-                  {
-                    key: 'update',
-                    label: (
-                      <Typography.Text>
-                        <EditOutlined /> Update
-                      </Typography.Text>
-                    ),
-                    onClick: (info) => {
-                      setSelectedGroup(group);
-                      info.domEvent.stopPropagation();
-                    },
-                  },
+                  // {
+                  //   key: 'update',
+                  //   label: (
+                  //     <Typography.Text>
+                  //       <EditOutlined /> Update
+                  //     </Typography.Text>
+                  //   ),
+                  //   onClick: (info) => {
+                  //     setSelectedGroup(group);
+                  //     info.domEvent.stopPropagation();
+                  //   },
+                  // },
                   {
                     key: 'delete',
                     danger: true,
@@ -111,8 +112,8 @@ export default function GroupsPage(props: GroupPageProps) {
                       </>
                     ),
                     onClick: (info) => {
-                      confirmDeleteGroup(group);
                       info.domEvent.stopPropagation();
+                      confirmDeleteGroup(group);
                     },
                   },
                 ],
@@ -127,9 +128,25 @@ export default function GroupsPage(props: GroupPageProps) {
     [confirmDeleteGroup],
   );
 
+  const loadGroups = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const groups = (await UsersService.getGroups()).data.Response;
+      setUserGroups(groups);
+    } catch (error) {
+      notify.error({ message: 'Failed to load groups' });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [notify]);
+
+  useEffect(() => {
+    loadGroups();
+  }, [loadGroups]);
+
   const isEmpty = userGroups.length === 0;
   return (
-    <div className="" style={{ width: '100%' }}>
+    <Skeleton loading={isLoading} active className="" style={{ width: '100%' }}>
       {isEmpty && (
         <Row
           className="page-padding"
@@ -160,7 +177,13 @@ export default function GroupsPage(props: GroupPageProps) {
               </Typography.Text>
               <Row style={{ marginTop: '1rem' }}>
                 <Col>
-                  <Button type="primary" size="large" onClick={() => {}}>
+                  <Button
+                    type="primary"
+                    size="large"
+                    onClick={() => {
+                      navigate(resolveAppRoute(AppRoutes.CREATE_GROUP_ROUTE));
+                    }}
+                  >
                     <PlusOutlined /> Create Group
                   </Button>
                 </Col>
@@ -177,7 +200,7 @@ export default function GroupsPage(props: GroupPageProps) {
                 placeholder="Search group"
                 size="large"
                 value={searchGroups}
-                onChange={(ev) => setSearchGroup(ev.target.value.trim())}
+                onChange={(ev) => setSearchGroup(ev.target.value)}
                 prefix={<SearchOutlined />}
                 style={{ width: '60%' }}
                 allowClear
@@ -193,7 +216,13 @@ export default function GroupsPage(props: GroupPageProps) {
                 referrerPolicy="no-referrer"
                 icon={<QuestionCircleOutlined />}
               />
-              <Button type="primary" size="large" onClick={() => {}}>
+              <Button
+                type="primary"
+                size="large"
+                onClick={() => {
+                  navigate(resolveAppRoute(AppRoutes.CREATE_GROUP_ROUTE));
+                }}
+              >
                 <PlusOutlined /> Create Group
               </Button>
             </Col>
@@ -234,6 +263,6 @@ export default function GroupsPage(props: GroupPageProps) {
 
       {/* misc */}
       {notifyCtx}
-    </div>
+    </Skeleton>
   );
 }

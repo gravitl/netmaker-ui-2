@@ -18,6 +18,7 @@ import HostDetailsPage from './pages/hosts/HostDetailsPage';
 import { ServerConfigService } from './services/ServerConfigService';
 import CreateNetworkRolePage from './pages/users/CreateNetworkRolePage';
 import NetworkRoleDetailsPage from './pages/users/NetworkRoleDetailsPage';
+import CreateUserGroupPage from './pages/users/CreateUserGroupPage';
 
 export const AppRoutes = {
   DASHBOARD_ROUTE: '/',
@@ -36,6 +37,7 @@ export const AppRoutes = {
   SIGNUP_ROUTE: '/signup',
   CREATE_NETWORK_ROLE_ROUTE: '/users/create-network-role',
   NETWORK_ROLE_DETAILS_ROUTE: '/users/network-role/:roleId',
+  CREATE_GROUP_ROUTE: '/users/create-group',
 };
 
 function generateRoutePair(path: string, element: JSX.Element): RouteObject[] {
@@ -125,6 +127,12 @@ const routes: RouteObject[] = [
       ...generateRoutePair(
         AppRoutes.NETWORK_ROLE_DETAILS_ROUTE.split('/').slice(1).join('/'),
         <NetworkRoleDetailsPage isFullScreen />,
+      ),
+      ...generateRoutePair(
+        AppRoutes.CREATE_GROUP_ROUTE.split('/').slice(1).join('/'),
+        <ProtectedRoute>
+          <CreateUserGroupPage isFullScreen />
+        </ProtectedRoute>,
       ),
     ],
   },

@@ -105,7 +105,7 @@ export default function CreateNetworkRolePage(props: PageProps) {
       const permissions = await permissionsForm.validateFields();
       const vpnAccess = await vpnAccessForm.validateFields();
 
-      UsersService.createRole({
+      await UsersService.createRole({
         id: metadata.name,
         network_id: metadata.network,
         // default: false,

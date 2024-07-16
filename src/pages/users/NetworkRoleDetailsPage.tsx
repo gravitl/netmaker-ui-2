@@ -1,5 +1,5 @@
 import { useStore } from '@/store/store';
-import { EditOutlined, PlusOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import {
   Button,
   Card,
@@ -8,9 +8,9 @@ import {
   Input,
   Layout,
   List,
+  Modal,
   notification,
   Row,
-  Select,
   Skeleton,
   Switch,
   Tabs,
@@ -27,9 +27,6 @@ import { RsrcPermissionScope, UserRolePermissionTemplate } from '@/models/User';
 import { resolveAppRoute } from '@/utils/RouteUtils';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { AppRoutes } from '@/routes';
-import { Network } from '@/models/Network';
-import { NetworksService } from '@/services/NetworksService';
-import { convertNetworkPayloadToUiNetwork } from '@/utils/NetworkUtils';
 import { getExtendedNode } from '@/utils/NodeUtils';
 
 const permissionsTabKey = 'permissions';
@@ -59,15 +56,11 @@ type vpnAccessFormValues = {
   [key: string]: boolean;
 };
 
-interface NetworkRoleDetailsPageProps extends PageProps {
-  role: UserRolePermissionTemplate;
-}
-
 export default function NetworkRoleDetailsPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
   const { token: themeToken } = theme.useToken();
-  const isServerEE = store.serverConfig?.IsEE === 'yes';
+  // const isServerEE = store.serverConfig?.IsEE === 'yes';
   const navigate = useNavigate();
   const { roleId } = useParams<{ roleId: string }>();
 
@@ -175,6 +168,26 @@ export default function NetworkRoleDetailsPage(props: PageProps) {
       setIsSubmitting(false);
     }
   }, [notify, permissionsForm, role, vpnAccessForm]);
+
+  const confirmDeleteRole = useCallback(() => {
+    if (!role) {
+      notify.error({ message: 'An error occured. Cannot delete role' });
+      return;
+    }
+    Modal.confirm({
+      title: 'Delete Role',
+      content: `Are you sure you want to delete the role "${role.id}"? This will remove the role from all users/groups, and they will lose any associated permissions.`,
+      onOk: async () => {
+        try {
+          await UsersService.deleteRole(role.id);
+          notification.success({ message: `Role "${role.id}" deleted` });
+          navigate(resolveAppRoute(AppRoutes.USERS_ROUTE));
+        } catch (error) {
+          notify.error({ message: `Failed to delete role "${role.id}"` });
+        }
+      },
+    });
+  }, [navigate, notify, role]);
 
   // ui components
   const getPermissionsContent = useMemo(() => {
@@ -618,7 +631,12 @@ export default function NetworkRoleDetailsPage(props: PageProps) {
             transition: 'height, opacity 0.3s ease-in-out',
           }}
         >
-          <Col xs={24} style={{ textAlign: 'end' }}>
+          <Col xs={12}>
+            <Button type="default" size="large" danger onClick={confirmDeleteRole} disabled={role?.default}>
+              <DeleteOutlined /> Delete Role
+            </Button>
+          </Col>
+          <Col xs={12} style={{ textAlign: 'end' }}>
             <Button
               type="primary"
               size="large"

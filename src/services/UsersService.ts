@@ -2,7 +2,7 @@ import { ApiRoutes } from '@/constants/ApiRoutes';
 import { axiosService } from './BaseService';
 import { User, UserRolePermissionTemplate } from '@/models/User';
 import { UpdateUserReqDto } from './dtos/UserDtos';
-import { UserGroup } from '@/models/UserGroup';
+import { UserGroup } from '@/models/User';
 import { CreateUserReqDto } from './dtos/UserDtos';
 import { Node } from '@/models/Node';
 import { GatewayUsersResDto } from './dtos/GatewayUsersResDto';
@@ -114,20 +114,20 @@ function deleteRole(roleId: string) {
   return axiosService.delete<void>(`${ApiRoutes.USER_ROLE}/${roleId}`);
 }
 
-function createGroup(group: UserGroup) {
-  return axiosService.post<UserGroup>(ApiRoutes.USER_GROUP, group);
+function createGroup(group: Partial<UserGroup>) {
+  return axiosService.post<GenericResponseDto<UserGroup>>(ApiRoutes.USER_GROUP, group);
 }
 
 function getGroups() {
-  return axiosService.get<UserGroup[]>(ApiRoutes.USER_GROUPS);
+  return axiosService.get<GenericResponseDto<UserGroup[]>>(ApiRoutes.USER_GROUPS);
 }
 
 // function getGroup(groupId: UserGroup['id']) {
-//   return axiosService.get<UserGroup>(`${ApiRoutes.USER_GROUP}/${groupId}`);
+//   return axiosService.get<GenericResponseDto<UserGroup>>(`${ApiRoutes.USER_GROUP}/${groupId}`);
 // }
 
 function updateGroup(group: UserGroup) {
-  return axiosService.put<UserGroup>(ApiRoutes.USER_GROUP, group);
+  return axiosService.put<GenericResponseDto<UserGroup>>(ApiRoutes.USER_GROUP, group);
 }
 
 function deleteGroup(groupId: string) {

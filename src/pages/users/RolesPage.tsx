@@ -1,16 +1,10 @@
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
-import { UserRole, UserRolePermissionTemplate } from '@/models/User';
+import { UserRolePermissionTemplate } from '@/models/User';
 import { AppRoutes } from '@/routes';
 import { UsersService } from '@/services/UsersService';
 import { getNetworkRoleRoute, resolveAppRoute } from '@/utils/RouteUtils';
-import {
-  DeleteOutlined,
-  EditOutlined,
-  MoreOutlined,
-  PlusOutlined,
-  QuestionCircleOutlined,
-  SearchOutlined,
-} from '@ant-design/icons';
+import { deriveUserRoleType } from '@/utils/UserMgmtUtils';
+import { DeleteOutlined, MoreOutlined, PlusOutlined, QuestionCircleOutlined, SearchOutlined } from '@ant-design/icons';
 import {
   Button,
   Card,
@@ -43,7 +37,7 @@ export default function RolesPage(props: RolesPageProps) {
   const filteredRoles = useMemo(() => {
     return userRoles
       .filter((role) => {
-        return role.id?.toLowerCase().includes(searchRoles.toLowerCase());
+        return role.id?.toLowerCase().includes(searchRoles.trim().toLowerCase());
       })
       .sort((a, b) => a.id?.localeCompare(b.id ?? '') ?? 0);
   }, [searchRoles, userRoles]);
@@ -88,7 +82,9 @@ export default function RolesPage(props: RolesPageProps) {
         render(_, role) {
           return (
             <>
-              <Typography.Text>{role.network_id ? 'Network Role' : 'Platform Role'}</Typography.Text>
+              <Typography.Text>
+                {deriveUserRoleType(role) === 'network-role' ? 'Network Role' : 'Platform Role'}
+              </Typography.Text>
             </>
           );
         },
@@ -102,23 +98,28 @@ export default function RolesPage(props: RolesPageProps) {
               placement="bottomRight"
               menu={{
                 items: [
-                  {
-                    key: 'update',
-                    disabled: role.default,
-                    label: (
-                      <Typography.Text
-                        disabled={role.default}
-                        title={role.default ? 'Cannot delete a defaul role' : ''}
-                      >
-                        <EditOutlined /> Update
-                      </Typography.Text>
-                    ),
-                    onClick: (info) => {
-                      if (role.default) return;
-                      setSelectedRole(role);
-                      info.domEvent.stopPropagation();
-                    },
-                  },
+                  // {
+                  //   key: 'update',
+                  //   disabled: role.default || deriveUserRoleType(role) === 'platform-role',
+                  //   label: (
+                  //     <Typography.Text
+                  //       disabled={role.default}
+                  //       title={role.default ? 'Cannot delete a defaul role' : ''}
+                  //       onClick={(ev) => {
+                  //         ev.stopPropagation();
+                  //         if (deriveUserRoleType(role) === 'platform-role') return;
+                  //         navigate(getNetworkRoleRoute(role));
+                  //       }}
+                  //     >
+                  //       <EditOutlined /> Update
+                  //     </Typography.Text>
+                  //   ),
+                  //   onClick: (info) => {
+                  //     if (role.default) return;
+                  //     setSelectedRole(role);
+                  //     info.domEvent.stopPropagation();
+                  //   },
+                  // },
                   {
                     key: 'delete',
                     disabled: role.default,
@@ -129,9 +130,9 @@ export default function RolesPage(props: RolesPageProps) {
                       </span>
                     ),
                     onClick: (info) => {
+                      info.domEvent.stopPropagation();
                       if (role.default) return;
                       confirmDeleteRole(role);
-                      info.domEvent.stopPropagation();
                     },
                   },
                 ],
@@ -236,7 +237,7 @@ export default function RolesPage(props: RolesPageProps) {
                 placeholder="Search roles"
                 size="large"
                 value={searchRoles}
-                onChange={(ev) => setSearchRoles(ev.target.value.trim())}
+                onChange={(ev) => setSearchRoles(ev.target.value)}
                 prefix={<SearchOutlined />}
                 style={{ width: '60%' }}
                 allowClear
@@ -292,7 +293,10 @@ export default function RolesPage(props: RolesPageProps) {
                   // }}
                   onRow={(role) => {
                     return {
-                      onClick: () => {
+                      onClick: (ev) => {
+                        ev.stopPropagation();
+                        if (role.default) return;
+                        if (deriveUserRoleType(role) === 'platform-role') return;
                         setSelectedRole(role);
                         navigate(getNetworkRoleRoute(role));
                       },
