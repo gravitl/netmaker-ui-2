@@ -1,3 +1,4 @@
+import { Network } from './Network';
 import { Node } from './Node';
 
 interface RemoteGatewayIds {
@@ -14,11 +15,11 @@ export interface User {
 export interface NewUser {
   username: string;
   groups: string[];
-  platformRole: UserRole;
-  networkRoles: UserRole[];
+  platformRole: UserRoleId;
+  networkRoles: UserRoleId[];
 }
 
-export type UserRole = 'super_admin' | 'admin' | 'user' | 'network_admin' | 'network_user' | string;
+export type UserRoleId = 'super_admin' | 'admin' | 'user' | 'network_admin' | 'network_user' | string;
 
 export type RsrcType =
   | 'hosts'
@@ -61,11 +62,18 @@ export type RsrcTypeValue = {
 };
 
 export interface UserRolePermissionTemplate {
-  id: UserRole;
+  id: UserRoleId;
   default: boolean;
   deny_dashboard_access: boolean;
   full_access: boolean;
-  network_id: string;
+  network_id: Network['netid'];
   network_level_access: { [key in RsrcType]?: RsrcTypeValue | { [key: string]: RsrcPermissionScope } } | null;
   global_level_access: { [key in RsrcType]?: RsrcTypeValue } | null;
+}
+
+export interface UserGroup {
+  id: string;
+  platform_role: UserRoleId;
+  network_roles: { [network in Network['netid']]: { [role in UserRoleId]: object } };
+  meta_data: string;
 }
