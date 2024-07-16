@@ -9,6 +9,7 @@ import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { Network } from '@/models/Network';
 import {
   convertNetworkPayloadToUiNetwork,
+  generateCgnatCIDR,
   generateCIDR,
   generateCIDR6,
   generateNetworkName,
@@ -71,10 +72,21 @@ export default function AddNetworkModal({
     }
   };
 
+  const autoFillCIDR = useCallback(() => {
+    const addressRange = generateCgnatCIDR();
+    // check if a network with the same address range exists
+    const network = store.networks.find((n) => n.addressrange === addressRange);
+    if (network) {
+      autoFillCIDR();
+      return;
+    }
+    return addressRange;
+  }, [store.networks]);
+
   const autoFillDetails = useCallback(() => {
     form.setFieldsValue({
       // netid: generateNetworkName(),
-      addressrange: isIpv4Val ? generateCIDR() : '',
+      addressrange: isIpv4Val ? autoFillCIDR() : '',
       addressrange6: isIpv6Val ? generateCIDR6() : '',
       defaultacl: 'yes',
       defaultDns: '',

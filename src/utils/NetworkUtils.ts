@@ -123,6 +123,10 @@ function generateRandomHex(size: number) {
   return result.join('');
 }
 
+export function generateCgnatCIDR() {
+  return `100.${generateRandomNumber(254, true)}.${generateRandomNumber(254, true)}.0/24`;
+}
+
 export function generateCIDR() {
   return `10.${generateRandomNumber(254, true)}.${generateRandomNumber(254, true)}.0/24`;
 }
