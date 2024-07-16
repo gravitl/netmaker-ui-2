@@ -49,18 +49,23 @@ type RsrcID =
   | 'all_acls';
 
 export interface RsrcPermissionScope {
-  Read: 'read';
-  Write: 'write';
-  Execute: 'execute';
-  None: 'none';
+  create: boolean;
+  read: boolean;
+  update: boolean;
+  delete: boolean;
+  vpn_access: boolean;
 }
+
+export type RsrcTypeValue = {
+  [key in RsrcID]?: RsrcPermissionScope;
+};
 
 export interface UserRolePermissionTemplate {
   id: UserRole;
   default: boolean;
-  denyDashboardAccess: boolean;
-  fullAccess: boolean;
-  networkID: string;
-  networkLevelAccess: { [key in RsrcType]: { [key in RsrcID]: RsrcPermissionScope } };
-  globalLevelAccess: { [key in RsrcType]: { [key in RsrcID]: RsrcPermissionScope } };
+  deny_dashboard_access: boolean;
+  full_access: boolean;
+  network_id: string;
+  network_level_access: { [key in RsrcType]?: RsrcTypeValue | { [key: string]: RsrcPermissionScope } } | null;
+  global_level_access: { [key in RsrcType]?: RsrcTypeValue } | null;
 }
