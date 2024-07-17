@@ -10,6 +10,7 @@ import { Network } from '@/models/Network';
 import {
   convertNetworkPayloadToUiNetwork,
   generateCgnatCIDR,
+  generateCgnatCIDR6,
   generateCIDR,
   generateCIDR6,
   generateNetworkName,
@@ -72,22 +73,36 @@ export default function AddNetworkModal({
     }
   };
 
-  const autoFillCIDR = useCallback(() => {
-    const addressRange = generateCgnatCIDR();
-    // check if a network with the same address range exists
-    const network = store.networks.find((n) => n.addressrange === addressRange);
-    if (network) {
-      autoFillCIDR();
-      return;
-    }
-    return addressRange;
-  }, [store.networks]);
+  const autoFillCIDR = useCallback(
+    (isIpV4: boolean) => {
+      if (isIpV4) {
+        const addressRange = generateCgnatCIDR();
+        // check if a network with the same address range exists
+        const network = store.networks.find((n) => n.addressrange === addressRange);
+        if (network) {
+          autoFillCIDR(true);
+          return;
+        }
+        return addressRange;
+      } else {
+        const addressRange = generateCgnatCIDR6();
+        // check if a network with the same address range exists
+        const network = store.networks.find((n) => n.addressrange6 === addressRange);
+        if (network) {
+          autoFillCIDR(false);
+          return;
+        }
+        return addressRange;
+      }
+    },
+    [store.networks],
+  );
 
   const autoFillDetails = useCallback(() => {
     form.setFieldsValue({
       // netid: generateNetworkName(),
-      addressrange: isIpv4Val ? autoFillCIDR() : '',
-      addressrange6: isIpv6Val ? generateCIDR6() : '',
+      addressrange: isIpv4Val ? autoFillCIDR(true) : '',
+      addressrange6: isIpv6Val ? autoFillCIDR(false) : '',
       defaultacl: 'yes',
       defaultDns: '',
     });
