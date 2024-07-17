@@ -86,43 +86,13 @@ export const NULL_NODE_ID = '00000000-0000-0000-0000-000000000000';
 export const mockNewUserWithGroup: NewUser = {
   username: 'mock-user',
   groups: ['all'],
-  platformRole: {
-    id: '1',
-    name: 'platform-admin',
-    type: 'platform',
-    permissions: ['superadmin'],
-  },
-  networkRoles: [
-    {
-      id: '1',
-      name: 'network-admin',
-      type: 'network',
-      permissions: ['network-admin'],
-    },
-  ],
+  platformRole: 'mock-role',
+  networkRoles: ['mock-role'],
 };
 
 export const mockNewUserWithoutGroup: NewUser = {
   username: 'mock-user',
   groups: [],
-  platformRole: {
-    id: '1',
-    name: 'platform-admin',
-    type: 'platform',
-    permissions: ['superadmin'],
-  },
-  networkRoles: [
-    {
-      id: '1',
-      name: 'network-admin',
-      type: 'network',
-      permissions: ['network-admin'],
-    },
-    {
-      id: '1',
-      name: 'network-user',
-      type: 'network',
-      permissions: ['network-user'],
-    },
-  ],
+  platformRole: 'mock-role',
+  networkRoles: ['mock-role', 'mock-role-1'],
 };
