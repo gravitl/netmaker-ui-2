@@ -110,7 +110,7 @@ export default function UserDetailsModal({ isOpen, user, onUpdateUser, onCancel 
                 <Typography.Text>Platform Role</Typography.Text>
               </Col>
               <Col xs={16}>
-                <Typography.Text>{user.platformRole.name}</Typography.Text>
+                <Typography.Text>{user.platformRole}</Typography.Text>
               </Col>
             </Row>
             <Divider style={{ margin: '1rem 0px 1rem 0px' }} />
