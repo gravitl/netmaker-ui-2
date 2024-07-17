@@ -1026,19 +1026,20 @@ export default function HostsPage(props: PageProps) {
             </Row>
 
             <Row className="page-row-padding" justify="space-between">
-              <Col xs={24} md={8}>
+              <Col xs={24} md={6}>
                 <Input
                   size="large"
                   placeholder="Search hosts"
+                  style={{ marginBottom: '0.5rem' }}
                   value={searchText}
                   onChange={(ev) => setSearchText(ev.target.value)}
                   prefix={<SearchOutlined />}
                 />
               </Col>
-              <Col xs={24} md={14} className="hosts-table-button" style={{ textAlign: 'right' }}>
+              <Col xs={24} md={16} className="hosts-table-button" style={{ textAlign: 'right' }}>
                 <Button
                   size="large"
-                  style={{ marginRight: '1rem' }}
+                  style={{ marginRight: '1rem', marginBottom: '0.5rem' }}
                   onClick={() => {
                     setActiveKey('overview');
                     setTourStep(0);
@@ -1049,7 +1050,7 @@ export default function HostsPage(props: PageProps) {
                 </Button>
                 <Button
                   size="large"
-                  style={{ marginRight: '1rem' }}
+                  style={{ marginRight: '1rem', marginBottom: '0.5rem' }}
                   onClick={() => {
                     setHasLoaded(false);
                     fetchHostsAndNetworks();
@@ -1059,7 +1060,7 @@ export default function HostsPage(props: PageProps) {
                 </Button>
                 <Button
                   size="large"
-                  style={{ marginRight: '1rem' }}
+                  style={{ marginRight: '1rem', marginBottom: '0.5rem' }}
                   onClick={() => refreshAllHostKeys()}
                   loading={isRefreshingHosts}
                   ref={refreshHostKeysButtonRef}
@@ -1070,6 +1071,7 @@ export default function HostsPage(props: PageProps) {
                 <Button
                   type="primary"
                   size="large"
+                  style={{ marginRight: '1rem', marginBottom: '0.5rem' }}
                   onClick={() => setIsAddNewHostModalOpen(true)}
                   ref={connectHostButtonRef}
                 >
@@ -1078,7 +1080,7 @@ export default function HostsPage(props: PageProps) {
 
                 <Button
                   title="Go to Hosts documentation"
-                  style={{ marginLeft: '0.5rem' }}
+                  size="large"
                   href={HOST_DOCS_URL}
                   target="_blank"
                   icon={<QuestionCircleOutlined />}
