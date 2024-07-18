@@ -366,12 +366,13 @@ export default function EnrollmentKeysPage(props: PageProps) {
                   value={searchText}
                   onChange={(ev) => setSearchText(ev.target.value)}
                   prefix={<SearchOutlined />}
+                  style={{ marginBottom: '.5rem' }}
                 />
               </Col>
               <Col xs={24} md={12} style={{ textAlign: 'right' }} className="enrollment-keys-table-button">
                 <Button
                   size="large"
-                  style={{ marginRight: '0.5em' }}
+                  style={{ marginRight: '0.5em', marginBottom: '.5rem' }}
                   onClick={() => {
                     setIsTourOpen(true);
                     setTourStep(0);
@@ -379,10 +380,20 @@ export default function EnrollmentKeysPage(props: PageProps) {
                 >
                   <InfoCircleOutlined /> Start Tour
                 </Button>
-                <Button size="large" style={{ marginRight: '0.5em' }} onClick={() => loadEnrollmentKeys()}>
+                <Button
+                  size="large"
+                  style={{ marginRight: '0.5em', marginBottom: '.5rem' }}
+                  onClick={() => loadEnrollmentKeys()}
+                >
                   <ReloadOutlined /> Refresh keys
                 </Button>
-                <Button type="primary" size="large" onClick={() => setIsAddKeyModalOpen(true)} ref={createKeyButtonRef}>
+                <Button
+                  type="primary"
+                  size="large"
+                  onClick={() => setIsAddKeyModalOpen(true)}
+                  ref={createKeyButtonRef}
+                  style={{ marginBottom: '0.5rem' }}
+                >
                   <PlusOutlined /> Create Key
                 </Button>
               </Col>

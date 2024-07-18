@@ -383,12 +383,13 @@ export function InternetGatewaysPage({
                   onClick={() => setIsAddInternetGatewayModalOpen(true)}
                   className="full-width-button-xs"
                   ref={createInternetGatewayButtonRef}
+                  style={{ marginBottom: '.5rem' }}
                 >
                   <PlusOutlined /> Create Gateway
                 </Button>
                 <Button
                   title="Go to internet gateways documentation"
-                  style={{ marginLeft: '1rem' }}
+                  style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
                   href={INTERNET_GATEWAYS_DOCS_URL}
                   target="_blank"
                   referrerPolicy="no-referrer"
@@ -440,7 +441,7 @@ export function InternetGatewaysPage({
                 {selectedGateway && (
                   <Button
                     type="primary"
-                    style={{ marginRight: '1rem' }}
+                    style={{ marginRight: '1rem', marginBottom: '.5rem' }}
                     onClick={() => setIsUpdateInternetGatewayModalOpen(true)}
                     className="full-width-button-xs"
                     ref={internetGatewaysUpdateConnectedHostsRef}
