@@ -264,55 +264,57 @@ export default function NewHostModal({
                   onChange={(ev) => setKeySearch(ev.target.value)}
                   prefix={<SearchOutlined />}
                 />
-                <Table
-                  style={{ marginTop: '1rem' }}
-                  size="small"
-                  pagination={{
-                    pageSize: 5,
-                  }}
-                  columns={[
-                    {
-                      title: 'Available Keys',
-                      render(_, key: EnrollmentKey) {
-                        return <a href="#">{key.tags.join(', ')}</a>;
+                <div className="table-wrapper">
+                  <Table
+                    style={{ marginTop: '1rem' }}
+                    size="small"
+                    pagination={{
+                      pageSize: 5,
+                    }}
+                    columns={[
+                      {
+                        title: 'Available Keys',
+                        render(_, key: EnrollmentKey) {
+                          return <a href="#">{key.tags.join(', ')}</a>;
+                        },
+                        sorter(a, b) {
+                          return a.tags.join(', ').localeCompare(b.tags.join(', '));
+                        },
+                        defaultSortOrder: 'ascend',
                       },
-                      sorter(a, b) {
-                        return a.tags.join(', ').localeCompare(b.tags.join(', '));
+                      {
+                        title: 'Networks',
+                        render(_, key: EnrollmentKey) {
+                          return key.networks.join(', ');
+                        },
                       },
-                      defaultSortOrder: 'ascend',
-                    },
-                    {
-                      title: 'Networks',
-                      render(_, key: EnrollmentKey) {
-                        return key.networks.join(', ');
-                      },
-                    },
-                  ]}
-                  dataSource={filteredEnrollmentKeys}
-                  rowKey="value"
-                  onRow={(key) => ({
-                    onClick: () => {
-                      setSelectedEnrollmentKey(key);
-                      onStepChange(1);
-                    },
-                  })}
-                  rowClassName={(key) => {
-                    return key.value === selectedEnrollmentKey?.value ? 'selected-row' : '';
-                  }}
-                  rowSelection={{
-                    type: 'checkbox',
-                    hideSelectAll: true,
-                    selectedRowKeys: selectedEnrollmentKey ? [selectedEnrollmentKey.value] : [],
-                    onSelect: (record) => {
-                      if (selectedEnrollmentKey?.value === record.value) {
-                        setSelectedEnrollmentKey(null);
-                      } else {
-                        setSelectedEnrollmentKey(record);
+                    ]}
+                    dataSource={filteredEnrollmentKeys}
+                    rowKey="value"
+                    onRow={(key) => ({
+                      onClick: () => {
+                        setSelectedEnrollmentKey(key);
                         onStepChange(1);
-                      }
-                    },
-                  }}
-                />
+                      },
+                    })}
+                    rowClassName={(key) => {
+                      return key.value === selectedEnrollmentKey?.value ? 'selected-row' : '';
+                    }}
+                    rowSelection={{
+                      type: 'checkbox',
+                      hideSelectAll: true,
+                      selectedRowKeys: selectedEnrollmentKey ? [selectedEnrollmentKey.value] : [],
+                      onSelect: (record) => {
+                        if (selectedEnrollmentKey?.value === record.value) {
+                          setSelectedEnrollmentKey(null);
+                        } else {
+                          setSelectedEnrollmentKey(record);
+                          onStepChange(1);
+                        }
+                      },
+                    }}
+                  />
+                </div>
               </Card>
             </Col>
           </Row>

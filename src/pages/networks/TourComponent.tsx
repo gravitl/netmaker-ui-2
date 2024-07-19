@@ -194,15 +194,6 @@ export default function TourComponent(props: TourUtilsProps) {
 
   const networkDetailsTourStepsPro: TourProps['steps'] = [
     {
-      title: 'Overview',
-      description: 'Get a quick overview of your network',
-      target: overviewTabContainerRef.current,
-      onNext: () => {
-        nextTourStep();
-        setActiveTabKey('hosts');
-      },
-    },
-    {
       title: 'Hosts Table',
       description: (
         <>
@@ -212,10 +203,6 @@ export default function TourComponent(props: TourUtilsProps) {
         </>
       ),
       target: hostsTabContainerTableRef.current,
-      onPrev: () => {
-        prevTourStep();
-        setActiveTabKey('overview');
-      },
     },
     {
       title: 'Add Host',
@@ -705,21 +692,25 @@ export default function TourComponent(props: TourUtilsProps) {
       target: metricsTabClientsTableRef.current,
       onPrev() {
         setCurrentMetric('uptime');
+        prevTourStep();
+      },
+      onNext: () => {
+        setActiveTabKey('overview');
         nextTourStep();
+      },
+    },
+    {
+      title: 'Overview',
+      description: 'Get a quick overview of your network',
+      target: overviewTabContainerRef.current,
+      onPrev: () => {
+        prevTourStep();
+        setActiveTabKey('overview');
       },
     },
   ];
 
   const networkDetailsTourStepsCE: TourProps['steps'] = [
-    {
-      title: 'Overview',
-      description: 'Get a quick overview of your network',
-      target: overviewTabContainerRef.current,
-      onNext: () => {
-        nextTourStep();
-        setActiveTabKey('hosts');
-      },
-    },
     {
       title: 'Hosts Table',
       description: (
@@ -730,10 +721,6 @@ export default function TourComponent(props: TourUtilsProps) {
         </>
       ),
       target: hostsTabContainerTableRef.current,
-      onPrev: () => {
-        prevTourStep();
-        setActiveTabKey('overview');
-      },
     },
     {
       title: 'Add Host',
@@ -1066,6 +1053,15 @@ export default function TourComponent(props: TourUtilsProps) {
       onPrev: () => {
         setActiveTabKey('access-control');
         prevTourStep();
+      },
+    },
+    {
+      title: 'Overview',
+      description: 'Get a quick overview of your network',
+      target: overviewTabContainerRef.current,
+      onPrev: () => {
+        prevTourStep();
+        setActiveTabKey('graph');
       },
     },
   ];

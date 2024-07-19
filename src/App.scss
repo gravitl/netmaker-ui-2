@@ -73,7 +73,7 @@
 }
 
 #side-nav > li:nth-child(2) {
-  max-height: 180px;
+  max-height: 450px;
   overflow-y: auto;
 
   /* For Webkit browsers like Chrome and Safari */
@@ -171,4 +171,9 @@
 .tutorial-banner-link:hover {
   text-decoration: underline;
   color: white;
+}
+
+.table-wrapper {
+  overflow: auto;
+  width: 100%;
 }

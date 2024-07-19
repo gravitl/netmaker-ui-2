@@ -430,16 +430,18 @@ export default function UsersPage(props: PageProps) {
         </Row>
         <Row className="" style={{ marginTop: '1rem' }}>
           <Col xs={24}>
-            <Table
-              columns={usersTableColumns}
-              dataSource={filteredUsers}
-              rowKey="username"
-              scroll={{
-                x: true,
-              }}
-              ref={usersTableRef}
-              loading={isLoadingUsers}
-            />
+            <div className="table-wrapper">
+              <Table
+                columns={usersTableColumns}
+                dataSource={filteredUsers}
+                rowKey="username"
+                scroll={{
+                  x: true,
+                }}
+                ref={usersTableRef}
+                loading={isLoadingUsers}
+              />
+            </div>
           </Col>
         </Row>
       </>
@@ -488,16 +490,18 @@ export default function UsersPage(props: PageProps) {
         </Row>
         <Row className="" style={{ marginTop: '1rem' }}>
           <Col xs={24}>
-            <Table
-              loading={isLoadingPendingUsers}
-              columns={pendingUsersTableColumns}
-              dataSource={filteredPendingUsers}
-              rowKey="username"
-              scroll={{
-                x: true,
-              }}
-              ref={pendingUsersTableRef}
-            />
+            <div className="table-wrapper">
+              <Table
+                loading={isLoadingPendingUsers}
+                columns={pendingUsersTableColumns}
+                dataSource={filteredPendingUsers}
+                rowKey="username"
+                scroll={{
+                  x: true,
+                }}
+                ref={pendingUsersTableRef}
+              />
+            </div>
           </Col>
         </Row>
       </>

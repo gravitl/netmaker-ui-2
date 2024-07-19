@@ -189,45 +189,47 @@ export default function UpdateInternetGatewayModal({
                   </Row>
                   <Row>
                     <Col span={24}>
-                      <Table
-                        size="small"
-                        columns={connectedHostTableCols}
-                        rowKey="id"
-                        dataSource={[
-                          ...networkNodes
-                            .filter((node) =>
-                              node.name?.toLocaleLowerCase().includes(connectedHostsSearch.toLocaleLowerCase()),
-                            )
-                            .filter((h) => h.id !== internetGateway.id),
-                        ].sort((a, b) =>
-                          // sort unconnected hosts to the top
-                          !!a.internetgw_node_id && !!b.internetgw_node_id ? 0 : a.internetgw_node_id ? 1 : -1,
-                        )}
-                        onRow={(node) => {
-                          return {
-                            onClick: () => {
-                              if (!isNodeSelectable(node)) return;
-                              setSelectedConnectedHostsIds((prev) => {
-                                const connectedNodesIds = new Set(prev);
-                                if (connectedNodesIds.has(node.id)) {
-                                  connectedNodesIds.delete(node.id);
-                                } else {
-                                  connectedNodesIds.add(node.id);
-                                }
-                                return [...connectedNodesIds];
-                              });
-                              setIsSelectOpen(false);
-                            },
-                            title: !isNodeSelectable(node)
-                              ? 'Host is already connected to an internet gateway or is an internet gateway itself'
-                              : '',
-                          };
-                        }}
-                        rowClassName={(node) => {
-                          if (!isNodeSelectable(node)) return 'unavailable-row';
-                          return selectedConnectedHostsIds.includes(node.id) ? 'selected-row' : '';
-                        }}
-                      />
+                      <div className="table-wrapper">
+                        <Table
+                          size="small"
+                          columns={connectedHostTableCols}
+                          rowKey="id"
+                          dataSource={[
+                            ...networkNodes
+                              .filter((node) =>
+                                node.name?.toLocaleLowerCase().includes(connectedHostsSearch.toLocaleLowerCase()),
+                              )
+                              .filter((h) => h.id !== internetGateway.id),
+                          ].sort((a, b) =>
+                            // sort unconnected hosts to the top
+                            !!a.internetgw_node_id && !!b.internetgw_node_id ? 0 : a.internetgw_node_id ? 1 : -1,
+                          )}
+                          onRow={(node) => {
+                            return {
+                              onClick: () => {
+                                if (!isNodeSelectable(node)) return;
+                                setSelectedConnectedHostsIds((prev) => {
+                                  const connectedNodesIds = new Set(prev);
+                                  if (connectedNodesIds.has(node.id)) {
+                                    connectedNodesIds.delete(node.id);
+                                  } else {
+                                    connectedNodesIds.add(node.id);
+                                  }
+                                  return [...connectedNodesIds];
+                                });
+                                setIsSelectOpen(false);
+                              },
+                              title: !isNodeSelectable(node)
+                                ? 'Host is already connected to an internet gateway or is an internet gateway itself'
+                                : '',
+                            };
+                          }}
+                          rowClassName={(node) => {
+                            if (!isNodeSelectable(node)) return 'unavailable-row';
+                            return selectedConnectedHostsIds.includes(node.id) ? 'selected-row' : '';
+                          }}
+                        />
+                      </div>
                     </Col>
                   </Row>
                 </div>
