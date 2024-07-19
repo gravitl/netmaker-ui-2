@@ -7,13 +7,16 @@ import {
   Col,
   Input,
   Layout,
+  Modal,
   Row,
   Skeleton,
   Table,
   TableColumnsType,
+  Tooltip,
   Tour,
   TourProps,
   Typography,
+  notification,
 } from 'antd';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -22,6 +25,8 @@ import { PageProps } from '../../models/Page';
 import { useStore } from '../../store/store';
 import './NetworksPage.scss';
 import { getNetworkRoute, resolveAppRoute } from '@/utils/RouteUtils';
+import { NetworksService } from '@/services/NetworksService';
+import { extractErrorMsg } from '@/utils/ServiceUtils';
 
 export default function NetworksPage(props: PageProps) {
   const store = useStore();
@@ -40,6 +45,36 @@ export default function NetworksPage(props: PageProps) {
   const submitButtonRef = useRef(null);
   const [isTourOpen, setIsTourOpen] = useState(false);
   const [tourStep, setTourStep] = useState(0);
+  const [notify, notifyCtx] = notification.useNotification();
+
+  const confirmNetworkDelete = useCallback((netId: string) => {
+    Modal.confirm({
+      title: `Are you sure you want to the delete the network ${netId}?`,
+      content: `This action cannot be undone.`,
+      onOk: async () => {
+        try {
+          const network = await NetworksService.deleteNetwork(netId);
+          store.deleteNetwork(netId);
+          notify.success({
+            message: 'Network deleted',
+            description: `Network ${netId} has been deleted`,
+          });
+        } catch (err) {
+          notify.error({
+            message: 'Failed to delete network',
+            description: extractErrorMsg(err as any),
+          });
+        }
+      },
+    });
+  }, []);
+
+  const checkIfNetworkDeleteIsPossible = useCallback(
+    (netId: string) => {
+      return store.nodes?.filter((node) => node.network === netId).length === 0;
+    },
+    [store.nodes],
+  );
 
   const tableColumns: TableColumnsType<Network> = [
     {
@@ -103,6 +138,33 @@ export default function NetworksPage(props: PageProps) {
         <div onClick={(ev) => ev.stopPropagation()}>
           <Typography.Text>{new Date(date * 1000).toLocaleString()}</Typography.Text>
         </div>
+      ),
+    },
+    {
+      title: '',
+      key: 'action',
+      dataIndex: 'netid',
+      render: (netId: string) => (
+        <>
+          <Tooltip
+            title={
+              checkIfNetworkDeleteIsPossible(netId)
+                ? 'Delete Network'
+                : "You can't delete this network yet. There are still devices linked to it. Please remove all devices from the network first."
+            }
+          >
+            <Button
+              danger
+              onClick={(ev) => {
+                ev.stopPropagation();
+                confirmNetworkDelete(netId);
+              }}
+              disabled={!checkIfNetworkDeleteIsPossible(netId)}
+            >
+              Delete
+            </Button>
+          </Tooltip>
+        </>
       ),
     },
   ];
@@ -333,20 +395,22 @@ export default function NetworksPage(props: PageProps) {
 
             <Row className="page-row-padding" justify="space-between">
               <Col xs={24}>
-                <Table
-                  columns={tableColumns}
-                  dataSource={filteredNetworks}
-                  rowKey="netid"
-                  scroll={{ x: true }}
-                  onRow={(network) => {
-                    return {
-                      onClick: () => {
-                        navigate(getNetworkRoute(network));
-                      },
-                    };
-                  }}
-                  ref={tableColumnsNameRow}
-                />
+                <div className="table-wrapper">
+                  <Table
+                    columns={tableColumns}
+                    dataSource={filteredNetworks}
+                    rowKey="netid"
+                    scroll={{ x: true }}
+                    onRow={(network) => {
+                      return {
+                        onClick: () => {
+                          navigate(getNetworkRoute(network));
+                        },
+                      };
+                    }}
+                    ref={tableColumnsNameRow}
+                  />
+                </div>
               </Col>
             </Row>
           </>
@@ -376,6 +440,8 @@ export default function NetworksPage(props: PageProps) {
         defaultAclInputRef={defaultAclInputRef}
         submitButtonRef={submitButtonRef}
       />
+
+      {notifyCtx}
     </Layout.Content>
   );
 }

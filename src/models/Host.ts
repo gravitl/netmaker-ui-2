@@ -10,6 +10,7 @@ export interface Host {
   os: string;
   debug: boolean;
   isstatic: boolean;
+  isstaticport: boolean;
   listenport: number;
   localrange: string;
   mtu: number;
@@ -34,7 +35,8 @@ export interface HostCommonDetails {
   publickey: Host['publickey'];
   os: Host['os'];
   listenport: Host['listenport'];
-  isstatic: Host['isstatic'];
+  isstaticendpoint: Host['isstatic'];
+  isstaticport: Host['isstaticport'];
   mtu: Host['mtu'];
   interfaces: Host['interfaces'];
   macaddress: Host['macaddress'];

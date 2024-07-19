@@ -249,20 +249,22 @@ export default function AddClientModal({
                         </Row>
                         <Row>
                           <Col span={24}>
-                            <Table
-                              size="small"
-                              columns={gatewayTableCols}
-                              dataSource={filteredNetworkHosts}
-                              rowKey="id"
-                              onRow={(node) => {
-                                return {
-                                  onClick: () => {
-                                    form.setFieldValue('gatewayId', node.id);
-                                    setSelectedGateway(node);
-                                  },
-                                };
-                              }}
-                            />
+                            <div className="table-wrapper">
+                              <Table
+                                size="small"
+                                columns={gatewayTableCols}
+                                dataSource={filteredNetworkHosts}
+                                rowKey="id"
+                                onRow={(node) => {
+                                  return {
+                                    onClick: () => {
+                                      form.setFieldValue('gatewayId', node.id);
+                                      setSelectedGateway(node);
+                                    },
+                                  };
+                                }}
+                              />
+                            </div>
                           </Col>
                         </Row>
                       </div>

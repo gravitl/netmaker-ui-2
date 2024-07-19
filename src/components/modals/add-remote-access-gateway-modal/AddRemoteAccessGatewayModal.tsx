@@ -216,36 +216,38 @@ export default function AddRemoteAccessGatewayModal({
                         </Row>
                         <Row>
                           <Col span={24}>
-                            <Table
-                              size="small"
-                              columns={gatewayTableCols}
-                              dataSource={filteredNetworkNonIngressHosts}
-                              rowKey="id"
-                              onRow={(node) => {
-                                return {
-                                  onClick: () => {
-                                    setSelectedNode(node);
-                                    form.setFieldValue('node', { ...node, label: node.name });
-                                    setIsSelectOpen(false);
+                            <div className="table-wrapper">
+                              <Table
+                                size="small"
+                                columns={gatewayTableCols}
+                                dataSource={filteredNetworkNonIngressHosts}
+                                rowKey="id"
+                                onRow={(node) => {
+                                  return {
+                                    onClick: () => {
+                                      setSelectedNode(node);
+                                      form.setFieldValue('node', { ...node, label: node.name });
+                                      setIsSelectOpen(false);
+                                    },
+                                  };
+                                }}
+                                rowSelection={{
+                                  type: 'checkbox',
+                                  hideSelectAll: true,
+                                  selectedRowKeys: selectedNode ? [selectedNode.id] : [],
+                                  onSelect: (record) => {
+                                    if (selectedNode?.id === record.id) {
+                                      setSelectedNode(null);
+                                      form.setFieldValue('node', undefined);
+                                    } else {
+                                      setSelectedNode(record);
+                                      form.setFieldValue('node', { ...record, label: record.name });
+                                      setIsSelectOpen(false);
+                                    }
                                   },
-                                };
-                              }}
-                              rowSelection={{
-                                type: 'checkbox',
-                                hideSelectAll: true,
-                                selectedRowKeys: selectedNode ? [selectedNode.id] : [],
-                                onSelect: (record) => {
-                                  if (selectedNode?.id === record.id) {
-                                    setSelectedNode(null);
-                                    form.setFieldValue('node', undefined);
-                                  } else {
-                                    setSelectedNode(record);
-                                    form.setFieldValue('node', { ...record, label: record.name });
-                                    setIsSelectOpen(false);
-                                  }
-                                },
-                              }}
-                            />
+                                }}
+                              />
+                            </div>
                           </Col>
                         </Row>
                       </div>
