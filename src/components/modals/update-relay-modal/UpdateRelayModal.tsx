@@ -216,55 +216,57 @@ export default function UpdateRelayModal({
                       </Row>
                       <Row>
                         <Col span={24}>
-                          <Table
-                            size="small"
-                            columns={relayedTableCols}
-                            rowKey="id"
-                            dataSource={[...filteredNetworkNodes.filter((h) => h.id !== relay.id)].sort((a, b) =>
-                              // sort non-relayed hosts to the top
-                              isNodeRelay(a) === isNodeRelay(b) ? 0 : isNodeRelay(a) ? 1 : -1,
-                            )}
-                            onRow={(node) => {
-                              return {
-                                onClick: () => {
-                                  if (!isNodeSelectable(node)) return;
+                          <div className="table-wrapper">
+                            <Table
+                              size="small"
+                              columns={relayedTableCols}
+                              rowKey="id"
+                              dataSource={[...filteredNetworkNodes.filter((h) => h.id !== relay.id)].sort((a, b) =>
+                                // sort non-relayed hosts to the top
+                                isNodeRelay(a) === isNodeRelay(b) ? 0 : isNodeRelay(a) ? 1 : -1,
+                              )}
+                              onRow={(node) => {
+                                return {
+                                  onClick: () => {
+                                    if (!isNodeSelectable(node)) return;
+                                    setSelectedRelayedIds((prev) => {
+                                      const relayedHostIds = new Set(prev);
+                                      if (relayedHostIds.has(node.id)) {
+                                        relayedHostIds.delete(node.id);
+                                      } else {
+                                        relayedHostIds.add(node.id);
+                                      }
+                                      return [...relayedHostIds];
+                                    });
+                                  },
+                                };
+                              }}
+                              rowClassName={(node) => {
+                                if (!isNodeSelectable(node)) return 'unavailable-row';
+                                return selectedRelayedIds.includes(node.id) ? 'selected-row' : '';
+                              }}
+                              rowSelection={{
+                                type: 'checkbox',
+                                selectedRowKeys: selectedRelayedIds,
+                                hideSelectAll: true,
+                                onSelect: (record, selected) => {
+                                  if (!isNodeSelectable(record)) return;
                                   setSelectedRelayedIds((prev) => {
                                     const relayedHostIds = new Set(prev);
-                                    if (relayedHostIds.has(node.id)) {
-                                      relayedHostIds.delete(node.id);
+                                    if (selected) {
+                                      relayedHostIds.add(record.id);
                                     } else {
-                                      relayedHostIds.add(node.id);
+                                      relayedHostIds.delete(record.id);
                                     }
                                     return [...relayedHostIds];
                                   });
                                 },
-                              };
-                            }}
-                            rowClassName={(node) => {
-                              if (!isNodeSelectable(node)) return 'unavailable-row';
-                              return selectedRelayedIds.includes(node.id) ? 'selected-row' : '';
-                            }}
-                            rowSelection={{
-                              type: 'checkbox',
-                              selectedRowKeys: selectedRelayedIds,
-                              hideSelectAll: true,
-                              onSelect: (record, selected) => {
-                                if (!isNodeSelectable(record)) return;
-                                setSelectedRelayedIds((prev) => {
-                                  const relayedHostIds = new Set(prev);
-                                  if (selected) {
-                                    relayedHostIds.add(record.id);
-                                  } else {
-                                    relayedHostIds.delete(record.id);
-                                  }
-                                  return [...relayedHostIds];
-                                });
-                              },
-                              getCheckboxProps: (record) => {
-                                return { disabled: !isNodeSelectable(record) };
-                              },
-                            }}
-                          />
+                                getCheckboxProps: (record) => {
+                                  return { disabled: !isNodeSelectable(record) };
+                                },
+                              }}
+                            />
+                          </div>
                         </Col>
                       </Row>
                     </div>

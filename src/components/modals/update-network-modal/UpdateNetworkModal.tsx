@@ -17,7 +17,7 @@ import {
 } from '@/utils/NetworkUtils';
 import { convertUiNetworkToNetworkPayload } from '@/utils/NetworkUtils';
 
-interface AddNetworkModalProps {
+interface UpdateNetworkModalProps {
   isOpen: boolean;
   onCreateNetwork: (network: Network) => any;
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
@@ -29,7 +29,7 @@ interface AddNetworkModalProps {
   submitButtonRef?: MutableRefObject<HTMLButtonElement | null>;
 }
 
-export default function AddNetworkModal({
+export default function UpdateNetworkModal({
   isOpen,
   onCreateNetwork: onCreateNetwork,
   onCancel,
@@ -39,7 +39,7 @@ export default function AddNetworkModal({
   ipv6InputRef,
   defaultAclInputRef,
   submitButtonRef,
-}: AddNetworkModalProps) {
+}: UpdateNetworkModalProps) {
   const [form] = Form.useForm<CreateNetworkDto>();
   const { token: themeToken } = theme.useToken();
   const [notify, notifyCtx] = notification.useNotification();
