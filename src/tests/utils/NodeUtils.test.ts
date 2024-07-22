@@ -60,6 +60,7 @@ const hostRegistry: Record<Host['id'], HostCommonDetails> = {
     os: '',
     publickey: '',
     version: '',
+    firewallinuse: '',
   },
 };
 

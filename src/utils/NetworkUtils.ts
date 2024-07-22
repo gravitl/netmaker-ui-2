@@ -123,11 +123,19 @@ function generateRandomHex(size: number) {
   return result.join('');
 }
 
+export function generateCgnatCIDR() {
+  return `100.${generateRandomNumber(254, true)}.${generateRandomNumber(254, true)}.0/24`;
+}
+
+export function generateCgnatCIDR6() {
+  return `fd:${generateRandomHex(4)}:${generateRandomHex(4)}:${generateRandomHex(4)}::/64`;
+}
+
 export function generateCIDR() {
   return `10.${generateRandomNumber(254, true)}.${generateRandomNumber(254, true)}.0/24`;
 }
 
-export const generateCIDR6 = () => `fd00:${generateRandomHex(4)}:${generateRandomHex(4)}:${generateRandomHex(4)}::/64`;
+export const generateCIDR6 = () => `fc00:${generateRandomHex(4)}:${generateRandomHex(4)}:${generateRandomHex(4)}::/64`;
 
 export function generateNetworkName() {
   const validNetworkNames = [
@@ -181,7 +189,7 @@ export function isPrivateIpCidr(ipCidr: string): boolean {
       (parts[0] === '192' && parts[1] === '168')
     );
   } else if (isValidIpv6(ip)) {
-    return ip.startsWith('fc00') || ip.startsWith('fd');
+    return ip.startsWith('fc00');
   }
   return false;
 }

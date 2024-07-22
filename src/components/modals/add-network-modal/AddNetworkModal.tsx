@@ -9,9 +9,12 @@ import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { Network } from '@/models/Network';
 import {
   convertNetworkPayloadToUiNetwork,
+  generateCgnatCIDR,
+  generateCgnatCIDR6,
   generateCIDR,
   generateCIDR6,
   generateNetworkName,
+  isPrivateIpCidr,
   isValidIpv4Cidr,
   isValidIpv6Cidr,
 } from '@/utils/NetworkUtils';
@@ -70,14 +73,40 @@ export default function AddNetworkModal({
     }
   };
 
+  const autoFillCIDR = useCallback(
+    (isIpV4: boolean) => {
+      if (isIpV4) {
+        const addressRange = generateCgnatCIDR();
+        // check if a network with the same address range exists
+        const network = store.networks.find((n) => n.addressrange === addressRange);
+        if (network) {
+          autoFillCIDR(true);
+          return;
+        }
+        return addressRange;
+      } else {
+        const addressRange = generateCgnatCIDR6();
+        // check if a network with the same address range exists
+        const network = store.networks.find((n) => n.addressrange6 === addressRange);
+        if (network) {
+          autoFillCIDR(false);
+          return;
+        }
+        return addressRange;
+      }
+    },
+    [store.networks],
+  );
+
   const autoFillDetails = useCallback(() => {
     form.setFieldsValue({
       // netid: generateNetworkName(),
-      addressrange: isIpv4Val ? generateCIDR() : '',
-      addressrange6: isIpv6Val ? generateCIDR6() : '',
+      addressrange: isIpv4Val ? autoFillCIDR(true) : '',
+      addressrange6: isIpv6Val ? autoFillCIDR(false) : '',
       defaultacl: 'yes',
       defaultDns: '',
     });
+    form.validateFields();
   }, [form, isIpv4Val, isIpv6Val]);
 
   return (
@@ -159,6 +188,17 @@ export default function AddNetworkModal({
                             }
                           },
                         },
+                        {
+                          warningOnly: true,
+                          validator(_, value) {
+                            if (isPrivateIpCidr(value)) {
+                              return Promise.reject(
+                                'The IP range is a common LAN IP range, You may want to use a distinct IP range that does not overlap with your local network',
+                              );
+                            }
+                            return Promise.resolve();
+                          },
+                        },
                       ]}
                     >
                       <Input placeholder="Enter address CIDR (eg: 192.168.1.0/24)" />
@@ -203,6 +243,17 @@ export default function AddNetworkModal({
                             } else {
                               return Promise.reject('Address range must be a valid IPv6 CIDR');
                             }
+                          },
+                        },
+                        {
+                          warningOnly: true,
+                          validator(_, value) {
+                            if (isPrivateIpCidr(value)) {
+                              return Promise.reject(
+                                'The IP range is a common LAN IP range, You may want to use a distinct IP range that does not overlap with your local network',
+                              );
+                            }
+                            return Promise.resolve();
                           },
                         },
                       ]}

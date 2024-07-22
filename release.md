@@ -1,17 +1,18 @@
 # Netmaker UI release notes
 
-## Netmaker UI v0.24.2
+## Netmaker UI v0.24.3
 
 ## Whats New
 
-- Static enpoints and ports can now be set separately for hosts. This is useful for users who want to expose services on their hosts, on defined ports.
-- Enhanced network setup wizard. The network setup wizard now supports more usecases: setting up internet gateways and how to connect a site to a network.
+- Improved network setup wizard: it now supports connecting to another network site and to internet gateways
+- Show Netmaker server's CoreDNS option in DNS for RAG
 
 ## What's Fixed/Improvements
 
-- Improved failover experience. UX for setting the network failover host has been made more intuitive, with a badge easily identifying the acting failover host.
-- Default RAC and Netclient download links to .exe versions rather than .msi counterparts.
-- Reordered the network page tabs for better user experience. Host tab now shows first.
+- Remote Access Gateway information (metadata) in now multiline
+- Always show admin users on RAGs
+- Autofill for network creation now suggests 100.x.y.z range to prevent conflict with private LAN ranges
+- Improve egress experience with better message, when firewall is not supported
 - Minor UI/UX bug fixes and improvements
 
 ## Known issues

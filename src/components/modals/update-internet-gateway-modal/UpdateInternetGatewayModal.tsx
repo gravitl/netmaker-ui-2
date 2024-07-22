@@ -34,6 +34,7 @@ interface UpdateInternetGatewayModalProps {
   closeModal?: () => void;
   onOk?: (e: MouseEvent<HTMLButtonElement>) => void;
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
+  selectConnectedHostsRef: React.RefObject<HTMLDivElement>;
 }
 
 const nodeIdFormName = 'nodeid';
@@ -48,6 +49,7 @@ export default function UpdateInternetGatewayModal({
   onUpdateInternetGateway,
   onCancel,
   networkId,
+  selectConnectedHostsRef,
 }: UpdateInternetGatewayModalProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
@@ -167,80 +169,81 @@ export default function UpdateInternetGatewayModal({
             <Col span={5}>{initialInternetGatewayHealth}</Col>
           </Row>
 
-          <Form.Item
-            label="Select hosts to connect"
-            data-nmui-intercom="update-internet-gateway-form_connected-hosts"
-            style={{ marginTop: '1rem' }}
-          >
-            <Select
-              placeholder="Select hosts to provide internet access to"
-              open={isSelectOpen}
-              onDropdownVisibleChange={(visible) => setIsSelectOpen(visible)}
-              dropdownRender={() => (
-                <div style={{ padding: '.5rem' }}>
-                  <Row style={{ marginBottom: '1rem' }}>
-                    <Col span={8}>
-                      <Input
-                        placeholder="Search host..."
-                        value={connectedHostsSearch}
-                        onChange={(e) => setConnectedHostsSearch(e.target.value)}
-                      />
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col span={24}>
-                      <div className="table-wrapper">
-                        <Table
-                          size="small"
-                          columns={connectedHostTableCols}
-                          rowKey="id"
-                          dataSource={[
-                            ...networkNodes
-                              .filter((node) =>
-                                node.name?.toLocaleLowerCase().includes(connectedHostsSearch.toLocaleLowerCase()),
-                              )
-                              .filter((h) => h.id !== internetGateway.id),
-                          ].sort((a, b) =>
-                            // sort unconnected hosts to the top
-                            !!a.internetgw_node_id && !!b.internetgw_node_id ? 0 : a.internetgw_node_id ? 1 : -1,
-                          )}
-                          onRow={(node) => {
-                            return {
-                              onClick: () => {
-                                if (!isNodeSelectable(node)) return;
-                                setSelectedConnectedHostsIds((prev) => {
-                                  const connectedNodesIds = new Set(prev);
-                                  if (connectedNodesIds.has(node.id)) {
-                                    connectedNodesIds.delete(node.id);
-                                  } else {
-                                    connectedNodesIds.add(node.id);
-                                  }
-                                  return [...connectedNodesIds];
-                                });
-                                setIsSelectOpen(false);
-                              },
-                              title: !isNodeSelectable(node)
-                                ? 'Host is already connected to an internet gateway or is an internet gateway itself'
-                                : '',
-                            };
-                          }}
-                          rowClassName={(node) => {
-                            if (!isNodeSelectable(node)) return 'unavailable-row';
-                            return selectedConnectedHostsIds.includes(node.id) ? 'selected-row' : '';
-                          }}
+          <div ref={selectConnectedHostsRef}>
+            <Form.Item
+              label="Select hosts to connect"
+              data-nmui-intercom="update-internet-gateway-form_connected-hosts"
+              style={{ marginTop: '1rem' }}
+            >
+              <Select
+                placeholder="Select hosts to provide internet access to"
+                open={isSelectOpen}
+                onDropdownVisibleChange={(visible) => setIsSelectOpen(visible)}
+                dropdownRender={() => (
+                  <div style={{ padding: '.5rem' }}>
+                    <Row style={{ marginBottom: '1rem' }}>
+                      <Col span={8}>
+                        <Input
+                          placeholder="Search host..."
+                          value={connectedHostsSearch}
+                          onChange={(e) => setConnectedHostsSearch(e.target.value)}
                         />
-                      </div>
-                    </Col>
-                  </Row>
-                </div>
-              )}
-              suffixIcon={isSelectOpen ? <UpOutlined /> : <DownOutlined />}
-            />
-            <Typography.Text type="secondary">
-              Selected hosts should not be connected to a different internet gateway on a different network.
-            </Typography.Text>
-          </Form.Item>
-
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col span={24}>
+                        <div className="table-wrapper">
+                          <Table
+                            size="small"
+                            columns={connectedHostTableCols}
+                            rowKey="id"
+                            dataSource={[
+                              ...networkNodes
+                                .filter((node) =>
+                                  node.name?.toLocaleLowerCase().includes(connectedHostsSearch.toLocaleLowerCase()),
+                                )
+                                .filter((h) => h.id !== internetGateway.id),
+                            ].sort((a, b) =>
+                              // sort unconnected hosts to the top
+                              !!a.internetgw_node_id && !!b.internetgw_node_id ? 0 : a.internetgw_node_id ? 1 : -1,
+                            )}
+                            onRow={(node) => {
+                              return {
+                                onClick: () => {
+                                  if (!isNodeSelectable(node)) return;
+                                  setSelectedConnectedHostsIds((prev) => {
+                                    const connectedNodesIds = new Set(prev);
+                                    if (connectedNodesIds.has(node.id)) {
+                                      connectedNodesIds.delete(node.id);
+                                    } else {
+                                      connectedNodesIds.add(node.id);
+                                    }
+                                    return [...connectedNodesIds];
+                                  });
+                                  setIsSelectOpen(false);
+                                },
+                                title: !isNodeSelectable(node)
+                                  ? 'Host is already connected to an internet gateway or is an internet gateway itself'
+                                  : '',
+                              };
+                            }}
+                            rowClassName={(node) => {
+                              if (!isNodeSelectable(node)) return 'unavailable-row';
+                              return selectedConnectedHostsIds.includes(node.id) ? 'selected-row' : '';
+                            }}
+                          />
+                        </div>
+                      </Col>
+                    </Row>
+                  </div>
+                )}
+                suffixIcon={isSelectOpen ? <UpOutlined /> : <DownOutlined />}
+              />
+              <Typography.Text type="secondary">
+                Selected hosts should not be connected to a different internet gateway on a different network.
+              </Typography.Text>
+            </Form.Item>
+          </div>
           {selectedConnectedHostsIds.map((id) => (
             <Row
               key={id}

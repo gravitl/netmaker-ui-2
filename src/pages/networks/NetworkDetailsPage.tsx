@@ -35,7 +35,6 @@ import {
   ReloadOutlined,
   SearchOutlined,
   SettingOutlined,
-  StarOutlined,
   StopOutlined,
   UserOutlined,
   WarningOutlined,
@@ -48,6 +47,7 @@ import {
   Checkbox,
   Col,
   Dropdown,
+  Flex,
   FloatButton,
   Form,
   Input,
@@ -107,6 +107,8 @@ import QuickSetupModal from '@/components/modals/quick-setup-modal/QuickSetupMod
 import DownloadRemotesAccessClientModal from '@/components/modals/remote-access-client-modal/DownloadRemoteAccessClientModal';
 import SetNetworkFailoverModal from '@/components/modals/set-network-failover-modal/SetNetworkFailoverModal';
 import { convertNetworkPayloadToUiNetwork, convertUiNetworkToNetworkPayload } from '@/utils/NetworkUtils';
+import { TourType } from '../DashboardPage';
+import { Waypoints } from 'lucide-react';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -232,9 +234,13 @@ export default function NetworkDetailsPage(props: PageProps) {
     graph: 7,
     metrics: 8,
     vpnConfigs: 9,
-    // addRAGateway: 10,
+    addEgressModal: 10,
+    remoteAccessGatewayModal: 11,
+    remoteAccessVPNConfigModal: 14,
   });
   const [isSetNetworkFailoverModalOpen, setIsSetNetworkFailoverModalOpen] = useState(false);
+  const [selectedGatewayTabKey, setSelectedGatewayTabKey] = useState('vpn-config');
+  const [isAddInternetGatewayModalOpen, setIsAddInternetGatewayModalOpen] = useState(false);
 
   const overviewTabContainerRef = useRef(null);
   const hostsTabContainerTableRef = useRef(null);
@@ -250,6 +256,9 @@ export default function NetworkDetailsPage(props: PageProps) {
   const remoteAccessTabVPNConfigTableRef = useRef(null);
   const remoteAccessTabDisplayAllVPNConfigsRef = useRef(null);
   const remoteAccessTabVPNConfigCreateConfigRef = useRef(null);
+  const remoteAccessManageUsersRef = useRef(null);
+  const remoteAccessTabDownloadClientRef = useRef(null);
+  const remoteAccessAddOrRemoveUsersRef = useRef(null);
   const createClientConfigModalSelectGatewayRef = useRef(null);
   const createClientConfigModalClientIDRef = useRef(null);
   const createClientConfigModalPublicKeyRef = useRef(null);
@@ -289,6 +298,13 @@ export default function NetworkDetailsPage(props: PageProps) {
   const metricsTabBytesReceivedTableRef = useRef(null);
   const metricsTabUptimeTableRef = useRef(null);
   const metricsTabClientsTableRef = useRef(null);
+  const internetGatewaysTableRef = useRef(null);
+  const createInternetGatewayButtonRef = useRef(null);
+  const internetGatewaysConnectedHostsTableRef = useRef(null);
+  const internetGatewaysUpdateConnectedHostsRef = useRef(null);
+  const createInternetGatewayModalSelectHostRef = useRef(null);
+  const createInternetGatewayModalSelectConnectedHostsRef = useRef(null);
+  const updateInternetGatewayModalSelectConnectedHostsRef = useRef(null);
 
   const networkNodes = useMemo(
     () =>
@@ -940,14 +956,32 @@ export default function NetworkDetailsPage(props: PageProps) {
       {
         render(_, gateway) {
           return (
-            <Dropdown
-              placement="bottomRight"
-              menu={{
-                items: getGatewayDropdownOptions(gateway),
-              }}
-            >
-              <Button type="text" icon={<MoreOutlined />} />
-            </Dropdown>
+            <Flex>
+              {isServerEE && (
+                <Button
+                  type="primary"
+                  onClick={(info) => {
+                    setSelectedGateway(gateway);
+                    setIsUpdateIngressUsersModalOpen(true);
+                    info.stopPropagation();
+                  }}
+                  icon={<UserOutlined />}
+                  style={{ marginRight: '0.5rem' }}
+                >
+                  {' '}
+                  Add / Remove Users
+                </Button>
+              )}
+
+              <Dropdown
+                placement="bottomRight"
+                menu={{
+                  items: getGatewayDropdownOptions(gateway),
+                }}
+              >
+                <Button type="text" icon={<MoreOutlined />} ref={remoteAccessAddOrRemoveUsersRef} />
+              </Dropdown>
+            </Flex>
           );
         },
       },
@@ -2066,6 +2100,7 @@ export default function NetworkDetailsPage(props: PageProps) {
               onChange={(ev) => setSearchHost(ev.target.value)}
               prefix={<SearchOutlined />}
               allowClear
+              style={{ marginBottom: '.5rem' }}
             />
           </Col>
           <Col xs={24} md={6} className="add-host-dropdown-button">
@@ -2089,7 +2124,11 @@ export default function NetworkDetailsPage(props: PageProps) {
                 ],
               }}
             >
-              <Button type="primary" style={{ width: '170px' }} ref={hostsTabContainerAddHostsRef}>
+              <Button
+                type="primary"
+                style={{ width: '170px', marginBottom: '.5rem' }}
+                ref={hostsTabContainerAddHostsRef}
+              >
                 <Space>
                   Add Hosts
                   <DownOutlined />
@@ -2097,7 +2136,7 @@ export default function NetworkDetailsPage(props: PageProps) {
               </Button>
             </Dropdown>
             <Button
-              style={{ marginLeft: '1rem' }}
+              style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
               onClick={() => jumpToTourStep('hosts')}
               icon={<InfoCircleOutlined />}
             >
@@ -2105,7 +2144,7 @@ export default function NetworkDetailsPage(props: PageProps) {
             </Button>
             <Button
               title="Go to HOSTS documentation"
-              style={{ marginLeft: '1rem' }}
+              style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
               href={HOSTS_DOCS_URL}
               target="_blank"
               icon={<QuestionCircleOutlined />}
@@ -2161,10 +2200,14 @@ export default function NetworkDetailsPage(props: PageProps) {
                             <Badge style={{ marginLeft: '1rem' }} status="processing" color="red" text="Removing..." />
                           )}
                           {isServerEE && node.is_fail_over && (
-                            <StarOutlined
-                              title="This host is acting as the network's failover host"
-                              style={{ color: branding.primaryColor, marginLeft: '.5rem' }}
-                            />
+                            <Tooltip title="This host is acting as the network's failover host">
+                              <Waypoints
+                                style={{ marginLeft: '.5rem' }}
+                                color={branding.primaryColor}
+                                size="1.2rem"
+                                strokeWidth={1.5}
+                              />
+                            </Tooltip>
                           )}
                         </>
                       );
@@ -2333,6 +2376,7 @@ export default function NetworkDetailsPage(props: PageProps) {
               value={searchDns}
               onChange={(ev) => setSearchDns(ev.target.value)}
               prefix={<SearchOutlined />}
+              style={{ marginBottom: '.5rem' }}
             />
           </Col>
           <Col xs={24} md={6} style={{ textAlign: 'right' }}>
@@ -2342,15 +2386,20 @@ export default function NetworkDetailsPage(props: PageProps) {
               onClick={() => setIsAddDnsModalOpen(true)}
               className="full-width-button-xs mt-10"
               ref={dnsTabAddDNSRef}
+              style={{ marginBottom: '.5rem' }}
             >
               <PlusOutlined /> Add DNS
             </Button>
-            <Button style={{ marginLeft: '1rem' }} onClick={() => jumpToTourStep('dns')} icon={<InfoCircleOutlined />}>
+            <Button
+              style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
+              onClick={() => jumpToTourStep('dns')}
+              icon={<InfoCircleOutlined />}
+            >
               Take Tour
             </Button>
             <Button
               title="Go to DNS documentation"
-              style={{ marginLeft: '1rem' }}
+              style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
               href={DNS_DOCS_URL}
               target="_blank"
               icon={<QuestionCircleOutlined />}
@@ -2441,7 +2490,12 @@ export default function NetworkDetailsPage(props: PageProps) {
                 Gateway, which is typically deployed in a public cloud environment, e.g. on a server with a public IP,
                 so that it is easily reachable from the Clients. Clients are configured on this dashboard primary via
                 client configs{' '}
-                <a href="https://www.netmaker.io/features/remote-access-gateway" target="_blank" rel="noreferrer">
+                <a
+                  href="https://www.netmaker.io/features/remote-access-gateway"
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ color: 'inherit', textDecoration: 'underline' }}
+                >
                   Learn More
                 </a>
               </Typography.Text>
@@ -2483,7 +2537,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                 <Row style={{ marginTop: '1rem' }}>
                   <Col>
                     <Button type="primary" size="large" onClick={() => setIsAddClientGatewayModalOpen(true)}>
-                      <PlusOutlined /> Create Remote Access Gateway
+                      <PlusOutlined /> Create Gateway
                     </Button>
                   </Col>
                 </Row>
@@ -2521,6 +2575,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                     style={{
                       marginLeft: 'auto',
                     }}
+                    ref={remoteAccessTabDownloadClientRef}
                   >
                     {' '}
                     Download RAC
@@ -2561,11 +2616,12 @@ export default function NetworkDetailsPage(props: PageProps) {
                         onClick={() => setIsAddClientGatewayModalOpen(true)}
                         className="full-width-button-xs"
                         ref={remoteAccessTabAddGatewayRef}
+                        style={{ marginBottom: '.5rem' }}
                       >
                         <PlusOutlined /> Create Gateway
                       </Button>
                       <Button
-                        style={{ marginLeft: '1rem' }}
+                        style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
                         onClick={() => jumpToTourStep('remote-access')}
                         icon={<InfoCircleOutlined />}
                       >
@@ -2573,7 +2629,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                       </Button>
                       <Button
                         title="Go to remote access gateways documentation"
-                        style={{ marginLeft: '1rem' }}
+                        style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
                         href={GATEWAYS_DOCS_URL}
                         target="_blank"
                         icon={<QuestionCircleOutlined />}
@@ -2618,45 +2674,47 @@ export default function NetworkDetailsPage(props: PageProps) {
                   </Row>
                 </Col>
                 <Col xs={24} xl={12}>
-                  <Row style={{ width: '100%' }}>
-                    <Col xs={24} md={12}>
-                      <Typography.Title style={{ marginTop: '0px' }} level={5}>
-                        VPN Config Files
-                      </Typography.Title>
-                    </Col>
-                    <Col xs={24} md={12} style={{ textAlign: 'right' }}>
-                      <Button
-                        type="primary"
-                        style={{ marginRight: '1rem' }}
-                        onClick={() => setIsAddClientModalOpen(true)}
-                        className="full-width-button-xs"
-                        ref={remoteAccessTabVPNConfigCreateConfigRef}
-                      >
-                        <PlusOutlined /> Create Config
-                      </Button>
-                      <Button
-                        title="Go to client documentation"
-                        style={{ marginLeft: '1rem' }}
-                        href={CLIENTS_DOCS_URL}
-                        target="_blank"
-                        icon={<QuestionCircleOutlined />}
-                      />
-                    </Col>
-                  </Row>
-                  <Row style={{ marginTop: '1rem' }}>
-                    <Col xs={24}>
-                      <div className="table-wrapper">
-                        <Table
-                          columns={clientsTableCols}
-                          dataSource={filteredClients}
-                          rowKey="clientid"
-                          size="small"
-                          scroll={{ x: true }}
-                          ref={remoteAccessTabVPNConfigTableRef}
+                  <>
+                    <Row style={{ width: '100%' }}>
+                      <Col xs={24} md={12}>
+                        <Typography.Title style={{ marginTop: '0px' }} level={5}>
+                          VPN Config Files
+                        </Typography.Title>
+                      </Col>
+                      <Col xs={24} md={12} style={{ textAlign: 'right' }}>
+                        <Button
+                          type="primary"
+                          style={{ marginRight: '1rem', marginBottom: '.5rem' }}
+                          onClick={() => setIsAddClientModalOpen(true)}
+                          className="full-width-button-xs"
+                          ref={remoteAccessTabVPNConfigCreateConfigRef}
+                        >
+                          <PlusOutlined /> Create Config
+                        </Button>
+                        <Button
+                          title="Go to client documentation"
+                          style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
+                          href={CLIENTS_DOCS_URL}
+                          target="_blank"
+                          icon={<QuestionCircleOutlined />}
                         />
-                      </div>
-                    </Col>
-                  </Row>
+                      </Col>
+                    </Row>
+                    <Row style={{ marginTop: '1rem', marginBottom: '.5rem' }}>
+                      <Col xs={24}>
+                        <div className="table-wrapper">
+                          <Table
+                            columns={clientsTableCols}
+                            dataSource={filteredClients}
+                            rowKey="clientid"
+                            size="small"
+                            scroll={{ x: true }}
+                            ref={remoteAccessTabVPNConfigTableRef}
+                          />
+                        </div>
+                      </Col>
+                    </Row>
+                  </>
                 </Col>
               </Row>
             </Row>
@@ -2696,7 +2754,12 @@ export default function NetworkDetailsPage(props: PageProps) {
                 Enable devices in your network to communicate with other devices outside the network via egress
                 gateways. An office network, home network, data center, or cloud region all become easily accessible via
                 the Egress Gateway. You can even set a machine as an Internet Gateway to create a “traditional” VPN{' '}
-                <a href="https://www.netmaker.io/features/egress" target="_blank" rel="noreferrer">
+                <a
+                  href="https://www.netmaker.io/features/egress"
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ color: 'inherit', textDecoration: 'underline' }}
+                >
                   (Learn more)
                 </a>
                 .
@@ -2729,7 +2792,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                 value={searchEgress}
                 onChange={(ev) => setSearchEgress(ev.target.value)}
                 prefix={<SearchOutlined />}
-                style={{ width: '30%' }}
+                style={{ width: '30%', marginBottom: '.5rem' }}
               />
             </Col>
             <Col xl={12} xs={24}>
@@ -2745,11 +2808,12 @@ export default function NetworkDetailsPage(props: PageProps) {
                     ref={egressTabAddEgressRef}
                     onClick={() => setIsAddEgressModalOpen(true)}
                     className="full-width-button-xs"
+                    style={{ marginBottom: '.5rem' }}
                   >
                     <PlusOutlined /> Create Egress
                   </Button>
                   <Button
-                    style={{ marginLeft: '1rem' }}
+                    style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
                     onClick={() => jumpToTourStep('egress')}
                     icon={<InfoCircleOutlined />}
                   >
@@ -2757,7 +2821,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   </Button>
                   <Button
                     title="Go to egress documentation"
-                    style={{ marginLeft: '1rem' }}
+                    style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
                     href={EGRESS_DOCS_URL}
                     target="_blank"
                     icon={<QuestionCircleOutlined />}
@@ -2813,7 +2877,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   {filteredEgress && (
                     <Button
                       type="primary"
-                      style={{ marginRight: '1rem' }}
+                      style={{ marginRight: '1rem', marginBottom: '.5rem' }}
                       onClick={() => setIsUpdateEgressModalOpen(true)}
                       className="full-width-button-xs"
                       ref={egressTabAddExternalRouteRef}
@@ -2871,8 +2935,13 @@ export default function NetworkDetailsPage(props: PageProps) {
               <Typography.Text style={{ color: 'white ' }}>
                 Enable devices in your network to communicate with othererwise unreachable devices with relays.{' '}
                 {branding.productName} uses Turn servers to automatically route traffic in these scenarios, but
-                sometimes, you’d rather specify which device should be routing the traffic
-                <a href="https://www.netmaker.io/features/relay" target="_blank" rel="noreferrer">
+                sometimes, you’d rather specify which device should be routing the traffic{' '}
+                <a
+                  href="https://www.netmaker.io/features/relay"
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ color: 'inherit', textDecoration: 'underline' }}
+                >
                   (Learn More)
                 </a>
                 .
@@ -2921,11 +2990,12 @@ export default function NetworkDetailsPage(props: PageProps) {
                     ref={relaysTabAddRelayRef}
                     onClick={() => setIsAddRelayModalOpen(true)}
                     className="full-width-button-xs"
+                    style={{ marginBottom: '.5rem' }}
                   >
                     <PlusOutlined /> Create Relay
                   </Button>
                   <Button
-                    style={{ marginLeft: '1rem' }}
+                    style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
                     onClick={() => jumpToTourStep('relays')}
                     icon={<InfoCircleOutlined />}
                   >
@@ -2933,7 +3003,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   </Button>
                   <Button
                     title="Go to relays documentation"
-                    style={{ marginLeft: '1rem' }}
+                    style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
                     href={RELAYS_DOCS_URL}
                     target="_blank"
                     icon={<QuestionCircleOutlined />}
@@ -2989,7 +3059,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   {selectedRelay && (
                     <Button
                       type="primary"
-                      style={{ marginRight: '1rem' }}
+                      style={{ marginRight: '1rem', marginBottom: '.5rem' }}
                       onClick={() => setIsUpdateRelayModalOpen(true)}
                       className="full-width-button-xs"
                       ref={relaysTabAddRelayedNodesRef}
@@ -3468,7 +3538,19 @@ export default function NetworkDetailsPage(props: PageProps) {
         label: <Typography.Text>Internet Gateways ({internetGatewaysCount})</Typography.Text>,
         children:
           network && !isRefreshingNetwork ? (
-            <InternetGatewaysPage network={network} activeTabKey={activeTabKey} />
+            <InternetGatewaysPage
+              network={network}
+              activeTabKey={activeTabKey}
+              internetGatewaysTableRef={internetGatewaysTableRef}
+              createInternetGatewayButtonRef={createInternetGatewayButtonRef}
+              internetGatewaysConnectedHostsTableRef={internetGatewaysConnectedHostsTableRef}
+              internetGatewaysUpdateConnectedHostsRef={internetGatewaysUpdateConnectedHostsRef}
+              createInternetGatewayModalSelectHostRef={createInternetGatewayModalSelectHostRef}
+              createInternetGatewayModalSelectConnectedHostsRef={createInternetGatewayModalSelectConnectedHostsRef}
+              updateInternetGatewayModalSelectConnectedHostsRef={updateInternetGatewayModalSelectConnectedHostsRef}
+              isAddInternetGatewayModalOpen={isAddInternetGatewayModalOpen}
+              setIsAddInternetGatewayModalOpen={setIsAddInternetGatewayModalOpen}
+            />
           ) : (
             <Skeleton active />
           ),
@@ -3846,6 +3928,7 @@ export default function NetworkDetailsPage(props: PageProps) {
             handleCancel={() => toggleFloatingButton()}
             handleUpgrade={() => true}
             networkId={networkId}
+            jumpToTourStep={(ty: TourType) => {}}
           />
         )}
       </>
@@ -4024,12 +4107,15 @@ export default function NetworkDetailsPage(props: PageProps) {
           connectHostModalJoinNetworkTabRef={connectHostModalJoinNetworkTabRef}
           remoteAccessTabGatewayTableRef={remoteAccessTabGatewayTableRef}
           remoteAccessTabAddGatewayRef={remoteAccessTabAddGatewayRef}
+          remoteAccessManageUsersRef={remoteAccessManageUsersRef}
           addClientGatewayModalHostRef={addClientGatewayModalHostRef}
           addClientGatewayModalDefaultClientDNSRef={addClientGatewayModalDefaultClientDNSRef}
           addClientGatewayModalIsInternetGatewayRef={addClientGatewayModalIsInternetGatewayRef}
           remoteAccessTabVPNConfigTableRef={remoteAccessTabVPNConfigTableRef}
           remoteAccessTabDisplayAllVPNConfigsRef={remoteAccessTabDisplayAllVPNConfigsRef}
           remoteAccessTabVPNConfigCreateConfigRef={remoteAccessTabVPNConfigCreateConfigRef}
+          remoteAccessTabDownloadClientRef={remoteAccessTabDownloadClientRef}
+          remoteAccessAddOrRemoveUsersRef={remoteAccessAddOrRemoveUsersRef}
           createClientConfigModalSelectGatewayRef={createClientConfigModalSelectGatewayRef}
           createClientConfigModalClientIDRef={createClientConfigModalClientIDRef}
           createClientConfigModalPublicKeyRef={createClientConfigModalPublicKeyRef}
@@ -4069,6 +4155,16 @@ export default function NetworkDetailsPage(props: PageProps) {
           metricsTabBytesReceivedTableRef={metricsTabBytesReceivedTableRef}
           metricsTabUptimeTableRef={metricsTabUptimeTableRef}
           metricsTabClientsTableRef={metricsTabClientsTableRef}
+          internetGatewaysTableRef={internetGatewaysTableRef}
+          createInternetGatewayButtonRef={createInternetGatewayButtonRef}
+          internetGatewaysConnectedHostsTableRef={internetGatewaysConnectedHostsTableRef}
+          internetGatewaysUpdateConnectedHostsRef={internetGatewaysUpdateConnectedHostsRef}
+          createInternetGatewayModalSelectHostRef={createInternetGatewayModalSelectHostRef}
+          createInternetGatewayModalSelectConnectedHostsRef={createInternetGatewayModalSelectConnectedHostsRef}
+          updateInternetGatewayModalSelectConnectedHostsRef={updateInternetGatewayModalSelectConnectedHostsRef}
+          isAddInternetGatewayModalOpen={isAddInternetGatewayModalOpen}
+          setIsAddInternetGatewayModalOpen={setIsAddInternetGatewayModalOpen}
+          setIsUpdateIngressUsersModalOpen={setIsUpdateIngressUsersModalOpen}
         />
         {/* <Tour
         open={isTourOpen}
@@ -4243,6 +4339,7 @@ export default function NetworkDetailsPage(props: PageProps) {
             ingress={selectedGateway}
             networkId={networkId}
             onCancel={() => setIsUpdateIngressUsersModalOpen(false)}
+            remoteAccessManageUsersRef={remoteAccessManageUsersRef}
           />
         )}
         {targetClient && (

@@ -29,6 +29,8 @@ import { NodesService } from '@/services/NodesService';
 import { Host } from '@/models/Host';
 import { CreateIngressNodeDto } from '@/services/dtos/CreateIngressNodeDto';
 import { PUBLIC_DNS_RESOLVERS } from '@/constants/AppConstants';
+import { coerce } from 'semver';
+import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 
 interface AddRemoteAccessGatewayModalProps {
   isOpen: boolean;
@@ -64,6 +66,7 @@ export default function AddRemoteAccessGatewayModal({
   const [selectedNode, setSelectedNode] = useState<ExtendedNode | null>(null);
   const [gatewaySearch, setGatewaySearch] = useState('');
   const isInternetGatewayVal = Form.useWatch('is_internet_gw', form);
+  const defaultClientDNS = Form.useWatch('extclientdns', form);
 
   const networkHosts = useMemo<ExtendedNode[]>(() => {
     return store.nodes
@@ -122,6 +125,34 @@ export default function AddRemoteAccessGatewayModal({
       },
     ];
   }, [getNodeConnectivity]);
+
+  const DNS_RESOLVERS = useMemo(() => {
+    if (!store.serverConfig?.CoreDNSAddr || store.serverConfig?.CoreDNSAddr === '') {
+      return PUBLIC_DNS_RESOLVERS;
+    }
+    return [
+      ...PUBLIC_DNS_RESOLVERS,
+      { label: `Core DNS (${store.serverConfig.CoreDNSAddr})`, value: store.serverConfig.CoreDNSAddr },
+    ];
+  }, [store.serverConfig?.CoreDNSAddr]);
+
+  const coreDNSSetupInstructions = useMemo(() => {
+    if (!store.serverConfig?.CoreDNSAddr || store.serverConfig?.CoreDNSAddr === '') return null;
+    if (store.serverConfig?.CoreDNSAddr === defaultClientDNS) {
+      return (
+        <Alert
+          type="info"
+          message="In order to use CoreDNS as the default client DNS, you need to ensure CoreDNS is set up correctly. Click the button to view the setup instructions."
+          showIcon
+          action={
+            <Button href={ExternalLinks.CORE_DNS_SETUP_LINK} target="_blank" type="primary">
+              Go to Docs{' '}
+            </Button>
+          }
+        />
+      );
+    }
+  }, [defaultClientDNS, store.serverConfig?.CoreDNSAddr]);
 
   const resetModal = () => {
     form.resetFields();
@@ -314,12 +345,13 @@ export default function AddRemoteAccessGatewayModal({
                   rules={[{ required: isInternetGatewayVal, message: 'This field is required for internet gateways' }]}
                 >
                   <AutoComplete
-                    options={PUBLIC_DNS_RESOLVERS}
+                    options={DNS_RESOLVERS}
                     style={{ width: '100%' }}
                     placeholder="Default DNS for associated clients"
                     allowClear
                   />
                 </Form.Item>
+                {coreDNSSetupInstructions}
               </Col>
             </Row>
 
@@ -354,12 +386,12 @@ export default function AddRemoteAccessGatewayModal({
                 // ref={addClientGatewayModalMetadataRef}
               >
                 <Form.Item
-                  label="Metadata"
+                  label="Network Info"
                   name="metadata"
                   style={{ marginTop: '1rem' }}
                   data-nmui-intercom="add-ingress-form_metadata"
                 >
-                  <Input placeholder="Enter a short description for this Remote Access Gateway (RAG)" />
+                  <Input.TextArea placeholder="Enter information that users can view about the network, such as the purpose, internal domains and IP's of significance, etc" />
                 </Form.Item>
               </Col>
             </Row>
