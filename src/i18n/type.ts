@@ -11,6 +11,10 @@ export interface LanguageResource {
     login: string;
     signup: string;
     terms5: string;
+    'signup-via-invite': string;
+    'invalid-invite': string;
+    'signup-with-sso': string;
+    'signup-with-password': string;
   };
   signin: {
     signin: string;

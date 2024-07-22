@@ -1,7 +1,7 @@
 import { ApiRoutes } from '@/constants/ApiRoutes';
 import { axiosService } from './BaseService';
 import { User, UserRolePermissionTemplate } from '@/models/User';
-import { UpdateUserReqDto } from './dtos/UserDtos';
+import { CreateUserInviteReqDto, UpdateUserReqDto, UserInviteReqDto } from './dtos/UserDtos';
 import { UserGroup } from '@/models/User';
 import { CreateUserReqDto } from './dtos/UserDtos';
 import { Node } from '@/models/Node';
@@ -134,6 +134,18 @@ function deleteGroup(groupId: string) {
   return axiosService.delete<void>(`${ApiRoutes.USER_GROUP}/${groupId}`);
 }
 
+function createUserInvite(dto: CreateUserInviteReqDto) {
+  return axiosService.post<void>(ApiRoutes.USERS_INVITE, dto);
+}
+
+function userInviteSignup(inviteCode: string, dto: UserInviteReqDto) {
+  return axiosService.post<void>(`${ApiRoutes.USERS_INVITE_SIGNUP}/?email=${dto.username}&code=${inviteCode}`, dto);
+}
+
+function deleteUserInvite(inviteeEmail: string) {
+  return axiosService.delete<string>(`${ApiRoutes.USERS_INVITES}/${inviteeEmail}`);
+}
+
 export const UsersService = {
   getUsers,
   getUser,
@@ -164,4 +176,7 @@ export const UsersService = {
   getGroups,
   updateGroup,
   deleteGroup,
+  createUserInvite,
+  userInviteSignup,
+  deleteUserInvite,
 };

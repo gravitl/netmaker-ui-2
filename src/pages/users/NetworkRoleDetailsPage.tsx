@@ -543,7 +543,7 @@ export default function NetworkRoleDetailsPage(props: PageProps) {
       },
       {
         key: vpnAccessTabKey,
-        label: 'Network Administration',
+        label: 'VPN Access',
         children: getVpnAccessContent,
       },
     ],

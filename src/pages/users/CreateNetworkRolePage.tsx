@@ -465,7 +465,7 @@ export default function CreateNetworkRolePage(props: PageProps) {
       },
       {
         key: vpnAccessTabKey,
-        label: 'Network Administration',
+        label: 'VPN Access',
         children: getVpnAccessContent(),
       },
     ],

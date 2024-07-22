@@ -13,6 +13,10 @@ export const en: LanguageResource = {
     login: 'Login',
     signup: 'Sign Up',
     terms5: 'By signing up you agree to our',
+    'signup-via-invite': 'Sign up via invite',
+    'invalid-invite': 'Invalid invite code',
+    'signup-with-sso': 'Sign up with SSO',
+    'signup-with-password': 'Sign up with password',
   },
   signin: {
     signin: 'Sign in',

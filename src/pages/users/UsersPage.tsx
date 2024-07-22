@@ -45,6 +45,7 @@ import RolesPage from './RolesPage';
 import GroupsPage from './GroupsPage';
 import UserDetailsModal from '@/components/modals/user-details-modal/UserDetailsModal';
 import { mockNewUserWithGroup, mockNewUserWithoutGroup } from '@/constants/Types';
+import InviteUserModal from '@/components/modals/invite-user-modal/InviteUserModal';
 
 const USERS_DOCS_URL = 'https://docs.netmaker.io/pro/pro-users.html';
 
@@ -74,6 +75,7 @@ export default function UsersPage(props: PageProps) {
   const [isLoadingPendingUsers, setIsLoadingPendingUsers] = useState(true);
   const [pendingUsersSearch, setPendingUsersSearch] = useState('');
   const [activeTab, setActiveTab] = useState(defaultTabKey);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
 
   const usersTableRef = useRef(null);
   const addUserButtonRef = useRef(null);
@@ -152,25 +154,14 @@ export default function UsersPage(props: PageProps) {
     }
   }, []);
 
-  const getUserTagColor = (user: User) => {
-    if (user.issuperadmin) {
-      return 'success';
-    } else if (user.isadmin) {
-      return 'warning';
+  const onInviteUser = useCallback(() => {
+    if (isSaasBuild) {
+      window.location = getAmuiUrl('invite-user') as any;
+      return;
     } else {
-      return 'default';
+      setIsInviteModalOpen(true);
     }
-  };
-
-  const getUserTagText = (user: User) => {
-    if (user.issuperadmin) {
-      return 'Super Admin';
-    } else if (user.isadmin) {
-      return 'Admin';
-    } else {
-      return 'User';
-    }
-  };
+  }, []);
 
   const checkIfCurrentUserCanEditOrDeleteUsers = useCallback(
     (user: User) => {
@@ -287,7 +278,7 @@ export default function UsersPage(props: PageProps) {
       {
         title: 'Platform Role',
         render(_, user) {
-          return 'superadmin';
+          return 'user.platform_role';
         },
       },
       {
@@ -458,7 +449,7 @@ export default function UsersPage(props: PageProps) {
                   {
                     key: 'invite',
                     label: 'Invite a User',
-                    onClick: () => {},
+                    onClick: onInviteUser,
                   },
                 ],
               }}
@@ -829,6 +820,12 @@ export default function UsersPage(props: PageProps) {
           getUserAndUpdateInStore(store.username);
           loadUsers();
         }}
+      />
+      <InviteUserModal
+        isOpen={isInviteModalOpen}
+        onClose={() => setIsInviteModalOpen(false)}
+        onCancel={() => {}}
+        onInviteFinish={() => {}}
       />
     </Layout.Content>
   );
