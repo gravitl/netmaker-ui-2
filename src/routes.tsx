@@ -19,6 +19,7 @@ import { ServerConfigService } from './services/ServerConfigService';
 import CreateNetworkRolePage from './pages/users/CreateNetworkRolePage';
 import NetworkRoleDetailsPage from './pages/users/NetworkRoleDetailsPage';
 import CreateUserGroupPage from './pages/users/CreateUserGroupPage';
+import ContinueInvitePage from './pages/auth/ContinueInvitePage';
 
 export const AppRoutes = {
   DASHBOARD_ROUTE: '/',
@@ -38,6 +39,7 @@ export const AppRoutes = {
   CREATE_NETWORK_ROLE_ROUTE: '/users/create-network-role',
   NETWORK_ROLE_DETAILS_ROUTE: '/users/network-role/:roleId',
   CREATE_GROUP_ROUTE: '/users/create-group',
+  CONTINUE_INVITE_ROUTE: '/invite',
 };
 
 function generateRoutePair(path: string, element: JSX.Element): RouteObject[] {
@@ -138,6 +140,7 @@ const routes: RouteObject[] = [
   },
   ...generateRoutePair(AppRoutes.STARTUP_ROUTE.split('/')[1], <StartupPage />),
   ...generateRoutePair(AppRoutes.LOGIN_ROUTE.split('/')[1], <LoginPage />),
+  ...generateRoutePair(AppRoutes.CONTINUE_INVITE_ROUTE.split('/')[1], <ContinueInvitePage isFullScreen />),
 
   // fallback route
   { path: '*', element: <Error404Page /> },

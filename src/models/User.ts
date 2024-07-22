@@ -77,3 +77,9 @@ export interface UserGroup {
   network_roles: { [network in Network['netid']]: { [role in UserRoleId]: object } };
   meta_data: string;
 }
+
+export interface UserInvite {
+  email: string;
+  groups: UserGroup['id'][];
+  inviteCode: string;
+}

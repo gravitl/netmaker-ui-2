@@ -49,10 +49,10 @@ export default function LoginPage(props: LoginPageProps) {
     try {
       const user = await (await UsersService.getUser(username)).data;
 
-      if (!user?.issuperadmin && !user?.isadmin) {
-        notify.error({ message: 'Failed to login', description: 'User is not an admin' });
-        return;
-      }
+      // if (!user?.issuperadmin && !user?.isadmin) {
+      //   notify.error({ message: 'Failed to login', description: 'User is not an admin' });
+      //   return;
+      // }
       store.setStore({ user });
     } catch (err) {
       notify.error({ message: 'Failed to get user details', description: extractErrorMsg(err as any) });

@@ -9,6 +9,7 @@ import { Node } from '@/models/Node';
 import { useStore } from '@/store/store';
 import { getExtendedNode } from '@/utils/NodeUtils';
 import { Buffer } from 'buffer';
+import { copyTextToClipboard } from '@/utils/Utils';
 
 const { TextArea } = Input;
 interface ClientConfigModalProps {
@@ -122,7 +123,7 @@ export default function ClientConfigModal({ client, gateway, isOpen, onCancel }:
             disabled={isLoading}
             onClick={async () => {
               try {
-                await navigator.clipboard.writeText(config);
+                await copyTextToClipboard(config);
                 notify.success({ message: 'Copied to clipboard' });
               } catch (err) {
                 notify.error({

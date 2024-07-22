@@ -476,3 +476,17 @@ export const networkUsecaseMapText: NetworkUsecaseMap = {
   egress_to_cloud_vpc: 'Egress to Cloud VPC',
   // egress_to_office_lan_ips: 'Egress to Office LAN IPs',
 };
+
+/**
+ * Util funtion that copies text to clipboard
+ *
+ * @param text string to write to system clipboard
+ */
+export async function copyTextToClipboard(text: string) {
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch (err) {
+    console.error('Failed to copy to clipboard', err);
+    throw new Error('Failed to copy to clipboard');
+  }
+}

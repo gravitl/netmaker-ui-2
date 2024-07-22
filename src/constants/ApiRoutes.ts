@@ -21,4 +21,7 @@ export class ApiRoutes {
   static USER_ROLE = '/v1/users/role';
   static USER_GROUPS = '/v1/users/groups';
   static USER_GROUP = '/v1/users/group';
+  static USERS_INVITE = '/v1/users/invite';
+  static USERS_INVITES = '/v1/users/invites';
+  static USERS_INVITE_SIGNUP = '/v1/users/invite-signup';
 }

@@ -1,3 +1,5 @@
+import { UserGroup } from '@/models/User';
+
 export interface CreateUserReqDto {
   username: string;
   password: string;
@@ -18,4 +20,14 @@ export interface ExtraUserInfoForm {
   primary_use_case: string;
   infrastructure_group: string;
   user_id?: string;
+}
+
+export interface CreateUserInviteReqDto {
+  user_emails: string[];
+  groups: UserGroup['id'][];
+}
+
+export interface UserInviteReqDto {
+  username: string;
+  password: string;
 }
