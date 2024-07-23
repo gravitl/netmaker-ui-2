@@ -1,6 +1,6 @@
 import { ApiRoutes } from '@/constants/ApiRoutes';
 import { axiosService } from './BaseService';
-import { User, UserRolePermissionTemplate } from '@/models/User';
+import { User, UserRole } from '@/models/User';
 import { CreateUserInviteReqDto, UpdateUserReqDto, UserInviteReqDto } from './dtos/UserDtos';
 import { UserGroup } from '@/models/User';
 import { CreateUserReqDto } from './dtos/UserDtos';
@@ -94,20 +94,20 @@ function denyAllPendingUsers() {
   return axiosService.delete<void>(`${ApiRoutes.PENDING_USERS}`);
 }
 
-function createRole(role: Partial<UserRolePermissionTemplate>) {
-  return axiosService.post<UserRolePermissionTemplate>(ApiRoutes.USER_ROLE, role);
+function createRole(role: Partial<UserRole>) {
+  return axiosService.post<UserRole>(ApiRoutes.USER_ROLE, role);
 }
 
 function getRoles() {
-  return axiosService.get<GenericResponseDto<UserRolePermissionTemplate[]>>(ApiRoutes.USER_ROLES);
+  return axiosService.get<GenericResponseDto<UserRole[]>>(ApiRoutes.USER_ROLES);
 }
 
-function getRole(roleId: UserRolePermissionTemplate['id']) {
-  return axiosService.get<GenericResponseDto<UserRolePermissionTemplate>>(`${ApiRoutes.USER_ROLE}/${roleId}`);
+function getRole(roleId: UserRole['id']) {
+  return axiosService.get<GenericResponseDto<UserRole>>(`${ApiRoutes.USER_ROLE}/${roleId}`);
 }
 
-function updateRole(role: UserRolePermissionTemplate) {
-  return axiosService.put<UserRolePermissionTemplate>(ApiRoutes.USER_ROLE, role);
+function updateRole(role: UserRole) {
+  return axiosService.put<UserRole>(ApiRoutes.USER_ROLE, role);
 }
 
 function deleteRole(roleId: string) {

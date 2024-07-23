@@ -10,13 +10,9 @@ export interface User {
   isadmin: boolean;
   issuperadmin: boolean;
   remote_gw_ids: RemoteGatewayIds | null;
-}
-
-export interface NewUser {
-  username: string;
-  groups: string[];
-  platformRole: UserRoleId;
-  networkRoles: UserRoleId[];
+  user_group_ids: Record<UserGroup['id'], object>;
+  platform_role_id: UserRoleId;
+  network_roles: Record<Network['netid'], Record<UserRoleId, object>>;
 }
 
 export type UserRoleId = 'super_admin' | 'admin' | 'user' | 'network_admin' | 'network_user' | string;
@@ -61,7 +57,7 @@ export type RsrcTypeValue = {
   [key in RsrcID]?: RsrcPermissionScope;
 };
 
-export interface UserRolePermissionTemplate {
+export interface UserRole {
   id: UserRoleId;
   default: boolean;
   deny_dashboard_access: boolean;
