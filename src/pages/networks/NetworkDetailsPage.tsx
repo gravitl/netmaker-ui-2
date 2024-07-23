@@ -46,6 +46,7 @@ import {
   Card,
   Checkbox,
   Col,
+  Descriptions,
   Dropdown,
   Flex,
   FloatButton,
@@ -927,25 +928,38 @@ export default function NetworkDetailsPage(props: PageProps) {
         title: 'Addresses',
         dataIndex: 'address',
         render(_, node) {
-          const addrs = ([] as Array<string>).concat(node.address || [], node.address6 || []).join(', ');
-          return (
-            <Typography.Text copyable style={{ width: 200 }} ellipsis={{ tooltip: addrs }}>
-              {addrs}
-            </Typography.Text>
-          );
-        },
-      },
-      {
-        title: 'Endpoint',
-        render(_, node) {
-          const addrs = ([] as Array<string>)
+          const addrs = ([] as Array<string>).concat(node.address || [], node.address6 || []);
+          const endPointAddrs = ([] as Array<string>)
             .concat(node.endpointip ?? '', node.endpointipv6 ?? '', node.additional_rag_ips ?? '')
-            .filter(Boolean)
-            .join(', ');
+            .filter(Boolean);
+
           return (
-            <Typography.Text copyable style={{ width: 150 }} ellipsis={{ tooltip: addrs }}>
-              {addrs}
-            </Typography.Text>
+            <>
+              <Typography.Paragraph>
+                <b>Private Adresses: </b>
+                <br></br>
+                {addrs.map((addr) => (
+                  <>
+                    <Typography.Text key={addr} copyable style={{ width: 200 }} ellipsis={{ tooltip: addrs }}>
+                      {addr}
+                    </Typography.Text>
+                    <br></br>
+                  </>
+                ))}
+              </Typography.Paragraph>
+              <Typography.Paragraph>
+                <b>Endpoints: </b>
+                <br></br>
+                {endPointAddrs.map((addr) => (
+                  <>
+                    <Typography.Text key={addr} copyable style={{ width: 200 }} ellipsis={{ tooltip: endPointAddrs }}>
+                      {addr}
+                    </Typography.Text>
+                    <br></br>
+                  </>
+                ))}
+              </Typography.Paragraph>
+            </>
           );
         },
       },
@@ -969,7 +983,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   style={{ marginRight: '0.5rem' }}
                 >
                   {' '}
-                  Add / Remove Users
+                  Manage Users
                 </Button>
               )}
 
