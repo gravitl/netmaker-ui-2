@@ -40,6 +40,7 @@ export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCan
   const [groups, setGroups] = useState<UserGroup[]>([]);
   const [isLoadingGroups, setIsLoadingGroups] = useState(false);
   const [userInvites, setUserInvites] = useState<UserInvite[]>([]);
+  const [isLoadingInvites, setIsLoadingInvites] = useState(false);
 
   const resetModal = () => {
     form.resetFields();
@@ -50,44 +51,12 @@ export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCan
     // if on last step
     if (currentStep === maxNumOfStepsIndex) {
       onInviteFinish?.();
+      resetModal();
       onClose?.();
       return;
     }
 
     setCurrentStep(currentStep + 1);
-  };
-
-  const inviteUser = async () => {
-    try {
-      const formData = await form.validateFields();
-      const invites = (
-        await UsersService.createUserInvite({
-          user_emails: formData.user_emails.split(',').map((e: string) => e.trim()),
-          groups: formData.groups,
-        })
-      ).data;
-      setUserInvites((invites as unknown as UserInvite[]) || []);
-      setUserInvites([
-        {
-          email: 'user1@example.com',
-          groups: ['all', 'users'],
-          inviteCode: '12QASWE1',
-        },
-        {
-          email: 'user2@example.com',
-          groups: ['all', 'users'],
-          inviteCode: '12QASWE2',
-        },
-      ]);
-      resetModal();
-      notify.success({ message: `User invites successfully created` });
-      onNextStep();
-    } catch (err) {
-      notify.error({
-        message: 'Failed to create user invites',
-        description: extractErrorMsg(err as any),
-      });
-    }
   };
 
   const loadGroups = useCallback(async () => {
@@ -104,6 +73,44 @@ export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCan
       setIsLoadingGroups(false);
     }
   }, [notify]);
+
+  const loadInvites = useCallback(async () => {
+    try {
+      setIsLoadingInvites(true);
+      const inviteeEmails: string[] =
+        form
+          .getFieldValue('user_emails')
+          ?.split(',')
+          ?.map((e: string) => e.trim()) ?? [];
+      const invites = (await UsersService.getUserInvites()).data.Response;
+      setUserInvites(invites.filter((i) => inviteeEmails.includes(i.email)));
+    } catch (err) {
+      onClose?.();
+      notify.info({
+        message: 'To see the invites, open the Invites tab',
+      });
+    } finally {
+      setIsLoadingInvites(false);
+    }
+  }, [form, notify, onClose]);
+
+  const inviteUser = async () => {
+    try {
+      const formData = await form.validateFields();
+      await UsersService.createUserInvite({
+        user_emails: formData.user_emails.split(',').map((e: string) => e.trim()),
+        groups: formData.groups,
+      });
+      loadInvites();
+      notify.success({ message: `User invites successfully created` });
+      onNextStep();
+    } catch (err) {
+      notify.error({
+        message: 'Failed to create user invites',
+        description: extractErrorMsg(err as any),
+      });
+    }
+  };
 
   useEffect(() => {
     loadGroups();
@@ -170,7 +177,7 @@ export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCan
           <>
             <Row>
               <Col xs={24}>
-                <List size="small" header="Invited Users" bordered>
+                <List size="small" header="Invited Users" bordered loading={isLoadingInvites}>
                   {userInvites.map((invite) => (
                     <List.Item
                       key={invite.email}
@@ -181,11 +188,11 @@ export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCan
                           style={{ marginRight: '1rem' }}
                           onClick={async () => {
                             // TODO: get link from server res
-                            await copyTextToClipboard(`https://example.com/invite/${invite.inviteCode}`);
-                            notify.success({ message: 'Magic link copied to clipboard' });
+                            await copyTextToClipboard(invite.invite_code);
+                            notify.success({ message: 'Invite code copied to clipboard' });
                           }}
                         >
-                          Copy Magic Link
+                          Copy Invite Code
                         </Button>,
                         <Button
                           key="delete"
@@ -206,7 +213,10 @@ export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCan
                         </Button>,
                       ]}
                     >
-                      <List.Item.Meta title={invite.email} description={`Groups: ${invite.groups.join(', ')}`} />
+                      <List.Item.Meta
+                        title={invite.email}
+                        description={`Groups: ${invite.groups?.join(', ') ?? 'n/a'}`}
+                      />
                     </List.Item>
                   ))}
                 </List>

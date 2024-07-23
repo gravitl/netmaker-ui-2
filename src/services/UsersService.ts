@@ -1,6 +1,6 @@
 import { ApiRoutes } from '@/constants/ApiRoutes';
 import { axiosService } from './BaseService';
-import { User, UserRole } from '@/models/User';
+import { User, UserInvite, UserRole } from '@/models/User';
 import { CreateUserInviteReqDto, UpdateUserReqDto, UserInviteReqDto } from './dtos/UserDtos';
 import { UserGroup } from '@/models/User';
 import { CreateUserReqDto } from './dtos/UserDtos';
@@ -83,11 +83,11 @@ function getPendingUsers() {
 }
 
 function approvePendingUser(username: string) {
-  return axiosService.post<void>(`${ApiRoutes.PENDING_USERS}/user/${username}`);
+  return axiosService.post<void>(`${ApiRoutes.PENDING_USERS}/user/${encodeURIComponent(username)}`);
 }
 
 function denyPendingUser(username: string) {
-  return axiosService.delete<void>(`${ApiRoutes.PENDING_USERS}/user/${username}`);
+  return axiosService.delete<void>(`${ApiRoutes.PENDING_USERS}/user/${encodeURIComponent(username)}`);
 }
 
 function denyAllPendingUsers() {
@@ -103,15 +103,15 @@ function getRoles() {
 }
 
 function getRole(roleId: UserRole['id']) {
-  return axiosService.get<GenericResponseDto<UserRole>>(`${ApiRoutes.USER_ROLE}?role_id=${roleId}`);
+  return axiosService.get<GenericResponseDto<UserRole>>(`${ApiRoutes.USER_ROLE}?role_id=${encodeURIComponent(roleId)}`);
 }
 
 function updateRole(role: UserRole) {
-  return axiosService.put<UserRole>(`${ApiRoutes.USER_ROLE}?role_id=${role.id}`, role);
+  return axiosService.put<UserRole>(`${ApiRoutes.USER_ROLE}?role_id=${encodeURIComponent(role.id)}`, role);
 }
 
 function deleteRole(roleId: string) {
-  return axiosService.delete<void>(`${ApiRoutes.USER_ROLE}?role_id=${roleId}`);
+  return axiosService.delete<void>(`${ApiRoutes.USER_ROLE}?role_id=${encodeURIComponent(roleId)}`);
 }
 
 function createGroup(group: Partial<UserGroup>) {
@@ -127,23 +127,37 @@ function getGroups() {
 // }
 
 function updateGroup(group: UserGroup) {
-  return axiosService.put<GenericResponseDto<UserGroup>>(`${ApiRoutes.USER_GROUP}?group_id=${group.id}`, group);
+  return axiosService.put<GenericResponseDto<UserGroup>>(
+    `${ApiRoutes.USER_GROUP}?group_id=${encodeURIComponent(group.id)}`,
+    group,
+  );
 }
 
 function deleteGroup(groupId: string) {
-  return axiosService.delete<void>(`${ApiRoutes.USER_GROUP}?group_id=${groupId}`);
+  return axiosService.delete<void>(`${ApiRoutes.USER_GROUP}?group_id=${encodeURIComponent(groupId)}`);
 }
 
 function createUserInvite(dto: CreateUserInviteReqDto) {
   return axiosService.post<void>(ApiRoutes.USERS_INVITE, dto);
 }
 
+function getUserInvites() {
+  return axiosService.get<GenericResponseDto<UserInvite[]>>(ApiRoutes.USERS_INVITES);
+}
+
 function userInviteSignup(inviteCode: string, dto: UserInviteReqDto) {
-  return axiosService.post<void>(`${ApiRoutes.USERS_INVITE_SIGNUP}/?email=${dto.username}&code=${inviteCode}`, dto);
+  return axiosService.post<void>(
+    `${ApiRoutes.USERS_INVITE_SIGNUP}/?email=${dto.username}&code=${encodeURIComponent(inviteCode)}`,
+    dto,
+  );
 }
 
 function deleteUserInvite(inviteeEmail: string) {
-  return axiosService.delete<string>(`${ApiRoutes.USERS_INVITES}/${inviteeEmail}`);
+  return axiosService.delete<string>(`${ApiRoutes.USERS_INVITE}?invitee_email=${encodeURIComponent(inviteeEmail)}`);
+}
+
+function deleteAllUserInvites() {
+  return axiosService.delete<string>(`${ApiRoutes.USERS_INVITES}`);
 }
 
 export const UsersService = {
@@ -177,6 +191,8 @@ export const UsersService = {
   updateGroup,
   deleteGroup,
   createUserInvite,
+  getUserInvites,
   userInviteSignup,
   deleteUserInvite,
+  deleteAllUserInvites,
 };

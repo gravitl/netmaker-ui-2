@@ -77,5 +77,5 @@ export interface UserGroup {
 export interface UserInvite {
   email: string;
   groups: UserGroup['id'][];
-  inviteCode: string;
+  invite_code: string;
 }
