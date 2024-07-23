@@ -7,7 +7,6 @@ import {
   Form,
   Input,
   Layout,
-  List,
   notification,
   Row,
   Select,
@@ -15,8 +14,6 @@ import {
   Switch,
   Table,
   TableColumnProps,
-  Tabs,
-  TabsProps,
   theme,
   Typography,
 } from 'antd';
@@ -25,42 +22,43 @@ import { PageProps } from '../../models/Page';
 import './UsersPage.scss';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { UsersService } from '@/services/UsersService';
-import { RsrcPermissionScope, User, UserGroup, UserRolePermissionTemplate } from '@/models/User';
+import { User, UserGroup, UserRole } from '@/models/User';
 import { resolveAppRoute } from '@/utils/RouteUtils';
 import { Link, useNavigate } from 'react-router-dom';
 import { AppRoutes } from '@/routes';
 import { Network } from '@/models/Network';
 import { NetworksService } from '@/services/NetworksService';
 import { convertNetworkPayloadToUiNetwork } from '@/utils/NetworkUtils';
-import { getExtendedNode } from '@/utils/NodeUtils';
 import AddUsersToGroupModal from '@/components/modals/add-users-to-group-modal/AddUsersToGroupModal';
+import { deriveUserRoleType } from '@/utils/UserMgmtUtils';
 
 interface metadataFormValues {
   name: string;
   autoAssign: boolean;
   metadata: string;
+  platformRole: UserRole['id'];
 }
 
 interface networkRolesFormValues {
-  [key: Network['netid']]: UserRolePermissionTemplate['id'];
+  [key: Network['netid']]: UserRole['id'];
 }
 
 interface NetworkRolesTableData {
-  network_id: UserRolePermissionTemplate['network_id'];
-  network_roles: UserRolePermissionTemplate['id'][];
+  network_id: UserRole['network_id'];
+  network_roles: UserRole['id'][];
 }
 
 export default function CreateUserGroupPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
   const { token: themeToken } = theme.useToken();
-  const isServerEE = store.serverConfig?.IsEE === 'yes';
+  // const isServerEE = store.serverConfig?.IsEE === 'yes';
   const navigate = useNavigate();
 
   const [metadataForm] = Form.useForm<metadataFormValues>();
   const [networkRolesForm] = Form.useForm<networkRolesFormValues>();
   const [availbleNetworks, setAvailbleNetworks] = useState<Network[]>([]);
-  const [availableUserRoles, setAvailableUserRoles] = useState<UserRolePermissionTemplate[]>([]);
+  const [availableUserRoles, setAvailableUserRoles] = useState<UserRole[]>([]);
   const [isLoadingNetworks, setIsLoadingNetworks] = useState(true);
   const [membersSearch, setMembersSearch] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -157,8 +155,6 @@ export default function CreateUserGroupPage(props: PageProps) {
       const networkRoles = await networkRolesForm.validateFields();
       // const vpnAccess = await vpnAccessForm.validateFields();
 
-      console.log('networkRoles', networkRoles);
-
       const networkRolesPayload = Object.keys(networkRoles).reduce(
         (acc, nw) => {
           if (networkRoles[nw]) acc[nw] = { [networkRoles[nw]]: {} };
@@ -167,13 +163,11 @@ export default function CreateUserGroupPage(props: PageProps) {
         {} as UserGroup['network_roles'],
       );
 
-      console.log('networkRolesPayload', networkRolesPayload);
-
       await UsersService.createGroup({
         id: metadata.name,
         network_roles: networkRolesPayload,
         meta_data: metadata.metadata,
-        // platform_role: 'user',
+        platform_role: metadata.platformRole,
       });
 
       notification.success({ message: 'User group created successfully' });
@@ -236,11 +230,28 @@ export default function CreateUserGroupPage(props: PageProps) {
                   <Input.TextArea placeholder="Enter a description for this new group" style={{ width: '100%' }} />
                 </Form.Item>
               </Col>
+              <Col xs={24}>
+                <Form.Item
+                  name="platformRole"
+                  label="Platform Role"
+                  tooltip="The platform role determines the level of access the user group has to the platform, and not one network specifically."
+                  rules={[{ required: true, whitespace: false }]}
+                  style={{ width: '80%' }}
+                >
+                  <Select
+                    placeholder="Select a platform role"
+                    style={{ width: '100%' }}
+                    options={availableUserRoles
+                      .filter((r) => deriveUserRoleType(r) === 'platform-role')
+                      .map((r) => ({ label: r.id, value: r.id }))}
+                  />
+                </Form.Item>
+              </Col>
             </Row>
           </Form>
         </Row>
 
-        <Row className="tabbed-page-row-padding" style={{ paddingBottom: '5rem' }}>
+        <Row className="tabbed-page-row-padding" style={{ paddingBottom: '0px' }}>
           <Col xs={24}>
             <Card size="small" title="Associated Network Roles" style={{ width: '100%', marginBottom: '2rem' }}>
               <Form form={networkRolesForm}>
@@ -260,11 +271,11 @@ export default function CreateUserGroupPage(props: PageProps) {
           </Col>
         </Row>
 
-        <Row className="tabbed-page-row-padding" style={{ paddingBottom: '5rem' }}>
+        <Row className="tabbed-page-row-padding" style={{ paddingBottom: '5rem', paddingTop: '0px' }}>
           <Col xs={24}>
             <Card
               size="small"
-              title="Associated Network Roles"
+              title="Group Members"
               style={{ width: '100%', marginBottom: '2rem' }}
               extra={
                 <Button size="small" onClick={() => setIsAddUserModalOpen(true)}>
@@ -273,11 +284,19 @@ export default function CreateUserGroupPage(props: PageProps) {
               }
             >
               <Row style={{ padding: '.5rem 0rem' }} data-nmui-intercom="new-group_network-roles">
+                <Col xs={24} style={{ paddingBottom: '1rem ' }}>
+                  <Input
+                    placeholder="Search for a user"
+                    value={membersSearch}
+                    onChange={(e) => setMembersSearch(e.target.value)}
+                    allowClear
+                  />
+                </Col>
                 <Col xs={24}>
                   <Table
                     size="small"
                     columns={groupMembersTableCols}
-                    dataSource={groupMembers}
+                    dataSource={filteredMembers}
                     pagination={{ pageSize: 25 }}
                   />
                 </Col>

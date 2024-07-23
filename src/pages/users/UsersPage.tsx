@@ -278,7 +278,7 @@ export default function UsersPage(props: PageProps) {
       {
         title: 'Platform Role',
         render(_, user) {
-          return 'user.platform_role';
+          return user.platform_role_id;
         },
       },
       {

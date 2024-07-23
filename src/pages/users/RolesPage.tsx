@@ -1,5 +1,5 @@
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
-import { UserRolePermissionTemplate } from '@/models/User';
+import { UserRole } from '@/models/User';
 import { AppRoutes } from '@/routes';
 import { UsersService } from '@/services/UsersService';
 import { getNetworkRoleRoute, resolveAppRoute } from '@/utils/RouteUtils';
@@ -30,9 +30,9 @@ export default function RolesPage(props: RolesPageProps) {
   const navigate = useNavigate();
 
   const [isLoading, setIsLoading] = useState(true);
-  const [userRoles, setUserRoles] = useState<UserRolePermissionTemplate[]>([]);
+  const [userRoles, setUserRoles] = useState<UserRole[]>([]);
   const [searchRoles, setSearchRoles] = useState('');
-  const [selectedRole, setSelectedRole] = useState<UserRolePermissionTemplate | null>(null);
+  const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
 
   const filteredRoles = useMemo(() => {
     return userRoles
@@ -43,7 +43,7 @@ export default function RolesPage(props: RolesPageProps) {
   }, [searchRoles, userRoles]);
 
   const confirmDeleteRole = useCallback(
-    (role: UserRolePermissionTemplate) => {
+    (role: UserRole) => {
       Modal.confirm({
         title: 'Delete Role',
         content: `Are you sure you want to delete the role "${role.id}"? This will remove the role from all users/groups, and they will lose any associated permissions.`,
@@ -62,7 +62,7 @@ export default function RolesPage(props: RolesPageProps) {
     [notify],
   );
 
-  const roleTableColumns = useMemo<TableColumnProps<UserRolePermissionTemplate>[]>(
+  const roleTableColumns = useMemo<TableColumnProps<UserRole>[]>(
     () => [
       {
         title: 'Name',

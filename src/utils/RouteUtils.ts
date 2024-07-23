@@ -7,7 +7,7 @@ import { useStore } from '@/store/store';
 import { AvailableArchs, AvailableOses } from '@/models/AvailableOses';
 import { BUG_REPORT_URL } from '@/constants/AppConstants';
 import { ServerConfigService } from '@/services/ServerConfigService';
-import { UserRolePermissionTemplate } from '@/models/User';
+import { UserRole } from '@/models/User';
 
 type AmuiRouteAction = '' | 'upgrade' | 'invite-user';
 
@@ -68,7 +68,7 @@ export function getNetworkRoute(networkOrId: Network | Network['netid']): string
 }
 
 // Get network role details route from role obj or ID
-export function getNetworkRoleRoute(roleOrId: UserRolePermissionTemplate | UserRolePermissionTemplate['id']): string {
+export function getNetworkRoleRoute(roleOrId: UserRole | UserRole['id']): string {
   const placeholder = ':roleId';
   if (typeof roleOrId === 'string')
     return `${resolveAppRoute(AppRoutes.NETWORK_ROLE_DETAILS_ROUTE).replace(placeholder, roleOrId)}`;

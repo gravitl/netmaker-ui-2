@@ -12,12 +12,13 @@ import {
   Table,
   TableColumnProps,
 } from 'antd';
-import { MouseEvent, Ref, useState } from 'react';
+import { MouseEvent, Ref, useCallback, useEffect, useMemo, useState } from 'react';
 import { useStore } from '@/store/store';
 import '../CustomModal.scss';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
-import { User } from '@/models/User';
+import { User, UserGroup, UserRole } from '@/models/User';
 import { UsersService } from '@/services/UsersService';
+import { deriveUserRoleType } from '@/utils/UserMgmtUtils';
 
 interface AddUserModalProps {
   isOpen: boolean;
@@ -29,22 +30,24 @@ interface AddUserModalProps {
   addUserSetAsAdminCheckboxRef?: Ref<HTMLDivElement>;
 }
 
-type CreateUserForm = User & { password: string; 'confirm-password': string };
+type CreateUserForm = User & {
+  password: string;
+  'confirm-password': string;
+  'role-assignment-type': 'by-group' | 'by-manual';
+  'user-groups': UserGroup['id'][];
+};
 
-interface NetworkRoles {
-  id: string;
+interface NetworkRolesTableData {
   network: string;
-  roles: string[];
+  roles: UserRole[];
 }
 
 export default function AddUserModal({
   isOpen,
   onCreateUser,
   onCancel,
-  addUserButtonRef,
   addUserNameInputRef,
   addUserPasswordInputRef,
-  addUserSetAsAdminCheckboxRef,
 }: AddUserModalProps) {
   const [form] = Form.useForm<CreateUserForm>();
   const [notify, notifyCtx] = notification.useNotification();
@@ -52,62 +55,120 @@ export default function AddUserModal({
 
   const isServerEE = store.serverConfig?.IsEE === 'yes';
   const passwordVal = Form.useWatch('password', form);
-  const [networkRoles, setNetworkRoles] = useState<NetworkRoles[]>([
-    {
-      id: '1',
-      network: 'netmaker',
-      roles: ['network-user', 'network-admin', 'custom-role'],
-    },
-    {
-      id: '2',
-      network: 'private',
-      roles: ['network-user', 'network-admin', 'custom-role'],
-    },
-    {
-      id: '3',
-      network: 'remote-net',
-      roles: ['network-user', 'network-admin', 'field-worker'],
-    },
-  ]);
+  const [networkRoles, setNetworkRoles] = useState<UserRole[]>([]);
+  const [groups, setGroups] = useState<UserGroup[]>([]);
+  const [selectedNetworkRoles, setSelectedNetworkRoles] = useState<NetworkRolesTableData[]>([]);
 
   const roleAssignmentTypeVal = Form.useWatch('role-assignment-type', form);
 
-  const networkRolesTableCols: TableColumnProps<NetworkRoles>[] = [
-    {
-      title: 'Network',
-      dataIndex: 'network',
-      width: '30%',
-      // render(network: string) {
-      //   return <Select placeholder="Select network" value={network} disabled />;
-      // },
-    },
-    {
-      title: 'Role',
-      dataIndex: 'roles',
-      width: '70%',
-      render(roles) {
-        return (
-          <Select
-            mode="multiple"
-            placeholder="Select user roles for this network"
-            allowClear
-            options={roles.map((r: any) => ({ value: r, label: r }))}
-          />
-        );
+  const networkRolesTableData = useMemo<NetworkRolesTableData[]>(() => {
+    return networkRoles.reduce(
+      (acc, role) => {
+        const network = role.network_id;
+        const existingRole = acc.find((r) => r.network === network);
+        if (existingRole) {
+          existingRole.roles.push(role);
+        } else {
+          acc.push({ network, roles: [role] });
+        }
+        return acc;
       },
-    },
-  ];
+      [] as { network: string; roles: UserRole[] }[],
+    );
+  }, [networkRoles]);
+
+  const networkRolesTableCols: TableColumnProps<NetworkRolesTableData>[] = useMemo(
+    () => [
+      {
+        title: 'Network',
+        dataIndex: 'network',
+        width: '30%',
+        // render(network: string) {
+        //   return <Select placeholder="Select network" value={network} disabled />;
+        // },
+      },
+      {
+        title: 'Role',
+        dataIndex: 'roles',
+        width: '70%',
+        render(_, role) {
+          return (
+            <Select
+              mode="multiple"
+              placeholder="Select user roles for this network"
+              allowClear
+              options={role.roles.map((r) => ({ value: r.id, label: r.id }))}
+              onChange={(value) => {
+                setSelectedNetworkRoles((prev) => [...new Set([...prev, ...value])]);
+              }}
+              // onSelect={(value) => {
+              //   setSelectedNetworkRoles((prev) => [...new Set([...prev, { network: role.network, roles: [value] }])]);
+              // }}
+            />
+          );
+        },
+      },
+    ],
+    [],
+  );
 
   const resetModal = () => {
     form.resetFields();
   };
+
+  const loadGroups = useCallback(async () => {
+    try {
+      const groups = (await UsersService.getGroups()).data.Response;
+      setGroups(groups);
+    } catch (err) {
+      notify.error({
+        message: 'Failed to load groups',
+        description: extractErrorMsg(err as any),
+      });
+    }
+  }, [notify]);
+
+  const loadRoles = useCallback(async () => {
+    try {
+      const roles = (await UsersService.getRoles()).data.Response;
+      setNetworkRoles(roles.filter((r: UserRole) => deriveUserRoleType(r) === 'network-role'));
+    } catch (err) {
+      notify.error({
+        message: 'Failed to load roles',
+        description: extractErrorMsg(err as any),
+      });
+    }
+  }, [notify]);
 
   const createUser = async () => {
     try {
       const formData = await form.validateFields();
       // set issuperadmin as false
       formData.issuperadmin = false;
-      const newUser = (await UsersService.createUser(formData)).data;
+
+      const payload: any = {
+        ...formData,
+      };
+
+      payload['network_roles'] = {} as User['network_roles'];
+      payload['network_roles'] = {} as User['user_group_ids'];
+      switch (formData['role-assignment-type']) {
+        case 'by-group':
+          payload['user_group_ids'] = formData['user-groups'].reduce((acc, g) => ({ ...acc, [g]: {} }), {});
+          payload['network_roles'] = {};
+          break;
+        case 'by-manual':
+          console.log(selectedNetworkRoles);
+          payload['user_group_ids'] = {};
+          selectedNetworkRoles.forEach((r) => {
+            payload['network_roles'][r.network] = r.roles?.reduce((acc, role) => ({ ...acc, [role.id]: {} }), {}) ?? {};
+          });
+          break;
+      }
+      delete payload['role-assignment-type'];
+      delete payload['user-groups'];
+      console.log(payload);
+      const newUser = (await UsersService.createUser(payload)).data;
       resetModal();
       notify.success({ message: `User ${newUser.username} created` });
       onCreateUser(newUser);
@@ -118,6 +179,11 @@ export default function AddUserModal({
       });
     }
   };
+
+  useEffect(() => {
+    loadGroups();
+    loadRoles();
+  }, [loadGroups, loadRoles]);
 
   return (
     <Modal
@@ -195,10 +261,7 @@ export default function AddUserModal({
                   <Select
                     mode="multiple"
                     placeholder="Select groups"
-                    options={[
-                      { label: 'group-1', value: 'Group 1' },
-                      { label: 'group-2', value: 'Group 2' },
-                    ]}
+                    options={groups.map((g) => ({ value: g.id, label: g.id }))}
                   />
                 </Form.Item>
               </Col>
@@ -209,7 +272,7 @@ export default function AddUserModal({
             <Row>
               <Col xs={24}>
                 <Form.Item label="Select the user's roles for each network">
-                  <Table columns={networkRolesTableCols} dataSource={networkRoles} rowKey="id" />
+                  <Table columns={networkRolesTableCols} dataSource={networkRolesTableData} rowKey="id" />
                 </Form.Item>
               </Col>
             </Row>

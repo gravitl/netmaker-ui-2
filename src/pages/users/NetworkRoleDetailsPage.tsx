@@ -23,7 +23,7 @@ import { PageProps } from '../../models/Page';
 import './UsersPage.scss';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { UsersService } from '@/services/UsersService';
-import { RsrcPermissionScope, UserRolePermissionTemplate } from '@/models/User';
+import { RsrcPermissionScope, UserRole } from '@/models/User';
 import { resolveAppRoute } from '@/utils/RouteUtils';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { AppRoutes } from '@/routes';
@@ -64,7 +64,7 @@ export default function NetworkRoleDetailsPage(props: PageProps) {
   const navigate = useNavigate();
   const { roleId } = useParams<{ roleId: string }>();
 
-  const [role, setRole] = useState<UserRolePermissionTemplate | null>(null);
+  const [role, setRole] = useState<UserRole | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [metadataForm] = Form.useForm<metadataFormValues>();
   const [permissionsForm] = Form.useForm<permissionsFormValues>();
