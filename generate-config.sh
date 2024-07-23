@@ -16,12 +16,26 @@ if [ -z "${INTERCOM_APP_ID:-}" ]; then
   INTERCOM_APP_ID=""
 fi
 
+# ensure it is empty string if not set
+if [ -z "${PUBLIC_POSTHOG_HOST:-}" ]; then
+  PUBLIC_POSTHOG_HOST=""
+fi
+
+# ensure it is empty string if not set
+if [ -z "${PUBLIC_POSTHOG_KEY:-}" ]; then
+  PUBLIC_POSTHOG_KEY=""
+fi
+
 cat >/usr/share/nginx/html/nmui-config.js <<EOF
 window.NMUI_AMUI_URL='$AMUI_URL';
 window.NMUI_BACKEND_URL='$BACKEND_URL';
 window.NMUI_INTERCOM_APP_ID='$INTERCOM_APP_ID';
+window.NMUI_PUBLIC_POSTHOG_HOST='$PUBLIC_POSTHOG_HOST';
+window.NMUI_PUBLIC_POSTHOG_KEY='$PUBLIC_POSTHOG_KEY';
 EOF
 
 echo ">>>> NMUI_AMUI_URL set to: $AMUI_URL <<<<<"
 echo ">>>> NMUI_BACKEND_URL set to: $BACKEND_URL <<<<<"
 echo ">>>> NMUI_INTERCOM_APP_ID set to: $INTERCOM_APP_ID <<<<<"
+echo ">>>> NMUI_PUBLIC_POSTHOG_HOST set to: $PUBLIC_POSTHOG_HOST <<<<<"
+echo ">>>> NMUI_PUBLIC_POSTHOG_KEY set to: ***** <<<<<"
