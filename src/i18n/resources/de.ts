@@ -13,6 +13,10 @@ export const de: LanguageResource = {
     login: 'Einloggen',
     signup: 'Registrieren',
     terms5: 'Mit der Registrierung erklären Sie sich einverstanden mit unseren',
+    'signup-via-invite': 'Registrieren über Einladung',
+    'invalid-invite': 'Ungültiger Einladungscode',
+    'signup-with-sso': 'Registrieren mit SSO',
+    'signup-with-password': 'Registrieren mit Passwort',
   },
   signin: {
     signin: 'Einloggen',

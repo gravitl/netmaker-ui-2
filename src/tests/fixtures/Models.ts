@@ -200,6 +200,9 @@ export const stubUser1: User = {
   isadmin: true,
   issuperadmin: false,
   remote_gw_ids: null,
+  user_group_ids: {},
+  platform_role_id: '',
+  network_roles: {},
 };
 
 export const stubUser2: User = {
@@ -207,6 +210,9 @@ export const stubUser2: User = {
   isadmin: false,
   issuperadmin: false,
   remote_gw_ids: null,
+  user_group_ids: {},
+  platform_role_id: '',
+  network_roles: {},
 };
 
 export const stubUsers: User[] = [stubUser1, stubUser2];

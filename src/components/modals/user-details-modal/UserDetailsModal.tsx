@@ -2,12 +2,12 @@ import { Button, Col, Divider, Form, Modal, notification, Row, Table, TableColum
 import { MouseEvent, useState } from 'react';
 import { useStore } from '@/store/store';
 import '../CustomModal.scss';
-import { NewUser } from '@/models/User';
 import { EditOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { User } from '@/models/User';
 
 interface UserDetailsModalProp {
   isOpen: boolean;
-  user: NewUser;
+  user: User;
   onUpdateUser: () => any;
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
 }
@@ -40,7 +40,7 @@ export default function UserDetailsModal({ isOpen, user, onUpdateUser, onCancel 
       roles: ['network-user', 'network-admin', 'field-worker'],
     },
   ]);
-  const isUserInGroup = user.groups?.length;
+  const isUserInGroup = user.user_group_ids?.length;
 
   const networkRolesTableCols: TableColumnProps<NetworkRoles>[] = [
     {
@@ -96,7 +96,7 @@ export default function UserDetailsModal({ isOpen, user, onUpdateUser, onCancel 
           <Col xs={16}>
             <Typography.Text>
               {isUserInGroup
-                ? `Permissions are derived from these groups: ${user.groups.join(', ')}`
+                ? `Permissions are derived from these groups: ${Object.keys(user.user_group_ids).join(', ')}`
                 : 'Permissions are assigned manually'}
             </Typography.Text>
           </Col>
@@ -110,7 +110,7 @@ export default function UserDetailsModal({ isOpen, user, onUpdateUser, onCancel 
                 <Typography.Text>Platform Role</Typography.Text>
               </Col>
               <Col xs={16}>
-                <Typography.Text>{user.platformRole}</Typography.Text>
+                <Typography.Text>{user.platform_role_id}</Typography.Text>
               </Col>
             </Row>
             <Divider style={{ margin: '1rem 0px 1rem 0px' }} />

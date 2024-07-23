@@ -103,15 +103,15 @@ function getRoles() {
 }
 
 function getRole(roleId: UserRole['id']) {
-  return axiosService.get<GenericResponseDto<UserRole>>(`${ApiRoutes.USER_ROLE}/${roleId}`);
+  return axiosService.get<GenericResponseDto<UserRole>>(`${ApiRoutes.USER_ROLE}?role_id=${roleId}`);
 }
 
 function updateRole(role: UserRole) {
-  return axiosService.put<UserRole>(ApiRoutes.USER_ROLE, role);
+  return axiosService.put<UserRole>(`${ApiRoutes.USER_ROLE}?role_id=${role.id}`, role);
 }
 
 function deleteRole(roleId: string) {
-  return axiosService.delete<void>(`${ApiRoutes.USER_ROLE}/${roleId}`);
+  return axiosService.delete<void>(`${ApiRoutes.USER_ROLE}?role_id=${roleId}`);
 }
 
 function createGroup(group: Partial<UserGroup>) {
@@ -127,11 +127,11 @@ function getGroups() {
 // }
 
 function updateGroup(group: UserGroup) {
-  return axiosService.put<GenericResponseDto<UserGroup>>(ApiRoutes.USER_GROUP, group);
+  return axiosService.put<GenericResponseDto<UserGroup>>(`${ApiRoutes.USER_GROUP}?group_id=${group.id}`, group);
 }
 
 function deleteGroup(groupId: string) {
-  return axiosService.delete<void>(`${ApiRoutes.USER_GROUP}/${groupId}`);
+  return axiosService.delete<void>(`${ApiRoutes.USER_GROUP}?group_id=${groupId}`);
 }
 
 function createUserInvite(dto: CreateUserInviteReqDto) {
