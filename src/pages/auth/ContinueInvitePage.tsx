@@ -19,8 +19,13 @@ interface ContinueInvitePageProps {
   isFullScreen?: boolean;
 }
 
+type CreateUserForm = CreateUserReqDto & {
+  'login-method': 'oauth' | 'basic-auth';
+  'confirm-password': string;
+};
+
 export default function ContinueInvitePage(props: ContinueInvitePageProps) {
-  const [form] = Form.useForm<CreateUserReqDto>();
+  const [form] = Form.useForm<CreateUserForm>();
   const store = useStore();
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -67,7 +72,10 @@ export default function ContinueInvitePage(props: ContinueInvitePageProps) {
     try {
       const formData = await form.validateFields();
       setIsSigningup(true);
-      await UsersService.userInviteSignup(inviteCode, formData);
+      const payload: any = { ...formData };
+      delete payload['login-method'];
+      delete payload['confirm-password'];
+      await UsersService.userInviteSignup(inviteCode, payload);
       login(formData);
     } catch (err) {
       notification.error({ message: 'Failed to create user', description: extractErrorMsg(err as any) });

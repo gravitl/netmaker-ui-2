@@ -1,6 +1,8 @@
 import { useStore } from '@/store/store';
 import {
   CheckOutlined,
+  CopyOutlined,
+  DeleteOutlined,
   InfoCircleOutlined,
   MoreOutlined,
   PlusOutlined,
@@ -25,6 +27,7 @@ import {
   TableColumnsType,
   Tabs,
   TabsProps,
+  Tooltip,
   Tour,
   TourProps,
   Typography,
@@ -34,13 +37,13 @@ import { PageProps } from '../../models/Page';
 import './UsersPage.scss';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { UsersService } from '@/services/UsersService';
-import { User } from '@/models/User';
+import { User, UserInvite } from '@/models/User';
 import AddUserModal from '@/components/modals/add-user-modal/AddUserModal';
 import UpdateUserModal from '@/components/modals/update-user-modal/UpdateUserModal';
 import { isSaasBuild } from '@/services/BaseService';
 import { getAmuiUrl } from '@/utils/RouteUtils';
 import TransferSuperAdminRightsModal from '@/components/modals/transfer-super-admin-rights/TransferSuperAdminRightsModal';
-import { useBranding } from '@/utils/Utils';
+import { copyTextToClipboard, useBranding } from '@/utils/Utils';
 import RolesPage from './RolesPage';
 import GroupsPage from './GroupsPage';
 import UserDetailsModal from '@/components/modals/user-details-modal/UserDetailsModal';
@@ -52,7 +55,7 @@ const USERS_DOCS_URL = 'https://docs.netmaker.io/pro/pro-users.html';
 const usersTabKey = 'users';
 const rolesTabKey = 'roles';
 const groupsTabKey = 'groups';
-const pendingUsersTabKey = 'pending-users';
+const invitesTabKey = 'invites';
 const defaultTabKey = usersTabKey;
 
 export default function UsersPage(props: PageProps) {
@@ -71,9 +74,9 @@ export default function UsersPage(props: PageProps) {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isTourOpen, setIsTourOpen] = useState(false);
   const [tourStep, setTourStep] = useState(0);
-  const [pendingUsers, setPendingUsers] = useState<User[]>([]);
-  const [isLoadingPendingUsers, setIsLoadingPendingUsers] = useState(true);
-  const [pendingUsersSearch, setPendingUsersSearch] = useState('');
+  const [invites, setInvites] = useState<UserInvite[]>([]);
+  const [isLoadingInvites, setIsLoadingInvites] = useState(true);
+  const [pendingUserInvitesSearch, setPendingUsersSearch] = useState('');
   const [activeTab, setActiveTab] = useState(defaultTabKey);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
 
@@ -103,18 +106,18 @@ export default function UsersPage(props: PageProps) {
     [notify],
   );
 
-  const loadPendingUsers = useCallback(async () => {
+  const loadInvites = useCallback(async () => {
     try {
-      setIsLoadingPendingUsers(true);
-      const users = (await UsersService.getPendingUsers()).data;
-      setPendingUsers(users);
+      setIsLoadingInvites(true);
+      const invites = (await UsersService.getUserInvites()).data.Response;
+      setInvites(invites);
     } catch (err) {
       notify.error({
-        message: 'Failed to load pending users',
+        message: 'Failed to load user invites',
         description: extractErrorMsg(err as any),
       });
     } finally {
-      setIsLoadingPendingUsers(false);
+      setIsLoadingInvites(false);
     }
   }, [notify]);
 
@@ -189,42 +192,42 @@ export default function UsersPage(props: PageProps) {
     [store.user, store.username],
   );
 
-  const confirmApproveUser = useCallback(
-    async (user: User) => {
-      Modal.confirm({
-        title: 'Approve user',
-        content: `Are you sure you want to approve pending user ${user.username}?`,
-        onOk: async () => {
-          try {
-            await UsersService.approvePendingUser(user.username);
-            notify.success({ message: `User ${user.username} approved` });
-            setPendingUsers((users) => users.filter((u) => u.username !== user.username));
-            loadUsers(false);
-          } catch (err) {
-            notify.error({
-              message: 'Failed to approve user',
-              description: extractErrorMsg(err as any),
-            });
-          }
-        },
-      });
-    },
-    [loadUsers, notify],
-  );
+  // const confirmApproveUser = useCallback(
+  //   async (user: User) => {
+  //     Modal.confirm({
+  //       title: 'Approve user',
+  //       content: `Are you sure you want to approve pending user ${user.username}?`,
+  //       onOk: async () => {
+  //         try {
+  //           await UsersService.approvePendingUser(user.username);
+  //           notify.success({ message: `User ${user.username} approved` });
+  //           setInvites((users) => users.filter((u) => u.username !== user.username));
+  //           loadUsers(false);
+  //         } catch (err) {
+  //           notify.error({
+  //             message: 'Failed to approve user',
+  //             description: extractErrorMsg(err as any),
+  //           });
+  //         }
+  //       },
+  //     });
+  //   },
+  //   [loadUsers, notify],
+  // );
 
-  const confirmDenyUser = useCallback(
-    async (user: User) => {
+  const confirmDeleteInvite = useCallback(
+    async (invite: UserInvite) => {
       Modal.confirm({
-        title: 'Deny user',
-        content: `Are you sure you want to deny pending user ${user.username}?`,
+        title: 'Delete invite',
+        content: `Are you sure you want to delete this user invite for ${invite.email}?`,
         onOk: async () => {
           try {
-            await UsersService.denyPendingUser(user.username);
-            notify.success({ message: `User ${user.username} denied` });
-            setPendingUsers((users) => users.filter((u) => u.username !== user.username));
+            await UsersService.deleteUserInvite(invite.email);
+            notify.success({ message: `Invite for ${invite.email} deleted` });
+            setInvites((invites) => invites.filter((i) => i.email !== invite.email));
           } catch (err) {
             notify.error({
-              message: 'Failed to deny user',
+              message: 'Failed to delete invite',
               description: extractErrorMsg(err as any),
             });
           }
@@ -234,18 +237,18 @@ export default function UsersPage(props: PageProps) {
     [notify],
   );
 
-  const confirmDenyAllPendingUsers = useCallback(async () => {
+  const confirmDeleteAllInvitesUsers = useCallback(async () => {
     Modal.confirm({
-      title: 'Deny all panding users',
-      content: `Are you sure you want to deny all pending users?`,
+      title: 'Delete all user invites',
+      content: `Are you sure you want to clear all pending invites?`,
       onOk: async () => {
         try {
-          await UsersService.denyAllPendingUsers();
-          notify.success({ message: `All pending users denied access` });
-          setPendingUsers([]);
+          await UsersService.deleteAllUserInvites();
+          notify.success({ message: `All user invites cleared` });
+          setInvites([]);
         } catch (err) {
           notify.error({
-            message: 'Failed to deny users',
+            message: 'Failed to delete invites',
             description: extractErrorMsg(err as any),
           });
         }
@@ -341,29 +344,51 @@ export default function UsersPage(props: PageProps) {
     [checkIfCurrentUserCanEditOrDeleteUsers, store.username, onEditUser, confirmDeleteUser],
   );
 
-  const pendingUsersTableColumns: TableColumnsType<User> = useMemo(
+  const userInvitesTableColumns: TableColumnsType<UserInvite> = useMemo(
     () => [
       {
         title: 'Username',
-        dataIndex: 'username',
+        dataIndex: 'email',
         sorter(a, b) {
-          return a.username.localeCompare(b.username);
+          return a.email.localeCompare(b.email);
         },
         defaultSortOrder: 'ascend',
       },
       {
-        width: '300px',
-        render(_, user) {
+        title: 'Invite Code',
+        dataIndex: 'invite_code',
+        render(code) {
           return (
             <Row>
               <Col>
-                <Button style={{ marginRight: '1rem' }} onClick={() => confirmApproveUser(user)}>
-                  <CheckOutlined /> Approve
+                <Typography.Text>{code}</Typography.Text>
+                <Button style={{ marginRight: '1rem' }} type="link" onClick={() => copyTextToClipboard(code)}>
+                  <CopyOutlined />
                 </Button>
               </Col>
+            </Row>
+          );
+        },
+      },
+      {
+        width: '300px',
+        render(_, invite) {
+          return (
+            <Row>
+              {/* <Col>
+                <Tooltip title="Copy invite code">
+                  <Button
+                    style={{ marginRight: '1rem' }}
+                    type="link"
+                    onClick={() => copyTextToClipboard(invite.invite_code)}
+                  >
+                    <CopyOutlined />
+                  </Button>
+                </Tooltip>
+              </Col> */}
               <Col>
-                <Button onClick={() => confirmDenyUser(user)}>
-                  <StopOutlined /> Deny
+                <Button onClick={() => confirmDeleteInvite(invite)}>
+                  <DeleteOutlined /> Delete
                 </Button>
               </Col>
             </Row>
@@ -371,7 +396,7 @@ export default function UsersPage(props: PageProps) {
         },
       },
     ],
-    [confirmApproveUser, confirmDenyUser],
+    [confirmDeleteInvite],
   );
 
   const filteredUsers = useMemo(() => {
@@ -382,13 +407,13 @@ export default function UsersPage(props: PageProps) {
     );
   }, [users, usersSearch]);
 
-  const filteredPendingUsers = useMemo(() => {
+  const filteredUserInvites = useMemo(() => {
     return (
-      pendingUsers?.filter((u) => {
-        return u.username.toLowerCase().includes(pendingUsersSearch.trim().toLowerCase());
+      invites?.filter((u) => {
+        return u.email.toLowerCase().includes(pendingUserInvitesSearch.trim().toLowerCase());
       }) ?? []
     );
-  }, [pendingUsers, pendingUsersSearch]);
+  }, [invites, pendingUserInvitesSearch]);
 
   const getUserAndUpdateInStore = async (username: User['username'] | undefined) => {
     if (!username) return;
@@ -467,6 +492,7 @@ export default function UsersPage(props: PageProps) {
                 columns={usersTableColumns}
                 dataSource={filteredUsers}
                 rowKey="username"
+                size="small"
                 scroll={{
                   x: true,
                 }}
@@ -478,7 +504,7 @@ export default function UsersPage(props: PageProps) {
         </Row>
       </>
     );
-  }, [usersSearch, onAddUser, usersTableColumns, filteredUsers, isLoadingUsers, loadUsers]);
+  }, [usersSearch, onAddUser, onInviteUser, usersTableColumns, filteredUsers, isLoadingUsers, loadUsers]);
 
   const getPendingUsersContent = useCallback(() => {
     return (
@@ -489,7 +515,7 @@ export default function UsersPage(props: PageProps) {
               size="large"
               placeholder="Search pending users"
               prefix={<SearchOutlined />}
-              value={pendingUsersSearch}
+              value={pendingUserInvitesSearch}
               onChange={(ev) => setPendingUsersSearch(ev.target.value)}
               allowClear
             />
@@ -505,11 +531,11 @@ export default function UsersPage(props: PageProps) {
             >
               <InfoCircleOutlined /> Start Tour
             </Button>
-            <Button size="large" onClick={() => loadPendingUsers()} style={{ marginRight: '0.5em' }}>
-              <ReloadOutlined /> Reload users
+            <Button size="large" onClick={() => loadInvites()} style={{ marginRight: '0.5em' }}>
+              <ReloadOutlined /> Reload invites
             </Button>
-            <Button type="primary" size="large" onClick={confirmDenyAllPendingUsers} ref={denyAllUsersButtonRef}>
-              <StopOutlined /> Deny all users
+            <Button type="primary" size="large" onClick={confirmDeleteAllInvitesUsers} ref={denyAllUsersButtonRef}>
+              <DeleteOutlined /> Clear All Invites
             </Button>
             <Button
               title="Go to Users documentation"
@@ -524,10 +550,11 @@ export default function UsersPage(props: PageProps) {
           <Col xs={24}>
             <div className="table-wrapper">
               <Table
-                loading={isLoadingPendingUsers}
-                columns={pendingUsersTableColumns}
-                dataSource={filteredPendingUsers}
+                loading={isLoadingInvites}
+                columns={userInvitesTableColumns}
+                dataSource={filteredUserInvites}
                 rowKey="username"
+                size="small"
                 scroll={{
                   x: true,
                 }}
@@ -539,12 +566,12 @@ export default function UsersPage(props: PageProps) {
       </>
     );
   }, [
-    confirmDenyAllPendingUsers,
-    filteredPendingUsers,
-    isLoadingPendingUsers,
-    loadPendingUsers,
-    pendingUsersSearch,
-    pendingUsersTableColumns,
+    confirmDeleteAllInvitesUsers,
+    filteredUserInvites,
+    isLoadingInvites,
+    loadInvites,
+    pendingUserInvitesSearch,
+    userInvitesTableColumns,
   ]);
 
   const tabs: TabsProps['items'] = useMemo(
@@ -565,12 +592,12 @@ export default function UsersPage(props: PageProps) {
         children: <GroupsPage />,
       },
       {
-        key: pendingUsersTabKey,
-        label: `Pending Users (${pendingUsers.length})`,
+        key: invitesTabKey,
+        label: `Invites (${invites.length})`,
         children: getPendingUsersContent(),
       },
     ],
-    [getPendingUsersContent, getUsersContent, pendingUsers.length],
+    [getPendingUsersContent, getUsersContent, invites.length],
   );
 
   const userTourSteps: TourProps['steps'] = [
@@ -633,7 +660,7 @@ export default function UsersPage(props: PageProps) {
         break;
       case 5:
         setIsAddUserModalOpen(false);
-        setActiveTab(pendingUsersTabKey);
+        setActiveTab(invitesTabKey);
         break;
       default:
         break;
@@ -645,8 +672,8 @@ export default function UsersPage(props: PageProps) {
 
   useEffect(() => {
     loadUsers();
-    loadPendingUsers();
-  }, [loadUsers, isServerEE, loadPendingUsers]);
+    loadInvites();
+  }, [loadUsers, isServerEE, loadInvites]);
 
   return (
     <Layout.Content

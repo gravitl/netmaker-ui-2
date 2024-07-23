@@ -16,7 +16,7 @@ import { MouseEvent, Ref, useCallback, useEffect, useMemo, useState } from 'reac
 import { useStore } from '@/store/store';
 import '../CustomModal.scss';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
-import { User, UserGroup, UserRole } from '@/models/User';
+import { User, UserGroup, UserRole, UserRoleId } from '@/models/User';
 import { UsersService } from '@/services/UsersService';
 import { deriveUserRoleType } from '@/utils/UserMgmtUtils';
 
@@ -42,6 +42,11 @@ interface NetworkRolesTableData {
   roles: UserRole[];
 }
 
+interface NetworkRolePair {
+  network: string;
+  role: UserRoleId;
+}
+
 export default function AddUserModal({
   isOpen,
   onCreateUser,
@@ -57,7 +62,7 @@ export default function AddUserModal({
   const passwordVal = Form.useWatch('password', form);
   const [networkRoles, setNetworkRoles] = useState<UserRole[]>([]);
   const [groups, setGroups] = useState<UserGroup[]>([]);
-  const [selectedNetworkRoles, setSelectedNetworkRoles] = useState<NetworkRolesTableData[]>([]);
+  const [selectedNetworkRoles, setSelectedNetworkRoles] = useState<NetworkRolePair[]>([]);
 
   const roleAssignmentTypeVal = Form.useWatch('role-assignment-type', form);
 
@@ -89,21 +94,27 @@ export default function AddUserModal({
       },
       {
         title: 'Role',
-        dataIndex: 'roles',
         width: '70%',
-        render(_, role) {
+        render(_, rowData) {
           return (
             <Select
               mode="multiple"
               placeholder="Select user roles for this network"
               allowClear
-              options={role.roles.map((r) => ({ value: r.id, label: r.id }))}
-              onChange={(value) => {
-                setSelectedNetworkRoles((prev) => [...new Set([...prev, ...value])]);
-              }}
-              // onSelect={(value) => {
-              //   setSelectedNetworkRoles((prev) => [...new Set([...prev, { network: role.network, roles: [value] }])]);
+              options={rowData.roles.map((r) => ({ value: r.id, label: r.id }))}
+              // onChange={(value) => {
+              //   setSelectedNetworkRoles((prev) => [...new Set([...prev, ...value])]);
               // }}
+              onSelect={(roleId: UserRole['id']) => {
+                setSelectedNetworkRoles((prev) => {
+                  return [...prev, { network: rowData.network, role: roleId }];
+                });
+              }}
+              onDeselect={(roleId: UserRole['id']) => {
+                setSelectedNetworkRoles((prev) =>
+                  prev.filter((r) => r.network !== rowData.network && r.role !== roleId),
+                );
+              }}
             />
           );
         },
@@ -158,16 +169,18 @@ export default function AddUserModal({
           payload['network_roles'] = {};
           break;
         case 'by-manual':
-          console.log(selectedNetworkRoles);
           payload['user_group_ids'] = {};
           selectedNetworkRoles.forEach((r) => {
-            payload['network_roles'][r.network] = r.roles?.reduce((acc, role) => ({ ...acc, [role.id]: {} }), {}) ?? {};
+            if (payload['network_roles'][r.network]) {
+              payload['network_roles'][r.network][r.role] = {};
+            } else {
+              payload['network_roles'][r.network] = { [r.role]: {} };
+            }
           });
           break;
       }
       delete payload['role-assignment-type'];
       delete payload['user-groups'];
-      console.log(payload);
       const newUser = (await UsersService.createUser(payload)).data;
       resetModal();
       notify.success({ message: `User ${newUser.username} created` });
