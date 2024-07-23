@@ -2,7 +2,7 @@ import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 import { UserGroup } from '@/models/User';
 import { AppRoutes } from '@/routes';
 import { UsersService } from '@/services/UsersService';
-import { resolveAppRoute } from '@/utils/RouteUtils';
+import { getUserGroupRoute, resolveAppRoute } from '@/utils/RouteUtils';
 import { DeleteOutlined, MoreOutlined, PlusOutlined, QuestionCircleOutlined, SearchOutlined } from '@ant-design/icons';
 import {
   Button,
@@ -69,7 +69,13 @@ export default function GroupsPage(props: GroupPageProps) {
         render(name) {
           return (
             <>
-              <Typography.Link>{name}</Typography.Link>
+              <Typography.Link
+                onClick={() => {
+                  navigate(getUserGroupRoute(name));
+                }}
+              >
+                {name}
+              </Typography.Link>
             </>
           );
         },

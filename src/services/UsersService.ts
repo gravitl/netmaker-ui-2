@@ -122,9 +122,11 @@ function getGroups() {
   return axiosService.get<GenericResponseDto<UserGroup[]>>(ApiRoutes.USER_GROUPS);
 }
 
-// function getGroup(groupId: UserGroup['id']) {
-//   return axiosService.get<GenericResponseDto<UserGroup>>(`${ApiRoutes.USER_GROUP}/${groupId}`);
-// }
+function getGroup(groupId: UserGroup['id']) {
+  return axiosService.get<GenericResponseDto<UserGroup>>(
+    `${ApiRoutes.USER_GROUP}?group_id${encodeURIComponent(groupId)}`,
+  );
+}
 
 function updateGroup(group: UserGroup) {
   return axiosService.put<GenericResponseDto<UserGroup>>(
@@ -188,6 +190,7 @@ export const UsersService = {
   deleteRole,
   createGroup,
   getGroups,
+  getGroup,
   updateGroup,
   deleteGroup,
   createUserInvite,

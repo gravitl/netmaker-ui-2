@@ -20,6 +20,7 @@ import CreateNetworkRolePage from './pages/users/CreateNetworkRolePage';
 import NetworkRoleDetailsPage from './pages/users/NetworkRoleDetailsPage';
 import CreateUserGroupPage from './pages/users/CreateUserGroupPage';
 import ContinueInvitePage from './pages/auth/ContinueInvitePage';
+import UserGroupDetailsPage from './pages/users/UserGroupDetailsPage';
 
 export const AppRoutes = {
   DASHBOARD_ROUTE: '/',
@@ -40,6 +41,7 @@ export const AppRoutes = {
   NETWORK_ROLE_DETAILS_ROUTE: '/users/network-role/:roleId',
   CREATE_GROUP_ROUTE: '/users/create-group',
   CONTINUE_INVITE_ROUTE: '/invite',
+  USER_GROUP_DETAILS_ROUTE: '/users/group/:groupId',
 };
 
 function generateRoutePair(path: string, element: JSX.Element): RouteObject[] {
@@ -128,12 +130,20 @@ const routes: RouteObject[] = [
       ),
       ...generateRoutePair(
         AppRoutes.NETWORK_ROLE_DETAILS_ROUTE.split('/').slice(1).join('/'),
-        <NetworkRoleDetailsPage isFullScreen />,
+        <ProtectedRoute>
+          <NetworkRoleDetailsPage isFullScreen />
+        </ProtectedRoute>,
       ),
       ...generateRoutePair(
         AppRoutes.CREATE_GROUP_ROUTE.split('/').slice(1).join('/'),
         <ProtectedRoute>
           <CreateUserGroupPage isFullScreen />
+        </ProtectedRoute>,
+      ),
+      ...generateRoutePair(
+        AppRoutes.USER_GROUP_DETAILS_ROUTE.split('/').slice(1).join('/'),
+        <ProtectedRoute>
+          <UserGroupDetailsPage isFullScreen />
         </ProtectedRoute>,
       ),
     ],

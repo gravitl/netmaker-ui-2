@@ -7,7 +7,7 @@ import { useStore } from '@/store/store';
 import { AvailableArchs, AvailableOses } from '@/models/AvailableOses';
 import { BUG_REPORT_URL } from '@/constants/AppConstants';
 import { ServerConfigService } from '@/services/ServerConfigService';
-import { UserRole } from '@/models/User';
+import { UserGroup, UserRole } from '@/models/User';
 
 type AmuiRouteAction = '' | 'upgrade' | 'invite-user';
 
@@ -73,6 +73,14 @@ export function getNetworkRoleRoute(roleOrId: UserRole | UserRole['id']): string
   if (typeof roleOrId === 'string')
     return `${resolveAppRoute(AppRoutes.NETWORK_ROLE_DETAILS_ROUTE).replace(placeholder, roleOrId)}`;
   return `${resolveAppRoute(AppRoutes.NETWORK_ROLE_DETAILS_ROUTE).replace(placeholder, roleOrId.id)}`;
+}
+
+// Get user group details route from role obj or ID
+export function getUserGroupRoute(groupOrId: UserGroup | UserGroup['id']): string {
+  const placeholder = ':groupId';
+  if (typeof groupOrId === 'string')
+    return `${resolveAppRoute(AppRoutes.USER_GROUP_DETAILS_ROUTE).replace(placeholder, groupOrId)}`;
+  return `${resolveAppRoute(AppRoutes.USER_GROUP_DETAILS_ROUTE).replace(placeholder, groupOrId.id)}`;
 }
 
 // Get new host route
