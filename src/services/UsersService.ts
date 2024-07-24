@@ -124,7 +124,7 @@ function getGroups() {
 
 function getGroup(groupId: UserGroup['id']) {
   return axiosService.get<GenericResponseDto<UserGroup>>(
-    `${ApiRoutes.USER_GROUP}?group_id${encodeURIComponent(groupId)}`,
+    `${ApiRoutes.USER_GROUP}?group_id=${encodeURIComponent(groupId)}`,
   );
 }
 
