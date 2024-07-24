@@ -810,14 +810,16 @@ export default function UsersPage(props: PageProps) {
       {selectedUser && (
         <UserDetailsModal
           isOpen={isUserDetailsModalOpen}
-          key={selectedUser.username}
-          user={mockNewUserWithoutGroup}
+          key={`user-detail-${selectedUser.username}`}
+          user={selectedUser}
           onUpdateUser={() => {
             // loadUsers();
             // setUsers(users.map((u) => (u.username === newUser.username ? newUser : u)));
-            // setIsUpdateUserModalOpen(false);
+            setIsUserDetailsModalOpen(false);
+            setIsUpdateUserModalOpen(true);
           }}
           onCancel={() => {
+            setIsUserDetailsModalOpen(false);
             // setIsUpdateUserModalOpen(false);
             // setSelectedUser(null);
           }}
@@ -826,7 +828,7 @@ export default function UsersPage(props: PageProps) {
       {selectedUser && (
         <UpdateUserModal
           isOpen={isUpdateUserModalOpen}
-          key={selectedUser.username}
+          key={`user-update-${selectedUser.username}`}
           user={selectedUser}
           onUpdateUser={(newUser) => {
             // loadUsers();

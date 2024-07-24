@@ -1,5 +1,5 @@
 import { Button, Col, Divider, Form, Modal, notification, Row, Table, TableColumnProps, Typography } from 'antd';
-import { MouseEvent, useState } from 'react';
+import { MouseEvent, useCallback, useEffect, useState } from 'react';
 import { useStore } from '@/store/store';
 import '../CustomModal.scss';
 import { EditOutlined, InfoCircleOutlined } from '@ant-design/icons';
@@ -10,6 +10,7 @@ interface UserDetailsModalProp {
   user: User;
   onUpdateUser: () => any;
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
+  onClose?: () => void;
 }
 
 interface NetworkRoles {
@@ -18,29 +19,14 @@ interface NetworkRoles {
   roles: string[];
 }
 
-export default function UserDetailsModal({ isOpen, user, onUpdateUser, onCancel }: UserDetailsModalProp) {
+export default function UserDetailsModal({ isOpen, user, onUpdateUser, onCancel, onClose }: UserDetailsModalProp) {
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
 
   const isServerEE = store.serverConfig?.IsEE === 'yes';
-  const [networkRoles, setNetworkRoles] = useState<NetworkRoles[]>([
-    {
-      id: '1',
-      network: 'netmaker',
-      roles: ['network-user', 'network-admin', 'custom-role'],
-    },
-    {
-      id: '2',
-      network: 'private',
-      roles: ['network-user', 'network-admin', 'custom-role'],
-    },
-    {
-      id: '3',
-      network: 'remote-net',
-      roles: ['network-user', 'network-admin', 'field-worker'],
-    },
-  ]);
-  const isUserInGroup = user.user_group_ids?.length;
+  const [networkRoles, setNetworkRoles] = useState<NetworkRoles[]>([]);
+
+  const isUserInGroup = Object.keys(user.user_group_ids)?.length;
 
   const networkRolesTableCols: TableColumnProps<NetworkRoles>[] = [
     {
@@ -57,6 +43,21 @@ export default function UserDetailsModal({ isOpen, user, onUpdateUser, onCancel 
       },
     },
   ];
+
+  const loadDetails = useCallback(() => {
+    if (!user.network_roles) {
+      setNetworkRoles([]);
+      return;
+    }
+    Object.keys(user.network_roles).forEach((network) => {
+      const roleIds = Object.keys(user.network_roles[network]);
+      setNetworkRoles((prev) => [...prev, { id: network, network, roles: roleIds }]);
+    });
+  }, [user.network_roles]);
+
+  useEffect(() => {
+    loadDetails();
+  }, [loadDetails]);
 
   return (
     <Modal
@@ -121,6 +122,30 @@ export default function UserDetailsModal({ isOpen, user, onUpdateUser, onCancel 
               </Col>
               <Col xs={24} style={{ marginTop: '2rem' }}>
                 <Table columns={networkRolesTableCols} dataSource={networkRoles} rowKey="id" />
+              </Col>
+            </Row>
+            <Divider style={{ margin: '1rem 0px 1rem 0px' }} />
+          </>
+        )}
+
+        {isUserInGroup && (
+          <>
+            <Row data-nmui-intercom="user-details_platform-role">
+              <Col xs={8}>
+                <Typography.Text>Platform Role</Typography.Text>
+              </Col>
+              <Col xs={16}>
+                <Typography.Text>{user.platform_role_id}</Typography.Text>
+              </Col>
+            </Row>
+            <Divider style={{ margin: '1rem 0px 1rem 0px' }} />
+
+            <Row data-nmui-intercom="user-details_network-roles">
+              <Col xs={8}>
+                <Typography.Text>Groups</Typography.Text>
+              </Col>
+              <Col xs={16}>
+                <Typography.Text>{Object.keys(user.user_group_ids ?? []).join(', ')}</Typography.Text>
               </Col>
             </Row>
             <Divider style={{ margin: '1rem 0px 1rem 0px' }} />
