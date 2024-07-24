@@ -1,5 +1,5 @@
 import { useStore } from '@/store/store';
-import { PlusOutlined } from '@ant-design/icons';
+import { EditOutlined, PlusOutlined } from '@ant-design/icons';
 import {
   Button,
   Card,
@@ -124,7 +124,11 @@ export default function UserGroupDetailsPage(props: PageProps) {
       {
         title: 'Role',
         render: (_, rowData) => (
-          <Form.Item name={rowData.network_id} noStyle>
+          <Form.Item
+            name={rowData.network_id}
+            noStyle
+            initialValue={Object.keys(group?.network_roles ?? {}).find((nw) => nw === rowData.network_id) ?? ''}
+          >
             <Select
               style={{ width: '100%' }}
               placeholder="Select a role for this network"
@@ -137,7 +141,7 @@ export default function UserGroupDetailsPage(props: PageProps) {
         ),
       },
     ],
-    [],
+    [group?.network_roles],
   );
 
   const groupMembersTableCols = useMemo<TableColumnProps<User>[]>(
@@ -254,7 +258,6 @@ export default function UserGroupDetailsPage(props: PageProps) {
                   style={{ width: '80%' }}
                 >
                   <Typography.Text style={{ fontWeight: 'bold' }}>{group?.id ?? ''}</Typography.Text>
-                  {/* <Input placeholder="Enter a name for this new group" style={{ width: '100%' }} disabled /> */}
                 </Form.Item>
               </Col>
               <Col xs={24} md={12}>
@@ -263,7 +266,12 @@ export default function UserGroupDetailsPage(props: PageProps) {
                 </Form.Item>
               </Col>
               <Col xs={24}>
-                <Form.Item name="metadata" label="Group Description" style={{ width: '80%' }}>
+                <Form.Item
+                  name="metadata"
+                  label="Group Description"
+                  style={{ width: '80%' }}
+                  initialValue={group?.meta_data ?? ''}
+                >
                   <Input.TextArea placeholder="Enter a description for this new group" style={{ width: '100%' }} />
                 </Form.Item>
               </Col>
@@ -271,6 +279,7 @@ export default function UserGroupDetailsPage(props: PageProps) {
                 <Form.Item
                   name="platformRole"
                   label="Platform Role"
+                  initialValue={group?.platform_role ?? ''}
                   tooltip="The platform role determines the level of access the user group has to the platform, and not one network specifically."
                   rules={[{ required: true, whitespace: false }]}
                   style={{ width: '80%' }}
@@ -355,7 +364,7 @@ export default function UserGroupDetailsPage(props: PageProps) {
         >
           <Col xs={24} style={{ textAlign: 'end' }}>
             <Button type="primary" size="large" loading={isSubmitting} onClick={updateGroup}>
-              <PlusOutlined /> Update Group
+              <EditOutlined /> Update Group
             </Button>
           </Col>
         </Row>

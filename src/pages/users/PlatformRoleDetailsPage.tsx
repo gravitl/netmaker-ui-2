@@ -56,7 +56,7 @@ type vpnAccessFormValues = {
   [key: string]: boolean;
 };
 
-export default function NetworkRoleDetailsPage(props: PageProps) {
+export default function PlatformRoleDetailsPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
   const { token: themeToken } = theme.useToken();
@@ -556,7 +556,7 @@ export default function NetworkRoleDetailsPage(props: PageProps) {
 
   return (
     <Layout.Content
-      className="NetworkRoleDetailsPage"
+      className="PlatformRoleDetailsPage"
       style={{ position: 'relative', height: '100%', padding: props.isFullScreen ? 0 : 24 }}
     >
       <Skeleton loading={isLoading} active title className="page-padding">
@@ -567,7 +567,7 @@ export default function NetworkRoleDetailsPage(props: PageProps) {
             <Row>
               <Col xs={18} lg={12}>
                 <Typography.Title level={2} style={{ marginTop: '.5rem', marginBottom: '2rem' }}>
-                  Network Role
+                  Platform Role
                 </Typography.Title>
               </Col>
             </Row>
