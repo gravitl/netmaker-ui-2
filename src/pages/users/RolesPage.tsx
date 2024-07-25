@@ -287,7 +287,7 @@ export default function RolesPage(props: RolesPageProps) {
                   rowKey="id"
                   size="small"
                   scroll={{ x: true }}
-                  pagination={{ hideOnSinglePage: true, defaultPageSize: 25 }}
+                  pagination={{ hideOnSinglePage: true, defaultPageSize: 15 }}
                   // rowClassName={(role) => {
                   //   return role.id === selectedRole?.id ? 'selected-row' : '';
                   // }}

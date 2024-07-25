@@ -230,3 +230,23 @@ export function reloadNmuiWithVersion(uiVersion = '') {
   const newUrl = `${window.location.origin}/${uiVersion ? `${uiVersion}/` : ''}`;
   window.location.href = newUrl;
 }
+
+/**
+ * Get the frontend URL NMUI runs on
+ *
+ * @returns the frontend URL NMUI runs on
+ */
+export function getNetmakerUiHost() {
+  return window?.location?.host || '';
+}
+
+/**
+ * Get the magic link for the invite code
+ *
+ * @param inviteCode
+ * @param username
+ * @returns invite code magic link
+ */
+export function getInviteMagicLink(inviteCode: string, username: string): string {
+  return `https://${getNetmakerUiHost()}/invite?invite_code=${encodeURIComponent(inviteCode)}&email=${encodeURIComponent(username)}`;
+}

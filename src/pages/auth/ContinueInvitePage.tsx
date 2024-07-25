@@ -39,7 +39,7 @@ export default function ContinueInvitePage(props: ContinueInvitePageProps) {
   const [isSsoLoading, setIsSsoLoading] = useState(false);
 
   const username = decodeURIComponent(query.get('email') || '');
-  const inviteCode = decodeURIComponent(query.get('code') || '');
+  const inviteCode = decodeURIComponent(query.get('invite_code') || '');
 
   const loginMethodVal = Form.useWatch('login-method', form);
 

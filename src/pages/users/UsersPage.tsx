@@ -41,7 +41,7 @@ import { User, UserInvite } from '@/models/User';
 import AddUserModal from '@/components/modals/add-user-modal/AddUserModal';
 import UpdateUserModal from '@/components/modals/update-user-modal/UpdateUserModal';
 import { isSaasBuild } from '@/services/BaseService';
-import { getAmuiUrl } from '@/utils/RouteUtils';
+import { getAmuiUrl, getInviteMagicLink } from '@/utils/RouteUtils';
 import TransferSuperAdminRightsModal from '@/components/modals/transfer-super-admin-rights/TransferSuperAdminRightsModal';
 import { copyTextToClipboard, useBranding } from '@/utils/Utils';
 import RolesPage from './RolesPage';
@@ -357,13 +357,16 @@ export default function UsersPage(props: PageProps) {
       {
         title: 'Invite Code',
         dataIndex: 'invite_code',
-        render(code) {
+        render(code, rowData) {
           return (
             <Row>
               <Col>
-                <Typography.Text>{code}</Typography.Text>
-                <Button style={{ marginRight: '1rem' }} type="link" onClick={() => copyTextToClipboard(code)}>
-                  <CopyOutlined />
+                <Button
+                  style={{ marginRight: '1rem' }}
+                  type="link"
+                  onClick={() => copyTextToClipboard(getInviteMagicLink(code, rowData.email))}
+                >
+                  Copy Magic Link <CopyOutlined />
                 </Button>
               </Col>
             </Row>
@@ -853,8 +856,13 @@ export default function UsersPage(props: PageProps) {
       <InviteUserModal
         isOpen={isInviteModalOpen}
         onClose={() => setIsInviteModalOpen(false)}
-        onCancel={() => {}}
-        onInviteFinish={() => {}}
+        onCancel={() => {
+          setIsInviteModalOpen(false);
+        }}
+        onInviteFinish={() => {
+          loadInvites();
+          setIsInviteModalOpen(false);
+        }}
       />
     </Layout.Content>
   );

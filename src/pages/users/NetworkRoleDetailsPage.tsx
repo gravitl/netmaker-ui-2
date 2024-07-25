@@ -36,6 +36,7 @@ const defaultTabKey = permissionsTabKey;
 interface metadataFormValues {
   name: string;
   network: string;
+  full_access: boolean;
 }
 
 interface permissionsFormValues {
@@ -116,13 +117,14 @@ export default function NetworkRoleDetailsPage(props: PageProps) {
         return;
       }
       setIsSubmitting(true);
+      const metadata = await metadataForm.validateFields();
       const permissions = await permissionsForm.validateFields();
       const vpnAccess = await vpnAccessForm.validateFields();
       UsersService.updateRole({
         ...role,
         // default: false,
         // denyDashboardAccess: false,
-        // fullAccess: false,
+        full_access: metadata.full_access,
         // globalLevelAccess: null,
         network_level_access: {
           remote_access_gw: {
@@ -161,13 +163,13 @@ export default function NetworkRoleDetailsPage(props: PageProps) {
         },
       });
       setCanUpdate(false);
-      notification.success({ message: 'Network role created successfully' });
+      notification.success({ message: 'Network role updated successfully' });
     } catch (e: any) {
-      notify.error({ message: 'Failed to create network role', description: extractErrorMsg(e) });
+      notify.error({ message: 'Failed to update network role', description: extractErrorMsg(e) });
     } finally {
       setIsSubmitting(false);
     }
-  }, [notify, permissionsForm, role, vpnAccessForm]);
+  }, [metadataForm, notify, permissionsForm, role, vpnAccessForm]);
 
   const confirmDeleteRole = useCallback(() => {
     if (!role) {
@@ -188,6 +190,8 @@ export default function NetworkRoleDetailsPage(props: PageProps) {
       },
     });
   }, [navigate, notify, role]);
+
+  const fullAccessVal = Form.useWatch('full_access', metadataForm);
 
   // ui components
   const getPermissionsContent = useMemo(() => {
@@ -581,7 +585,6 @@ export default function NetworkRoleDetailsPage(props: PageProps) {
           <Form
             form={metadataForm}
             layout="vertical"
-            disabled
             style={{ width: '100%' }}
             initialValues={{
               name: role?.id,
@@ -604,6 +607,17 @@ export default function NetworkRoleDetailsPage(props: PageProps) {
                   <Typography.Text style={{ fontWeight: 'bold' }}>{role?.network_id ?? ''}</Typography.Text>
                 </Form.Item>
               </Col>
+              <Col xs={24} md={12}>
+                <Form.Item
+                  name="full_access"
+                  label="Have full access to the network"
+                  rules={[{ required: true }]}
+                  valuePropName="checked"
+                  initialValue={role?.full_access}
+                >
+                  <Switch />
+                </Form.Item>
+              </Col>
             </Row>
           </Form>
         </Row>
@@ -613,7 +627,8 @@ export default function NetworkRoleDetailsPage(props: PageProps) {
             <Typography.Title level={4}>Role Permissions</Typography.Title>
           </Col>
           <Col xs={24}>
-            <Tabs items={tabs} activeKey={activeTab} onChange={(key) => setActiveTab(key)} />
+            {fullAccessVal && <Typography.Text>This role has full access to all network resources</Typography.Text>}
+            {!fullAccessVal && <Tabs items={tabs} activeKey={activeTab} onChange={(key) => setActiveTab(key)} />}
           </Col>
         </Row>
 

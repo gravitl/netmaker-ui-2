@@ -39,6 +39,7 @@ const defaultTabKey = permissionsTabKey;
 interface metadataFormValues {
   name: string;
   network: string;
+  full_access: boolean;
 }
 
 interface permissionsFormValues {
@@ -110,7 +111,7 @@ export default function CreateNetworkRolePage(props: PageProps) {
         network_id: metadata.network,
         // default: false,
         // denyDashboardAccess: false,
-        // fullAccess: false,
+        full_access: metadata.full_access,
         // globalLevelAccess: null,
         network_level_access: {
           remote_access_gw: {
@@ -157,6 +158,8 @@ export default function CreateNetworkRolePage(props: PageProps) {
       setIsSubmitting(false);
     }
   }, [metadataForm, navigate, notify, permissionsForm, vpnAccessForm]);
+
+  const fullAccessVal = Form.useWatch('full_access', metadataForm);
 
   // ui components
   const getPermissionsContent = useCallback(() => {
@@ -525,6 +528,16 @@ export default function CreateNetworkRolePage(props: PageProps) {
                   />
                 </Form.Item>
               </Col>
+              <Col xs={24} md={12}>
+                <Form.Item
+                  name="full_access"
+                  label="Have full access to the network"
+                  rules={[{ required: true }]}
+                  valuePropName="checked"
+                >
+                  <Switch />
+                </Form.Item>
+              </Col>
             </Row>
           </Form>
         </Row>
@@ -534,7 +547,12 @@ export default function CreateNetworkRolePage(props: PageProps) {
             <Typography.Title level={4}>Role Permissions</Typography.Title>
           </Col>
           <Col xs={24}>
-            <Tabs items={tabs} activeKey={activeTab} onChange={(key) => setActiveTab(key)} />
+            {fullAccessVal && (
+              <Typography.Text>
+                This role will have full access to the network. No further permissions are required.
+              </Typography.Text>
+            )}
+            {!fullAccessVal && <Tabs items={tabs} activeKey={activeTab} onChange={(key) => setActiveTab(key)} />}
           </Col>
         </Row>
 
