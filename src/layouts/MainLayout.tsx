@@ -23,6 +23,7 @@ import { AppErrorBoundary } from '@/components/AppErrorBoundary';
 import { isManagedHost, useBranding } from '@/utils/Utils';
 import VersionUpgradeModal from '@/components/modals/version-upgrade-modal/VersionUpgradeModal';
 import { lt } from 'semver';
+import { deriveUserRoleType } from '@/utils/UserMgmtUtils';
 
 const { Content, Sider } = Layout;
 
@@ -59,6 +60,11 @@ export default function MainLayout() {
         .sort((a, b) => a.netid.localeCompare(b.netid))
         .slice(0, 10),
     [store.networks],
+  );
+
+  const userHasFullAccess = useMemo(
+    () => !store.userPlatformRole?.deny_dashboard_access && store.userPlatformRole?.full_access,
+    [store.userPlatformRole],
   );
 
   const sidebarLogo = useMemo(() => {
@@ -107,16 +113,20 @@ export default function MainLayout() {
             },
           ],
         },
-        {
-          key: 'hosts',
-          icon: LaptopOutlined,
-          label: 'Hosts',
-        },
-        {
-          key: 'enrollment-keys',
-          icon: KeyOutlined,
-          label: 'Enrollment Keys',
-        },
+        userHasFullAccess
+          ? {
+              key: 'hosts',
+              icon: LaptopOutlined,
+              label: 'Hosts',
+            }
+          : undefined!,
+        userHasFullAccess
+          ? {
+              key: 'enrollment-keys',
+              icon: KeyOutlined,
+              label: 'Enrollment Keys',
+            }
+          : undefined!,
         {
           type: 'divider',
         },
@@ -140,30 +150,35 @@ export default function MainLayout() {
         .concat(
           !isSaasBuild
             ? [
-                {
-                  key: 'users',
-                  icon: UserOutlined,
-                  label: 'User Management',
-                },
+                userHasFullAccess
+                  ? {
+                      key: 'users',
+                      icon: UserOutlined,
+                      label: 'User Management',
+                    }
+                  : undefined!,
               ]
             : [],
         )
-        .map((item) => ({
-          key: item.key,
-          type: item.type as any,
-          style: {
-            marginTop: item.type === 'divider' ? '1rem' : '',
-            marginBottom: item.type === 'divider' ? '1rem' : '',
-          },
-          icon: item.icon && React.createElement(item.icon),
-          label: item.label,
-          children: item.children?.map((child) => ({
-            key: (child as any)?.key,
-            label: (child as any)?.label,
-            type: (child as any)?.type,
-          })),
-        })),
-    [recentNetworks],
+        .map(
+          (item) =>
+            item && {
+              key: item.key,
+              type: item.type as any,
+              style: {
+                marginTop: item.type === 'divider' ? '1rem' : '',
+                marginBottom: item.type === 'divider' ? '1rem' : '',
+              },
+              icon: item.icon && React.createElement(item.icon),
+              label: item.label,
+              children: item.children?.map((child) => ({
+                key: (child as any)?.key,
+                label: (child as any)?.label,
+                type: (child as any)?.type,
+              })),
+            },
+        ),
+    [recentNetworks, userHasFullAccess],
   );
 
   const sideNavBottomItems: MenuProps['items'] = useMemo(

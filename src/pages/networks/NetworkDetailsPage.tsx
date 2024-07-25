@@ -3600,22 +3600,6 @@ export default function NetworkDetailsPage(props: PageProps) {
     internetGatewaysCount,
   ]);
 
-  // const loadDnses = useCallback(async () => {
-  //   try {
-  //     if (!networkId) return;
-  //     const dnses = (await NetworksService.getDnses()).data;
-  //     const networkDnses = dnses.filter((dns) => dns.network === networkId);
-  //     setDnses(networkDnses);
-  //   } catch (err) {
-  //     if (err instanceof AxiosError) {
-  //       notify.error({
-  //         message: 'Error loading DNSes',
-  //         description: extractErrorMsg(err),
-  //       });
-  //     }
-  //   }
-  // }, [networkId, notify]);
-
   const loadMetrics = useCallback(async () => {
     try {
       if (!networkId) return;
@@ -3675,7 +3659,6 @@ export default function NetworkDetailsPage(props: PageProps) {
     // load extra data
     loadNetworkNodes();
     loadNetworkDnses();
-    // loadDnses();
     loadAcls();
     loadClients();
 

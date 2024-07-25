@@ -10,7 +10,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { AMUI_URL, isSaasBuild } from '../../services/BaseService';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { UsersService } from '@/services/UsersService';
-import { User } from '@/models/User';
+import { User, UserRole } from '@/models/User';
 import { ApiRoutes } from '@/constants/ApiRoutes';
 import { resolveAppRoute, truncateQueryParamsFromCurrentUrl, useQuery } from '@/utils/RouteUtils';
 import { AppErrorBoundary } from '@/components/AppErrorBoundary';
@@ -21,7 +21,7 @@ interface LoginPageProps {
   isFullScreen?: boolean;
 }
 
-const USER_ERROR_MESSAGE = 'only admins can access dashboard';
+// const USER_ERROR_MESSAGE = 'only admins can access dashboard';
 
 export default function LoginPage(props: LoginPageProps) {
   const [form] = Form.useForm<LoginDto>();
@@ -48,24 +48,27 @@ export default function LoginPage(props: LoginPageProps) {
   const getUserAndUpdateInStore = async (username: User['username']) => {
     try {
       const user = await (await UsersService.getUser(username)).data;
-
-      // if (!user?.issuperadmin && !user?.isadmin) {
-      //   notify.error({ message: 'Failed to login', description: 'User is not an admin' });
-      //   return;
-      // }
-      store.setStore({ user });
+      const userPlatformRole: UserRole = (await UsersService.getRole(user.platform_role_id)).data.Response;
+      if (userPlatformRole.deny_dashboard_access) {
+        notify.error({
+          message: 'Failed to login',
+          description: 'You do not have permissions to access the dashboard',
+        });
+        return;
+      }
+      store.setStore({ user, userPlatformRole });
     } catch (err) {
       notify.error({ message: 'Failed to get user details', description: extractErrorMsg(err as any) });
     }
   };
 
-  const checkLoginErrorMessage = (err: string) => {
-    if (err.toLowerCase() === USER_ERROR_MESSAGE.toLowerCase()) {
-      setIsUserLoggingIn(true);
-      return;
-    }
-    setIsUserLoggingIn(false);
-  };
+  // const checkLoginErrorMessage = (err: string) => {
+  //   if (err.toLowerCase() === USER_ERROR_MESSAGE.toLowerCase()) {
+  //     setIsUserLoggingIn(true);
+  //     return;
+  //   }
+  //   setIsUserLoggingIn(false);
+  // };
 
   const onLogin = async () => {
     try {
