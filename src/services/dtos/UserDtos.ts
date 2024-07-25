@@ -1,14 +1,11 @@
-import { UserGroup } from '@/models/User';
+import { User, UserGroup } from '@/models/User';
 
 export interface CreateUserReqDto {
   username: string;
   password: string;
 }
 
-export interface UpdateUserReqDto {
-  username: string;
-  password: string;
-}
+export type UpdateUserReqDto = Partial<User>;
 
 export interface ExtraUserInfoForm {
   first_name: string;

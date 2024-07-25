@@ -11,7 +11,6 @@ import {
   Row,
   Select,
   Skeleton,
-  Switch,
   Table,
   TableColumnProps,
   theme,
@@ -127,7 +126,6 @@ export default function UserGroupDetailsPage(props: PageProps) {
           <Form.Item
             name={rowData.network_id}
             noStyle
-            // initialValue={Object.keys(group?.network_roles ?? {}).find((nw) => nw === rowData.network_id) ?? ''}
             initialValue={Object.keys(group?.network_roles?.[rowData.network_id] ?? {})?.[0] ?? ''}
           >
             <Select
@@ -160,14 +158,31 @@ export default function UserGroupDetailsPage(props: PageProps) {
             type="text"
             danger
             size="small"
-            onClick={() => setNewGroupMembers(groupMembers.filter((m) => m.username !== rowData.username))}
+            onClick={async () => {
+              try {
+                if (!groupId) throw new Error('Group ID not found. Reload page');
+                const payload: User = {
+                  ...rowData,
+                };
+                delete payload?.user_group_ids[groupId];
+                await UsersService.updateUser(payload.username, payload);
+                setUsers((users) =>
+                  users.filter((u) => {
+                    if (u.username !== rowData.username) return u;
+                    return { ...u, user_group_ids: { ...u?.user_group_ids, [groupId]: undefined } };
+                  }),
+                );
+              } catch (err) {
+                notify.error({ message: 'Failed to remove user from group', description: extractErrorMsg(err as any) });
+              }
+            }}
           >
             Remove
           </Button>
         ),
       },
     ],
-    [groupMembers],
+    [groupId, notify],
   );
 
   const loadNetworks = useCallback(async () => {
@@ -212,13 +227,12 @@ export default function UserGroupDetailsPage(props: PageProps) {
       });
 
       notification.success({ message: 'User group updated successfully' });
-      navigate(resolveAppRoute(AppRoutes.USERS_ROUTE));
     } catch (e: any) {
       notify.error({ message: 'Failed to update user group', description: extractErrorMsg(e) });
     } finally {
       setIsSubmitting(false);
     }
-  }, [group, metadataForm, navigate, networkRolesForm, notify]);
+  }, [group, metadataForm, networkRolesForm, notify]);
 
   useEffect(() => {
     loadDetails();
@@ -376,8 +390,23 @@ export default function UserGroupDetailsPage(props: PageProps) {
         isOpen={isAddUserModalOpen}
         onCancel={() => setIsAddUserModalOpen(false)}
         currentGroupMembers={newGroupMembers}
-        onUserSelected={(user) => {
-          setNewGroupMembers([...new Set([...groupMembers, user])]);
+        platformRole={group?.platform_role}
+        onUserSelected={async (user) => {
+          try {
+            if (!groupId) throw new Error('Group ID not found. Reload page');
+            await UsersService.updateUser(user.username, {
+              ...user,
+              user_group_ids: { ...user?.user_group_ids, [groupId]: {} },
+            });
+            setUsers((users) =>
+              users.map((u) => {
+                if (u.username !== user.username) return u;
+                return { ...u, user_group_ids: { ...u?.user_group_ids, [groupId]: {} } };
+              }),
+            );
+          } catch (err) {
+            notify.error({ message: 'Failed to add user to group', description: extractErrorMsg(err as any) });
+          }
         }}
       />
     </Layout.Content>
