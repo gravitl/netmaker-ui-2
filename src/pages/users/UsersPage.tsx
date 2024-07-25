@@ -169,11 +169,11 @@ export default function UsersPage(props: PageProps) {
   const checkIfCurrentUserCanEditOrDeleteUsers = useCallback(
     (user: User) => {
       // if current user is super admin, he can edit or delete any user
-      if (store.user?.issuperadmin) {
+      if (store.user?.platform_role_id === 'super_admin') {
         return false;
       }
 
-      if (store.user?.isadmin) {
+      if (store.user?.platform_role_id === 'admin') {
         // if current user is admin and he is editing his own profile, he can edit/delete his own profile
         if (user.username === store.username) {
           return false;
@@ -318,7 +318,7 @@ export default function UsersPage(props: PageProps) {
                     },
                   },
                 ].concat(
-                  user.issuperadmin && store.username === user.username
+                  user.platform_role_id === 'super_admin' && store.username === user.username
                     ? [
                         {
                           key: 'transfer',

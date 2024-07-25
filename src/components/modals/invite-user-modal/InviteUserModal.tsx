@@ -6,6 +6,7 @@ import { UserGroup, UserInvite } from '@/models/User';
 import { UsersService } from '@/services/UsersService';
 import { DeleteOutlined } from '@ant-design/icons';
 import { copyTextToClipboard } from '@/utils/Utils';
+import { getInviteMagicLink } from '@/utils/RouteUtils';
 
 interface InviteUserModalProps {
   isOpen: boolean;
@@ -188,12 +189,11 @@ export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCan
                           type="link"
                           style={{ marginRight: '1rem' }}
                           onClick={async () => {
-                            // TODO: get link from server res
-                            await copyTextToClipboard(invite.invite_code);
+                            await copyTextToClipboard(getInviteMagicLink(invite.invite_code, invite.email));
                             notify.success({ message: 'Invite code copied to clipboard' });
                           }}
                         >
-                          Copy Invite Code
+                          Copy Invite Link
                         </Button>,
                         <Button
                           key="delete"

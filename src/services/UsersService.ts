@@ -1,7 +1,7 @@
 import { ApiRoutes } from '@/constants/ApiRoutes';
 import { axiosService } from './BaseService';
 import { User, UserInvite, UserRole } from '@/models/User';
-import { CreateUserInviteReqDto, UpdateUserReqDto, UserInviteReqDto } from './dtos/UserDtos';
+import { CreateUserGroupReqDto, CreateUserInviteReqDto, UpdateUserReqDto, UserInviteReqDto } from './dtos/UserDtos';
 import { UserGroup } from '@/models/User';
 import { CreateUserReqDto } from './dtos/UserDtos';
 import { Node } from '@/models/Node';
@@ -114,7 +114,7 @@ function deleteRole(roleId: string) {
   return axiosService.delete<void>(`${ApiRoutes.USER_ROLE}?role_id=${encodeURIComponent(roleId)}`);
 }
 
-function createGroup(group: Partial<UserGroup>) {
+function createGroup(group: CreateUserGroupReqDto) {
   return axiosService.post<GenericResponseDto<UserGroup>>(ApiRoutes.USER_GROUP, group);
 }
 

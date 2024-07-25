@@ -240,8 +240,8 @@ export default function NetworkDetailsPage(props: PageProps) {
     remoteAccessVPNConfigModal: 14,
   });
   const [isSetNetworkFailoverModalOpen, setIsSetNetworkFailoverModalOpen] = useState(false);
-  const [selectedGatewayTabKey, setSelectedGatewayTabKey] = useState('vpn-config');
   const [isAddInternetGatewayModalOpen, setIsAddInternetGatewayModalOpen] = useState(false);
+  const [networkNodes, setNetworkNodes] = useState<ExtendedNode[]>([]);
 
   const overviewTabContainerRef = useRef(null);
   const hostsTabContainerTableRef = useRef(null);
@@ -307,13 +307,13 @@ export default function NetworkDetailsPage(props: PageProps) {
   const createInternetGatewayModalSelectConnectedHostsRef = useRef(null);
   const updateInternetGatewayModalSelectConnectedHostsRef = useRef(null);
 
-  const networkNodes = useMemo(
-    () =>
-      store.nodes
-        .map((node) => getExtendedNode(node, store.hostsCommonDetails))
-        .filter((node) => node.network === networkId),
-    [store.nodes, store.hostsCommonDetails, networkId],
-  );
+  // const networkNodes = useMemo(
+  //   () =>
+  //     store.nodes
+  //       .map((node) => getExtendedNode(node, store.hostsCommonDetails))
+  //       .filter((node) => node.network === networkId),
+  //   [store.nodes, store.hostsCommonDetails, networkId],
+  // );
 
   const filteredNetworkNodes = useMemo<ExtendedNode[]>(
     () =>
@@ -3600,21 +3600,21 @@ export default function NetworkDetailsPage(props: PageProps) {
     internetGatewaysCount,
   ]);
 
-  const loadDnses = useCallback(async () => {
-    try {
-      if (!networkId) return;
-      const dnses = (await NetworksService.getDnses()).data;
-      const networkDnses = dnses.filter((dns) => dns.network === networkId);
-      setDnses(networkDnses);
-    } catch (err) {
-      if (err instanceof AxiosError) {
-        notify.error({
-          message: 'Error loading DNSes',
-          description: extractErrorMsg(err),
-        });
-      }
-    }
-  }, [networkId, notify]);
+  // const loadDnses = useCallback(async () => {
+  //   try {
+  //     if (!networkId) return;
+  //     const dnses = (await NetworksService.getDnses()).data;
+  //     const networkDnses = dnses.filter((dns) => dns.network === networkId);
+  //     setDnses(networkDnses);
+  //   } catch (err) {
+  //     if (err instanceof AxiosError) {
+  //       notify.error({
+  //         message: 'Error loading DNSes',
+  //         description: extractErrorMsg(err),
+  //       });
+  //     }
+  //   }
+  // }, [networkId, notify]);
 
   const loadMetrics = useCallback(async () => {
     try {
@@ -3626,6 +3626,32 @@ export default function NetworkDetailsPage(props: PageProps) {
     } catch (err) {
       notify.error({
         message: 'Error loading host metrics',
+        description: extractErrorMsg(err as any),
+      });
+    }
+  }, [networkId, notify]);
+
+  const loadNetworkNodes = useCallback(async () => {
+    try {
+      if (!networkId) return;
+      const nodes = (await NodesService.getNetworkNodes(networkId)).data;
+      setNetworkNodes(nodes);
+    } catch (err) {
+      notify.error({
+        message: 'Error loading network nodes',
+        description: extractErrorMsg(err as any),
+      });
+    }
+  }, [networkId, notify]);
+
+  const loadNetworkDnses = useCallback(async () => {
+    try {
+      if (!networkId) return;
+      const dnses = (await NetworksService.getDnsesPerNetwork(networkId)).data;
+      setDnses(dnses);
+    } catch (err) {
+      notify.error({
+        message: 'Error loading network DNS',
         description: extractErrorMsg(err as any),
       });
     }
@@ -3647,7 +3673,9 @@ export default function NetworkDetailsPage(props: PageProps) {
     setNetwork(network);
 
     // load extra data
-    loadDnses();
+    loadNetworkNodes();
+    loadNetworkDnses();
+    // loadDnses();
     loadAcls();
     loadClients();
 
@@ -3656,7 +3684,18 @@ export default function NetworkDetailsPage(props: PageProps) {
     }
 
     setIsLoading(false);
-  }, [networkId, store.networks, loadDnses, loadAcls, loadClients, isServerEE, navigate, notify, loadMetrics]);
+  }, [
+    networkId,
+    store.networks,
+    loadNetworkNodes,
+    loadNetworkDnses,
+    loadAcls,
+    loadClients,
+    isServerEE,
+    navigate,
+    notify,
+    loadMetrics,
+  ]);
 
   const onNetworkFormEdit = useCallback(async () => {
     try {

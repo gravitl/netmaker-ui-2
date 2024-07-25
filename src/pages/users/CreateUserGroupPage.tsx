@@ -153,7 +153,6 @@ export default function CreateUserGroupPage(props: PageProps) {
       setIsSubmitting(true);
       const metadata = await metadataForm.validateFields();
       const networkRoles = await networkRolesForm.validateFields();
-      // const vpnAccess = await vpnAccessForm.validateFields();
 
       const networkRolesPayload = Object.keys(networkRoles).reduce(
         (acc, nw) => {
@@ -164,10 +163,13 @@ export default function CreateUserGroupPage(props: PageProps) {
       );
 
       await UsersService.createGroup({
-        id: metadata.name,
-        network_roles: networkRolesPayload,
-        meta_data: metadata.metadata,
-        platform_role: metadata.platformRole,
+        members: groupMembers.map((m) => m.username),
+        user_group: {
+          id: metadata.name,
+          network_roles: networkRolesPayload,
+          meta_data: metadata.metadata,
+          platform_role: metadata.platformRole,
+        },
       });
 
       notification.success({ message: 'User group created successfully' });
@@ -177,7 +179,13 @@ export default function CreateUserGroupPage(props: PageProps) {
     } finally {
       setIsSubmitting(false);
     }
-  }, [metadataForm, navigate, networkRolesForm, notify]);
+  }, [groupMembers, metadataForm, navigate, networkRolesForm, notify]);
+
+  const platformRoleVal = Form.useWatch('platformRole', metadataForm);
+
+  useEffect(() => {
+    setGroupMembers([]);
+  }, [platformRoleVal]);
 
   useEffect(() => {
     loadNetworks();
@@ -220,11 +228,11 @@ export default function CreateUserGroupPage(props: PageProps) {
                   <Input placeholder="Enter a name for this new group" style={{ width: '100%' }} />
                 </Form.Item>
               </Col>
-              <Col xs={24} md={12}>
+              {/* <Col xs={24} md={12}>
                 <Form.Item name="auto-assign" label="Auto-assign on startup">
                   <Switch />
                 </Form.Item>
-              </Col>
+              </Col> */}
               <Col xs={24}>
                 <Form.Item name="metadata" label="Group Description" style={{ width: '80%' }}>
                   <Input.TextArea placeholder="Enter a description for this new group" style={{ width: '100%' }} />
@@ -333,8 +341,9 @@ export default function CreateUserGroupPage(props: PageProps) {
         onCancel={() => setIsAddUserModalOpen(false)}
         currentGroupMembers={groupMembers}
         onUserSelected={(user) => {
-          setGroupMembers([...new Set([...groupMembers, user])]);
+          setGroupMembers([...groupMembers, user]);
         }}
+        platformRole={platformRoleVal}
       />
     </Layout.Content>
   );

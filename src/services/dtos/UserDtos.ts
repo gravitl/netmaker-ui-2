@@ -31,3 +31,8 @@ export interface UserInviteReqDto {
   username: string;
   password: string;
 }
+
+export interface CreateUserGroupReqDto {
+  user_group: Partial<UserGroup>;
+  members: string[];
+}
