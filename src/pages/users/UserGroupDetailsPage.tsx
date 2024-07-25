@@ -127,7 +127,8 @@ export default function UserGroupDetailsPage(props: PageProps) {
           <Form.Item
             name={rowData.network_id}
             noStyle
-            initialValue={Object.keys(group?.network_roles ?? {}).find((nw) => nw === rowData.network_id) ?? ''}
+            // initialValue={Object.keys(group?.network_roles ?? {}).find((nw) => nw === rowData.network_id) ?? ''}
+            initialValue={Object.keys(group?.network_roles?.[rowData.network_id] ?? {})?.[0] ?? ''}
           >
             <Select
               style={{ width: '100%' }}
@@ -189,6 +190,8 @@ export default function UserGroupDetailsPage(props: PageProps) {
 
   const updateGroup = useCallback(async () => {
     try {
+      if (!group) throw new Error('Group details did not load. Refresh page');
+
       setIsSubmitting(true);
       const metadata = await metadataForm.validateFields();
       const networkRoles = await networkRolesForm.validateFields();
@@ -202,7 +205,7 @@ export default function UserGroupDetailsPage(props: PageProps) {
       );
 
       await UsersService.updateGroup({
-        id: metadata.name,
+        id: group.id,
         network_roles: networkRolesPayload,
         meta_data: metadata.metadata,
         platform_role: metadata.platformRole,
@@ -215,7 +218,7 @@ export default function UserGroupDetailsPage(props: PageProps) {
     } finally {
       setIsSubmitting(false);
     }
-  }, [metadataForm, navigate, networkRolesForm, notify]);
+  }, [group, metadataForm, navigate, networkRolesForm, notify]);
 
   useEffect(() => {
     loadDetails();
@@ -251,12 +254,7 @@ export default function UserGroupDetailsPage(props: PageProps) {
           <Form form={metadataForm} layout="vertical" style={{ width: '100%' }}>
             <Row gutter={[24, 0]}>
               <Col xs={24} md={12}>
-                <Form.Item
-                  name="name"
-                  label="Group Name"
-                  rules={[{ required: true, whitespace: false }]}
-                  style={{ width: '80%' }}
-                >
+                <Form.Item name="name" label="Group Name" style={{ width: '80%' }}>
                   <Typography.Text style={{ fontWeight: 'bold' }}>{group?.id ?? ''}</Typography.Text>
                 </Form.Item>
               </Col>

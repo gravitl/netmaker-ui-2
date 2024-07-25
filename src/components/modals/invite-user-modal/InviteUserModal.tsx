@@ -43,6 +43,7 @@ export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCan
   const [isLoadingInvites, setIsLoadingInvites] = useState(false);
 
   const resetModal = () => {
+    setCurrentStep(0);
     form.resetFields();
   };
 
