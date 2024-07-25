@@ -14,6 +14,10 @@ function getNodes() {
   return axiosService.get<Node[]>(ApiRoutes.NODES);
 }
 
+function getNetworkNodes(network: Network['netid']) {
+  return axiosService.get<Node[]>(`${ApiRoutes.NODES}/${encodeURIComponent(network)}`);
+}
+
 function approveNode(nodeId: Node['id'], networkId: Network['netid']) {
   return axiosService.post<void>(
     `${ApiRoutes.NODES}/${encodeURIComponent(networkId)}/${encodeURIComponent(nodeId)}/approve`,
@@ -153,6 +157,7 @@ function deleteInternetGateway(nodeId: Node['id'], networkId: Network['netid']) 
 
 export const NodesService = {
   getNodes,
+  getNetworkNodes,
   approveNode,
   createEgressNode,
   createExternalClient,

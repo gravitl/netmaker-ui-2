@@ -47,6 +47,10 @@ function getDnses() {
   return axiosService.get<DNS[]>(`${ApiRoutes.DNS}`);
 }
 
+function getDnsesPerNetwork(network: Network['netid']) {
+  return axiosService.get<DNS[]>(`${ApiRoutes.DNS_ADMIN}/${encodeURIComponent(network)}`);
+}
+
 function deleteDns(networkId: Network['netid'], dnsName: DNS['name']) {
   return axiosService.delete<void>(`${ApiRoutes.DNS}/${encodeURIComponent(networkId)}/${encodeURIComponent(dnsName)}`);
 }
@@ -83,6 +87,7 @@ export const NetworksService = {
   deleteAccessKey,
   createDns,
   getDnses,
+  getDnsesPerNetwork,
   deleteDns,
   getAcls,
   updateAcls,

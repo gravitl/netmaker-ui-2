@@ -3,7 +3,7 @@ import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import '../CustomModal.scss';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { SearchOutlined } from '@ant-design/icons';
-import { User } from '@/models/User';
+import { User, UserRoleId } from '@/models/User';
 import { UsersService } from '@/services/UsersService';
 
 interface AddUsersToGroupModalProps {
@@ -11,6 +11,7 @@ interface AddUsersToGroupModalProps {
   currentGroupMembers: User[];
   onUserSelected: (user: User) => any;
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
+  platformRole?: UserRoleId;
 }
 
 export default function AddUsersToGroupModal({
@@ -18,6 +19,7 @@ export default function AddUsersToGroupModal({
   currentGroupMembers,
   onUserSelected,
   onCancel,
+  platformRole,
 }: AddUsersToGroupModalProps) {
   const [notify, notifyCtx] = notification.useNotification();
 
@@ -25,13 +27,9 @@ export default function AddUsersToGroupModal({
   const [users, setUsers] = useState<User[]>([]);
 
   const filteredUsers = useMemo<User[]>(() => {
-    return (
-      users
-        // .filter((u) => {
-        //   currentGroupMembers.map((m) => m.username).includes(u.username);
-        // })
-        .filter((u) => u.username.toLocaleLowerCase().includes(usersSearch.toLocaleLowerCase()))
-    );
+    return users
+      .filter((u) => !currentGroupMembers.map((m) => m.username).includes(u.username))
+      .filter((u) => u.username.toLocaleLowerCase().includes(usersSearch.toLocaleLowerCase()));
   }, [currentGroupMembers, users, usersSearch]);
 
   const resetModal = () => {};
@@ -84,7 +82,7 @@ export default function AddUsersToGroupModal({
                   size="small"
                   // dataSource={users}
                   dataSource={filteredUsers}
-                  pagination={{ pageSize: 25 }}
+                  pagination={{ pageSize: 25, hideOnSinglePage: true }}
                   columns={[
                     {
                       title: 'Username',
@@ -97,7 +95,16 @@ export default function AddUsersToGroupModal({
                       width: '1rem',
                       render(_, user) {
                         return (
-                          <Button size="small" onClick={() => onUserSelected(user)}>
+                          <Button
+                            size="small"
+                            onClick={() => onUserSelected(user)}
+                            disabled={platformRole ? user.platform_role_id !== platformRole : false}
+                            title={
+                              platformRole && user.platform_role_id !== platformRole
+                                ? `User's platform role (${user.platform_role_id}) conflicts with this groups platform role (${platformRole})`
+                                : ''
+                            }
+                          >
                             Add To Group
                           </Button>
                         );

@@ -258,11 +258,11 @@ export default function UserGroupDetailsPage(props: PageProps) {
                   <Typography.Text style={{ fontWeight: 'bold' }}>{group?.id ?? ''}</Typography.Text>
                 </Form.Item>
               </Col>
-              <Col xs={24} md={12}>
+              {/* <Col xs={24} md={12}>
                 <Form.Item name="auto-assign" label="Auto-assign on startup">
                   <Switch />
                 </Form.Item>
-              </Col>
+              </Col> */}
               <Col xs={24}>
                 <Form.Item
                   name="metadata"
