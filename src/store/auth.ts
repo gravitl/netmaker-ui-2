@@ -1,6 +1,6 @@
 import { StateCreator } from 'zustand';
 import { TenantConfig } from '../models/ServerConfig';
-import { User } from '@/models/User';
+import { User, UserRole } from '@/models/User';
 import { isSaasBuild } from '@/services/BaseService';
 import { isValidJwt } from '@/utils/Utils';
 
@@ -14,11 +14,12 @@ export interface IAuthSlice {
   amuiAuthToken: TenantConfig['amuiAuthToken'];
   amuiUserId: TenantConfig['amuiUserId'];
   user: User | null;
+  userPlatformRole: UserRole | null;
   isNewTenant: TenantConfig['isNewTenant'];
 
   // methods
   isLoggedIn: () => boolean;
-  setStore: (config: Partial<TenantConfig & { user: User }>) => void;
+  setStore: (config: Partial<TenantConfig & { user: User; userPlatformRole: UserRole }>) => void;
   logout: () => void;
 }
 
@@ -33,10 +34,13 @@ const createAuthSlice: StateCreator<IAuthSlice, [], [], IAuthSlice> = (set, get)
   amuiUserId: '',
   user: null,
   isNewTenant: false,
+  userPlatformRole: null,
 
   isLoggedIn() {
     // TODO: fix username retrieval for SaaS
-    return !!get().jwt && isValidJwt(get().jwt || '') && (!isSaasBuild ? !!get().user : true);
+    return (
+      !!get().jwt && isValidJwt(get().jwt || '') && (!isSaasBuild ? !!get().user && !!get().userPlatformRole : true)
+    );
   },
   setStore(config) {
     set(config);
@@ -51,6 +55,7 @@ const createAuthSlice: StateCreator<IAuthSlice, [], [], IAuthSlice> = (set, get)
       amuiAuthToken: '',
       amuiUserId: '',
       user: null,
+      userPlatformRole: null,
     });
   },
 });
