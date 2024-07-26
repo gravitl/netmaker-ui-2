@@ -2,7 +2,7 @@ import { Button, Col, Divider, Form, Input, List, Modal, notification, Row, Sele
 import { MouseEvent, useCallback, useEffect, useState } from 'react';
 import '../CustomModal.scss';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
-import { UserGroup, UserInvite } from '@/models/User';
+import { UserGroup, UserInvite, UserRoleId } from '@/models/User';
 import { UsersService } from '@/services/UsersService';
 import { DeleteOutlined } from '@ant-design/icons';
 import { copyTextToClipboard } from '@/utils/Utils';
@@ -42,6 +42,7 @@ export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCan
   const [isLoadingGroups, setIsLoadingGroups] = useState(false);
   const [userInvites, setUserInvites] = useState<UserInvite[]>([]);
   const [isLoadingInvites, setIsLoadingInvites] = useState(false);
+  const [permittedPlatformRole, setPermittedPlatformRole] = useState<UserRoleId>('');
 
   const resetModal = () => {
     setCurrentStep(0);
@@ -114,6 +115,8 @@ export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCan
     }
   };
 
+  const groupsVal = Form.useWatch('groups', form);
+
   useEffect(() => {
     loadGroups();
   }, [loadGroups]);
@@ -161,11 +164,33 @@ export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCan
                     tooltip="Invited users will be automatically assigned to these groups"
                   >
                     <Select
-                      options={groups.map((g: UserGroup) => ({ value: g.id, label: g.id }))}
+                      options={groups.map((g: UserGroup) => ({
+                        value: g.id,
+                        label: g.id,
+                        disabled: !!permittedPlatformRole && g.platform_role !== permittedPlatformRole,
+                        title:
+                          permittedPlatformRole && g.platform_role !== permittedPlatformRole
+                            ? `This group's platform role (${g.platform_role}) does not match the previously selected group's (${permittedPlatformRole})`
+                            : '',
+                      }))}
                       mode="multiple"
                       placeholder="Select groups the user(s) should be assigned to"
                       loading={isLoadingGroups}
                       allowClear
+                      onSelect={(val) => {
+                        if (permittedPlatformRole) {
+                          return;
+                        }
+                        setPermittedPlatformRole(groups.find((g) => g.id === val)?.platform_role ?? '');
+                      }}
+                      onDeselect={() => {
+                        if (!groupsVal || groupsVal?.length <= 1) {
+                          setPermittedPlatformRole('');
+                        }
+                      }}
+                      onClear={() => {
+                        setPermittedPlatformRole('');
+                      }}
                     />
                   </Form.Item>
                 </Col>
