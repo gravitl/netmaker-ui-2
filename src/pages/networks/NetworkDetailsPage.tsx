@@ -563,6 +563,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       setAcls(acls);
     } catch (err) {
       if (err instanceof AxiosError) {
+        if (err instanceof AxiosError && err.response?.status === 403) return;
         notify.error({
           message: 'Error loading ACLs',
           description: extractErrorMsg(err),
@@ -584,6 +585,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       const networkClients = (await NodesService.getNetworkExternalClients(networkId)).data ?? [];
       setClients(networkClients);
     } catch (err) {
+      if (err instanceof AxiosError && err.response?.status === 403) return;
       notify.error({
         message: 'Error loading clients',
         description: extractErrorMsg(err as any),
@@ -3511,6 +3513,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       const clientMetrics = (await NetworksService.getClientMetrics(networkId)).data ?? {};
       setClientMetrics(clientMetrics);
     } catch (err) {
+      if (err instanceof AxiosError && err.response?.status === 403) return;
       notify.error({
         message: 'Error loading host metrics',
         description: extractErrorMsg(err as any),
@@ -3524,6 +3527,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       const nodes = (await NodesService.getNetworkNodes(networkId)).data;
       setNetworkNodes(nodes);
     } catch (err) {
+      if (err instanceof AxiosError && err.response?.status === 403) return;
       notify.error({
         message: 'Error loading network nodes',
         description: extractErrorMsg(err as any),
@@ -3537,6 +3541,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       const dnses = (await NetworksService.getDnsesPerNetwork(networkId)).data;
       setDnses(dnses);
     } catch (err) {
+      if (err instanceof AxiosError && err.response?.status === 403) return;
       notify.error({
         message: 'Error loading network DNS',
         description: extractErrorMsg(err as any),
