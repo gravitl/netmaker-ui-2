@@ -1,6 +1,5 @@
 import { useStore } from '@/store/store';
 import {
-  CheckOutlined,
   CopyOutlined,
   DeleteOutlined,
   InfoCircleOutlined,
@@ -9,7 +8,6 @@ import {
   QuestionCircleOutlined,
   ReloadOutlined,
   SearchOutlined,
-  StopOutlined,
 } from '@ant-design/icons';
 import {
   Button,
@@ -27,7 +25,6 @@ import {
   TableColumnsType,
   Tabs,
   TabsProps,
-  Tooltip,
   Tour,
   TourProps,
   Typography,
@@ -47,7 +44,6 @@ import { copyTextToClipboard, useBranding } from '@/utils/Utils';
 import RolesPage from './RolesPage';
 import GroupsPage from './GroupsPage';
 import UserDetailsModal from '@/components/modals/user-details-modal/UserDetailsModal';
-import { mockNewUserWithGroup, mockNewUserWithoutGroup } from '@/constants/Types';
 import InviteUserModal from '@/components/modals/invite-user-modal/InviteUserModal';
 
 const USERS_DOCS_URL = 'https://docs.netmaker.io/pro/pro-users.html';
@@ -815,16 +811,14 @@ export default function UsersPage(props: PageProps) {
           isOpen={isUserDetailsModalOpen}
           key={`user-detail-${selectedUser.username}`}
           user={selectedUser}
-          onUpdateUser={() => {
-            // loadUsers();
-            // setUsers(users.map((u) => (u.username === newUser.username ? newUser : u)));
+          onUpdateUser={(newUser) => {
+            setUsers(users.map((u) => (u.username === newUser.username ? newUser : u)));
             setIsUserDetailsModalOpen(false);
-            setIsUpdateUserModalOpen(true);
+            setSelectedUser(null);
           }}
           onCancel={() => {
             setIsUserDetailsModalOpen(false);
-            // setIsUpdateUserModalOpen(false);
-            // setSelectedUser(null);
+            setSelectedUser(null);
           }}
         />
       )}
