@@ -31,6 +31,7 @@ import { NetworksService } from '@/services/NetworksService';
 import { convertNetworkPayloadToUiNetwork } from '@/utils/NetworkUtils';
 import AddUsersToGroupModal from '@/components/modals/add-users-to-group-modal/AddUsersToGroupModal';
 import { deriveUserRoleType } from '@/utils/UserMgmtUtils';
+import CreateNetworkRoleModal from './CreateNetworkRoleModal';
 
 interface metadataFormValues {
   name: string;
@@ -64,6 +65,8 @@ export default function CreateUserGroupPage(props: PageProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
   const [groupMembers, setGroupMembers] = useState<User[]>([]);
+  const [isCreateNetworkRoleModalOpen, setIsCreateNetworkRoleModalOpen] = useState(false);
+  const [currentNetworkId, setCurrentNetworkId] = useState<Network['netid']>('');
 
   const filteredMembers = useMemo(() => {
     return groupMembers.filter((m) => m.username?.toLowerCase().includes(membersSearch.trim().toLowerCase()));
@@ -94,13 +97,24 @@ export default function CreateUserGroupPage(props: PageProps) {
               options={[
                 { label: 'n/a', value: '' },
                 ...rowData.network_roles.map((role) => ({ label: role, value: role })),
+                {
+                  label: '+ Create a new role',
+                  value: 'create-new-role',
+                },
               ]}
+              onSelect={(opt) => {
+                if (opt === 'create-new-role') {
+                  setCurrentNetworkId(rowData.network_id);
+                  networkRolesForm.setFieldsValue({ [rowData.network_id]: '' });
+                  setIsCreateNetworkRoleModalOpen(true);
+                }
+              }}
             />
           </Form.Item>
         ),
       },
     ],
-    [],
+    [networkRolesForm],
   );
 
   const groupMembersTableCols = useMemo<TableColumnProps<User>[]>(
@@ -344,6 +358,18 @@ export default function CreateUserGroupPage(props: PageProps) {
           setGroupMembers([...groupMembers, user]);
         }}
         platformRole={platformRoleVal}
+      />
+      <CreateNetworkRoleModal
+        key={`create-network-role-${currentNetworkId}`}
+        isOpen={isCreateNetworkRoleModalOpen}
+        preferredNetwork={currentNetworkId}
+        onCreateNetworkRole={(role) => {
+          setAvailableUserRoles([...availableUserRoles, role]);
+          networkRolesForm.setFieldValue(currentNetworkId, role.id);
+          setIsCreateNetworkRoleModalOpen(false);
+        }}
+        onCancel={() => setIsCreateNetworkRoleModalOpen(false)}
+        onClose={() => setIsCreateNetworkRoleModalOpen(false)}
       />
     </Layout.Content>
   );
