@@ -63,7 +63,9 @@ export default function MainLayout() {
   );
 
   const userHasFullAccess = useMemo(
-    () => !store.userPlatformRole?.deny_dashboard_access && store.userPlatformRole?.full_access,
+    () =>
+      // !store.userPlatformRole?.deny_dashboard_access &&
+      store.userPlatformRole?.id === 'admin' || store.userPlatformRole?.id === 'super_admin',
     [store.userPlatformRole],
   );
 
