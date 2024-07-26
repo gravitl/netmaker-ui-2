@@ -95,7 +95,7 @@ function denyAllPendingUsers() {
 }
 
 function createRole(role: Partial<UserRole>) {
-  return axiosService.post<UserRole>(ApiRoutes.USER_ROLE, role);
+  return axiosService.post<GenericResponseDto<UserRole>>(ApiRoutes.USER_ROLE, role);
 }
 
 function getRoles() {
