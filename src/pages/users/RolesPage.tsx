@@ -201,14 +201,14 @@ export default function RolesPage(props: RolesPageProps) {
               </Typography.Text>
               <Row style={{ marginTop: '1rem' }}>
                 <Col>
-                  <Dropdown
+                  {/* <Dropdown
                     menu={{
                       items: [
-                        // {
-                        //   key: 'create-platform-role',
-                        //   label: 'Create a Platform Role',
-                        //   onClick: () => {},
-                        // },
+                        {
+                          key: 'create-platform-role',
+                          label: 'Create a Platform Role',
+                          onClick: () => {},
+                        },
                         {
                           key: 'create-network-role',
                           label: <Typography.Text>Create a Network Role</Typography.Text>,
@@ -222,7 +222,16 @@ export default function RolesPage(props: RolesPageProps) {
                     <Button type="primary" size="large" onClick={() => {}}>
                       <PlusOutlined /> Create Role
                     </Button>
-                  </Dropdown>
+                  </Dropdown> */}
+                  <Button
+                    type="primary"
+                    size="large"
+                    onClick={() => {
+                      navigate(resolveAppRoute(AppRoutes.CREATE_NETWORK_ROLE_ROUTE));
+                    }}
+                  >
+                    <PlusOutlined /> Create Network Role
+                  </Button>
                 </Col>
               </Row>
             </Card>
@@ -253,15 +262,15 @@ export default function RolesPage(props: RolesPageProps) {
                 referrerPolicy="no-referrer"
                 icon={<QuestionCircleOutlined />}
               />
-              <Dropdown
+              {/* <Dropdown
                 placement="bottomRight"
                 menu={{
                   items: [
-                    // {
-                    //   key: 'create-platform-role',
-                    //   label: 'Create a Platform Role',
-                    //   onClick: () => {},
-                    // },
+                    {
+                      key: 'create-platform-role',
+                      label: 'Create a Platform Role',
+                      onClick: () => {},
+                    },
                     {
                       key: 'create-network-role',
                       label: 'Create a Network Role',
@@ -275,7 +284,16 @@ export default function RolesPage(props: RolesPageProps) {
                 <Button type="primary" size="large" onClick={() => {}}>
                   <PlusOutlined /> Create Role
                 </Button>
-              </Dropdown>
+              </Dropdown> */}
+              <Button
+                type="primary"
+                size="large"
+                onClick={() => {
+                  navigate(resolveAppRoute(AppRoutes.CREATE_NETWORK_ROLE_ROUTE));
+                }}
+              >
+                <PlusOutlined /> Create Network Role
+              </Button>
             </Col>
           </Row>
           <Row style={{ width: '100%' }}>
