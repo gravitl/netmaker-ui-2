@@ -29,9 +29,12 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { AppRoutes } from '@/routes';
 import { getExtendedNode } from '@/utils/NodeUtils';
 
-const permissionsTabKey = 'permissions';
-const vpnAccessTabKey = 'vpn-access';
-const defaultTabKey = permissionsTabKey;
+const generalTabKey = 'general';
+const hostsTabKey = 'hosts';
+const networksTabKey = 'networks';
+const enrollmentKeysTabKey = 'enrollment-keys';
+const usersTabKey = 'users-access';
+const defaultTabKey = generalTabKey;
 
 interface metadataFormValues {
   name: string;
@@ -190,69 +193,30 @@ export default function PlatformRoleDetailsPage(props: PageProps) {
   }, [navigate, notify, role]);
 
   // ui components
-  const getPermissionsContent = useMemo(() => {
+  const getHostsContent = useMemo(() => {
     return (
       <>
         <Form form={permissionsForm}>
           <Col xs={24}>
             {/* hosts */}
-            {/* <Card
-              size="small"
-              title="Hosts"
-              extra={
-                <Button
-                  type="link"
-                  onClick={() => {
-                    permissionsForm.setFieldsValue({
-                      addHost: true,
-                    });
-                  }}
-                >
-                  Allow All
-                </Button>
-              }
-              style={{ width: '100%', marginBottom: '2rem' }}
-            >
-              <Row
-                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
-                data-nmui-intercom="new-network-role_add-host-to-net"
-              >
-                <Col xs={18}>
-                  <Typography.Text>Can add a host to the network</Typography.Text>
-                </Col>
-                <Col xs={6} style={{ textAlign: 'end' }}>
-                  <Form.Item
-                    name="addHost"
-                    valuePropName="checked"
-                    noStyle
-                    initialValue={props.role.network_level_access?.hosts?.all_host?.create}
-                  >
-                    <Switch />
-                  </Form.Item>
-                </Col>
-              </Row>
-            </Card> */}
-
-            {/* remote access */}
             <Card
               size="small"
-              title="Remote Access"
-              extra={
-                <Button
-                  type="link"
-                  onClick={() => {
-                    permissionsForm.setFieldsValue({
-                      viewRags: true,
-                      createRags: true,
-                      updateRags: true,
-                      deleteRags: true,
-                      connectRags: true,
-                    });
-                  }}
-                >
-                  Allow All
-                </Button>
-              }
+              // extra={
+              //   <Button
+              //     type="link"
+              //     onClick={() => {
+              //       permissionsForm.setFieldsValue({
+              //         viewRags: true,
+              //         createRags: true,
+              //         updateRags: true,
+              //         deleteRags: true,
+              //         connectRags: true,
+              //       });
+              //     }}
+              //   >
+              //     Allow All
+              //   </Button>
+              // }
               style={{ width: '100%', marginBottom: '2rem' }}
             >
               <Row
@@ -466,7 +430,7 @@ export default function PlatformRoleDetailsPage(props: PageProps) {
     );
   }, [permissionsForm, role?.network_level_access, themeToken.colorBorder]);
 
-  const getVpnAccessContent = useMemo(() => {
+  const getNetworksContent = useMemo(() => {
     return (
       <>
         <Form form={vpnAccessForm}>
@@ -537,17 +501,17 @@ export default function PlatformRoleDetailsPage(props: PageProps) {
   const tabs: TabsProps['items'] = useMemo(
     () => [
       {
-        key: permissionsTabKey,
+        key: generalTabKey,
         label: 'Permissions',
-        children: getPermissionsContent,
+        children: getHostsContent,
       },
       {
-        key: vpnAccessTabKey,
+        key: hostsTabKey,
         label: 'VPN Access',
-        children: getVpnAccessContent,
+        children: getNetworksContent,
       },
     ],
-    [getVpnAccessContent, getPermissionsContent],
+    [getNetworksContent, getHostsContent],
   );
 
   useEffect(() => {
@@ -590,18 +554,25 @@ export default function PlatformRoleDetailsPage(props: PageProps) {
           >
             <Row gutter={[24, 0]}>
               <Col xs={24} md={12}>
-                <Form.Item
-                  name="name"
-                  label="Role Name"
-                  // rules={[{ required: true, whitespace: false }]}
-                  style={{ width: '80%' }}
-                >
+                <Form.Item name="name" label="Role Name" style={{ width: '80%' }}>
                   <Typography.Text style={{ fontWeight: 'bold' }}>{role?.id ?? ''}</Typography.Text>
                 </Form.Item>
               </Col>
               <Col xs={24} md={12}>
-                <Form.Item name="network" label="Specify the network this role will apply to" style={{ width: '80%' }}>
-                  <Typography.Text style={{ fontWeight: 'bold' }}>{role?.network_id ?? ''}</Typography.Text>
+                <Form.Item name="default" label="Specify the network this role will apply to" style={{ width: '80%' }}>
+                  <Typography.Text style={{ fontWeight: 'bold' }}>{role?.default ?? ''}</Typography.Text>
+                </Form.Item>
+              </Col>
+              <Col xs={24} md={12}>
+                <Form.Item name="deny_dashboard_access" label="Has dashboard access" style={{ width: '80%' }}>
+                  <Typography.Text style={{ fontWeight: 'bold' }}>
+                    {role?.deny_dashboard_access ? 'No' : 'Yes'}
+                  </Typography.Text>
+                </Form.Item>
+              </Col>
+              <Col xs={24} md={12}>
+                <Form.Item name="full_access" label="Has full access to all tenant resources" style={{ width: '80%' }}>
+                  <Typography.Text style={{ fontWeight: 'bold' }}>{role?.full_access ? 'Yes' : 'No'}</Typography.Text>
                 </Form.Item>
               </Col>
             </Row>
@@ -617,7 +588,7 @@ export default function PlatformRoleDetailsPage(props: PageProps) {
           </Col>
         </Row>
 
-        <Row
+        {/* <Row
           className="tabbed-page-row-padding"
           style={{
             position: 'fixed',
@@ -647,7 +618,7 @@ export default function PlatformRoleDetailsPage(props: PageProps) {
               <EditOutlined /> Update Role
             </Button>
           </Col>
-        </Row>
+        </Row> */}
       </Skeleton>
 
       {/* misc */}

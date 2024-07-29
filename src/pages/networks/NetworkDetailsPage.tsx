@@ -235,7 +235,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     // addRAGateway: 10,
   });
   const [isSetNetworkFailoverModalOpen, setIsSetNetworkFailoverModalOpen] = useState(false);
-  const [networkNodes, setNetworkNodes] = useState<ExtendedNode[]>([]);
+  // const [networkNodes, setNetworkNodes] = useState<ExtendedNode[]>([]);
 
   const overviewTabContainerRef = useRef(null);
   const hostsTabContainerTableRef = useRef(null);
@@ -291,13 +291,13 @@ export default function NetworkDetailsPage(props: PageProps) {
   const metricsTabUptimeTableRef = useRef(null);
   const metricsTabClientsTableRef = useRef(null);
 
-  // const networkNodes = useMemo(
-  //   () =>
-  //     store.nodes
-  //       .map((node) => getExtendedNode(node, store.hostsCommonDetails))
-  //       .filter((node) => node.network === networkId),
-  //   [store.nodes, store.hostsCommonDetails, networkId],
-  // );
+  const networkNodes = useMemo(
+    () =>
+      store.nodes
+        .map((node) => getExtendedNode(node, store.hostsCommonDetails))
+        .filter((node) => node.network === networkId),
+    [store.nodes, store.hostsCommonDetails, networkId],
+  );
 
   const filteredNetworkNodes = useMemo<ExtendedNode[]>(
     () =>
@@ -3521,19 +3521,19 @@ export default function NetworkDetailsPage(props: PageProps) {
     }
   }, [networkId, notify]);
 
-  const loadNetworkNodes = useCallback(async () => {
-    try {
-      if (!networkId) return;
-      const nodes = (await NodesService.getNetworkNodes(networkId)).data;
-      setNetworkNodes(nodes);
-    } catch (err) {
-      if (err instanceof AxiosError && err.response?.status === 403) return;
-      notify.error({
-        message: 'Error loading network nodes',
-        description: extractErrorMsg(err as any),
-      });
-    }
-  }, [networkId, notify]);
+  // const loadNetworkNodes = useCallback(async () => {
+  //   try {
+  //     if (!networkId) return;
+  //     const nodes = (await NodesService.getNetworkNodes(networkId)).data;
+  //     setNetworkNodes(nodes);
+  //   } catch (err) {
+  //     if (err instanceof AxiosError && err.response?.status === 403) return;
+  //     notify.error({
+  //       message: 'Error loading network nodes',
+  //       description: extractErrorMsg(err as any),
+  //     });
+  //   }
+  // }, [networkId, notify]);
 
   const loadNetworkDnses = useCallback(async () => {
     try {
@@ -3565,7 +3565,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     setNetwork(network);
 
     // load extra data
-    loadNetworkNodes();
+    // loadNetworkNodes();
     loadNetworkDnses();
     loadAcls();
     loadClients();
@@ -3578,7 +3578,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   }, [
     networkId,
     store.networks,
-    loadNetworkNodes,
+    // loadNetworkNodes,
     loadNetworkDnses,
     loadAcls,
     loadClients,
