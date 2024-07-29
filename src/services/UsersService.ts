@@ -13,7 +13,9 @@ function getUsers() {
 }
 
 function getUser(username: User['username']) {
-  return axiosService.get<User>(`${ApiRoutes.USERS}/${encodeURIComponent(username)}`);
+  return axiosService.get<GenericResponseDto<User & { platform_role: UserRole }>>(
+    `${ApiRoutes.USERS_V1}?username=${encodeURIComponent(username)}`,
+  );
 }
 
 function serverHasAdmin() {

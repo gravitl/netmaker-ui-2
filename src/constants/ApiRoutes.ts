@@ -25,4 +25,5 @@ export class ApiRoutes {
   static USERS_INVITE = '/v1/users/invite';
   static USERS_INVITES = '/v1/users/invites';
   static USERS_INVITE_SIGNUP = '/v1/users/invite-signup';
+  static USERS_V1 = '/v1/users';
 }

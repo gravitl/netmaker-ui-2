@@ -47,8 +47,8 @@ export default function LoginPage(props: LoginPageProps) {
 
   const getUserAndUpdateInStore = async (username: User['username']) => {
     try {
-      const user = await (await UsersService.getUser(username)).data;
-      const userPlatformRole: UserRole = (await UsersService.getRole(user.platform_role_id)).data.Response;
+      const user = await (await UsersService.getUser(username)).data.Response;
+      const userPlatformRole: UserRole = user.platform_role;
       if (userPlatformRole.deny_dashboard_access) {
         notify.error({
           message: 'Failed to login',
