@@ -417,7 +417,7 @@ export default function UsersPage(props: PageProps) {
   const getUserAndUpdateInStore = async (username: User['username'] | undefined) => {
     if (!username) return;
     try {
-      const user = await (await UsersService.getUser(username)).data;
+      const user: User = await (await UsersService.getUser(username)).data.Response;
       store.setStore({ user });
     } catch (err) {
       notify.error({ message: 'Failed to get user details', description: extractErrorMsg(err as any) });
