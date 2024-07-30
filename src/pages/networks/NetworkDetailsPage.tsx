@@ -2563,39 +2563,41 @@ export default function NetworkDetailsPage(props: PageProps) {
         {!isEmpty && (
           <>
             <Row>
-              <Row style={{ width: '100%' }}>
-                <Col
-                  style={{
-                    marginBottom: '1rem',
-                    background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
-                    padding: '1rem',
-                    width: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                  }}
-                >
-                  <span>
-                    Introducing the Remote Access Client (RAC) - a graphical user interface (GUI) tool designed for
-                    convenient connectivity to a Netmaker network. RAC is particularly well-suited for offsite machines
-                    requiring access to a Netmaker network and is compatible with Windows, Mac, Linux and mobile
-                    (Android, iOS) operating systems.
-                  </span>
-                  <Button
-                    // href={ExternalLinks.RAC_DOWNLOAD_DOCS_LINK}
-                    onClick={() => setIsDownloadRemoteAccessClientModalOpen(true)}
-                    target="_blank"
-                    rel="noreferrer"
-                    type="primary"
+              {isServerEE && (
+                <Row style={{ width: '100%' }}>
+                  <Col
                     style={{
-                      marginLeft: 'auto',
+                      marginBottom: '1rem',
+                      background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
+                      padding: '1rem',
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
                     }}
-                    ref={remoteAccessTabDownloadClientRef}
                   >
-                    {' '}
-                    Download RAC
-                  </Button>
-                </Col>
-              </Row>
+                    <span>
+                      Introducing the Remote Access Client (RAC) - a graphical user interface (GUI) tool designed for
+                      convenient connectivity to a Netmaker network. RAC is particularly well-suited for offsite
+                      machines requiring access to a Netmaker network and is compatible with Windows, Mac, Linux and
+                      mobile (Android, iOS) operating systems.
+                    </span>
+                    <Button
+                      // href={ExternalLinks.RAC_DOWNLOAD_DOCS_LINK}
+                      onClick={() => setIsDownloadRemoteAccessClientModalOpen(true)}
+                      target="_blank"
+                      rel="noreferrer"
+                      type="primary"
+                      style={{
+                        marginLeft: 'auto',
+                      }}
+                      ref={remoteAccessTabDownloadClientRef}
+                    >
+                      {' '}
+                      Download RAC
+                    </Button>
+                  </Col>
+                </Row>
+              )}
 
               <Row style={{ width: '100%' }}>
                 <Col xs={24} xl={12} style={{ marginBottom: '2rem' }}>
