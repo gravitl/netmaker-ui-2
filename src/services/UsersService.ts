@@ -100,7 +100,10 @@ function createRole(role: Partial<UserRole>) {
   return axiosService.post<GenericResponseDto<UserRole>>(ApiRoutes.USER_ROLE, role);
 }
 
-function getRoles() {
+function getRoles(roleType: 'network-role' | 'platfrom-role' = 'network-role') {
+  if (roleType === 'platfrom-role') {
+    return axiosService.get<GenericResponseDto<UserRole[]>>(`${ApiRoutes.USER_ROLES}?platform=true`);
+  }
   return axiosService.get<GenericResponseDto<UserRole[]>>(ApiRoutes.USER_ROLES);
 }
 

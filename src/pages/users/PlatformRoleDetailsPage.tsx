@@ -4,6 +4,7 @@ import {
   Button,
   Card,
   Col,
+  Divider,
   Form,
   Input,
   Layout,
@@ -29,12 +30,11 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { AppRoutes } from '@/routes';
 import { getExtendedNode } from '@/utils/NodeUtils';
 
-const generalTabKey = 'general';
 const hostsTabKey = 'hosts';
 const networksTabKey = 'networks';
 const enrollmentKeysTabKey = 'enrollment-keys';
 const usersTabKey = 'users-access';
-const defaultTabKey = generalTabKey;
+const defaultTabKey = hostsTabKey;
 
 interface metadataFormValues {
   name: string;
@@ -70,12 +70,16 @@ export default function PlatformRoleDetailsPage(props: PageProps) {
   const [role, setRole] = useState<UserRole | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [metadataForm] = Form.useForm<metadataFormValues>();
-  const [permissionsForm] = Form.useForm<permissionsFormValues>();
-  const [vpnAccessForm] = Form.useForm<vpnAccessFormValues>();
+  const [hostsPermissionsForm] = Form.useForm<permissionsFormValues>();
+  const [networksPermissionsForm] = Form.useForm<vpnAccessFormValues>();
+  const [enrollmentKeysPermissionsForm] = Form.useForm<vpnAccessFormValues>();
+  const [usersPermissionsForm] = Form.useForm<vpnAccessFormValues>();
   const [activeTab, setActiveTab] = useState(defaultTabKey);
   const [canUpdate, setCanUpdate] = useState(false);
   const [searchRag, setSearchRag] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const fullAccessVal = Form.useWatch('full_access', metadataForm);
 
   // Form.useWatch(() => {
   //   setCanUpdate(true);
@@ -112,65 +116,65 @@ export default function PlatformRoleDetailsPage(props: PageProps) {
     }
   }, [roleId, navigate]);
 
-  const updateNetworkRole = useCallback(async () => {
-    try {
-      if (!role) {
-        notify.error({ message: 'An error occured. Cannot update role' });
-        return;
-      }
-      setIsSubmitting(true);
-      const permissions = await permissionsForm.validateFields();
-      const vpnAccess = await vpnAccessForm.validateFields();
-      UsersService.updateRole({
-        ...role,
-        // default: false,
-        // denyDashboardAccess: false,
-        // fullAccess: false,
-        // globalLevelAccess: null,
-        network_level_access: {
-          remote_access_gw: {
-            all_remote_access_gw: {
-              create: permissions.createRags,
-              read: permissions.viewRags,
-              update: permissions.updateRags,
-              delete: permissions.deleteRags,
-              vpn_access: permissions.connectRags,
-            },
-            ...Object.keys(vpnAccess).reduce(
-              (acc, key) => {
-                if (vpnAccess[key]) {
-                  acc[key] = {
-                    create: false,
-                    read: false,
-                    update: false,
-                    delete: false,
-                    vpn_access: permissions.connectRags,
-                  };
-                }
-                return acc;
-              },
-              {} as { [k: string]: RsrcPermissionScope },
-            ),
-          },
-          extclients: {
-            all_extclients: {
-              create: permissions.createClients,
-              read: permissions.viewClients,
-              update: permissions.updateClients,
-              delete: permissions.deleteClients,
-              vpn_access: permissions.connectClients,
-            },
-          },
-        },
-      });
-      setCanUpdate(false);
-      notification.success({ message: 'Network role created successfully' });
-    } catch (e: any) {
-      notify.error({ message: 'Failed to create network role', description: extractErrorMsg(e) });
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [notify, permissionsForm, role, vpnAccessForm]);
+  // const updatePlatformRole = useCallback(async () => {
+  //   try {
+  //     if (!role) {
+  //       notify.error({ message: 'An error occured. Cannot update role' });
+  //       return;
+  //     }
+  //     setIsSubmitting(true);
+  //     const permissions = await hostsPermissionsForm.validateFields();
+  //     const vpnAccess = await vpnAccessForm.validateFields();
+  //     UsersService.updateRole({
+  //       ...role,
+  //       // default: false,
+  //       // denyDashboardAccess: false,
+  //       // fullAccess: false,
+  //       // globalLevelAccess: null,
+  //       network_level_access: {
+  //         remote_access_gw: {
+  //           all_remote_access_gw: {
+  //             create: permissions.createRags,
+  //             read: permissions.viewRags,
+  //             update: permissions.updateRags,
+  //             delete: permissions.deleteRags,
+  //             vpn_access: permissions.connectRags,
+  //           },
+  //           ...Object.keys(vpnAccess).reduce(
+  //             (acc, key) => {
+  //               if (vpnAccess[key]) {
+  //                 acc[key] = {
+  //                   create: false,
+  //                   read: false,
+  //                   update: false,
+  //                   delete: false,
+  //                   vpn_access: permissions.connectRags,
+  //                 };
+  //               }
+  //               return acc;
+  //             },
+  //             {} as { [k: string]: RsrcPermissionScope },
+  //           ),
+  //         },
+  //         extclients: {
+  //           all_extclients: {
+  //             create: permissions.createClients,
+  //             read: permissions.viewClients,
+  //             update: permissions.updateClients,
+  //             delete: permissions.deleteClients,
+  //             vpn_access: permissions.connectClients,
+  //           },
+  //         },
+  //       },
+  //     });
+  //     setCanUpdate(false);
+  //     notification.success({ message: 'Network role created successfully' });
+  //   } catch (e: any) {
+  //     notify.error({ message: 'Failed to create network role', description: extractErrorMsg(e) });
+  //   } finally {
+  //     setIsSubmitting(false);
+  //   }
+  // }, [notify, hostsPermissionsForm, role, vpnAccessForm]);
 
   const confirmDeleteRole = useCallback(() => {
     if (!role) {
@@ -196,7 +200,7 @@ export default function PlatformRoleDetailsPage(props: PageProps) {
   const getHostsContent = useMemo(() => {
     return (
       <>
-        <Form form={permissionsForm}>
+        <Form form={hostsPermissionsForm}>
           <Col xs={24}>
             {/* hosts */}
             <Card
@@ -221,17 +225,17 @@ export default function PlatformRoleDetailsPage(props: PageProps) {
             >
               <Row
                 style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
-                data-nmui-intercom="new-network-role_view-rags"
+                data-nmui-intercom="new-platform-role_register-hosts"
               >
                 <Col xs={18}>
-                  <Typography.Text>Can view remote access gateways</Typography.Text>
+                  <Typography.Text>Can register new hosts</Typography.Text>
                 </Col>
                 <Col xs={6} style={{ textAlign: 'end' }}>
                   <Form.Item
-                    name="viewRags"
+                    name="createHosts"
                     valuePropName="checked"
                     noStyle
-                    initialValue={role?.network_level_access?.remote_access_gw?.all_remote_access_gw?.read}
+                    initialValue={role?.full_access || role?.global_level_access?.hosts?.all_host?.create}
                   >
                     <Switch />
                   </Form.Item>
@@ -239,17 +243,17 @@ export default function PlatformRoleDetailsPage(props: PageProps) {
               </Row>
               <Row
                 style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
-                data-nmui-intercom="new-network-role_create-rags"
+                data-nmui-intercom="new-platform-role_update-hosts"
               >
                 <Col xs={18}>
-                  <Typography.Text>Can create remote access gateways</Typography.Text>
+                  <Typography.Text>Can update hosts</Typography.Text>
                 </Col>
                 <Col xs={6} style={{ textAlign: 'end' }}>
                   <Form.Item
-                    name="createRags"
+                    name="updateHosts"
                     valuePropName="checked"
                     noStyle
-                    initialValue={role?.network_level_access?.remote_access_gw?.all_remote_access_gw?.create}
+                    initialValue={role?.full_access || role?.global_level_access?.hosts?.all_host?.update}
                   >
                     <Switch />
                   </Form.Item>
@@ -257,17 +261,17 @@ export default function PlatformRoleDetailsPage(props: PageProps) {
               </Row>
               <Row
                 style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
-                data-nmui-intercom="new-network-role_update-rags"
+                data-nmui-intercom="new-platform-role_delete-hosts"
               >
                 <Col xs={18}>
-                  <Typography.Text>Can update remote access gateways</Typography.Text>
+                  <Typography.Text>Can delete hosts</Typography.Text>
                 </Col>
                 <Col xs={6} style={{ textAlign: 'end' }}>
                   <Form.Item
-                    name="updateRags"
+                    name="deleteHosts"
                     valuePropName="checked"
                     noStyle
-                    initialValue={role?.network_level_access?.remote_access_gw?.all_remote_access_gw?.update}
+                    initialValue={role?.full_access || role?.global_level_access?.hosts?.all_host?.delete}
                   >
                     <Switch />
                   </Form.Item>
@@ -275,17 +279,17 @@ export default function PlatformRoleDetailsPage(props: PageProps) {
               </Row>
               <Row
                 style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
-                data-nmui-intercom="new-network-role_delete-rags"
+                data-nmui-intercom="new-platform-role_join-hosts"
               >
                 <Col xs={18}>
-                  <Typography.Text>Can delete remote access gateways</Typography.Text>
+                  <Typography.Text>Can join hosts to networks</Typography.Text>
                 </Col>
                 <Col xs={6} style={{ textAlign: 'end' }}>
                   <Form.Item
-                    name="deleteRags"
+                    name="joinHosts"
                     valuePropName="checked"
                     noStyle
-                    initialValue={role?.network_level_access?.remote_access_gw?.all_remote_access_gw?.delete}
+                    initialValue={role?.full_access || role?.global_level_access?.hosts?.all_host?.create}
                   >
                     <Switch />
                   </Form.Item>
@@ -293,131 +297,17 @@ export default function PlatformRoleDetailsPage(props: PageProps) {
               </Row>
               <Row
                 style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
-                data-nmui-intercom="new-network-role_connect-rags"
+                data-nmui-intercom="new-platform-role_remove-hosts"
               >
                 <Col xs={18}>
-                  <Typography.Text>Can connect to remote access gateways</Typography.Text>
+                  <Typography.Text>Can remove hosts from networks</Typography.Text>
                 </Col>
                 <Col xs={6} style={{ textAlign: 'end' }}>
                   <Form.Item
-                    name="connectRags"
+                    name="removeHosts"
                     valuePropName="checked"
                     noStyle
-                    initialValue={role?.network_level_access?.remote_access_gw?.all_remote_access_gw?.vpn_access}
-                  >
-                    <Switch />
-                  </Form.Item>
-                </Col>
-              </Row>
-            </Card>
-
-            {/* vpn clients */}
-            <Card
-              size="small"
-              title="VPN Clients"
-              extra={
-                <Button
-                  type="link"
-                  onClick={() => {
-                    permissionsForm.setFieldsValue({
-                      viewClients: true,
-                      createClients: true,
-                      updateClients: true,
-                      deleteClients: true,
-                      connectClients: true,
-                    });
-                  }}
-                >
-                  Allow All
-                </Button>
-              }
-              style={{ width: '100%', marginBottom: '2rem' }}
-            >
-              <Row
-                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
-                data-nmui-intercom="new-network-role_view-clients"
-              >
-                <Col xs={18}>
-                  <Typography.Text>Can view VPN clients</Typography.Text>
-                </Col>
-                <Col xs={6} style={{ textAlign: 'end' }}>
-                  <Form.Item
-                    name="viewClients"
-                    valuePropName="checked"
-                    noStyle
-                    initialValue={role?.network_level_access?.extclients?.all_extclients?.read}
-                  >
-                    <Switch />
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Row
-                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
-                data-nmui-intercom="new-network-role_create-clients"
-              >
-                <Col xs={18}>
-                  <Typography.Text>Can create VPN clients</Typography.Text>
-                </Col>
-                <Col xs={6} style={{ textAlign: 'end' }}>
-                  <Form.Item
-                    name="createClients"
-                    valuePropName="checked"
-                    noStyle
-                    initialValue={role?.network_level_access?.extclients?.all_extclients?.create}
-                  >
-                    <Switch />
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Row
-                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
-                data-nmui-intercom="new-network-role_update-clients"
-              >
-                <Col xs={18}>
-                  <Typography.Text>Can update VPN clients</Typography.Text>
-                </Col>
-                <Col xs={6} style={{ textAlign: 'end' }}>
-                  <Form.Item
-                    name="updateClients"
-                    valuePropName="checked"
-                    noStyle
-                    initialValue={role?.network_level_access?.extclients?.all_extclients?.update}
-                  >
-                    <Switch />
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Row
-                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
-                data-nmui-intercom="new-network-role_delete-clients"
-              >
-                <Col xs={18}>
-                  <Typography.Text>Can delete VPN clients</Typography.Text>
-                </Col>
-                <Col xs={6} style={{ textAlign: 'end' }}>
-                  <Form.Item
-                    name="deleteClients"
-                    valuePropName="checked"
-                    noStyle
-                    initialValue={role?.network_level_access?.extclients?.all_extclients?.delete}
-                  >
-                    <Switch />
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Row
-                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
-                data-nmui-intercom="new-network-role_connect-clients"
-              >
-                <Col xs={18}>
-                  <Typography.Text>Can connect to VPN clients</Typography.Text>
-                </Col>
-                <Col xs={6} style={{ textAlign: 'end' }}>
-                  <Form.Item
-                    name="connectClients"
-                    valuePropName="checked"
-                    noStyle
-                    initialValue={role?.network_level_access?.extclients?.all_extclients?.vpn_access}
+                    initialValue={role?.full_access || role?.global_level_access?.hosts?.all_host?.update}
                   >
                     <Switch />
                   </Form.Item>
@@ -428,90 +318,465 @@ export default function PlatformRoleDetailsPage(props: PageProps) {
         </Form>
       </>
     );
-  }, [permissionsForm, role?.network_level_access, themeToken.colorBorder]);
+  }, [hostsPermissionsForm, role, themeToken.colorBorder]);
 
   const getNetworksContent = useMemo(() => {
     return (
       <>
-        <Form form={vpnAccessForm}>
-          <Row style={{ marginBottom: '2rem' }}>
-            <Col xs={20}>Select the Remote Access Gateways users with this role will be able to connect through</Col>
-            <Col xs={4} style={{ textAlign: 'end' }}>
-              <Button
-                type="primary"
-                size="small"
-                onClick={() => {
-                  vpnAccessForm.setFieldsValue(
-                    filteredRags.reduce(
-                      (acc, rag) => {
-                        acc[rag.id] = true;
-                        return acc;
-                      },
-                      {} as { [key: string]: boolean },
-                    ),
-                  );
-                }}
+        <Form form={networksPermissionsForm}>
+          <Col xs={24}>
+            {/* networks */}
+            <Card
+              size="small"
+              // extra={
+              //   <Button
+              //     type="link"
+              //     onClick={() => {
+              //       permissionsForm.setFieldsValue({
+              //         viewRags: true,
+              //         createRags: true,
+              //         updateRags: true,
+              //         deleteRags: true,
+              //         connectRags: true,
+              //       });
+              //     }}
+              //   >
+              //     Allow All
+              //   </Button>
+              // }
+              style={{ width: '100%', marginBottom: '2rem' }}
+            >
+              <Row
+                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+                data-nmui-intercom="new-platform-role_create-networks"
               >
-                Enable Filtered Gateways
-              </Button>
-            </Col>
-            <Col xs={24} style={{ paddingTop: '1rem' }}>
-              <Input
-                placeholder="Search Remote Access Gateways..."
-                allowClear
-                value={searchRag}
-                onChange={(ev) => setSearchRag(ev.target.value)}
-              />
-            </Col>
-          </Row>
-          <Row style={{ marginBottom: '2rem' }}>
-            <Col xs={24}>
-              <List
-                bordered
-                itemLayout="horizontal"
-                dataSource={filteredRags}
-                renderItem={(rag) => (
-                  <List.Item
-                    actions={[
-                      <Form.Item
-                        key={rag.id}
-                        name={rag.id}
-                        valuePropName="checked"
-                        noStyle
-                        initialValue={(role?.network_level_access?.remote_access_gw as any)?.[rag.id]?.vpn_access}
-                      >
-                        <Switch title="You cannot change this setting this in this app version" />
-                      </Form.Item>,
-                    ]}
+                <Col xs={18}>
+                  <Typography.Text>Can create networks</Typography.Text>
+                </Col>
+                <Col xs={6} style={{ textAlign: 'end' }}>
+                  <Form.Item
+                    name="createNetworks"
+                    valuePropName="checked"
+                    noStyle
+                    initialValue={role?.full_access || role?.global_level_access?.networks?.all_network?.create}
                   >
-                    <List.Item.Meta
-                      title={rag.name ?? ''}
-                      description={rag.metadata || 'No metadata available for this Gateway'}
-                    />
-                  </List.Item>
-                )}
-              />
-            </Col>
-          </Row>
+                    <Switch />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row
+                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+                data-nmui-intercom="new-platform-role_view-networks"
+              >
+                <Col xs={18}>
+                  <Typography.Text>Can view networks</Typography.Text>
+                </Col>
+                <Col xs={6} style={{ textAlign: 'end' }}>
+                  <Form.Item
+                    name="viewNetworks"
+                    valuePropName="checked"
+                    noStyle
+                    initialValue={role?.full_access || role?.global_level_access?.networks?.all_network?.read}
+                  >
+                    <Switch />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row
+                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+                data-nmui-intercom="new-platform-role_update-networks"
+              >
+                <Col xs={18}>
+                  <Typography.Text>Can update networks</Typography.Text>
+                </Col>
+                <Col xs={6} style={{ textAlign: 'end' }}>
+                  <Form.Item
+                    name="updateNetworks"
+                    valuePropName="checked"
+                    noStyle
+                    initialValue={role?.full_access || role?.global_level_access?.networks?.all_network?.update}
+                  >
+                    <Switch />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row
+                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+                data-nmui-intercom="new-platform-role_delete-networks"
+              >
+                <Col xs={18}>
+                  <Typography.Text>Can delete networks</Typography.Text>
+                </Col>
+                <Col xs={6} style={{ textAlign: 'end' }}>
+                  <Form.Item
+                    name="deleteNetworks"
+                    valuePropName="checked"
+                    noStyle
+                    initialValue={role?.full_access || role?.global_level_access?.networks?.all_network?.delete}
+                  >
+                    <Switch />
+                  </Form.Item>
+                </Col>
+              </Row>
+            </Card>
+          </Col>
         </Form>
       </>
     );
-  }, [filteredRags, role?.network_level_access?.remote_access_gw, searchRag, vpnAccessForm]);
+  }, [networksPermissionsForm, role, themeToken.colorBorder]);
+
+  const getEnrollmenKeysContent = useMemo(() => {
+    return (
+      <>
+        <Form form={enrollmentKeysPermissionsForm}>
+          <Col xs={24}>
+            {/* enrollment-keys */}
+            <Card
+              size="small"
+              // extra={
+              //   <Button
+              //     type="link"
+              //     onClick={() => {
+              //       permissionsForm.setFieldsValue({
+              //         viewRags: true,
+              //         createRags: true,
+              //         updateRags: true,
+              //         deleteRags: true,
+              //         connectRags: true,
+              //       });
+              //     }}
+              //   >
+              //     Allow All
+              //   </Button>
+              // }
+              style={{ width: '100%', marginBottom: '2rem' }}
+            >
+              <Row
+                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+                data-nmui-intercom="new-platform-role_create-enrollment-key"
+              >
+                <Col xs={18}>
+                  <Typography.Text>Can create enrollment key</Typography.Text>
+                </Col>
+                <Col xs={6} style={{ textAlign: 'end' }}>
+                  <Form.Item
+                    name="createEnrollmentKeys"
+                    valuePropName="checked"
+                    noStyle
+                    initialValue={
+                      role?.full_access || role?.global_level_access?.enrollment_key?.all_enrollment_key?.create
+                    }
+                  >
+                    <Switch />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row
+                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+                data-nmui-intercom="new-platform-role_update-enrollment-keys"
+              >
+                <Col xs={18}>
+                  <Typography.Text>Can update enrollment keys</Typography.Text>
+                </Col>
+                <Col xs={6} style={{ textAlign: 'end' }}>
+                  <Form.Item
+                    name="updateEnrollmentKeys"
+                    valuePropName="checked"
+                    noStyle
+                    initialValue={
+                      role?.full_access || role?.global_level_access?.enrollment_key?.all_enrollment_key?.update
+                    }
+                  >
+                    <Switch />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row
+                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+                data-nmui-intercom="new-platform-role_delete-enrollment-keys"
+              >
+                <Col xs={18}>
+                  <Typography.Text>Can delete enrollment keys</Typography.Text>
+                </Col>
+                <Col xs={6} style={{ textAlign: 'end' }}>
+                  <Form.Item
+                    name="deleteEnrollmentKeys"
+                    valuePropName="checked"
+                    noStyle
+                    initialValue={
+                      role?.full_access || role?.global_level_access?.enrollment_key?.all_enrollment_key?.delete
+                    }
+                  >
+                    <Switch />
+                  </Form.Item>
+                </Col>
+              </Row>
+            </Card>
+          </Col>
+        </Form>
+      </>
+    );
+  }, [enrollmentKeysPermissionsForm, role, themeToken.colorBorder]);
+
+  const getUsersContent = useMemo(() => {
+    return (
+      <>
+        <Form form={usersPermissionsForm}>
+          <Col xs={24}>
+            {/* users */}
+            <Card
+              size="small"
+              // extra={
+              //   <Button
+              //     type="link"
+              //     onClick={() => {
+              //       permissionsForm.setFieldsValue({
+              //         viewRags: true,
+              //         createRags: true,
+              //         updateRags: true,
+              //         deleteRags: true,
+              //         connectRags: true,
+              //       });
+              //     }}
+              //   >
+              //     Allow All
+              //   </Button>
+              // }
+              style={{ width: '100%', marginBottom: '2rem' }}
+            >
+              <Row
+                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+                data-nmui-intercom="new-platform-role_create-users"
+              >
+                <Col xs={18}>
+                  <Typography.Text>Can create users</Typography.Text>
+                </Col>
+                <Col xs={6} style={{ textAlign: 'end' }}>
+                  <Form.Item
+                    name="createUsers"
+                    valuePropName="checked"
+                    noStyle
+                    initialValue={role?.full_access || role?.global_level_access?.users?.all_user?.create}
+                  >
+                    <Switch />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row
+                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+                data-nmui-intercom="new-platform-role_update-users"
+              >
+                <Col xs={18}>
+                  <Typography.Text>Can update users</Typography.Text>
+                </Col>
+                <Col xs={6} style={{ textAlign: 'end' }}>
+                  <Form.Item
+                    name="updateUsers"
+                    valuePropName="checked"
+                    noStyle
+                    initialValue={role?.full_access || role?.global_level_access?.users?.all_user?.update}
+                  >
+                    <Switch />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row
+                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+                data-nmui-intercom="new-platform-role_delete-users"
+              >
+                <Col xs={18}>
+                  <Typography.Text>Can delete users</Typography.Text>
+                </Col>
+                <Col xs={6} style={{ textAlign: 'end' }}>
+                  <Form.Item
+                    name="deleteUsers"
+                    valuePropName="checked"
+                    noStyle
+                    initialValue={role?.full_access || role?.global_level_access?.users?.all_user?.delete}
+                  >
+                    <Switch />
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              <Divider />
+              <Row
+                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+                data-nmui-intercom="new-platform-role_create-user-groups"
+              >
+                <Col xs={18}>
+                  <Typography.Text>Can create user groups</Typography.Text>
+                </Col>
+                <Col xs={6} style={{ textAlign: 'end' }}>
+                  <Form.Item
+                    name="createUsers"
+                    valuePropName="checked"
+                    noStyle
+                    initialValue={role?.full_access || role?.global_level_access?.users?.all_user?.create}
+                  >
+                    <Switch />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row
+                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+                data-nmui-intercom="new-platform-role_view-user-groups"
+              >
+                <Col xs={18}>
+                  <Typography.Text>Can view user groups</Typography.Text>
+                </Col>
+                <Col xs={6} style={{ textAlign: 'end' }}>
+                  <Form.Item
+                    name="viewUsers"
+                    valuePropName="checked"
+                    noStyle
+                    initialValue={role?.full_access || role?.global_level_access?.users?.all_user?.read}
+                  >
+                    <Switch />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row
+                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+                data-nmui-intercom="new-platform-role_update-user-groups"
+              >
+                <Col xs={18}>
+                  <Typography.Text>Can update user groups</Typography.Text>
+                </Col>
+                <Col xs={6} style={{ textAlign: 'end' }}>
+                  <Form.Item
+                    name="updateUsers"
+                    valuePropName="checked"
+                    noStyle
+                    initialValue={role?.full_access || role?.global_level_access?.users?.all_user?.update}
+                  >
+                    <Switch />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row
+                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+                data-nmui-intercom="new-platform-role_delete-user-groups"
+              >
+                <Col xs={18}>
+                  <Typography.Text>Can delete user groups</Typography.Text>
+                </Col>
+                <Col xs={6} style={{ textAlign: 'end' }}>
+                  <Form.Item
+                    name="deleteUsers"
+                    valuePropName="checked"
+                    noStyle
+                    initialValue={role?.full_access || role?.global_level_access?.users?.all_user?.delete}
+                  >
+                    <Switch />
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              <Divider />
+              <Row
+                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+                data-nmui-intercom="new-platform-role_create-user-roles"
+              >
+                <Col xs={18}>
+                  <Typography.Text>Can create user roles</Typography.Text>
+                </Col>
+                <Col xs={6} style={{ textAlign: 'end' }}>
+                  <Form.Item
+                    name="createUserRoles"
+                    valuePropName="checked"
+                    noStyle
+                    initialValue={role?.full_access || role?.global_level_access?.users?.all_user?.create}
+                  >
+                    <Switch />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row
+                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+                data-nmui-intercom="new-platform-role_view-user-roles"
+              >
+                <Col xs={18}>
+                  <Typography.Text>Can view user roles</Typography.Text>
+                </Col>
+                <Col xs={6} style={{ textAlign: 'end' }}>
+                  <Form.Item
+                    name="viewUserRoles"
+                    valuePropName="checked"
+                    noStyle
+                    initialValue={role?.full_access || role?.global_level_access?.users?.all_user?.read}
+                  >
+                    <Switch />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row
+                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+                data-nmui-intercom="new-platform-role_update-user-roles"
+              >
+                <Col xs={18}>
+                  <Typography.Text>Can update user roles</Typography.Text>
+                </Col>
+                <Col xs={6} style={{ textAlign: 'end' }}>
+                  <Form.Item
+                    name="updateUsers"
+                    valuePropName="checked"
+                    noStyle
+                    initialValue={role?.full_access || role?.global_level_access?.users?.all_user?.update}
+                  >
+                    <Switch />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row
+                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+                data-nmui-intercom="new-platform-role_delete-user-roles"
+              >
+                <Col xs={18}>
+                  <Typography.Text>Can delete user roles</Typography.Text>
+                </Col>
+                <Col xs={6} style={{ textAlign: 'end' }}>
+                  <Form.Item
+                    name="deleteUsers"
+                    valuePropName="checked"
+                    noStyle
+                    initialValue={role?.full_access || role?.global_level_access?.users?.all_user?.delete}
+                  >
+                    <Switch />
+                  </Form.Item>
+                </Col>
+              </Row>
+            </Card>
+          </Col>
+        </Form>
+      </>
+    );
+  }, [usersPermissionsForm, role, themeToken.colorBorder]);
 
   const tabs: TabsProps['items'] = useMemo(
     () => [
       {
-        key: generalTabKey,
-        label: 'Permissions',
+        key: hostsTabKey,
+        label: 'Hosts Permissions Access',
         children: getHostsContent,
       },
       {
-        key: hostsTabKey,
-        label: 'VPN Access',
+        key: networksTabKey,
+        label: 'Networks Permisisons Access',
         children: getNetworksContent,
       },
+      {
+        key: enrollmentKeysTabKey,
+        label: 'Enrollment Keys Access',
+        children: getHostsContent,
+      },
+      {
+        key: usersTabKey,
+        label: 'Users Permisisons Access',
+        children: getUsersContent,
+      },
     ],
-    [getNetworksContent, getHostsContent],
+    [getHostsContent, getNetworksContent, getUsersContent],
   );
 
   useEffect(() => {
@@ -564,14 +829,24 @@ export default function PlatformRoleDetailsPage(props: PageProps) {
                 </Form.Item>
               </Col>
               <Col xs={24} md={12}>
-                <Form.Item name="deny_dashboard_access" label="Has dashboard access" style={{ width: '80%' }}>
+                <Form.Item
+                  name="deny_dashboard_access"
+                  label="Has dashboard access"
+                  style={{ width: '80%' }}
+                  initialValue={role?.deny_dashboard_access}
+                >
                   <Typography.Text style={{ fontWeight: 'bold' }}>
                     {role?.deny_dashboard_access ? 'No' : 'Yes'}
                   </Typography.Text>
                 </Form.Item>
               </Col>
               <Col xs={24} md={12}>
-                <Form.Item name="full_access" label="Has full access to all tenant resources" style={{ width: '80%' }}>
+                <Form.Item
+                  name="full_access"
+                  label="Has full access to all tenant resources"
+                  style={{ width: '80%' }}
+                  initialValue={role?.full_access}
+                >
                   <Typography.Text style={{ fontWeight: 'bold' }}>{role?.full_access ? 'Yes' : 'No'}</Typography.Text>
                 </Form.Item>
               </Col>
@@ -584,6 +859,7 @@ export default function PlatformRoleDetailsPage(props: PageProps) {
             <Typography.Title level={4}>Role Permissions</Typography.Title>
           </Col>
           <Col xs={24}>
+            {fullAccessVal && <Typography.Text>This role has full access to all tenant resources</Typography.Text>}
             <Tabs items={tabs} activeKey={activeTab} onChange={(key) => setActiveTab(key)} />
           </Col>
         </Row>
