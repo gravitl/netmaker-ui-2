@@ -75,6 +75,14 @@ export function getNetworkRoleRoute(roleOrId: UserRole | UserRole['id']): string
   return `${resolveAppRoute(AppRoutes.NETWORK_ROLE_DETAILS_ROUTE).replace(placeholder, roleOrId.id)}`;
 }
 
+// Get platform role details route from role obj or ID
+export function getPlatformRoleRoute(roleOrId: UserRole | UserRole['id']): string {
+  const placeholder = ':roleId';
+  if (typeof roleOrId === 'string')
+    return `${resolveAppRoute(AppRoutes.PLATFORM_ROLE_DETAILS_ROUTE).replace(placeholder, roleOrId)}`;
+  return `${resolveAppRoute(AppRoutes.PLATFORM_ROLE_DETAILS_ROUTE).replace(placeholder, roleOrId.id)}`;
+}
+
 // Get user group details route from role obj or ID
 export function getUserGroupRoute(groupOrId: UserGroup | UserGroup['id']): string {
   const placeholder = ':groupId';

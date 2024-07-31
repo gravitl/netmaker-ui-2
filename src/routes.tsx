@@ -21,6 +21,7 @@ import NetworkRoleDetailsPage from './pages/users/NetworkRoleDetailsPage';
 import CreateUserGroupPage from './pages/users/CreateUserGroupPage';
 import ContinueInvitePage from './pages/auth/ContinueInvitePage';
 import UserGroupDetailsPage from './pages/users/UserGroupDetailsPage';
+import PlatformRoleDetailsPage from './pages/users/PlatformRoleDetailsPage';
 
 export const AppRoutes = {
   DASHBOARD_ROUTE: '/',
@@ -42,6 +43,7 @@ export const AppRoutes = {
   CREATE_GROUP_ROUTE: '/users/create-group',
   CONTINUE_INVITE_ROUTE: '/invite',
   USER_GROUP_DETAILS_ROUTE: '/users/group/:groupId',
+  PLATFORM_ROLE_DETAILS_ROUTE: '/users/platform-role/:roleId',
 };
 
 function generateRoutePair(path: string, element: JSX.Element): RouteObject[] {
@@ -132,6 +134,12 @@ const routes: RouteObject[] = [
         AppRoutes.NETWORK_ROLE_DETAILS_ROUTE.split('/').slice(1).join('/'),
         <ProtectedRoute>
           <NetworkRoleDetailsPage isFullScreen />
+        </ProtectedRoute>,
+      ),
+      ...generateRoutePair(
+        AppRoutes.PLATFORM_ROLE_DETAILS_ROUTE.split('/').slice(1).join('/'),
+        <ProtectedRoute>
+          <PlatformRoleDetailsPage isFullScreen />
         </ProtectedRoute>,
       ),
       ...generateRoutePair(

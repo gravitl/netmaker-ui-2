@@ -2,7 +2,7 @@ import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 import { UserRole } from '@/models/User';
 import { AppRoutes } from '@/routes';
 import { UsersService } from '@/services/UsersService';
-import { getNetworkRoleRoute, resolveAppRoute } from '@/utils/RouteUtils';
+import { getNetworkRoleRoute, getPlatformRoleRoute, resolveAppRoute } from '@/utils/RouteUtils';
 import { deriveUserRoleType } from '@/utils/UserMgmtUtils';
 import { DeleteOutlined, MoreOutlined, PlusOutlined, QuestionCircleOutlined, SearchOutlined } from '@ant-design/icons';
 import {
@@ -313,9 +313,12 @@ export default function RolesPage(props: RolesPageProps) {
                     return {
                       onClick: (ev) => {
                         ev.stopPropagation();
-                        if (role.default) return;
-                        if (deriveUserRoleType(role) === 'platform-role') return;
+                        // if (role.default) return;
                         setSelectedRole(role);
+                        if (deriveUserRoleType(role) === 'platform-role') {
+                          navigate(getPlatformRoleRoute(role));
+                          return;
+                        }
                         navigate(getNetworkRoleRoute(role));
                       },
                     };
