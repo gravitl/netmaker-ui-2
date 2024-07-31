@@ -86,7 +86,7 @@ export default function DashboardPage(props: PageProps) {
   };
 
   useEffect(() => {
-    if (!isServerEE && !store.serverStatus.status?.is_on_trial_license) {
+    if (!isServerEE && !isSaasBuild && !store.serverStatus.status?.is_on_trial_license) {
       setShowUpgradeAlert(true);
     } else {
       setShowUpgradeAlert(false);
