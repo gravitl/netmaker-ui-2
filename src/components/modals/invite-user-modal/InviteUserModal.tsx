@@ -418,7 +418,9 @@ export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCan
                       <List.Item.Meta
                         title={invite.email}
                         description={
-                          invite.groups?.length ? `Groups: ${invite.groups?.join(', ') ?? 'n/a'}` : undefined
+                          Object.keys(invite.user_group_ids ?? {})?.length
+                            ? `Groups: ${Object.keys(invite.user_group_ids ?? {})?.join(', ')}`
+                            : undefined
                         }
                       />
                     </List.Item>
@@ -433,7 +435,7 @@ export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCan
       <div className="CustomModalBody">
         <Divider style={{ margin: '0px 0px 2rem 0px' }} />
 
-        {/* step 2 */}
+        {/* step 1 */}
         {currentStep === 0 && (
           <Row>
             <Col xs={24} style={{ textAlign: 'right' }}>
