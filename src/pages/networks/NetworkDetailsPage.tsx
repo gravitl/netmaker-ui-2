@@ -3635,7 +3635,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const loadNetworkDnses = useCallback(async () => {
     try {
       if (!networkId) return;
-      const dnses = (await NetworksService.getDnsesPerNetwork(networkId)).data;
+      const dnses = (await NetworksService.getDnsesPerNetwork(networkId)).data ?? [];
       setDnses(dnses);
     } catch (err) {
       if (err instanceof AxiosError && err.response?.status === 403) return;
