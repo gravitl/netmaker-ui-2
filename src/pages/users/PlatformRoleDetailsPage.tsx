@@ -796,7 +796,7 @@ export default function PlatformRoleDetailsPage(props: PageProps) {
             <Row>
               <Col xs={18} lg={12}>
                 <Typography.Title level={2} style={{ marginTop: '.5rem', marginBottom: '2rem' }}>
-                  Platform Role
+                  Platform Access Level
                 </Typography.Title>
               </Col>
             </Row>

@@ -40,7 +40,7 @@ import UpdateUserModal from '@/components/modals/update-user-modal/UpdateUserMod
 import { isSaasBuild } from '@/services/BaseService';
 import { getAmuiUrl, getInviteMagicLink } from '@/utils/RouteUtils';
 import TransferSuperAdminRightsModal from '@/components/modals/transfer-super-admin-rights/TransferSuperAdminRightsModal';
-import { copyTextToClipboard, useBranding } from '@/utils/Utils';
+import { copyTextToClipboard, snakeCaseToTitleCase, useBranding } from '@/utils/Utils';
 import RolesPage from './RolesPage';
 import GroupsPage from './GroupsPage';
 import UserDetailsModal from '@/components/modals/user-details-modal/UserDetailsModal';
@@ -72,7 +72,7 @@ export default function UsersPage(props: PageProps) {
   const [tourStep, setTourStep] = useState(0);
   const [invites, setInvites] = useState<UserInvite[]>([]);
   const [isLoadingInvites, setIsLoadingInvites] = useState(true);
-  const [pendingUserInvitesSearch, setPendingUsersSearch] = useState('');
+  const [pendingUserInvitesSearch, setUserInvitesSearch] = useState('');
   const [activeTab, setActiveTab] = useState(defaultTabKey);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
 
@@ -275,9 +275,15 @@ export default function UsersPage(props: PageProps) {
         defaultSortOrder: 'ascend',
       },
       {
-        title: 'Platform Role',
+        title: 'Platform Access Level',
         render(_, user) {
-          return user.platform_role_id;
+          return <Typography.Text>{snakeCaseToTitleCase(user.platform_role_id)}</Typography.Text>;
+        },
+      },
+      {
+        title: 'Groups',
+        render(_, user) {
+          return <Typography.Text>{Object.keys(user?.user_group_ids ?? {}).join(', ')}</Typography.Text>;
         },
       },
       {
@@ -360,7 +366,7 @@ export default function UsersPage(props: PageProps) {
                 <Button
                   style={{ marginRight: '1rem' }}
                   type="link"
-                  onClick={() => copyTextToClipboard(getInviteMagicLink(code, rowData.email))}
+                  onClick={() => copyTextToClipboard(rowData.invite_url)}
                 >
                   Copy Magic Link <CopyOutlined />
                 </Button>
@@ -505,22 +511,29 @@ export default function UsersPage(props: PageProps) {
     );
   }, [usersSearch, onAddUser, onInviteUser, usersTableColumns, filteredUsers, isLoadingUsers, loadUsers]);
 
-  const getPendingUsersContent = useCallback(() => {
+  const getInvitesContent = useCallback(() => {
     return (
       <>
         <Row>
           <Col xs={24} md={8}>
             <Input
               size="large"
-              placeholder="Search pending users"
+              placeholder="Search user invites"
               prefix={<SearchOutlined />}
               value={pendingUserInvitesSearch}
-              onChange={(ev) => setPendingUsersSearch(ev.target.value)}
+              onChange={(ev) => setUserInvitesSearch(ev.target.value)}
               allowClear
             />
           </Col>
           <Col xs={24} md={16} style={{ textAlign: 'right' }} className="pending-user-table-button">
             <Button
+              title="Go to Users documentation"
+              size="large"
+              href={USERS_DOCS_URL}
+              target="_blank"
+              icon={<QuestionCircleOutlined />}
+            />
+            {/* <Button
               size="large"
               onClick={() => {
                 setIsTourOpen(true);
@@ -529,20 +542,21 @@ export default function UsersPage(props: PageProps) {
               style={{ marginRight: '0.5em' }}
             >
               <InfoCircleOutlined /> Start Tour
-            </Button>
+            </Button> */}
             <Button size="large" onClick={() => loadInvites()} style={{ marginRight: '0.5em' }}>
               <ReloadOutlined /> Reload invites
             </Button>
-            <Button type="primary" size="large" onClick={confirmDeleteAllInvitesUsers} ref={denyAllUsersButtonRef}>
+            <Button
+              size="large"
+              onClick={confirmDeleteAllInvitesUsers}
+              ref={denyAllUsersButtonRef}
+              style={{ marginRight: '0.5em' }}
+            >
               <DeleteOutlined /> Clear All Invites
             </Button>
-            <Button
-              title="Go to Users documentation"
-              style={{ marginLeft: '0.5rem' }}
-              href={USERS_DOCS_URL}
-              target="_blank"
-              icon={<QuestionCircleOutlined />}
-            />
+            <Button type="primary" size="large" onClick={onInviteUser} style={{ marginRight: '0.5em' }}>
+              <PlusOutlined /> Invite User(s)
+            </Button>
           </Col>
         </Row>
         <Row className="" style={{ marginTop: '1rem' }}>
@@ -569,6 +583,7 @@ export default function UsersPage(props: PageProps) {
     filteredUserInvites,
     isLoadingInvites,
     loadInvites,
+    onInviteUser,
     pendingUserInvitesSearch,
     userInvitesTableColumns,
   ]);
@@ -582,7 +597,7 @@ export default function UsersPage(props: PageProps) {
       },
       {
         key: rolesTabKey,
-        label: 'Roles',
+        label: 'Network Roles',
         children: <RolesPage />,
       },
       {
@@ -593,10 +608,10 @@ export default function UsersPage(props: PageProps) {
       {
         key: invitesTabKey,
         label: `Invites (${invites.length})`,
-        children: getPendingUsersContent(),
+        children: getInvitesContent(),
       },
     ],
-    [getPendingUsersContent, getUsersContent, invites.length],
+    [getInvitesContent, getUsersContent, invites.length],
   );
 
   const userTourSteps: TourProps['steps'] = [

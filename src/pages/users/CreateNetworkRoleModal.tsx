@@ -29,9 +29,9 @@ import { NetworksService } from '@/services/NetworksService';
 import { convertNetworkPayloadToUiNetwork } from '@/utils/NetworkUtils';
 import { getExtendedNode } from '@/utils/NodeUtils';
 
-const permissionsTabKey = 'permissions';
+// const permissionsTabKey = 'permissions';
 const vpnAccessTabKey = 'vpn-access';
-const defaultTabKey = permissionsTabKey;
+const defaultTabKey = vpnAccessTabKey;
 
 interface metadataFormValues {
   name: string;
@@ -438,7 +438,7 @@ export default function CreateNetworkRoleModal({
                     );
                   }}
                 >
-                  Enable Filtered Gateways
+                  Select All Gateways
                 </Button>
               </Col>
               <Col xs={24} style={{ paddingTop: '1rem' }}>
@@ -481,18 +481,21 @@ export default function CreateNetworkRoleModal({
 
   const tabs: TabsProps['items'] = useMemo(
     () => [
-      {
-        key: permissionsTabKey,
-        label: 'Permissions',
-        children: getPermissionsContent(),
-      },
+      // {
+      //   key: permissionsTabKey,
+      //   label: 'Permissions',
+      //   children: getPermissionsContent(),
+      // },
       {
         key: vpnAccessTabKey,
         label: 'VPN Access',
         children: getVpnAccessContent(),
       },
     ],
-    [getVpnAccessContent, getPermissionsContent],
+    [
+      getVpnAccessContent,
+      //getPermissionsContent
+    ],
   );
 
   useEffect(() => {
@@ -551,7 +554,7 @@ export default function CreateNetworkRoleModal({
                 <Col xs={24} md={12}>
                   <Form.Item
                     name="full_access"
-                    label="Have full access to the network"
+                    label="Assign Admin Access To Network"
                     rules={[{ required: true }]}
                     valuePropName="checked"
                     initialValue={false}

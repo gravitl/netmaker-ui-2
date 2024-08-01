@@ -287,24 +287,24 @@ export default function UserGroupDetailsPage(props: PageProps) {
                   <Input.TextArea placeholder="Enter a description for this new group" style={{ width: '100%' }} />
                 </Form.Item>
               </Col>
-              <Col xs={24}>
+              {/* <Col xs={24}>
                 <Form.Item
                   name="platformRole"
-                  label="Platform Role"
+                  label="Platform Access Level"
                   initialValue={group?.platform_role ?? ''}
-                  tooltip="The platform role determines the level of access the user group has to the platform, and not one network specifically."
+                  tooltip="The platform access level determines the level of access the user group has to the platform, and not one network specifically."
                   rules={[{ required: true, whitespace: false }]}
                   style={{ width: '80%' }}
                 >
                   <Select
-                    placeholder="Select a platform role"
+                    placeholder="Select a platform access level"
                     style={{ width: '100%' }}
                     options={availableUserRoles
                       .filter((r) => deriveUserRoleType(r) === 'platform-role')
                       .map((r) => ({ label: r.id, value: r.id }))}
                   />
                 </Form.Item>
-              </Col>
+              </Col> */}
             </Row>
           </Form>
         </Row>

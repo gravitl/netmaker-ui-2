@@ -490,3 +490,19 @@ export async function copyTextToClipboard(text: string) {
     throw new Error('Failed to copy to clipboard');
   }
 }
+
+/**
+ * Converts a snake case string to title case.
+ *
+ * @param snakeCaseString the snake case string to convert
+ * @returns the title case string
+ */
+export function snakeCaseToTitleCase(snakeCaseString: string): string {
+  const words = snakeCaseString.split('_');
+  const titleCaseWords = words.map((word) => {
+    const capitalizedWord = word.charAt(0).toUpperCase() + word.slice(1);
+    return capitalizedWord;
+  });
+  const titleCaseString = titleCaseWords.join(' ');
+  return titleCaseString;
+}

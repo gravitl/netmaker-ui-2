@@ -1,12 +1,28 @@
-import { Button, Col, Divider, Form, Input, List, Modal, notification, Row, Select, Steps } from 'antd';
-import { MouseEvent, useCallback, useEffect, useState } from 'react';
+import {
+  Button,
+  Col,
+  Divider,
+  Form,
+  Input,
+  List,
+  Modal,
+  notification,
+  Radio,
+  Row,
+  Select,
+  Steps,
+  Table,
+  TableColumnProps,
+} from 'antd';
+import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import '../CustomModal.scss';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
-import { UserGroup, UserInvite, UserRoleId } from '@/models/User';
+import { User, UserGroup, UserInvite, UserRole, UserRoleId } from '@/models/User';
 import { UsersService } from '@/services/UsersService';
 import { DeleteOutlined } from '@ant-design/icons';
-import { copyTextToClipboard } from '@/utils/Utils';
+import { copyTextToClipboard, snakeCaseToTitleCase } from '@/utils/Utils';
 import { getInviteMagicLink } from '@/utils/RouteUtils';
+import CreateUserGroupModal from '@/pages/users/CreateUserGroupModal';
 
 interface InviteUserModalProps {
   isOpen: boolean;
@@ -17,7 +33,20 @@ interface InviteUserModalProps {
 
 interface UserInviteForm {
   user_emails: string;
-  groups: UserGroup['id'][];
+  user_group_ids: UserGroup['id'][];
+  'role-assignment-type': 'by-group' | 'by-manual';
+  'user-groups': UserGroup['id'][];
+  platform_role_id: UserRoleId;
+}
+
+interface NetworkRolePair {
+  network: string;
+  role: UserRoleId;
+}
+
+interface NetworkRolesTableData {
+  network: string;
+  roles: UserRole[];
 }
 
 const inviteUserSteps = [
@@ -42,7 +71,12 @@ export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCan
   const [isLoadingGroups, setIsLoadingGroups] = useState(false);
   const [userInvites, setUserInvites] = useState<UserInvite[]>([]);
   const [isLoadingInvites, setIsLoadingInvites] = useState(false);
-  const [permittedPlatformRole, setPermittedPlatformRole] = useState<UserRoleId>('');
+  const [networkRoles, setNetworkRoles] = useState<UserRole[]>([]);
+  const [platformRoles, setPlatformRoles] = useState<UserRole[]>([]);
+  const [selectedNetworkRoles, setSelectedNetworkRoles] = useState<NetworkRolePair[]>([]);
+  const [isCreateGroupModalOpen, setIsCreateGroupModalOpen] = useState(false);
+
+  const userGroupsVal = Form.useWatch('user-groups', form);
 
   const resetModal = () => {
     setCurrentStep(0);
@@ -61,6 +95,63 @@ export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCan
 
     setCurrentStep(currentStep + 1);
   };
+
+  const networkRolesTableData = useMemo<NetworkRolesTableData[]>(() => {
+    return networkRoles.reduce(
+      (acc, role) => {
+        const network = role.network_id;
+        const existingRole = acc.find((r) => r.network === network);
+        if (existingRole) {
+          existingRole.roles.push(role);
+        } else {
+          acc.push({ network, roles: [role] });
+        }
+        return acc;
+      },
+      [] as { network: string; roles: UserRole[] }[],
+    );
+  }, [networkRoles]);
+
+  const networkRolesTableCols: TableColumnProps<NetworkRolesTableData>[] = useMemo(
+    () => [
+      {
+        title: 'Network',
+        dataIndex: 'network',
+        width: '30%',
+        // render(network: string) {
+        //   return <Select placeholder="Select network" value={network} disabled />;
+        // },
+      },
+      {
+        title: 'Role',
+        width: '70%',
+        render(_, rowData) {
+          return (
+            <Select
+              mode="multiple"
+              placeholder="Select user roles for this network"
+              allowClear
+              options={rowData.roles.map((r) => ({ value: r.id, label: r.id }))}
+              // onChange={(value) => {
+              //   setSelectedNetworkRoles((prev) => [...new Set([...prev, ...value])]);
+              // }}
+              onSelect={(roleId: UserRole['id']) => {
+                setSelectedNetworkRoles((prev) => {
+                  return [...prev, { network: rowData.network, role: roleId }];
+                });
+              }}
+              onDeselect={(roleId: UserRole['id']) => {
+                setSelectedNetworkRoles((prev) =>
+                  prev.filter((r) => r.network !== rowData.network && r.role !== roleId),
+                );
+              }}
+            />
+          );
+        },
+      },
+    ],
+    [],
+  );
 
   const loadGroups = useCallback(async () => {
     try {
@@ -97,12 +188,54 @@ export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCan
     }
   }, [form, notify, onClose]);
 
+  const loadRoles = useCallback(async () => {
+    try {
+      const networkRoles = (await UsersService.getRoles()).data.Response;
+      const platformRoles = (await UsersService.getRoles('platform-role')).data.Response;
+      setNetworkRoles(networkRoles);
+      setPlatformRoles(platformRoles);
+    } catch (err) {
+      notify.error({
+        message: 'Failed to load roles',
+        description: extractErrorMsg(err as any),
+      });
+    }
+  }, [notify]);
+
   const inviteUser = async () => {
     try {
       const formData = await form.validateFields();
+
+      const payload: any = {
+        ...formData,
+      };
+
+      payload['network_roles'] = {} as User['network_roles'];
+      payload['user_group_ids'] = {} as User['user_group_ids'];
+      switch (formData['role-assignment-type']) {
+        case 'by-group':
+          payload['network_roles'] = {};
+          payload['user_group_ids'] = formData['user-groups'].reduce((acc, g) => ({ ...acc, [g]: {} }), {});
+          break;
+        case 'by-manual':
+          payload['user_group_ids'] = {};
+          selectedNetworkRoles.forEach((r) => {
+            if (payload['network_roles'][r.network]) {
+              payload['network_roles'][r.network][r.role] = {};
+            } else {
+              payload['network_roles'][r.network] = { [r.role]: {} };
+            }
+          });
+          break;
+      }
+      delete payload['role-assignment-type'];
+      delete payload['user-groups'];
+
       await UsersService.createUserInvite({
-        user_emails: formData.user_emails.split(',').map((e: string) => e.trim()),
-        groups: formData.groups,
+        user_emails: payload.user_emails.split(',').map((e: string) => e.trim()),
+        user_group_ids: payload.user_group_ids,
+        platform_role_id: payload.platform_role_id,
+        network_roles: payload.network_roles,
       });
       loadInvites();
       notify.success({ message: `User invites successfully created` });
@@ -115,11 +248,12 @@ export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCan
     }
   };
 
-  const groupsVal = Form.useWatch('groups', form);
+  const roleAssignmentTypeVal = Form.useWatch('role-assignment-type', form);
 
   useEffect(() => {
+    loadRoles();
     loadGroups();
-  }, [loadGroups]);
+  }, [loadGroups, loadRoles]);
 
   return (
     <Modal
@@ -148,7 +282,11 @@ export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCan
             <Form name="invite-user-form" form={form} layout="vertical">
               <Row>
                 <Col xs={24}>
-                  <Form.Item label="Email address(es)" name="user_emails" rules={[{ required: true }]}>
+                  <Form.Item
+                    label="Email address(es)"
+                    name="user_emails"
+                    rules={[{ required: true, whitespace: true }]}
+                  >
                     <Input.TextArea placeholder="Multiple email addresses must be separated by commas. eg: user@example.com,user2@example.com" />
                   </Form.Item>
                 </Col>
@@ -159,42 +297,80 @@ export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCan
               <Row>
                 <Col xs={24}>
                   <Form.Item
-                    label="Groups"
-                    name="groups"
-                    tooltip="Invited users will be automatically assigned to these groups"
+                    name="platform_role_id"
+                    label="Platform Access Level"
+                    tooltip="This specifies the tenant-wide permissions this user will have"
+                    rules={[{ required: true }]}
                   >
-                    <Select
-                      options={groups.map((g: UserGroup) => ({
-                        value: g.id,
-                        label: g.id,
-                        disabled: !!permittedPlatformRole && g.platform_role !== permittedPlatformRole,
-                        title:
-                          permittedPlatformRole && g.platform_role !== permittedPlatformRole
-                            ? `This group's platform role (${g.platform_role}) does not match the previously selected group's (${permittedPlatformRole})`
-                            : '',
-                      }))}
-                      mode="multiple"
-                      placeholder="Select groups the user(s) should be assigned to"
-                      loading={isLoadingGroups}
-                      allowClear
-                      onSelect={(val) => {
-                        if (permittedPlatformRole) {
-                          return;
-                        }
-                        setPermittedPlatformRole(groups.find((g) => g.id === val)?.platform_role ?? '');
-                      }}
-                      onDeselect={() => {
-                        if (!groupsVal || groupsVal?.length <= 1) {
-                          setPermittedPlatformRole('');
-                        }
-                      }}
-                      onClear={() => {
-                        setPermittedPlatformRole('');
-                      }}
-                    />
+                    <Radio.Group>
+                      {platformRoles.map((role) => (
+                        <Radio key={role.id} value={role.id}>
+                          {snakeCaseToTitleCase(role.id)}
+                        </Radio>
+                      ))}
+                    </Radio.Group>
                   </Form.Item>
                 </Col>
               </Row>
+
+              <Row>
+                <Col xs={24}>
+                  <Form.Item
+                    name="role-assignment-type"
+                    label="How would you like to assign network roles to the user?"
+                    rules={[{ required: true }]}
+                  >
+                    <Radio.Group>
+                      <Radio value="by-group">Assign user to a group (user will inherit the group permissions)</Radio>
+                      <Radio value="by-manual">Manually set user roles per network</Radio>
+                    </Radio.Group>
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              {roleAssignmentTypeVal === 'by-group' && (
+                <Row>
+                  <Col xs={24}>
+                    <Form.Item name="user-groups" label="Which groups will the user join" rules={[{ required: true }]}>
+                      <Select
+                        mode="multiple"
+                        placeholder="Select groups"
+                        options={[
+                          ...groups.map((g) => ({
+                            value: g.id,
+                            label: g.id,
+                            // disabled: !!platformRoleIdVal && g.platform_role !== platformRoleIdVal,
+                            // title:
+                            //   platformRoleIdVal && g.platform_role !== platformRoleIdVal
+                            //     ? 'Disabled because the selected platform access level conflicts with this group'
+                            //     : '',
+                          })),
+                          {
+                            label: '+ Create a new group',
+                            value: 'create-new-group',
+                          },
+                        ]}
+                        onSelect={(opt) => {
+                          if (opt === 'create-new-group') {
+                            form.setFieldValue('user-groups', userGroupsVal ?? []);
+                            setIsCreateGroupModalOpen(true);
+                          }
+                        }}
+                      />
+                    </Form.Item>
+                  </Col>
+                </Row>
+              )}
+
+              {roleAssignmentTypeVal === 'by-manual' && (
+                <Row>
+                  <Col xs={24}>
+                    <Form.Item label="Select the user's roles for each network">
+                      <Table columns={networkRolesTableCols} dataSource={networkRolesTableData} rowKey="id" />
+                    </Form.Item>
+                  </Col>
+                </Row>
+              )}
             </Form>
           </>
         )}
@@ -241,7 +417,9 @@ export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCan
                     >
                       <List.Item.Meta
                         title={invite.email}
-                        description={`Groups: ${invite.groups?.join(', ') ?? 'n/a'}`}
+                        description={
+                          invite.groups?.length ? `Groups: ${invite.groups?.join(', ') ?? 'n/a'}` : undefined
+                        }
                       />
                     </List.Item>
                   ))}
@@ -284,6 +462,21 @@ export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCan
 
       {/* notify */}
       {notifyCtx}
+      <CreateUserGroupModal
+        isOpen={isCreateGroupModalOpen}
+        showAddMembers={false}
+        onCreateGroup={(group) => {
+          setGroups((prev) => [...prev, group]);
+          form.setFieldValue('user-groups', [...(userGroupsVal ?? []), group.id]);
+          setIsCreateGroupModalOpen(false);
+        }}
+        onCancel={() => {
+          setIsCreateGroupModalOpen(false);
+        }}
+        onClose={() => {
+          setIsCreateGroupModalOpen(false);
+        }}
+      />
     </Modal>
   );
 }
