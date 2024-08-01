@@ -19,6 +19,7 @@ import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { User, UserGroup, UserRole, UserRoleId } from '@/models/User';
 import { UsersService } from '@/services/UsersService';
 import { deriveUserRoleType } from '@/utils/UserMgmtUtils';
+import { snakeCaseToTitleCase } from '@/utils/Utils';
 
 interface AddUserModalProps {
   isOpen: boolean;
@@ -66,6 +67,7 @@ export default function AddUserModal({
   const [selectedNetworkRoles, setSelectedNetworkRoles] = useState<NetworkRolePair[]>([]);
 
   const roleAssignmentTypeVal = Form.useWatch('role-assignment-type', form);
+  // const platformRoleIdVal = Form.useWatch('platform_role_id', form);
 
   const networkRolesTableData = useMemo<NetworkRolesTableData[]>(() => {
     return networkRoles.reduce(
@@ -82,8 +84,6 @@ export default function AddUserModal({
       [] as { network: string; roles: UserRole[] }[],
     );
   }, [networkRoles]);
-
-  const platformRoleIdVal = Form.useWatch('platform_role_id', form);
 
   const networkRolesTableCols: TableColumnProps<NetworkRolesTableData>[] = useMemo(
     () => [
@@ -144,9 +144,10 @@ export default function AddUserModal({
 
   const loadRoles = useCallback(async () => {
     try {
-      const roles = (await UsersService.getRoles()).data.Response;
-      setNetworkRoles(roles.filter((r: UserRole) => deriveUserRoleType(r) === 'network-role'));
-      setPlatformRoles(roles.filter((r: UserRole) => deriveUserRoleType(r) === 'platform-role'));
+      const networkRoles = (await UsersService.getRoles()).data.Response;
+      const platformRoles = (await UsersService.getRoles('platform-role')).data.Response;
+      setNetworkRoles(networkRoles);
+      setPlatformRoles(platformRoles);
     } catch (err) {
       notify.error({
         message: 'Failed to load roles',
@@ -166,7 +167,7 @@ export default function AddUserModal({
       };
 
       payload['network_roles'] = {} as User['network_roles'];
-      payload['network_roles'] = {} as User['user_group_ids'];
+      payload['user_group_ids'] = {} as User['user_group_ids'];
       switch (formData['role-assignment-type']) {
         case 'by-group':
           payload['user_group_ids'] = formData['user-groups'].reduce((acc, g) => ({ ...acc, [g]: {} }), {});
@@ -197,9 +198,9 @@ export default function AddUserModal({
     }
   };
 
-  useEffect(() => {
-    form.setFieldValue('user-groups', []);
-  }, [platformRoleIdVal]);
+  // useEffect(() => {
+  //   form.setFieldValue('user-groups', []);
+  // }, [platformRoleIdVal]);
 
   useEffect(() => {
     loadGroups();
@@ -264,14 +265,17 @@ export default function AddUserModal({
             <Col xs={24}>
               <Form.Item
                 name="platform_role_id"
-                label="Platform Role"
+                label="Platform Access Level"
                 tooltip="This specifies the tenant-wide permissions this user will have"
-                required
+                rules={[{ required: true }]}
               >
-                <Select
-                  placeholder="Select a platform role for the user"
-                  options={platformRoles.map((r) => ({ value: r.id, label: r.id }))}
-                />
+                <Radio.Group>
+                  {platformRoles.map((role) => (
+                    <Radio key={role.id} value={role.id}>
+                      {snakeCaseToTitleCase(role.id)}
+                    </Radio>
+                  ))}
+                </Radio.Group>
               </Form.Item>
             </Col>
           </Row>
@@ -279,9 +283,9 @@ export default function AddUserModal({
           <Row>
             <Col xs={24}>
               <Form.Item
-                required
                 name="role-assignment-type"
                 label="How would you like to assign network roles to the user?"
+                rules={[{ required: true }]}
               >
                 <Radio.Group>
                   <Radio value="by-group">Assign user to a group (user will inherit the group permissions)</Radio>
@@ -294,18 +298,18 @@ export default function AddUserModal({
           {roleAssignmentTypeVal === 'by-group' && (
             <Row>
               <Col xs={24}>
-                <Form.Item name="user-groups" label="Which groups will the user join" required>
+                <Form.Item name="user-groups" label="Which groups will the user join" rules={[{ required: true }]}>
                   <Select
                     mode="multiple"
                     placeholder="Select groups"
                     options={groups.map((g) => ({
                       value: g.id,
                       label: g.id,
-                      disabled: !!platformRoleIdVal && g.platform_role !== platformRoleIdVal,
-                      title:
-                        platformRoleIdVal && g.platform_role !== platformRoleIdVal
-                          ? 'Disabled because the selected platform role conflicts with this group'
-                          : '',
+                      // disabled: !!platformRoleIdVal && g.platform_role !== platformRoleIdVal,
+                      // title:
+                      //   platformRoleIdVal && g.platform_role !== platformRoleIdVal
+                      //     ? 'Disabled because the selected platform access level conflicts with this group'
+                      //     : '',
                     }))}
                   />
                 </Form.Item>

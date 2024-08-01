@@ -29,9 +29,9 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { AppRoutes } from '@/routes';
 import { getExtendedNode } from '@/utils/NodeUtils';
 
-const permissionsTabKey = 'permissions';
+// const permissionsTabKey = 'permissions';
 const vpnAccessTabKey = 'vpn-access';
-const defaultTabKey = permissionsTabKey;
+const defaultTabKey = vpnAccessTabKey;
 
 interface metadataFormValues {
   name: string;
@@ -194,281 +194,281 @@ export default function NetworkRoleDetailsPage(props: PageProps) {
   const fullAccessVal = Form.useWatch('full_access', metadataForm);
 
   // ui components
-  const getPermissionsContent = useMemo(() => {
-    return (
-      <>
-        <Form form={permissionsForm}>
-          <Col xs={24}>
-            {/* hosts */}
-            {/* <Card
-              size="small"
-              title="Hosts"
-              extra={
-                <Button
-                  type="link"
-                  onClick={() => {
-                    permissionsForm.setFieldsValue({
-                      addHost: true,
-                    });
-                  }}
-                >
-                  Allow All
-                </Button>
-              }
-              style={{ width: '100%', marginBottom: '2rem' }}
-            >
-              <Row
-                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
-                data-nmui-intercom="new-network-role_add-host-to-net"
-              >
-                <Col xs={18}>
-                  <Typography.Text>Can add a host to the network</Typography.Text>
-                </Col>
-                <Col xs={6} style={{ textAlign: 'end' }}>
-                  <Form.Item
-                    name="addHost"
-                    valuePropName="checked"
-                    noStyle
-                    initialValue={props.role.network_level_access?.hosts?.all_host?.create}
-                  >
-                    <Switch />
-                  </Form.Item>
-                </Col>
-              </Row>
-            </Card> */}
+  // const getPermissionsContent = useMemo(() => {
+  //   return (
+  //     <>
+  //       <Form form={permissionsForm}>
+  //         <Col xs={24}>
+  //           {/* hosts */}
+  //           {/* <Card
+  //             size="small"
+  //             title="Hosts"
+  //             extra={
+  //               <Button
+  //                 type="link"
+  //                 onClick={() => {
+  //                   permissionsForm.setFieldsValue({
+  //                     addHost: true,
+  //                   });
+  //                 }}
+  //               >
+  //                 Allow All
+  //               </Button>
+  //             }
+  //             style={{ width: '100%', marginBottom: '2rem' }}
+  //           >
+  //             <Row
+  //               style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+  //               data-nmui-intercom="new-network-role_add-host-to-net"
+  //             >
+  //               <Col xs={18}>
+  //                 <Typography.Text>Can add a host to the network</Typography.Text>
+  //               </Col>
+  //               <Col xs={6} style={{ textAlign: 'end' }}>
+  //                 <Form.Item
+  //                   name="addHost"
+  //                   valuePropName="checked"
+  //                   noStyle
+  //                   initialValue={props.role.network_level_access?.hosts?.all_host?.create}
+  //                 >
+  //                   <Switch />
+  //                 </Form.Item>
+  //               </Col>
+  //             </Row>
+  //           </Card> */}
 
-            {/* remote access */}
-            <Card
-              size="small"
-              title="Remote Access"
-              extra={
-                <Button
-                  type="link"
-                  onClick={() => {
-                    permissionsForm.setFieldsValue({
-                      viewRags: true,
-                      createRags: true,
-                      updateRags: true,
-                      deleteRags: true,
-                      connectRags: true,
-                    });
-                  }}
-                >
-                  Allow All
-                </Button>
-              }
-              style={{ width: '100%', marginBottom: '2rem' }}
-            >
-              <Row
-                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
-                data-nmui-intercom="new-network-role_view-rags"
-              >
-                <Col xs={18}>
-                  <Typography.Text>Can view remote access gateways</Typography.Text>
-                </Col>
-                <Col xs={6} style={{ textAlign: 'end' }}>
-                  <Form.Item
-                    name="viewRags"
-                    valuePropName="checked"
-                    noStyle
-                    initialValue={role?.network_level_access?.remote_access_gw?.all_remote_access_gw?.read}
-                  >
-                    <Switch />
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Row
-                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
-                data-nmui-intercom="new-network-role_create-rags"
-              >
-                <Col xs={18}>
-                  <Typography.Text>Can create remote access gateways</Typography.Text>
-                </Col>
-                <Col xs={6} style={{ textAlign: 'end' }}>
-                  <Form.Item
-                    name="createRags"
-                    valuePropName="checked"
-                    noStyle
-                    initialValue={role?.network_level_access?.remote_access_gw?.all_remote_access_gw?.create}
-                  >
-                    <Switch />
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Row
-                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
-                data-nmui-intercom="new-network-role_update-rags"
-              >
-                <Col xs={18}>
-                  <Typography.Text>Can update remote access gateways</Typography.Text>
-                </Col>
-                <Col xs={6} style={{ textAlign: 'end' }}>
-                  <Form.Item
-                    name="updateRags"
-                    valuePropName="checked"
-                    noStyle
-                    initialValue={role?.network_level_access?.remote_access_gw?.all_remote_access_gw?.update}
-                  >
-                    <Switch />
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Row
-                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
-                data-nmui-intercom="new-network-role_delete-rags"
-              >
-                <Col xs={18}>
-                  <Typography.Text>Can delete remote access gateways</Typography.Text>
-                </Col>
-                <Col xs={6} style={{ textAlign: 'end' }}>
-                  <Form.Item
-                    name="deleteRags"
-                    valuePropName="checked"
-                    noStyle
-                    initialValue={role?.network_level_access?.remote_access_gw?.all_remote_access_gw?.delete}
-                  >
-                    <Switch />
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Row
-                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
-                data-nmui-intercom="new-network-role_connect-rags"
-              >
-                <Col xs={18}>
-                  <Typography.Text>Can connect to remote access gateways</Typography.Text>
-                </Col>
-                <Col xs={6} style={{ textAlign: 'end' }}>
-                  <Form.Item
-                    name="connectRags"
-                    valuePropName="checked"
-                    noStyle
-                    initialValue={role?.network_level_access?.remote_access_gw?.all_remote_access_gw?.vpn_access}
-                  >
-                    <Switch />
-                  </Form.Item>
-                </Col>
-              </Row>
-            </Card>
+  //           {/* remote access */}
+  //           <Card
+  //             size="small"
+  //             title="Remote Access"
+  //             extra={
+  //               <Button
+  //                 type="link"
+  //                 onClick={() => {
+  //                   permissionsForm.setFieldsValue({
+  //                     viewRags: true,
+  //                     createRags: true,
+  //                     updateRags: true,
+  //                     deleteRags: true,
+  //                     connectRags: true,
+  //                   });
+  //                 }}
+  //               >
+  //                 Allow All
+  //               </Button>
+  //             }
+  //             style={{ width: '100%', marginBottom: '2rem' }}
+  //           >
+  //             <Row
+  //               style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+  //               data-nmui-intercom="new-network-role_view-rags"
+  //             >
+  //               <Col xs={18}>
+  //                 <Typography.Text>Can view remote access gateways</Typography.Text>
+  //               </Col>
+  //               <Col xs={6} style={{ textAlign: 'end' }}>
+  //                 <Form.Item
+  //                   name="viewRags"
+  //                   valuePropName="checked"
+  //                   noStyle
+  //                   initialValue={role?.network_level_access?.remote_access_gw?.all_remote_access_gw?.read}
+  //                 >
+  //                   <Switch />
+  //                 </Form.Item>
+  //               </Col>
+  //             </Row>
+  //             <Row
+  //               style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+  //               data-nmui-intercom="new-network-role_create-rags"
+  //             >
+  //               <Col xs={18}>
+  //                 <Typography.Text>Can create remote access gateways</Typography.Text>
+  //               </Col>
+  //               <Col xs={6} style={{ textAlign: 'end' }}>
+  //                 <Form.Item
+  //                   name="createRags"
+  //                   valuePropName="checked"
+  //                   noStyle
+  //                   initialValue={role?.network_level_access?.remote_access_gw?.all_remote_access_gw?.create}
+  //                 >
+  //                   <Switch />
+  //                 </Form.Item>
+  //               </Col>
+  //             </Row>
+  //             <Row
+  //               style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+  //               data-nmui-intercom="new-network-role_update-rags"
+  //             >
+  //               <Col xs={18}>
+  //                 <Typography.Text>Can update remote access gateways</Typography.Text>
+  //               </Col>
+  //               <Col xs={6} style={{ textAlign: 'end' }}>
+  //                 <Form.Item
+  //                   name="updateRags"
+  //                   valuePropName="checked"
+  //                   noStyle
+  //                   initialValue={role?.network_level_access?.remote_access_gw?.all_remote_access_gw?.update}
+  //                 >
+  //                   <Switch />
+  //                 </Form.Item>
+  //               </Col>
+  //             </Row>
+  //             <Row
+  //               style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+  //               data-nmui-intercom="new-network-role_delete-rags"
+  //             >
+  //               <Col xs={18}>
+  //                 <Typography.Text>Can delete remote access gateways</Typography.Text>
+  //               </Col>
+  //               <Col xs={6} style={{ textAlign: 'end' }}>
+  //                 <Form.Item
+  //                   name="deleteRags"
+  //                   valuePropName="checked"
+  //                   noStyle
+  //                   initialValue={role?.network_level_access?.remote_access_gw?.all_remote_access_gw?.delete}
+  //                 >
+  //                   <Switch />
+  //                 </Form.Item>
+  //               </Col>
+  //             </Row>
+  //             <Row
+  //               style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+  //               data-nmui-intercom="new-network-role_connect-rags"
+  //             >
+  //               <Col xs={18}>
+  //                 <Typography.Text>Can connect to remote access gateways</Typography.Text>
+  //               </Col>
+  //               <Col xs={6} style={{ textAlign: 'end' }}>
+  //                 <Form.Item
+  //                   name="connectRags"
+  //                   valuePropName="checked"
+  //                   noStyle
+  //                   initialValue={role?.network_level_access?.remote_access_gw?.all_remote_access_gw?.vpn_access}
+  //                 >
+  //                   <Switch />
+  //                 </Form.Item>
+  //               </Col>
+  //             </Row>
+  //           </Card>
 
-            {/* vpn clients */}
-            <Card
-              size="small"
-              title="VPN Clients"
-              extra={
-                <Button
-                  type="link"
-                  onClick={() => {
-                    permissionsForm.setFieldsValue({
-                      viewClients: true,
-                      createClients: true,
-                      updateClients: true,
-                      deleteClients: true,
-                      connectClients: true,
-                    });
-                  }}
-                >
-                  Allow All
-                </Button>
-              }
-              style={{ width: '100%', marginBottom: '2rem' }}
-            >
-              <Row
-                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
-                data-nmui-intercom="new-network-role_view-clients"
-              >
-                <Col xs={18}>
-                  <Typography.Text>Can view VPN clients</Typography.Text>
-                </Col>
-                <Col xs={6} style={{ textAlign: 'end' }}>
-                  <Form.Item
-                    name="viewClients"
-                    valuePropName="checked"
-                    noStyle
-                    initialValue={role?.network_level_access?.extclients?.all_extclients?.read}
-                  >
-                    <Switch />
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Row
-                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
-                data-nmui-intercom="new-network-role_create-clients"
-              >
-                <Col xs={18}>
-                  <Typography.Text>Can create VPN clients</Typography.Text>
-                </Col>
-                <Col xs={6} style={{ textAlign: 'end' }}>
-                  <Form.Item
-                    name="createClients"
-                    valuePropName="checked"
-                    noStyle
-                    initialValue={role?.network_level_access?.extclients?.all_extclients?.create}
-                  >
-                    <Switch />
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Row
-                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
-                data-nmui-intercom="new-network-role_update-clients"
-              >
-                <Col xs={18}>
-                  <Typography.Text>Can update VPN clients</Typography.Text>
-                </Col>
-                <Col xs={6} style={{ textAlign: 'end' }}>
-                  <Form.Item
-                    name="updateClients"
-                    valuePropName="checked"
-                    noStyle
-                    initialValue={role?.network_level_access?.extclients?.all_extclients?.update}
-                  >
-                    <Switch />
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Row
-                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
-                data-nmui-intercom="new-network-role_delete-clients"
-              >
-                <Col xs={18}>
-                  <Typography.Text>Can delete VPN clients</Typography.Text>
-                </Col>
-                <Col xs={6} style={{ textAlign: 'end' }}>
-                  <Form.Item
-                    name="deleteClients"
-                    valuePropName="checked"
-                    noStyle
-                    initialValue={role?.network_level_access?.extclients?.all_extclients?.delete}
-                  >
-                    <Switch />
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Row
-                style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
-                data-nmui-intercom="new-network-role_connect-clients"
-              >
-                <Col xs={18}>
-                  <Typography.Text>Can connect to VPN clients</Typography.Text>
-                </Col>
-                <Col xs={6} style={{ textAlign: 'end' }}>
-                  <Form.Item
-                    name="connectClients"
-                    valuePropName="checked"
-                    noStyle
-                    initialValue={role?.network_level_access?.extclients?.all_extclients?.vpn_access}
-                  >
-                    <Switch />
-                  </Form.Item>
-                </Col>
-              </Row>
-            </Card>
-          </Col>
-        </Form>
-      </>
-    );
-  }, [permissionsForm, role?.network_level_access, themeToken.colorBorder]);
+  //           {/* vpn clients */}
+  //           <Card
+  //             size="small"
+  //             title="VPN Clients"
+  //             extra={
+  //               <Button
+  //                 type="link"
+  //                 onClick={() => {
+  //                   permissionsForm.setFieldsValue({
+  //                     viewClients: true,
+  //                     createClients: true,
+  //                     updateClients: true,
+  //                     deleteClients: true,
+  //                     connectClients: true,
+  //                   });
+  //                 }}
+  //               >
+  //                 Allow All
+  //               </Button>
+  //             }
+  //             style={{ width: '100%', marginBottom: '2rem' }}
+  //           >
+  //             <Row
+  //               style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+  //               data-nmui-intercom="new-network-role_view-clients"
+  //             >
+  //               <Col xs={18}>
+  //                 <Typography.Text>Can view VPN clients</Typography.Text>
+  //               </Col>
+  //               <Col xs={6} style={{ textAlign: 'end' }}>
+  //                 <Form.Item
+  //                   name="viewClients"
+  //                   valuePropName="checked"
+  //                   noStyle
+  //                   initialValue={role?.network_level_access?.extclients?.all_extclients?.read}
+  //                 >
+  //                   <Switch />
+  //                 </Form.Item>
+  //               </Col>
+  //             </Row>
+  //             <Row
+  //               style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+  //               data-nmui-intercom="new-network-role_create-clients"
+  //             >
+  //               <Col xs={18}>
+  //                 <Typography.Text>Can create VPN clients</Typography.Text>
+  //               </Col>
+  //               <Col xs={6} style={{ textAlign: 'end' }}>
+  //                 <Form.Item
+  //                   name="createClients"
+  //                   valuePropName="checked"
+  //                   noStyle
+  //                   initialValue={role?.network_level_access?.extclients?.all_extclients?.create}
+  //                 >
+  //                   <Switch />
+  //                 </Form.Item>
+  //               </Col>
+  //             </Row>
+  //             <Row
+  //               style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+  //               data-nmui-intercom="new-network-role_update-clients"
+  //             >
+  //               <Col xs={18}>
+  //                 <Typography.Text>Can update VPN clients</Typography.Text>
+  //               </Col>
+  //               <Col xs={6} style={{ textAlign: 'end' }}>
+  //                 <Form.Item
+  //                   name="updateClients"
+  //                   valuePropName="checked"
+  //                   noStyle
+  //                   initialValue={role?.network_level_access?.extclients?.all_extclients?.update}
+  //                 >
+  //                   <Switch />
+  //                 </Form.Item>
+  //               </Col>
+  //             </Row>
+  //             <Row
+  //               style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+  //               data-nmui-intercom="new-network-role_delete-clients"
+  //             >
+  //               <Col xs={18}>
+  //                 <Typography.Text>Can delete VPN clients</Typography.Text>
+  //               </Col>
+  //               <Col xs={6} style={{ textAlign: 'end' }}>
+  //                 <Form.Item
+  //                   name="deleteClients"
+  //                   valuePropName="checked"
+  //                   noStyle
+  //                   initialValue={role?.network_level_access?.extclients?.all_extclients?.delete}
+  //                 >
+  //                   <Switch />
+  //                 </Form.Item>
+  //               </Col>
+  //             </Row>
+  //             <Row
+  //               style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
+  //               data-nmui-intercom="new-network-role_connect-clients"
+  //             >
+  //               <Col xs={18}>
+  //                 <Typography.Text>Can connect to VPN clients</Typography.Text>
+  //               </Col>
+  //               <Col xs={6} style={{ textAlign: 'end' }}>
+  //                 <Form.Item
+  //                   name="connectClients"
+  //                   valuePropName="checked"
+  //                   noStyle
+  //                   initialValue={role?.network_level_access?.extclients?.all_extclients?.vpn_access}
+  //                 >
+  //                   <Switch />
+  //                 </Form.Item>
+  //               </Col>
+  //             </Row>
+  //           </Card>
+  //         </Col>
+  //       </Form>
+  //     </>
+  //   );
+  // }, [permissionsForm, role?.network_level_access, themeToken.colorBorder]);
 
   const getVpnAccessContent = useMemo(() => {
     return (
@@ -540,18 +540,21 @@ export default function NetworkRoleDetailsPage(props: PageProps) {
 
   const tabs: TabsProps['items'] = useMemo(
     () => [
-      {
-        key: permissionsTabKey,
-        label: 'Permissions',
-        children: getPermissionsContent,
-      },
+      // {
+      //   key: permissionsTabKey,
+      //   label: 'Permissions',
+      //   children: getPermissionsContent,
+      // },
       {
         key: vpnAccessTabKey,
         label: 'VPN Access',
         children: getVpnAccessContent,
       },
     ],
-    [getVpnAccessContent, getPermissionsContent],
+    [
+      getVpnAccessContent,
+      //getPermissionsContent
+    ],
   );
 
   useEffect(() => {

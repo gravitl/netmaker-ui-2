@@ -101,7 +101,7 @@ export default function AddUsersToGroupModal({
                             disabled={platformRole ? user.platform_role_id !== platformRole : false}
                             title={
                               platformRole && user.platform_role_id !== platformRole
-                                ? `User's platform role (${user.platform_role_id}) conflicts with this groups platform role (${platformRole})`
+                                ? `User's platform access lavel (${user.platform_role_id}) conflicts with this groups platform access level (${platformRole})`
                                 : ''
                             }
                           >

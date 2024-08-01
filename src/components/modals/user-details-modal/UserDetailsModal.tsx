@@ -11,6 +11,7 @@ import {
   Select,
   Table,
   TableColumnProps,
+  theme,
   Typography,
 } from 'antd';
 import { MouseEvent, Ref, useCallback, useEffect, useMemo, useState } from 'react';
@@ -19,7 +20,7 @@ import '../CustomModal.scss';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { User, UserGroup, UserRole, UserRoleId } from '@/models/User';
 import { UsersService } from '@/services/UsersService';
-import { deriveUserRoleType } from '@/utils/UserMgmtUtils';
+import { EditOutlined } from '@ant-design/icons';
 
 interface UserdetailsModalProps {
   isOpen: boolean;
@@ -61,12 +62,14 @@ export default function UserDetailsModal({
   const [form] = Form.useForm<CreateUserForm>();
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
+  const { token: themeToken } = theme.useToken();
 
   const isServerEE = store.serverConfig?.IsEE === 'yes';
   const passwordVal = Form.useWatch('password', form);
   const [networkRoles, setNetworkRoles] = useState<UserRole[]>([]);
   const [platformRoles, setPlatformRoles] = useState<UserRole[]>([]);
   const [groups, setGroups] = useState<UserGroup[]>([]);
+  const [isEditingUserPermissions, setIsEditingUserPermissions] = useState(false);
 
   const roleAssignmentTypeVal = Form.useWatch('role-assignment-type', form);
 
@@ -86,7 +89,7 @@ export default function UserDetailsModal({
     );
   }, [networkRoles]);
 
-  const platformRoleIdVal = Form.useWatch('platform_role_id', form);
+  // const platformRoleIdVal = Form.useWatch('platform_role_id', form);
 
   const networkRolesTableCols: TableColumnProps<NetworkRolesTableData>[] = useMemo(
     () => [
@@ -140,9 +143,10 @@ export default function UserDetailsModal({
 
   const loadRoles = useCallback(async () => {
     try {
-      const roles = (await UsersService.getRoles()).data.Response;
-      setNetworkRoles(roles.filter((r: UserRole) => deriveUserRoleType(r) === 'network-role'));
-      setPlatformRoles(roles.filter((r: UserRole) => deriveUserRoleType(r) === 'platform-role'));
+      const networkRoles = (await UsersService.getRoles()).data.Response;
+      const platformRoles = (await UsersService.getRoles('platform-role')).data.Response;
+      setNetworkRoles(networkRoles);
+      setPlatformRoles(platformRoles);
     } catch (err) {
       notify.error({
         message: 'Failed to load roles',
@@ -189,7 +193,7 @@ export default function UserDetailsModal({
 
       const newUser = (await UsersService.updateUser(user.username, payload)).data;
       resetModal();
-      notify.success({ message: `User ${newUser.username} created` });
+      notification.success({ message: `User ${newUser.username} updated` });
       onUpdateUser(newUser);
     } catch (err) {
       notify.error({
@@ -201,9 +205,9 @@ export default function UserDetailsModal({
 
   const isUserInGroup = Object.keys(user?.user_group_ids ?? {}).length > 0;
 
-  useEffect(() => {
-    form.setFieldValue('user-groups', []);
-  }, [platformRoleIdVal]);
+  // useEffect(() => {
+  //   form.setFieldValue('user-groups', []);
+  // }, [platformRoleIdVal]);
 
   useEffect(() => {
     loadGroups();
@@ -267,76 +271,106 @@ export default function UserDetailsModal({
             <Col xs={24}>
               <Form.Item
                 name="platform_role_id"
-                label="Platform Role"
+                label="Platform Access Level"
                 tooltip="This specifies the tenant-wide permissions this user will have"
                 initialValue={user.platform_role_id}
                 required
               >
                 <Select
-                  placeholder="Select a platform role for the user"
+                  placeholder="Select a platform access level for the user"
                   options={platformRoles.map((r) => ({ value: r.id, label: r.id }))}
                 />
               </Form.Item>
             </Col>
           </Row>
 
-          <Row>
-            <Col xs={24}>
-              <Form.Item
-                required
-                name="role-assignment-type"
-                label="User permission model"
-                initialValue={isUserInGroup ? 'by-group' : 'by-manual'}
-              >
-                <Radio.Group>
-                  <Radio value="by-group">Assign user to a group (user will inherit the group permissions)</Radio>
-                  <Radio value="by-manual">Manually set user roles per network</Radio>
-                </Radio.Group>
-              </Form.Item>
-            </Col>
-          </Row>
+          {isEditingUserPermissions && (
+            <>
+              <Row>
+                <Col xs={24}>
+                  <Form.Item
+                    required
+                    name="role-assignment-type"
+                    label="User permission model"
+                    initialValue={isUserInGroup ? 'by-group' : 'by-manual'}
+                  >
+                    <Radio.Group>
+                      <Radio value="by-group">Assign user to a group (user will inherit the group permissions)</Radio>
+                      <Radio value="by-manual">Manually set user roles per network</Radio>
+                    </Radio.Group>
+                  </Form.Item>
+                </Col>
+              </Row>
 
-          {roleAssignmentTypeVal === 'by-group' && (
-            <Row>
-              <Col xs={24}>
-                <Form.Item
-                  name="user-groups"
-                  label="User groups"
-                  required
-                  initialValue={Object.keys(user.user_group_ids ?? {})}
-                >
-                  <Select
-                    mode="multiple"
-                    placeholder="Select groups"
-                    options={groups.map((g) => ({
-                      value: g.id,
-                      label: g.id,
-                      disabled: !!platformRoleIdVal && g.platform_role !== platformRoleIdVal,
-                      title:
-                        platformRoleIdVal && g.platform_role !== platformRoleIdVal
-                          ? 'Disabled because the selected platform role conflicts with this group'
-                          : '',
-                    }))}
-                  />
-                </Form.Item>
-              </Col>
-            </Row>
+              {roleAssignmentTypeVal === 'by-group' && (
+                <Row>
+                  <Col xs={24}>
+                    <Form.Item
+                      name="user-groups"
+                      label="User groups"
+                      required
+                      initialValue={Object.keys(user.user_group_ids ?? {})}
+                    >
+                      <Select
+                        mode="multiple"
+                        placeholder="Select groups"
+                        options={groups.map((g) => ({
+                          value: g.id,
+                          label: g.id,
+                          // disabled: !!platformRoleIdVal && g.platform_role !== platformRoleIdVal,
+                          // title:
+                          //   platformRoleIdVal && g.platform_role !== platformRoleIdVal
+                          //     ? 'Disabled because the selected platform access level conflicts with this group'
+                          //     : '',
+                        }))}
+                      />
+                    </Form.Item>
+                  </Col>
+                </Row>
+              )}
+
+              {roleAssignmentTypeVal === 'by-manual' && (
+                <Row>
+                  <Col xs={24}>
+                    <Form.Item label="Select the user's roles for each network">
+                      <Table
+                        size="small"
+                        columns={networkRolesTableCols}
+                        dataSource={networkRolesTableData}
+                        rowKey="network"
+                        pagination={{ pageSize: 15, hideOnSinglePage: true }}
+                      />
+                    </Form.Item>
+                  </Col>
+                </Row>
+              )}
+            </>
           )}
-
-          {roleAssignmentTypeVal === 'by-manual' && (
-            <Row>
-              <Col xs={24}>
-                <Form.Item label="Select the user's roles for each network">
-                  <Table
-                    size="small"
-                    columns={networkRolesTableCols}
-                    dataSource={networkRolesTableData}
-                    rowKey="network"
-                    pagination={{ pageSize: 15, hideOnSinglePage: true }}
-                  />
-                </Form.Item>
-              </Col>
-            </Row>
+          {!isEditingUserPermissions && (
+            <>
+              <Row>
+                <Col xs={24} style={{ paddingBottom: '1rem' }}>
+                  <Typography.Text strong>User Permission Model</Typography.Text>
+                  {isUserInGroup && (
+                    <Button type="link" onClick={() => setIsEditingUserPermissions(true)}>
+                      Change <EditOutlined />
+                    </Button>
+                  )}
+                </Col>
+                <Col xs={24}>
+                  {isUserInGroup ? (
+                    `Permissions are derived from user's groups (${Object.keys(user?.user_group_ids ?? {})})`
+                  ) : (
+                    <>
+                      User has custom permissions{' '}
+                      <Button type="link" onClick={() => setIsEditingUserPermissions(true)}>
+                        View Details
+                      </Button>
+                    </>
+                  )}
+                </Col>
+              </Row>
+            </>
           )}
         </Form>
       </div>

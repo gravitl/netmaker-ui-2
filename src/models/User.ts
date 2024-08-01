@@ -17,6 +17,8 @@ export interface User {
 
 export type UserRoleId = 'super_admin' | 'admin' | 'user' | 'network_admin' | 'network_user' | string;
 
+export type UserRoleType = 'network-role' | 'platform-role';
+
 export type RsrcType =
   | 'hosts'
   | 'relays'
@@ -78,4 +80,6 @@ export interface UserInvite {
   email: string;
   groups: UserGroup['id'][];
   invite_code: string;
+  platform_role_id: UserRoleId;
+  invite_url: string;
 }

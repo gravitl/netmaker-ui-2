@@ -22,14 +22,10 @@ import './UsersPage.scss';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { UsersService } from '@/services/UsersService';
 import { User, UserGroup, UserRole } from '@/models/User';
-import { resolveAppRoute } from '@/utils/RouteUtils';
-import { Link } from 'react-router-dom';
-import { AppRoutes } from '@/routes';
 import { Network } from '@/models/Network';
 import { NetworksService } from '@/services/NetworksService';
 import { convertNetworkPayloadToUiNetwork } from '@/utils/NetworkUtils';
 import AddUsersToGroupModal from '@/components/modals/add-users-to-group-modal/AddUsersToGroupModal';
-import { deriveUserRoleType } from '@/utils/UserMgmtUtils';
 
 interface metadataFormValues {
   name: string;
@@ -49,12 +45,19 @@ interface NetworkRolesTableData {
 
 interface CreateUserGroupModalProps {
   isOpen: boolean;
-  onCreateGroup?: () => any;
+  onCreateGroup?: (group: UserGroup) => any;
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
   onClose?: () => void;
+  showAddMembers?: boolean;
 }
 
-export default function CreateUserGroupModal({ onCancel, isOpen, onCreateGroup, onClose }: CreateUserGroupModalProps) {
+export default function CreateUserGroupModal({
+  onCancel,
+  isOpen,
+  onCreateGroup,
+  onClose,
+  showAddMembers,
+}: CreateUserGroupModalProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
   const { token: themeToken } = theme.useToken();
@@ -173,19 +176,21 @@ export default function CreateUserGroupModal({ onCancel, isOpen, onCreateGroup, 
         {} as UserGroup['network_roles'],
       );
 
-      await UsersService.createGroup({
-        members: groupMembers.map((m) => m.username),
-        user_group: {
-          id: metadata.name,
-          network_roles: networkRolesPayload,
-          meta_data: metadata.metadata,
-          platform_role: metadata.platformRole,
-        },
-      });
+      const userGroup: UserGroup = (
+        await UsersService.createGroup({
+          members: groupMembers.map((m) => m.username),
+          user_group: {
+            id: metadata.name,
+            network_roles: networkRolesPayload,
+            meta_data: metadata.metadata,
+            platform_role: metadata.platformRole,
+          },
+        })
+      ).data.Response;
 
       notification.success({ message: 'User group created successfully' });
       resetModal();
-      onCreateGroup?.();
+      onCreateGroup?.(userGroup);
     } catch (e: any) {
       notify.error({ message: 'Failed to create user group', description: extractErrorMsg(e) });
     } finally {
@@ -206,7 +211,7 @@ export default function CreateUserGroupModal({ onCancel, isOpen, onCreateGroup, 
 
   return (
     <Modal
-      title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold', minWidth: '60vw' }}>User Details</span>}
+      title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold', minWidth: '60vw' }}>Create User Group</span>}
       open={isOpen}
       onCancel={(ev) => {
         resetModal();
@@ -220,21 +225,7 @@ export default function CreateUserGroupModal({ onCancel, isOpen, onCreateGroup, 
       <Divider style={{ margin: '0px 0px 2rem 0px' }} />
       <div className="CustomModalBody" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
         <Skeleton loading={isLoadingNetworks} active title className="page-padding">
-          {/* top bar */}
-          <Row className="tabbed-page-row-padding" style={{ borderBottom: `1px solid ${themeToken.colorBorder}` }}>
-            <Col xs={24}>
-              <Link to={resolveAppRoute(AppRoutes.USERS_ROUTE)}>View All Groups</Link>
-              <Row>
-                <Col xs={18} lg={12}>
-                  <Typography.Title level={2} style={{ marginTop: '.5rem', marginBottom: '2rem' }}>
-                    Create a User Group
-                  </Typography.Title>
-                </Col>
-              </Row>
-            </Col>
-          </Row>
-
-          <Row className="tabbed-page-row-padding" style={{ paddingBottom: '0px' }}>
+          <Row style={{ paddingBottom: '0px' }}>
             <Col xs={24}>
               <Typography.Title level={4}>General</Typography.Title>
             </Col>
@@ -260,28 +251,28 @@ export default function CreateUserGroupModal({ onCancel, isOpen, onCreateGroup, 
                     <Input.TextArea placeholder="Enter a description for this new group" style={{ width: '100%' }} />
                   </Form.Item>
                 </Col>
-                <Col xs={24}>
+                {/* <Col xs={24}>
                   <Form.Item
                     name="platformRole"
-                    label="Platform Role"
-                    tooltip="The platform role determines the level of access the user group has to the platform, and not one network specifically."
+                    label="Platform Access Level"
+                    tooltip="The platform access level determines the level of access the user group has to the platform, and not one network specifically."
                     rules={[{ required: true, whitespace: false }]}
                     style={{ width: '80%' }}
                   >
                     <Select
-                      placeholder="Select a platform role"
+                      placeholder="Select a platform access level"
                       style={{ width: '100%' }}
                       options={availableUserRoles
                         .filter((r) => deriveUserRoleType(r) === 'platform-role')
                         .map((r) => ({ label: r.id, value: r.id }))}
                     />
                   </Form.Item>
-                </Col>
+                </Col> */}
               </Row>
             </Form>
           </Row>
 
-          <Row className="tabbed-page-row-padding" style={{ paddingBottom: '0px' }}>
+          <Row style={{ paddingBottom: '0px' }}>
             <Col xs={24}>
               <Card size="small" title="Associated Network Roles" style={{ width: '100%', marginBottom: '2rem' }}>
                 <Form form={networkRolesForm}>
@@ -301,51 +292,43 @@ export default function CreateUserGroupModal({ onCancel, isOpen, onCreateGroup, 
             </Col>
           </Row>
 
-          <Row className="tabbed-page-row-padding" style={{ paddingBottom: '5rem', paddingTop: '0px' }}>
-            <Col xs={24}>
-              <Card
-                size="small"
-                title="Group Members"
-                style={{ width: '100%', marginBottom: '2rem' }}
-                extra={
-                  <Button size="small" onClick={() => setIsAddUserModalOpen(true)}>
-                    <PlusOutlined /> Add User
-                  </Button>
-                }
-              >
-                <Row style={{ padding: '.5rem 0rem' }} data-nmui-intercom="new-group_network-roles">
-                  <Col xs={24} style={{ paddingBottom: '1rem ' }}>
-                    <Input
-                      placeholder="Search for a user"
-                      value={membersSearch}
-                      onChange={(e) => setMembersSearch(e.target.value)}
-                      allowClear
-                    />
-                  </Col>
-                  <Col xs={24}>
-                    <Table
-                      size="small"
-                      columns={groupMembersTableCols}
-                      dataSource={filteredMembers}
-                      pagination={{ pageSize: 25 }}
-                    />
-                  </Col>
-                </Row>
-              </Card>
-            </Col>
-          </Row>
+          {showAddMembers && (
+            <Row style={{ paddingBottom: '5rem', paddingTop: '0px' }}>
+              <Col xs={24}>
+                <Card
+                  size="small"
+                  title="Group Members"
+                  style={{ width: '100%' }}
+                  extra={
+                    <Button size="small" onClick={() => setIsAddUserModalOpen(true)}>
+                      <PlusOutlined /> Add User
+                    </Button>
+                  }
+                >
+                  <Row style={{ padding: '.5rem 0rem' }} data-nmui-intercom="new-group_network-roles">
+                    <Col xs={24} style={{ paddingBottom: '1rem ' }}>
+                      <Input
+                        placeholder="Search for a user"
+                        value={membersSearch}
+                        onChange={(e) => setMembersSearch(e.target.value)}
+                        allowClear
+                      />
+                    </Col>
+                    <Col xs={24}>
+                      <Table
+                        size="small"
+                        columns={groupMembersTableCols}
+                        dataSource={filteredMembers}
+                        pagination={{ pageSize: 25 }}
+                      />
+                    </Col>
+                  </Row>
+                </Card>
+              </Col>
+            </Row>
+          )}
 
-          <Row
-            className="tabbed-page-row-padding"
-            style={{
-              position: 'fixed',
-              bottom: 0,
-              zIndex: 999,
-              width: `calc(100% - ${store.sidebarWidth})`,
-              backgroundColor: themeToken.colorBgContainer,
-              borderTop: `1px solid ${themeToken.colorBorder}`,
-            }}
-          >
+          <Row>
             <Col xs={24} style={{ textAlign: 'end' }}>
               <Button type="primary" size="large" loading={isSubmitting} onClick={createGroup}>
                 <PlusOutlined /> Create Group

@@ -75,7 +75,7 @@ export function getNetworkRoleRoute(roleOrId: UserRole | UserRole['id']): string
   return `${resolveAppRoute(AppRoutes.NETWORK_ROLE_DETAILS_ROUTE).replace(placeholder, roleOrId.id)}`;
 }
 
-// Get platform role details route from role obj or ID
+// Get platform access level details route from role obj or ID
 export function getPlatformRoleRoute(roleOrId: UserRole | UserRole['id']): string {
   const placeholder = ':roleId';
   if (typeof roleOrId === 'string')
@@ -256,5 +256,8 @@ export function getNetmakerUiHost() {
  * @returns invite code magic link
  */
 export function getInviteMagicLink(inviteCode: string, username: string): string {
-  return `https://${getNetmakerUiHost()}/invite?invite_code=${encodeURIComponent(inviteCode)}&email=${encodeURIComponent(username)}`;
+  if (window?.location?.protocol.includes('https')) {
+    return `https://${getNetmakerUiHost()}/invite?invite_code=${encodeURIComponent(inviteCode)}&email=${encodeURIComponent(username)}`;
+  }
+  return `http://${getNetmakerUiHost()}/invite?invite_code=${encodeURIComponent(inviteCode)}&email=${encodeURIComponent(username)}`;
 }

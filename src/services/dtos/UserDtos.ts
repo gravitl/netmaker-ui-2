@@ -1,4 +1,5 @@
-import { User, UserGroup } from '@/models/User';
+import { Network } from '@/models/Network';
+import { User, UserGroup, UserRoleId } from '@/models/User';
 
 export interface CreateUserReqDto {
   username: string;
@@ -21,7 +22,9 @@ export interface ExtraUserInfoForm {
 
 export interface CreateUserInviteReqDto {
   user_emails: string[];
-  groups: UserGroup['id'][];
+  user_group_ids: UserGroup['id'][];
+  platform_role_id: UserRoleId;
+  network_roles: Record<Network['netid'], Record<UserRoleId, object>>;
 }
 
 export interface UserInviteReqDto {

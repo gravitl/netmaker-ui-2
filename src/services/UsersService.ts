@@ -1,6 +1,6 @@
 import { ApiRoutes } from '@/constants/ApiRoutes';
 import { axiosService } from './BaseService';
-import { User, UserInvite, UserRole } from '@/models/User';
+import { User, UserInvite, UserRole, UserRoleType } from '@/models/User';
 import { CreateUserGroupReqDto, CreateUserInviteReqDto, UpdateUserReqDto, UserInviteReqDto } from './dtos/UserDtos';
 import { UserGroup } from '@/models/User';
 import { CreateUserReqDto } from './dtos/UserDtos';
@@ -100,8 +100,8 @@ function createRole(role: Partial<UserRole>) {
   return axiosService.post<GenericResponseDto<UserRole>>(ApiRoutes.USER_ROLE, role);
 }
 
-function getRoles(roleType: 'network-role' | 'platfrom-role' = 'network-role') {
-  if (roleType === 'platfrom-role') {
+function getRoles(roleType: UserRoleType = 'network-role') {
+  if (roleType === 'platform-role') {
     return axiosService.get<GenericResponseDto<UserRole[]>>(`${ApiRoutes.USER_ROLES}?platform=true`);
   }
   return axiosService.get<GenericResponseDto<UserRole[]>>(ApiRoutes.USER_ROLES);

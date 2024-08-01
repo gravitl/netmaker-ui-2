@@ -78,15 +78,10 @@ export default function RolesPage(props: RolesPageProps) {
         defaultSortOrder: 'ascend',
       },
       {
-        title: 'Type',
-        render(_, role) {
-          return (
-            <>
-              <Typography.Text>
-                {deriveUserRoleType(role) === 'network-role' ? 'Network Role' : 'Platform Role'}
-              </Typography.Text>
-            </>
-          );
+        title: 'Network',
+        dataIndex: 'network_id',
+        render(networkId) {
+          return <Typography.Text>{networkId}</Typography.Text>;
         },
       },
       {
@@ -180,10 +175,10 @@ export default function RolesPage(props: RolesPageProps) {
             </Typography.Title>
             <Typography.Text style={{ color: 'white ' }}>
               User roles are used to define the permissions and access levels of users within the platform. There are
-              two main kinds of roles: platform roles and network roles. Platform roles define the permissions of users
-              within the platform, so they are able to configure properties like enrollment keys and network-wide host
-              settings. Network roles define the permissions of users within a specific network; permissions to features
-              such as relays and remote access gateway can be configured with this.
+              two main kinds of roles: platform access levels and network roles. Platform access levels define the
+              permissions of users within the platform, so they are able to configure properties like enrollment keys
+              and network-wide host settings. Network roles define the permissions of users within a specific network;
+              permissions to features such as relays and remote access gateway can be configured with this.
             </Typography.Text>
           </Col>
           <Col xs={24} xl={(24 * 1) / 3} style={{ position: 'relative' }}>
@@ -196,8 +191,8 @@ export default function RolesPage(props: RolesPageProps) {
                 User roles will help control the access levels of users platform-wide or per network.
                 <br />
                 <br />
-                Platform roles define the permissions of users within the platform (network-wide) whiles network roles
-                define the permissions of users within a specific network.
+                Platform access levels define the permissions of users within the platform (network-wide) whiles network
+                roles define the permissions of users within a specific network.
               </Typography.Text>
               <Row style={{ marginTop: '1rem' }}>
                 <Col>
@@ -206,7 +201,7 @@ export default function RolesPage(props: RolesPageProps) {
                       items: [
                         {
                           key: 'create-platform-role',
-                          label: 'Create a Platform Role',
+                          label: 'Create a Platform Access Level',
                           onClick: () => {},
                         },
                         {
@@ -268,7 +263,7 @@ export default function RolesPage(props: RolesPageProps) {
                   items: [
                     {
                       key: 'create-platform-role',
-                      label: 'Create a Platform Role',
+                      label: 'Create a Platform Access Level',
                       onClick: () => {},
                     },
                     {
