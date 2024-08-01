@@ -78,7 +78,7 @@ export interface UserGroup {
 
 export interface UserInvite {
   email: string;
-  groups: UserGroup['id'][];
+  user_group_ids: Record<UserGroup['id'], object>;
   invite_code: string;
   platform_role_id: UserRoleId;
   invite_url: string;
