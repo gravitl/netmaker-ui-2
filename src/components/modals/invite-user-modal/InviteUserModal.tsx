@@ -13,6 +13,8 @@ import {
   Steps,
   Table,
   TableColumnProps,
+  Tooltip,
+  Typography,
 } from 'antd';
 import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import '../CustomModal.scss';
@@ -20,7 +22,7 @@ import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { User, UserGroup, UserInvite, UserRole, UserRoleId } from '@/models/User';
 import { UsersService } from '@/services/UsersService';
 import { DeleteOutlined } from '@ant-design/icons';
-import { copyTextToClipboard, snakeCaseToTitleCase } from '@/utils/Utils';
+import { copyTextToClipboard, kebabCaseToTitleCase, snakeCaseToTitleCase } from '@/utils/Utils';
 import { getInviteMagicLink } from '@/utils/RouteUtils';
 import CreateUserGroupModal from '@/pages/users/CreateUserGroupModal';
 
@@ -97,19 +99,28 @@ export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCan
   };
 
   const networkRolesTableData = useMemo<NetworkRolesTableData[]>(() => {
-    return networkRoles.reduce(
-      (acc, role) => {
-        const network = role.network_id;
-        const existingRole = acc.find((r) => r.network === network);
-        if (existingRole) {
-          existingRole.roles.push(role);
-        } else {
-          acc.push({ network, roles: [role] });
-        }
-        return acc;
-      },
-      [] as { network: string; roles: UserRole[] }[],
-    );
+    const roles = networkRoles
+      .reduce(
+        (acc, role) => {
+          const network = role.network_id;
+          const existingRole = acc.find((r) => r.network === network);
+          if (existingRole) {
+            existingRole.roles.push(role);
+          } else {
+            acc.push({ network, roles: [role] });
+          }
+          return acc;
+        },
+        [] as { network: string; roles: UserRole[] }[],
+      )
+      .sort((a, b) => a.network.localeCompare(b.network));
+
+    const allNetsRoleIndex = roles.findIndex((r) => r.network === 'all_networks');
+    if (allNetsRoleIndex === -1) return roles;
+
+    const allNetsRole = roles.splice(allNetsRoleIndex, 1);
+    roles.unshift(allNetsRole[0]);
+    return roles;
   }, [networkRoles]);
 
   const networkRolesTableCols: TableColumnProps<NetworkRolesTableData>[] = useMemo(
@@ -118,9 +129,17 @@ export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCan
         title: 'Network',
         dataIndex: 'network',
         width: '30%',
-        // render(network: string) {
-        //   return <Select placeholder="Select network" value={network} disabled />;
-        // },
+        render(network: string) {
+          if (network === 'all_networks')
+            return (
+              <Tooltip title="Selected roles will apply to all networks">
+                <Typography.Text strong color="primary">
+                  All Networks
+                </Typography.Text>
+              </Tooltip>
+            );
+          return <Typography.Text>{network}</Typography.Text>;
+        },
       },
       {
         title: 'Role',
@@ -132,9 +151,6 @@ export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCan
               placeholder="Select user roles for this network"
               allowClear
               options={rowData.roles.map((r) => ({ value: r.id, label: r.id }))}
-              // onChange={(value) => {
-              //   setSelectedNetworkRoles((prev) => [...new Set([...prev, ...value])]);
-              // }}
               onSelect={(roleId: UserRole['id']) => {
                 setSelectedNetworkRoles((prev) => {
                   return [...prev, { network: rowData.network, role: roleId }];
@@ -193,7 +209,9 @@ export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCan
       const networkRoles = (await UsersService.getRoles()).data.Response;
       const platformRoles = (await UsersService.getRoles('platform-role')).data.Response;
       setNetworkRoles(networkRoles);
-      setPlatformRoles(platformRoles);
+      setPlatformRoles(
+        platformRoles.filter((r) => !r.id.includes('super-admin')).sort((a, b) => a.id.localeCompare(b.id)),
+      );
     } catch (err) {
       notify.error({
         message: 'Failed to load roles',
@@ -305,7 +323,7 @@ export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCan
                     <Radio.Group>
                       {platformRoles.map((role) => (
                         <Radio key={role.id} value={role.id}>
-                          {snakeCaseToTitleCase(role.id)}
+                          {kebabCaseToTitleCase(role.id)}
                         </Radio>
                       ))}
                     </Radio.Group>
@@ -366,7 +384,17 @@ export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCan
                 <Row>
                   <Col xs={24}>
                     <Form.Item label="Select the user's roles for each network">
-                      <Table columns={networkRolesTableCols} dataSource={networkRolesTableData} rowKey="id" />
+                      <Table
+                        columns={networkRolesTableCols}
+                        dataSource={networkRolesTableData}
+                        rowKey="network"
+                        size="small"
+                        pagination={{ size: 'small', hideOnSinglePage: true }}
+                        rowClassName={(rowData) => {
+                          if (rowData.network === 'all_networks') return 'highlighted-row';
+                          return '';
+                        }}
+                      />
                     </Form.Item>
                   </Col>
                 </Row>

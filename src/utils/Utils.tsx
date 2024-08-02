@@ -506,3 +506,19 @@ export function snakeCaseToTitleCase(snakeCaseString: string): string {
   const titleCaseString = titleCaseWords.join(' ');
   return titleCaseString;
 }
+
+/**
+ * Converts a kebab case string to title case.
+ *
+ * @param kebabCaseString the snake case string to convert
+ * @returns the title case string
+ */
+export function kebabCaseToTitleCase(kebabCaseString: string): string {
+  const words = kebabCaseString.split('-');
+  const titleCaseWords = words.map((word) => {
+    const capitalizedWord = word.charAt(0).toUpperCase() + word.slice(1);
+    return capitalizedWord;
+  });
+  const titleCaseString = titleCaseWords.join(' ');
+  return titleCaseString;
+}

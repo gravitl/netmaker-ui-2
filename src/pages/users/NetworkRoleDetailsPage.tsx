@@ -128,22 +128,25 @@ export default function NetworkRoleDetailsPage(props: PageProps) {
         // globalLevelAccess: null,
         network_level_access: {
           remote_access_gw: {
-            all_remote_access_gw: {
-              create: permissions.createRags,
-              read: permissions.viewRags,
-              update: permissions.updateRags,
-              delete: permissions.deleteRags,
-              vpn_access: permissions.connectRags,
-            },
+            // all_remote_access_gw: {
+            //   create: permissions.createRags,
+            //   read: permissions.viewRags,
+            //   update: permissions.updateRags,
+            //   delete: permissions.deleteRags,
+            //   vpn_access: permissions.connectRags,
+            //   self_only: true,
+            // },
             ...Object.keys(vpnAccess).reduce(
               (acc, key) => {
                 if (vpnAccess[key]) {
                   acc[key] = {
                     create: false,
-                    read: false,
+                    read: true,
                     update: false,
                     delete: false,
-                    vpn_access: permissions.connectRags,
+                    vpn_access: true,
+                    // vpn_access: permissions.connectRags,
+                    self_only: true,
                   };
                 }
                 return acc;
@@ -153,11 +156,17 @@ export default function NetworkRoleDetailsPage(props: PageProps) {
           },
           extclients: {
             all_extclients: {
-              create: permissions.createClients,
-              read: permissions.viewClients,
-              update: permissions.updateClients,
-              delete: permissions.deleteClients,
-              vpn_access: permissions.connectClients,
+              // create: permissions.createClients,
+              // read: permissions.viewClients,
+              // update: permissions.updateClients,
+              // delete: permissions.deleteClients,
+              // vpn_access: permissions.connectClients,
+              create: true,
+              read: true,
+              update: true,
+              delete: true,
+              vpn_access: true,
+              self_only: true,
             },
           },
         },
@@ -492,7 +501,7 @@ export default function NetworkRoleDetailsPage(props: PageProps) {
                   );
                 }}
               >
-                Enable Filtered Gateways
+                Select All Gateways
               </Button>
             </Col>
             <Col xs={24} style={{ paddingTop: '1rem' }}>

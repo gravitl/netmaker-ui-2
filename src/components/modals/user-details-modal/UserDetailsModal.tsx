@@ -183,6 +183,10 @@ export default function UserDetailsModal({
             formData.networkRoles[networkId].forEach((roleId) => {
               payload.network_roles[networkId][roleId] = {};
             });
+            // remove empty network roles
+            if (Object.keys(payload.network_roles[networkId]).length === 0) {
+              delete payload.network_roles[networkId];
+            }
           });
           break;
       }

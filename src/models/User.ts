@@ -53,6 +53,7 @@ export interface RsrcPermissionScope {
   update: boolean;
   delete: boolean;
   vpn_access: boolean;
+  self_only: boolean;
 }
 
 export type RsrcTypeValue = {
