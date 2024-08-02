@@ -1,5 +1,5 @@
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
-import { UserGroup } from '@/models/User';
+import { User, UserGroup } from '@/models/User';
 import { AppRoutes } from '@/routes';
 import { UsersService } from '@/services/UsersService';
 import { getUserGroupRoute, resolveAppRoute } from '@/utils/RouteUtils';
@@ -22,9 +22,11 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface GroupPageProps {}
+interface GroupPageProps {
+  users: User[];
+}
 
-export default function GroupsPage(props: GroupPageProps) {
+export default function GroupsPage({ users }: GroupPageProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const navigate = useNavigate();
 
@@ -32,6 +34,18 @@ export default function GroupsPage(props: GroupPageProps) {
   const [userGroups, setUserGroups] = useState<UserGroup[]>([]);
   const [searchGroups, setSearchGroup] = useState('');
   const [selectedGroup, setSelectedGroup] = useState<UserGroup | null>(null);
+
+  const groupUsersCount = useMemo<Record<UserGroup['id'], number>>(() => {
+    return users.reduce(
+      (acc, user) => {
+        Object.keys(user.user_group_ids ?? {}).forEach((group) => {
+          acc[group] = (acc[group] ?? 0) + 1;
+        });
+        return acc;
+      },
+      {} as Record<UserGroup['id'], number>,
+    );
+  }, [users]);
 
   const filteredGroups = useMemo(() => {
     return userGroups
@@ -82,12 +96,12 @@ export default function GroupsPage(props: GroupPageProps) {
         sorter: (a, b) => a.id?.localeCompare(b.id ?? '') ?? 0,
         defaultSortOrder: 'ascend',
       },
-      // {
-      //   title: 'Member Count',
-      //   render(_, group) {
-      //     return <Typography.Text>{group.members?.length ?? 0}</Typography.Text>;
-      //   },
-      // },
+      {
+        title: 'Member Count',
+        render(_, group) {
+          return <Typography.Text>{groupUsersCount[group.id] ?? 0}</Typography.Text>;
+        },
+      },
       {
         width: '1rem',
         align: 'end',
@@ -131,7 +145,7 @@ export default function GroupsPage(props: GroupPageProps) {
         },
       },
     ],
-    [confirmDeleteGroup],
+    [confirmDeleteGroup, groupUsersCount, navigate],
   );
 
   const loadGroups = useCallback(async () => {

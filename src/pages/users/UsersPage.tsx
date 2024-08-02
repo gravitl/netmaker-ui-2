@@ -38,13 +38,14 @@ import { User, UserInvite } from '@/models/User';
 import AddUserModal from '@/components/modals/add-user-modal/AddUserModal';
 import UpdateUserModal from '@/components/modals/update-user-modal/UpdateUserModal';
 import { isSaasBuild } from '@/services/BaseService';
-import { getAmuiUrl, getInviteMagicLink } from '@/utils/RouteUtils';
+import { getAmuiUrl, getInviteMagicLink, getUserGroupRoute } from '@/utils/RouteUtils';
 import TransferSuperAdminRightsModal from '@/components/modals/transfer-super-admin-rights/TransferSuperAdminRightsModal';
 import { copyTextToClipboard, snakeCaseToTitleCase, useBranding } from '@/utils/Utils';
 import RolesPage from './RolesPage';
 import GroupsPage from './GroupsPage';
 import UserDetailsModal from '@/components/modals/user-details-modal/UserDetailsModal';
 import InviteUserModal from '@/components/modals/invite-user-modal/InviteUserModal';
+import { useNavigate } from 'react-router-dom';
 
 const USERS_DOCS_URL = 'https://docs.netmaker.io/pro/pro-users.html';
 
@@ -58,6 +59,7 @@ export default function UsersPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
   const branding = useBranding();
+  const navigate = useNavigate();
 
   const isServerEE = store.serverConfig?.IsEE === 'yes';
   const [users, setUsers] = useState<User[]>([]);
@@ -283,7 +285,14 @@ export default function UsersPage(props: PageProps) {
       {
         title: 'Groups',
         render(_, user) {
-          return <Typography.Text>{Object.keys(user?.user_group_ids ?? {}).join(', ')}</Typography.Text>;
+          return Object.keys(user?.user_group_ids ?? {}).map((g, i) => (
+            <>
+              <Typography.Link key={g} onClick={() => navigate(getUserGroupRoute(g))}>
+                {g}
+              </Typography.Link>
+              {i !== Object.keys(user?.user_group_ids).length - 1 ? ', ' : ''}
+            </>
+          ));
         },
       },
       {
@@ -603,7 +612,7 @@ export default function UsersPage(props: PageProps) {
       {
         key: groupsTabKey,
         label: 'Groups',
-        children: <GroupsPage />,
+        children: <GroupsPage users={users} />,
       },
       {
         key: invitesTabKey,
@@ -611,7 +620,7 @@ export default function UsersPage(props: PageProps) {
         children: getInvitesContent(),
       },
     ],
-    [getInvitesContent, getUsersContent, invites.length],
+    [getInvitesContent, getUsersContent, invites.length, users],
   );
 
   const userTourSteps: TourProps['steps'] = [
