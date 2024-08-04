@@ -110,6 +110,7 @@ import SetNetworkFailoverModal from '@/components/modals/set-network-failover-mo
 import { convertNetworkPayloadToUiNetwork, convertUiNetworkToNetworkPayload } from '@/utils/NetworkUtils';
 import { TourType } from '../DashboardPage';
 import { Waypoints } from 'lucide-react';
+import { isAdminUserOrRole } from '@/utils/UserMgmtUtils';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -881,19 +882,19 @@ export default function NetworkDetailsPage(props: PageProps) {
 
       if (isServerEE) {
         const addRemoveUsersOption: MenuProps['items'] = [
-          {
-            key: 'addremove',
-            label: (
-              <Typography.Text>
-                <UserOutlined /> Add / Remove Users
-              </Typography.Text>
-            ),
-            onClick: (info) => {
-              setSelectedGateway(gateway);
-              setIsUpdateIngressUsersModalOpen(true);
-              info.domEvent.stopPropagation();
-            },
-          },
+          // {
+          //   key: 'addremove',
+          //   label: (
+          //     <Typography.Text>
+          //       <UserOutlined /> Add / Remove Users
+          //     </Typography.Text>
+          //   ),
+          //   onClick: (info) => {
+          //     setSelectedGateway(gateway);
+          //     setIsUpdateIngressUsersModalOpen(true);
+          //     info.domEvent.stopPropagation();
+          //   },
+          // },
         ];
         return [...addRemoveUsersOption, ...defaultOptions];
       }
@@ -1202,10 +1203,11 @@ export default function NetworkDetailsPage(props: PageProps) {
                   {
                     key: 'edit',
                     label: (
-                      <Typography.Text>
+                      <Typography.Text disabled={!isAdminUserOrRole(store.user!) && store.username !== client.ownerid}>
                         <EditOutlined /> Edit
                       </Typography.Text>
                     ),
+                    disabled: !isAdminUserOrRole(store.user!) && store.username !== client.ownerid,
                     onClick: () => {
                       setTargetClient(client);
                       setIsUpdateClientModalOpen(true);
@@ -1214,10 +1216,11 @@ export default function NetworkDetailsPage(props: PageProps) {
                   {
                     key: 'view',
                     label: (
-                      <Typography.Text>
+                      <Typography.Text disabled={!isAdminUserOrRole(store.user!) && store.username !== client.ownerid}>
                         <EyeOutlined /> View Config
                       </Typography.Text>
                     ),
+                    disabled: !isAdminUserOrRole(store.user!) && store.username !== client.ownerid,
                     onClick: () => {
                       setTargetClient(client);
                       setIsClientConfigModalOpen(true);
@@ -1231,6 +1234,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                         <DeleteOutlined /> Delete
                       </>
                     ),
+                    disabled: !isAdminUserOrRole(store.user!) && store.username !== client.ownerid,
                     onClick: () => {
                       confirmDeleteClient(client);
                     },
@@ -1244,7 +1248,15 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       },
     ],
-    [confirmDeleteClient, networkNodes, openClientDetails, store.hostsCommonDetails, toggleClientStatus],
+    [
+      confirmDeleteClient,
+      networkNodes,
+      openClientDetails,
+      store.hostsCommonDetails,
+      store.user,
+      store.username,
+      toggleClientStatus,
+    ],
   );
 
   const relayTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(

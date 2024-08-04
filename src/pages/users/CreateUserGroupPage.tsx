@@ -95,12 +95,14 @@ export default function CreateUserGroupPage(props: PageProps) {
               style={{ width: '100%' }}
               placeholder="Select a role for this network"
               options={[
-                { label: 'n/a', value: '' },
-                ...rowData.network_roles.map((role) => ({ label: role, value: role })),
+                ...rowData.network_roles
+                  .map((role) => ({ label: role, value: role }))
+                  .sort((a, b) => a.label.localeCompare(b.label)),
                 {
                   label: '+ Create a new role',
                   value: 'create-new-role',
                 },
+                { label: 'n/a', value: '' },
               ]}
               onSelect={(opt) => {
                 if (opt === 'create-new-role') {
@@ -300,7 +302,7 @@ export default function CreateUserGroupPage(props: PageProps) {
               title="Group Members"
               style={{ width: '100%', marginBottom: '2rem' }}
               extra={
-                <Button size="small" onClick={() => setIsAddUserModalOpen(true)}>
+                <Button size="small" type="primary" onClick={() => setIsAddUserModalOpen(true)}>
                   <PlusOutlined /> Add User
                 </Button>
               }

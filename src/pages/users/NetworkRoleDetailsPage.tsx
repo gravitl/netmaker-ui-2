@@ -84,12 +84,13 @@ export default function NetworkRoleDetailsPage(props: PageProps) {
 
   const networkRags = useMemo(() => {
     return store.nodes
-      .filter((n) => (n.network === role?.network_id || '') && n.isingressgateway)
+      .filter((n) => (n.network === role?.network_id || role?.network_id === 'all_networks') && n.isingressgateway)
       .map((n) => getExtendedNode(n, store.hostsCommonDetails));
   }, [role?.network_id, store.hostsCommonDetails, store.nodes]);
 
   const filteredRags = useMemo(() => {
-    return networkRags.filter((rag) => rag.name?.toLowerCase().includes(searchRag.toLowerCase()));
+    const ret = networkRags.filter((rag) => rag.name?.toLowerCase().includes(searchRag.toLowerCase()));
+    return ret;
   }, [networkRags, searchRag]);
 
   const loadDetails = useCallback(async () => {
@@ -206,7 +207,7 @@ export default function NetworkRoleDetailsPage(props: PageProps) {
   // const getPermissionsContent = useMemo(() => {
   //   return (
   //     <>
-  //       <Form form={permissionsForm}>
+  //       <Form form={permissionsForm} disabled={role?.default}>
   //         <Col xs={24}>
   //           {/* hosts */}
   //           {/* <Card
@@ -482,7 +483,7 @@ export default function NetworkRoleDetailsPage(props: PageProps) {
   const getVpnAccessContent = useMemo(() => {
     return (
       <>
-        <Form form={vpnAccessForm}>
+        <Form form={vpnAccessForm} disabled={role?.default}>
           <Row style={{ marginBottom: '2rem' }}>
             <Col xs={20}>Select the Remote Access Gateways users with this role will be able to connect through</Col>
             <Col xs={4} style={{ textAlign: 'end' }}>
@@ -527,14 +528,21 @@ export default function NetworkRoleDetailsPage(props: PageProps) {
                         name={rag.id}
                         valuePropName="checked"
                         noStyle
-                        initialValue={(role?.network_level_access?.remote_access_gw as any)?.[rag.id]?.vpn_access}
+                        initialValue={
+                          role?.network_level_access?.remote_access_gw?.all_remote_access_gw?.vpn_access ||
+                          (role?.network_level_access?.remote_access_gw as any)?.[rag.id]?.vpn_access
+                        }
                       >
                         <Switch title="You cannot change this setting this in this app version" />
                       </Form.Item>,
                     ]}
                   >
                     <List.Item.Meta
-                      title={rag.name ?? ''}
+                      title={
+                        rag.name
+                          ? `${rag.name} ${role?.network_id === 'all_networks' ? `(Network: ${rag.network})` : ''}`
+                          : ''
+                      }
                       description={rag.metadata || 'No metadata available for this Gateway'}
                     />
                   </List.Item>
@@ -545,7 +553,7 @@ export default function NetworkRoleDetailsPage(props: PageProps) {
         </Form>
       </>
     );
-  }, [filteredRags, role?.network_level_access?.remote_access_gw, searchRag, vpnAccessForm]);
+  }, [filteredRags, role, searchRag, vpnAccessForm]);
 
   const tabs: TabsProps['items'] = useMemo(
     () => [
@@ -602,6 +610,7 @@ export default function NetworkRoleDetailsPage(props: PageProps) {
               name: role?.id,
               network: { label: role?.network_id, value: role?.network_id },
             }}
+            disabled={role?.default}
           >
             <Row gutter={[24, 0]}>
               <Col xs={24} md={12}>
@@ -669,7 +678,8 @@ export default function NetworkRoleDetailsPage(props: PageProps) {
               size="large"
               loading={isSubmitting}
               onClick={updateNetworkRole}
-              // disabled={!canUpdate}
+              disabled={role?.default}
+              title={role?.default ? 'Cannot update default roles' : undefined}
             >
               <EditOutlined /> Update Role
             </Button>

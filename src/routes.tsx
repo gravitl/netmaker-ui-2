@@ -22,6 +22,7 @@ import CreateUserGroupPage from './pages/users/CreateUserGroupPage';
 import ContinueInvitePage from './pages/auth/ContinueInvitePage';
 import UserGroupDetailsPage from './pages/users/UserGroupDetailsPage';
 import PlatformRoleDetailsPage from './pages/users/PlatformRoleDetailsPage';
+import ProfilePage from './pages/users/ProfilePage';
 
 export const AppRoutes = {
   DASHBOARD_ROUTE: '/',
@@ -44,6 +45,7 @@ export const AppRoutes = {
   CONTINUE_INVITE_ROUTE: '/invite',
   USER_GROUP_DETAILS_ROUTE: '/users/group/:groupId',
   PLATFORM_ROLE_DETAILS_ROUTE: '/users/platform-role/:roleId',
+  PROFILE_ROUTE: '/profile',
 };
 
 function generateRoutePair(path: string, element: JSX.Element): RouteObject[] {
@@ -152,6 +154,12 @@ const routes: RouteObject[] = [
         AppRoutes.USER_GROUP_DETAILS_ROUTE.split('/').slice(1).join('/'),
         <ProtectedRoute>
           <UserGroupDetailsPage isFullScreen />
+        </ProtectedRoute>,
+      ),
+      ...generateRoutePair(
+        AppRoutes.PROFILE_ROUTE.split('/').slice(1).join('/'),
+        <ProtectedRoute>
+          <ProfilePage isFullScreen />
         </ProtectedRoute>,
       ),
     ],

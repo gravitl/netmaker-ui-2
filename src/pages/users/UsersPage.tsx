@@ -38,7 +38,7 @@ import { User, UserInvite } from '@/models/User';
 import AddUserModal from '@/components/modals/add-user-modal/AddUserModal';
 import UpdateUserModal from '@/components/modals/update-user-modal/UpdateUserModal';
 import { isSaasBuild } from '@/services/BaseService';
-import { getAmuiUrl, getInviteMagicLink, getUserGroupRoute } from '@/utils/RouteUtils';
+import { getAmuiUrl, getInviteMagicLink, getUserGroupRoute, resolveAppRoute } from '@/utils/RouteUtils';
 import TransferSuperAdminRightsModal from '@/components/modals/transfer-super-admin-rights/TransferSuperAdminRightsModal';
 import { copyTextToClipboard, snakeCaseToTitleCase, useBranding } from '@/utils/Utils';
 import RolesPage from './RolesPage';
@@ -46,6 +46,7 @@ import GroupsPage from './GroupsPage';
 import UserDetailsModal from '@/components/modals/user-details-modal/UserDetailsModal';
 import InviteUserModal from '@/components/modals/invite-user-modal/InviteUserModal';
 import { useNavigate } from 'react-router-dom';
+import { AppRoutes } from '@/routes';
 
 const USERS_DOCS_URL = 'https://docs.netmaker.io/pro/pro-users.html';
 
@@ -164,54 +165,49 @@ export default function UsersPage(props: PageProps) {
     }
   }, []);
 
-  const checkIfCurrentUserCanEditOrDeleteUsers = useCallback(
+  const canDeleteUser: (user: User) => [boolean, string] = useCallback(
     (user: User) => {
-      // if current user is super admin, he can edit or delete any user
-      if (store.user?.platform_role_id === 'super_admin') {
-        return false;
+      // cannot delete oneself
+      if (store.user?.username === user.username) return [false, 'Cannot delete oneself'];
+      // if current user is super admin, they can delete any other user
+      if (store.user?.platform_role_id === 'super-admin') {
+        return [true, ''];
       }
-
       if (store.user?.platform_role_id === 'admin') {
-        // if current user is admin and he is editing his own profile, he can edit/delete his own profile
-        if (user.username === store.username) {
-          return false;
+        if (user.platform_role_id === 'super-admin') {
+          return [false, 'Cannot delete the super admin'];
         }
-
-        // if current user is admin, he can edit or delete any user except super admin and he can't edit/delete other admin users
-        if (user.issuperadmin || user.isadmin) {
-          return true;
+        if (user.platform_role_id === 'admin') {
+          return [false, 'Cannot delete another admin'];
         }
-        return false;
+        return [true, ''];
       }
-
-      // if current user is not admin or super admin, he can't edit or delete any user
-      return true;
+      return [false, 'Cannot delete another user'];
     },
-    [store.user, store.username],
+    [store.user],
   );
 
-  // const confirmApproveUser = useCallback(
-  //   async (user: User) => {
-  //     Modal.confirm({
-  //       title: 'Approve user',
-  //       content: `Are you sure you want to approve pending user ${user.username}?`,
-  //       onOk: async () => {
-  //         try {
-  //           await UsersService.approvePendingUser(user.username);
-  //           notify.success({ message: `User ${user.username} approved` });
-  //           setInvites((users) => users.filter((u) => u.username !== user.username));
-  //           loadUsers(false);
-  //         } catch (err) {
-  //           notify.error({
-  //             message: 'Failed to approve user',
-  //             description: extractErrorMsg(err as any),
-  //           });
-  //         }
-  //       },
-  //     });
-  //   },
-  //   [loadUsers, notify],
-  // );
+  const canChangePassword: (user: User) => [boolean, string] = useCallback(
+    (user: User) => {
+      if (store.user?.username === user.username) return [true, ''];
+      if (user.auth_type === 'oauth') return [false, 'Cannot change password of an oauth user'];
+      // if current user is super admin, they can change password of any other user
+      if (store.user?.platform_role_id === 'super-admin') {
+        return [true, ''];
+      }
+      if (store.user?.platform_role_id === 'admin') {
+        if (user.platform_role_id === 'super-admin') {
+          return [false, 'Cannot change password of the super admin'];
+        }
+        if (user.platform_role_id === 'admin') {
+          return [false, "Cannot change another admin' password"];
+        }
+        return [true, ''];
+      }
+      return [false, 'Cannot change another user password'];
+    },
+    [store.user],
+  );
 
   const confirmDeleteInvite = useCallback(
     async (invite: UserInvite) => {
@@ -263,6 +259,10 @@ export default function UsersPage(props: PageProps) {
           return (
             <Typography.Link
               onClick={() => {
+                if (username === store.username) {
+                  navigate(resolveAppRoute(AppRoutes.PROFILE_ROUTE));
+                  return;
+                }
                 setSelectedUser(user);
                 setIsUserDetailsModalOpen(true);
               }}
@@ -305,9 +305,9 @@ export default function UsersPage(props: PageProps) {
                 items: [
                   {
                     key: 'edit',
-                    label: 'Edit',
-                    disabled: checkIfCurrentUserCanEditOrDeleteUsers(user),
-                    title: checkIfCurrentUserCanEditOrDeleteUsers(user) ? 'You cannot edit another admin user' : null,
+                    label: 'Change Password',
+                    disabled: !canChangePassword(user)[0],
+                    title: canChangePassword(user)[0] ? canChangePassword(user)[1] : '',
                     onClick: (ev: any) => {
                       ev.domEvent.stopPropagation();
                       const userClone = structuredClone(user);
@@ -315,27 +315,24 @@ export default function UsersPage(props: PageProps) {
                     },
                   },
                   {
-                    key: 'default',
-                    disabled: checkIfCurrentUserCanEditOrDeleteUsers(user),
-                    title: checkIfCurrentUserCanEditOrDeleteUsers(user)
-                      ? 'You cannot delete another admin user or the super admin'
-                      : null,
-                    label: (
-                      <Typography.Text disabled={checkIfCurrentUserCanEditOrDeleteUsers(user)}>Delete</Typography.Text>
-                    ),
+                    key: 'delete',
+                    disabled: !canDeleteUser(user)[0],
+                    title: canDeleteUser(user)[0] ? canDeleteUser(user)[1] : '',
+                    // label: <Typography.Text disabled={!canDeleteUser(user)[0]}>Delete</Typography.Text>,
+                    label: 'Delete',
                     onClick: (ev: any) => {
                       ev.domEvent.stopPropagation();
                       confirmDeleteUser(user);
                     },
                   },
                 ].concat(
-                  user.platform_role_id === 'super_admin' && store.username === user.username
+                  user.platform_role_id === 'super-admin' && store.username === user.username
                     ? [
                         {
                           key: 'transfer',
                           label: 'Transfer Super Admin Rights',
                           disabled: false,
-                          title: null,
+                          title: '',
                           onClick: (ev) => {
                             ev.domEvent.stopPropagation();
                             setIsTransferSuperAdminRightsModalOpen(true);
@@ -352,7 +349,7 @@ export default function UsersPage(props: PageProps) {
         },
       },
     ],
-    [checkIfCurrentUserCanEditOrDeleteUsers, store.username, onEditUser, confirmDeleteUser],
+    [store.username, navigate, canChangePassword, canDeleteUser, onEditUser, confirmDeleteUser],
   );
 
   const userInvitesTableColumns: TableColumnsType<UserInvite> = useMemo(

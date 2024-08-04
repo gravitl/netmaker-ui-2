@@ -133,13 +133,14 @@ export default function CreateNetworkRoleModal({
           // globalLevelAccess: null,
           network_level_access: {
             remote_access_gw: {
-              all_remote_access_gw: {
-                create: permissions.createRags,
-                read: permissions.viewRags,
-                update: permissions.updateRags,
-                delete: permissions.deleteRags,
-                vpn_access: permissions.connectRags,
-              },
+              // all_remote_access_gw: {
+              //   create: permissions.createRags,
+              //   read: permissions.viewRags,
+              //   update: permissions.updateRags,
+              //   delete: permissions.deleteRags,
+              //   vpn_access: permissions.connectRags,
+              //   self_only: true,
+              // },
               ...Object.keys(vpnAccess).reduce(
                 (acc, key) => {
                   if (vpnAccess[key]) {
@@ -149,6 +150,7 @@ export default function CreateNetworkRoleModal({
                       update: false,
                       delete: false,
                       vpn_access: permissions.connectRags,
+                      self_only: true,
                     };
                   }
                   return acc;
@@ -158,11 +160,17 @@ export default function CreateNetworkRoleModal({
             },
             extclients: {
               all_extclients: {
-                create: permissions.createClients,
-                read: permissions.viewClients,
-                update: permissions.updateClients,
-                delete: permissions.deleteClients,
-                vpn_access: permissions.connectClients,
+                // create: permissions.createClients,
+                // read: permissions.viewClients,
+                // update: permissions.updateClients,
+                // delete: permissions.deleteClients,
+                // vpn_access: permissions.connectClients,
+                create: true,
+                read: true,
+                update: true,
+                delete: true,
+                vpn_access: true,
+                self_only: true,
               },
             },
           },
@@ -530,7 +538,7 @@ export default function CreateNetworkRoleModal({
                   <Form.Item
                     name="name"
                     label="Role Name"
-                    rules={[{ required: true, whitespace: false }]}
+                    rules={[{ required: true, whitespace: true }]}
                     style={{ width: '80%' }}
                   >
                     <Input placeholder="Enter a name for this new role" style={{ width: '100%' }} />

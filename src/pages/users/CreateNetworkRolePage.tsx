@@ -493,7 +493,7 @@ export default function CreateNetworkRolePage(props: PageProps) {
 
   return (
     <Layout.Content
-      className="NewNetworkRolePage"
+      className="CreateNetworkRolePage"
       style={{ position: 'relative', height: '100%', padding: props.isFullScreen ? 0 : 24 }}
     >
       <Skeleton loading={isLoadingNetworks} active title className="page-padding">
@@ -521,7 +521,7 @@ export default function CreateNetworkRolePage(props: PageProps) {
                 <Form.Item
                   name="name"
                   label="Role Name"
-                  rules={[{ required: true, whitespace: false }]}
+                  rules={[{ required: true, whitespace: true }]}
                   style={{ width: '80%' }}
                 >
                   <Input placeholder="Enter a name for this new role" style={{ width: '100%' }} />

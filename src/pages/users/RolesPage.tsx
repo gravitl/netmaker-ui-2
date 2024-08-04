@@ -83,6 +83,9 @@ export default function RolesPage(props: RolesPageProps) {
         render(networkId) {
           return <Typography.Text>{networkId}</Typography.Text>;
         },
+        filters: userRoles.map((r) => ({ text: r.id, value: r.id })),
+        filterSearch: true,
+        onFilter: (value, record) => record.id === value,
       },
       {
         width: '1rem',
@@ -139,7 +142,7 @@ export default function RolesPage(props: RolesPageProps) {
         },
       },
     ],
-    [confirmDeleteRole],
+    [confirmDeleteRole, userRoles],
   );
 
   const loadRoles = useCallback(async () => {

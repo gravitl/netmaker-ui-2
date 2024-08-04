@@ -100,8 +100,10 @@ export default function CreateUserGroupModal({
               style={{ width: '100%' }}
               placeholder="Select a role for this network"
               options={[
+                ...rowData.network_roles
+                  .map((role) => ({ label: role, value: role }))
+                  .sort((a, b) => a.label.localeCompare(b.label)),
                 { label: 'n/a', value: '' },
-                ...rowData.network_roles.map((role) => ({ label: role, value: role })),
               ]}
             />
           </Form.Item>
@@ -300,7 +302,7 @@ export default function CreateUserGroupModal({
                   title="Group Members"
                   style={{ width: '100%' }}
                   extra={
-                    <Button size="small" onClick={() => setIsAddUserModalOpen(true)}>
+                    <Button size="small" type="primary" onClick={() => setIsAddUserModalOpen(true)}>
                       <PlusOutlined /> Add User
                     </Button>
                   }
