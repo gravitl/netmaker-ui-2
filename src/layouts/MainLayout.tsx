@@ -23,7 +23,7 @@ import { AppErrorBoundary } from '@/components/AppErrorBoundary';
 import { isManagedHost, useBranding } from '@/utils/Utils';
 import VersionUpgradeModal from '@/components/modals/version-upgrade-modal/VersionUpgradeModal';
 import { lt } from 'semver';
-import { deriveUserRoleType } from '@/utils/UserMgmtUtils';
+import { isAdminUserOrRole } from '@/utils/UserMgmtUtils';
 
 const { Content, Sider } = Layout;
 
@@ -62,12 +62,7 @@ export default function MainLayout() {
     [store.networks],
   );
 
-  const userHasFullAccess = useMemo(
-    () =>
-      // !store.userPlatformRole?.deny_dashboard_access &&
-      store.userPlatformRole?.id === 'admin' || store.userPlatformRole?.id === 'super_admin',
-    [store.userPlatformRole],
-  );
+  const userHasFullAccess = useMemo(() => isAdminUserOrRole(store.user!), [store.user]);
 
   const sidebarLogo = useMemo(() => {
     const { logoDarkUrl, logoLightUrl, logoDarkSmallUrl, logoLightSmallUrl } = branding;
@@ -266,6 +261,29 @@ export default function MainLayout() {
                     i18n.changeLanguage(value);
                   }}
                 />
+              </div>
+            ),
+          },
+          {
+            style: {
+              paddingLeft: isSidebarCollapsed ? '.2rem' : '1rem',
+              paddingRight: isSidebarCollapsed ? '.2rem' : '1rem',
+              paddingTop: isSidebarCollapsed ? '.2rem' : '1rem',
+              paddingBottom: isSidebarCollapsed ? '.2rem' : '1rem',
+            },
+            label: (
+              <div
+                style={{
+                  display: 'flex',
+                  flexFlow: 'row nowrap',
+                  gap: '1rem',
+                  alignItems: 'center',
+                }}
+                onClick={() => {
+                  navigate(resolveAppRoute(AppRoutes.PROFILE_ROUTE));
+                }}
+              >
+                <UserOutlined /> Profile
               </div>
             ),
           },

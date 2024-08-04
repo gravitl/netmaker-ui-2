@@ -13,9 +13,10 @@ export interface User {
   user_group_ids: Record<UserGroup['id'], object>;
   platform_role_id: UserRoleId;
   network_roles: Record<Network['netid'], Record<UserRoleId, object>>;
+  auth_type: 'basic_auth' | 'oauth';
 }
 
-export type UserRoleId = 'super_admin' | 'admin' | 'user' | 'network_admin' | 'network_user' | string;
+export type UserRoleId = 'super-admin' | 'admin' | 'user' | 'network-admin' | 'network-user' | string;
 
 export type UserRoleType = 'network-role' | 'platform-role';
 

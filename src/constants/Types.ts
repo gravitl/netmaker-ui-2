@@ -91,6 +91,7 @@ export const mockNewUserWithGroup: User = {
   isadmin: false,
   issuperadmin: false,
   remote_gw_ids: null,
+  auth_type: 'basic_auth',
 };
 
 export const mockNewUserWithoutGroup: User = {
@@ -101,4 +102,5 @@ export const mockNewUserWithoutGroup: User = {
   isadmin: false,
   issuperadmin: false,
   remote_gw_ids: null,
+  auth_type: 'oauth',
 };

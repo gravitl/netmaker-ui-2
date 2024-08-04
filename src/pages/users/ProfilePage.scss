@@ -1,0 +1,18 @@
+.ProfilePage {
+  .header-card {
+    .ant-card-body {
+      height: 100%;
+      display: flex;
+      flex-flow: column nowrap;
+    }
+  }
+
+  .profile-card {
+    margin-top: 2rem;
+    width: 50%;
+
+    @media screen and (max-width: 768px) {
+      width: 90%;
+    }
+  }
+}

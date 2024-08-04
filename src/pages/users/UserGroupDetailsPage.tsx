@@ -133,7 +133,9 @@ export default function UserGroupDetailsPage(props: PageProps) {
               placeholder="Select a role for this network"
               options={[
                 { label: 'n/a', value: '' },
-                ...rowData.network_roles.map((role) => ({ label: role, value: role })),
+                ...rowData.network_roles
+                  .map((role) => ({ label: role, value: role }))
+                  .sort((a, b) => a.label.localeCompare(b.label)),
               ]}
             />
           </Form.Item>

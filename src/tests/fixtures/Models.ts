@@ -203,6 +203,7 @@ export const stubUser1: User = {
   user_group_ids: {},
   platform_role_id: '',
   network_roles: {},
+  auth_type: 'basic_auth',
 };
 
 export const stubUser2: User = {
@@ -213,6 +214,7 @@ export const stubUser2: User = {
   user_group_ids: {},
   platform_role_id: '',
   network_roles: {},
+  auth_type: 'oauth',
 };
 
 export const stubUsers: User[] = [stubUser1, stubUser2];

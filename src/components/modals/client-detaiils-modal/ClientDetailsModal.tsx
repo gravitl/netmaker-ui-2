@@ -5,6 +5,8 @@ import { EyeOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { NodesService } from '@/services/NodesService';
 import { ExternalClient } from '@/models/ExternalClient';
+import { useStore } from '@/store/store';
+import { isAdminUserOrRole } from '@/utils/UserMgmtUtils';
 
 interface ClientDetailsModalProps {
   isOpen: boolean;
@@ -24,6 +26,7 @@ export default function ClientDetailsModal({
   onViewConfig,
 }: ClientDetailsModalProps) {
   const [notify, notifyCtx] = notification.useNotification();
+  const store = useStore();
 
   const toggleClientStatus = useCallback(
     async (newStatus: boolean) => {
@@ -146,7 +149,10 @@ export default function ClientDetailsModal({
 
         <Row style={{ marginTop: '2rem' }} data-nmui-intercom="client-details_downloadbtn">
           <Col xs={24}>
-            <Button onClick={onViewConfig}>
+            <Button
+              onClick={onViewConfig}
+              disabled={!isAdminUserOrRole(store.user!) && store.username !== client.ownerid}
+            >
               <EyeOutlined /> View/Download config
             </Button>
           </Col>

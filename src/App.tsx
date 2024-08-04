@@ -220,7 +220,7 @@ function App() {
         <RouterProvider router={router} />
       </ConfigProvider>
 
-      <ServerMalfunctionModal isOpen={showServerMalfunctionModal} />
+      {/* <ServerMalfunctionModal isOpen={showServerMalfunctionModal} /> */}
     </div>
   );
 }
