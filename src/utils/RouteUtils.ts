@@ -105,6 +105,16 @@ export function getNetmakerTrialPeriodDocs() {
   return import.meta.env.VITE_NETMAKER_TRIAL_PERIOD_DOCS_URL;
 }
 
+// Function to get PostHog public API key
+export function getPostHogPublicApiKey() {
+  return (window as any).NMUI_PUBLIC_POSTHOG_KEY || import.meta.env.VITE_PUBLIC_POSTHOG_KEY;
+}
+
+// Function to get PostHog host
+export function getPostHogHost() {
+  return (window as any).NMUI_PUBLIC_POSTHOG_HOST || import.meta.env.VITE_PUBLIC_POSTHOG_HOST;
+}
+
 // Function to get netclient download link and filename based on OS, arch and type
 export function getNetclientDownloadLink(os: AvailableOses, arch: AvailableArchs): [string, string] {
   const fileNamePlaceholder = ':fileName';
