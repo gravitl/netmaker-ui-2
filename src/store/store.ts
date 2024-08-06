@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { devtools, persist } from 'zustand/middleware';
+import { devtools } from 'zustand/middleware';
 import { AppSlice, IAppSlice } from './app';
 import { AuthSlice, IAuthSlice } from './auth';
 import { HostSlice, IHostSlice } from './hosts';
@@ -10,21 +10,14 @@ import { INetworksUsecaseSlice, NetworksUsecaseSlice } from './networkusecase';
 export const useStore = create<
   INodeSlice & IAppSlice & INetworkSlice & IAuthSlice & IHostSlice & INetworksUsecaseSlice
 >()(
-  devtools(
-    persist(
-      (...a) => ({
-        ...NodeSlice.createNodeSlice(...a),
-        ...AppSlice.createAppSlice(...a),
-        ...AuthSlice.createAuthSlice(...a),
-        ...NetworkSlice.createNetworkSlice(...a),
-        ...HostSlice.createHostSlice(...a),
-        ...NetworksUsecaseSlice.createNetworkUsecaseSlice(...a),
-      }),
-      {
-        name: 'netmaker-storage',
-      },
-    ),
-  ),
+  devtools((...a) => ({
+    ...NodeSlice.createNodeSlice(...a),
+    ...AppSlice.createAppSlice(...a),
+    ...AuthSlice.createAuthSlice(...a),
+    ...NetworkSlice.createNetworkSlice(...a),
+    ...HostSlice.createHostSlice(...a),
+    ...NetworksUsecaseSlice.createNetworkUsecaseSlice(...a),
+  })),
 );
 
 export const BrowserStore = {
