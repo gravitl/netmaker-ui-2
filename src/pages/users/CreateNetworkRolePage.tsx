@@ -31,6 +31,7 @@ import { Network } from '@/models/Network';
 import { NetworksService } from '@/services/NetworksService';
 import { convertNetworkPayloadToUiNetwork } from '@/utils/NetworkUtils';
 import { getExtendedNode } from '@/utils/NodeUtils';
+import { UsersPageTabs } from './UsersPage';
 
 const permissionsTabKey = 'permissions';
 const vpnAccessTabKey = 'vpn-access';
@@ -500,7 +501,7 @@ export default function CreateNetworkRolePage(props: PageProps) {
         {/* top bar */}
         <Row className="tabbed-page-row-padding" style={{ borderBottom: `1px solid ${themeToken.colorBorder}` }}>
           <Col xs={24}>
-            <Link to={resolveAppRoute(AppRoutes.USERS_ROUTE)}>View All Roles</Link>
+            <Link to={resolveAppRoute(AppRoutes.USERS_ROUTE, { tab: UsersPageTabs.rolesTabKey })}>View All Roles</Link>
             <Row>
               <Col xs={18} lg={12}>
                 <Typography.Title level={2} style={{ marginTop: '.5rem', marginBottom: '2rem' }}>

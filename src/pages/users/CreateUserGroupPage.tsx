@@ -11,7 +11,6 @@ import {
   Row,
   Select,
   Skeleton,
-  Switch,
   Table,
   TableColumnProps,
   theme,
@@ -32,6 +31,7 @@ import { convertNetworkPayloadToUiNetwork } from '@/utils/NetworkUtils';
 import AddUsersToGroupModal from '@/components/modals/add-users-to-group-modal/AddUsersToGroupModal';
 import { deriveUserRoleType } from '@/utils/UserMgmtUtils';
 import CreateNetworkRoleModal from './CreateNetworkRoleModal';
+import { UsersPageTabs } from './UsersPage';
 
 interface metadataFormValues {
   name: string;
@@ -217,7 +217,9 @@ export default function CreateUserGroupPage(props: PageProps) {
         {/* top bar */}
         <Row className="tabbed-page-row-padding" style={{ borderBottom: `1px solid ${themeToken.colorBorder}` }}>
           <Col xs={24}>
-            <Link to={resolveAppRoute(AppRoutes.USERS_ROUTE)}>View All Groups</Link>
+            <Link to={resolveAppRoute(AppRoutes.USERS_ROUTE, { tab: UsersPageTabs.groupsTabKey })}>
+              View All Groups
+            </Link>
             <Row>
               <Col xs={18} lg={12}>
                 <Typography.Title level={2} style={{ marginTop: '.5rem', marginBottom: '2rem' }}>
