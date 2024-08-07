@@ -2,7 +2,6 @@ import { useStore } from '@/store/store';
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import {
   Button,
-  Card,
   Col,
   Form,
   Input,
@@ -28,6 +27,7 @@ import { resolveAppRoute } from '@/utils/RouteUtils';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { AppRoutes } from '@/routes';
 import { getExtendedNode } from '@/utils/NodeUtils';
+import { UsersPageTabs } from './UsersPage';
 
 // const permissionsTabKey = 'permissions';
 const vpnAccessTabKey = 'vpn-access';
@@ -587,7 +587,9 @@ export default function NetworkRoleDetailsPage(props: PageProps) {
         {/* top bar */}
         <Row className="tabbed-page-row-padding" style={{ borderBottom: `1px solid ${themeToken.colorBorder}` }}>
           <Col xs={24}>
-            <Link to={resolveAppRoute(AppRoutes.USERS_ROUTE)}>View All Roles</Link>
+            <Link to={resolveAppRoute(`${AppRoutes.USERS_ROUTE}`, { tab: UsersPageTabs.rolesTabKey })}>
+              View All Roles
+            </Link>
             <Row>
               <Col xs={18} lg={12}>
                 <Typography.Title level={2} style={{ marginTop: '.5rem', marginBottom: '2rem' }}>

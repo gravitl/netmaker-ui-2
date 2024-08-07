@@ -27,11 +27,15 @@ export function isCurrentRouteVersioned() {
  * @param route route to resolve
  * @returns the resolved route
  */
-export function resolveAppRoute(route: string) {
+export function resolveAppRoute(route: string, ...queryParams: { [key: string]: string }[]) {
   if (isCurrentRouteVersioned()) {
-    return `/${ServerConfigService.getUiVersion()}${route}`;
+    return `/${ServerConfigService.getUiVersion()}${route}?${queryParams
+      .map((param) => `${Object.keys(param)[0]}=${encodeURIComponent(param[Object.keys(param)[0]])}`)
+      .join('&')}`;
   }
-  return route;
+  return `${route}?${queryParams
+    .map((param) => `${Object.keys(param)[0]}=${encodeURIComponent(param[Object.keys(param)[0]])}`)
+    .join('&')}`;
 }
 
 // Get host route from host obj or ID

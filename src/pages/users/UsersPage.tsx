@@ -38,7 +38,7 @@ import { User, UserInvite } from '@/models/User';
 import AddUserModal from '@/components/modals/add-user-modal/AddUserModal';
 import UpdateUserModal from '@/components/modals/update-user-modal/UpdateUserModal';
 import { isSaasBuild } from '@/services/BaseService';
-import { getAmuiUrl, getInviteMagicLink, getUserGroupRoute, resolveAppRoute } from '@/utils/RouteUtils';
+import { getAmuiUrl, getUserGroupRoute, resolveAppRoute, useQuery } from '@/utils/RouteUtils';
 import TransferSuperAdminRightsModal from '@/components/modals/transfer-super-admin-rights/TransferSuperAdminRightsModal';
 import { copyTextToClipboard, snakeCaseToTitleCase, useBranding } from '@/utils/Utils';
 import RolesPage from './RolesPage';
@@ -50,17 +50,20 @@ import { AppRoutes } from '@/routes';
 
 const USERS_DOCS_URL = 'https://docs.netmaker.io/pro/pro-users.html';
 
-const usersTabKey = 'users';
-const rolesTabKey = 'roles';
-const groupsTabKey = 'groups';
-const invitesTabKey = 'invites';
-const defaultTabKey = usersTabKey;
+export const UsersPageTabs = {
+  usersTabKey: 'users',
+  rolesTabKey: 'roles',
+  groupsTabKey: 'groups',
+  invitesTabKey: 'invites',
+};
+const defaultTabKey = UsersPageTabs.usersTabKey;
 
 export default function UsersPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
   const branding = useBranding();
   const navigate = useNavigate();
+  const queryParams = useQuery();
 
   const isServerEE = store.serverConfig?.IsEE === 'yes';
   const [users, setUsers] = useState<User[]>([]);
@@ -597,22 +600,22 @@ export default function UsersPage(props: PageProps) {
   const tabs: TabsProps['items'] = useMemo(
     () => [
       {
-        key: usersTabKey,
+        key: UsersPageTabs.usersTabKey,
         label: 'Users',
         children: getUsersContent(),
       },
       {
-        key: rolesTabKey,
+        key: UsersPageTabs.rolesTabKey,
         label: 'Network Roles',
         children: <RolesPage />,
       },
       {
-        key: groupsTabKey,
+        key: UsersPageTabs.groupsTabKey,
         label: 'Groups',
         children: <GroupsPage users={users} />,
       },
       {
-        key: invitesTabKey,
+        key: UsersPageTabs.invitesTabKey,
         label: `Invites (${invites.length})`,
         children: getInvitesContent(),
       },
@@ -676,11 +679,11 @@ export default function UsersPage(props: PageProps) {
         break;
       case 4:
         setIsAddUserModalOpen(true);
-        setActiveTab(usersTabKey);
+        setActiveTab(UsersPageTabs.usersTabKey);
         break;
       case 5:
         setIsAddUserModalOpen(false);
-        setActiveTab(invitesTabKey);
+        setActiveTab(UsersPageTabs.invitesTabKey);
         break;
       default:
         break;
@@ -693,6 +696,8 @@ export default function UsersPage(props: PageProps) {
   useEffect(() => {
     loadUsers();
     loadInvites();
+
+    queryParams.get('tab') && setActiveTab(queryParams.get('tab') as string);
   }, [loadUsers, isServerEE, loadInvites]);
 
   return (
