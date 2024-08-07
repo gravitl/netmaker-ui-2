@@ -398,15 +398,7 @@ export default function UserDetailsModal({
       <div className="CustomModalBody">
         <Divider style={{ margin: '0px 0px 2rem 0px' }} />
         <Row>
-          <Col xs={12}>
-            {isEditingUserPermissions && (
-              <Button onClick={() => setIsEditingUserPermissions(false)}>Cancel Permissions Update</Button>
-            )}
-            {!isEditingUserPermissions && (
-              <Button onClick={() => setIsEditingUserPermissions(true)}>Update Network Permissions</Button>
-            )}
-          </Col>
-          <Col xs={12} style={{ textAlign: 'right' }}>
+          <Col xs={24} style={{ textAlign: 'right' }}>
             <Button type="primary" onClick={updateUser}>
               Update User
             </Button>
