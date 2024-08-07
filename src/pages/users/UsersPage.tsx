@@ -253,8 +253,8 @@ export default function UsersPage(props: PageProps) {
     });
   }, [notify]);
 
-  const usersTableColumns: TableColumnsType<User> = useMemo(
-    () => [
+  const usersTableColumns = useMemo(() => {
+    const cols: TableColumnsType<User> = [
       {
         title: 'Username',
         dataIndex: 'username',
@@ -286,16 +286,9 @@ export default function UsersPage(props: PageProps) {
         },
       },
       {
-        title: 'Groups',
+        title: 'Auth Type',
         render(_, user) {
-          return Object.keys(user?.user_group_ids ?? {}).map((g, i) => (
-            <>
-              <Typography.Link key={g} onClick={() => navigate(getUserGroupRoute(g))}>
-                {g}
-              </Typography.Link>
-              {i !== Object.keys(user?.user_group_ids).length - 1 ? ', ' : ''}
-            </>
-          ));
+          return <Typography.Text>{snakeCaseToTitleCase(user.auth_type)}</Typography.Text>;
         },
       },
       {
@@ -321,7 +314,6 @@ export default function UsersPage(props: PageProps) {
                     key: 'delete',
                     disabled: !canDeleteUser(user)[0],
                     title: canDeleteUser(user)[0] ? canDeleteUser(user)[1] : '',
-                    // label: <Typography.Text disabled={!canDeleteUser(user)[0]}>Delete</Typography.Text>,
                     label: 'Delete',
                     onClick: (ev: any) => {
                       ev.domEvent.stopPropagation();
@@ -351,9 +343,26 @@ export default function UsersPage(props: PageProps) {
           );
         },
       },
-    ],
-    [store.username, navigate, canChangePassword, canDeleteUser, onEditUser, confirmDeleteUser],
-  );
+    ];
+
+    if (isServerEE) {
+      cols.splice(3, 0, {
+        title: 'Groups',
+        render(_, user) {
+          return Object.keys(user?.user_group_ids ?? {}).map((g, i) => (
+            <>
+              <Typography.Link key={g} onClick={() => navigate(getUserGroupRoute(g))}>
+                {g}
+              </Typography.Link>
+              {i !== Object.keys(user?.user_group_ids).length - 1 ? ', ' : ''}
+            </>
+          ));
+        },
+      });
+    }
+
+    return cols;
+  }, [isServerEE, store.username, navigate, canChangePassword, canDeleteUser, onEditUser, confirmDeleteUser]);
 
   const userInvitesTableColumns: TableColumnsType<UserInvite> = useMemo(
     () => [
@@ -597,31 +606,38 @@ export default function UsersPage(props: PageProps) {
     userInvitesTableColumns,
   ]);
 
-  const tabs: TabsProps['items'] = useMemo(
-    () => [
+  const usersTabs: TabsProps['items'] = useMemo(() => {
+    const tabs = [
       {
         key: UsersPageTabs.usersTabKey,
         label: 'Users',
         children: getUsersContent(),
       },
-      {
-        key: UsersPageTabs.rolesTabKey,
-        label: 'Network Roles',
-        children: <RolesPage />,
-      },
-      {
-        key: UsersPageTabs.groupsTabKey,
-        label: 'Groups',
-        children: <GroupsPage users={users} />,
-      },
+
       {
         key: UsersPageTabs.invitesTabKey,
         label: `Invites (${invites.length})`,
         children: getInvitesContent(),
       },
-    ],
-    [getInvitesContent, getUsersContent, invites.length, users],
-  );
+    ];
+    if (isServerEE) {
+      tabs.splice(
+        1,
+        0,
+        {
+          key: UsersPageTabs.rolesTabKey,
+          label: 'Network Roles',
+          children: <RolesPage />,
+        },
+        {
+          key: UsersPageTabs.groupsTabKey,
+          label: 'Groups',
+          children: <GroupsPage users={users} />,
+        },
+      );
+    }
+    return tabs;
+  }, [getInvitesContent, getUsersContent, invites.length, isServerEE, users]);
 
   const userTourSteps: TourProps['steps'] = [
     {
@@ -796,7 +812,7 @@ export default function UsersPage(props: PageProps) {
               <Col xs={24}>
                 <Tabs
                   defaultActiveKey={defaultTabKey}
-                  items={tabs}
+                  items={usersTabs}
                   activeKey={activeTab}
                   onChange={(tabKey: string) => {
                     setActiveTab(tabKey);
