@@ -8,7 +8,7 @@ import { AppRoutes } from '@/routes';
 import { UsersService } from '@/services/UsersService';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { useState } from 'react';
-import { kebabCaseToTitleCase } from '@/utils/Utils';
+import { kebabCaseToTitleCase, snakeCaseToTitleCase } from '@/utils/Utils';
 
 export default function ProfilePage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
@@ -84,8 +84,21 @@ export default function ProfilePage(props: PageProps) {
 
             <Row>
               <Col xs={24}>
+                <Form.Item label="Authentication Type">
+                  <Typography.Text>{snakeCaseToTitleCase(store.user?.auth_type ?? '')}</Typography.Text>
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Row>
+              <Col xs={24}>
                 <Form.Item label="Password" name="password">
-                  <Input placeholder="(unchanged)" type="password" />
+                  <Input
+                    placeholder="(unchanged)"
+                    type="password"
+                    disabled={store.user?.auth_type === 'oauth'}
+                    title={store.user?.auth_type === 'oauth' ? 'Cannot change password of an oauth user' : ''}
+                  />
                 </Form.Item>
               </Col>
             </Row>
@@ -108,7 +121,12 @@ export default function ProfilePage(props: PageProps) {
                   ]}
                   dependencies={['password']}
                 >
-                  <Input placeholder="(unchanged)" type="password" />
+                  <Input
+                    placeholder="(unchanged)"
+                    type="password"
+                    disabled={store.user?.auth_type === 'oauth'}
+                    title={store.user?.auth_type === 'oauth' ? 'Cannot change password of an oauth user' : ''}
+                  />
                 </Form.Item>
               </Col>
             </Row>

@@ -27,6 +27,8 @@ import { DeleteOutlined } from '@ant-design/icons';
 import { copyTextToClipboard, kebabCaseToTitleCase } from '@/utils/Utils';
 import { getInviteMagicLink } from '@/utils/RouteUtils';
 import CreateUserGroupModal from '@/pages/users/CreateUserGroupModal';
+import { useStore } from '@/store/store';
+import { isAdminUserOrRole } from '@/utils/UserMgmtUtils';
 
 interface InviteUserModalProps {
   isOpen: boolean;
@@ -71,7 +73,8 @@ const defaultTabKey = groupsTabKey;
 export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCancel }: InviteUserModalProps) {
   const [form] = Form.useForm<UserInviteForm>();
   const [notify, notifyCtx] = notification.useNotification();
-  // const store = useStore();
+  const store = useStore();
+  const isServerEE = store.serverConfig?.IsEE === 'yes';
 
   // const isServerEE = store.serverConfig?.IsEE === 'yes';
   const [currentStep, setCurrentStep] = useState(0);
@@ -237,6 +240,8 @@ export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCan
         ...formData,
       };
 
+      if (!isServerEE) payload['platform_role_id'] = 'admin';
+
       payload['network_roles'] = {} as User['network_roles'];
       payload['user_group_ids'] = {} as User['user_group_ids'];
       payload['user_group_ids'] = formData['user-groups'].reduce((acc, g) => ({ ...acc, [g]: {} }), {});
@@ -379,10 +384,11 @@ export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCan
                     label="Platform Access Level"
                     tooltip="This specifies the tenant-wide permissions this user will have"
                     rules={[{ required: true }]}
+                    initialValue={isServerEE ? undefined : 'admin'}
                   >
                     <Radio.Group>
                       {platformRoles.map((role) => (
-                        <Radio key={role.id} value={role.id}>
+                        <Radio key={role.id} value={role.id} disabled={!isServerEE && !isAdminUserOrRole(role)}>
                           {kebabCaseToTitleCase(role.id)}
                         </Radio>
                       ))}
@@ -391,18 +397,22 @@ export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCan
                 </Col>
               </Row>
 
-              <Row>
-                <Col xs={24}>
-                  <Tabs
-                    defaultActiveKey={defaultTabKey}
-                    items={tabs}
-                    activeKey={activeTab}
-                    onChange={(tabKey: string) => {
-                      setActiveTab(tabKey);
-                    }}
-                  />
-                </Col>
-              </Row>
+              {isServerEE && (
+                <>
+                  <Row>
+                    <Col xs={24}>
+                      <Tabs
+                        defaultActiveKey={defaultTabKey}
+                        items={tabs}
+                        activeKey={activeTab}
+                        onChange={(tabKey: string) => {
+                          setActiveTab(tabKey);
+                        }}
+                      />
+                    </Col>
+                  </Row>
+                </>
+              )}
             </Form>
           </>
         )}

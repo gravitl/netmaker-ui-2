@@ -23,6 +23,7 @@ import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { User, UserGroup, UserRole, UserRoleId } from '@/models/User';
 import { UsersService } from '@/services/UsersService';
 import { kebabCaseToTitleCase } from '@/utils/Utils';
+import { isAdminUserOrRole } from '@/utils/UserMgmtUtils';
 
 interface AddUserModalProps {
   isOpen: boolean;
@@ -181,12 +182,12 @@ export default function AddUserModal({
   const createUser = async () => {
     try {
       const formData = await form.validateFields();
-      // set issuperadmin as false
-      formData.issuperadmin = false;
 
       const payload: any = {
         ...formData,
       };
+
+      if (!isServerEE) payload['platform_role_id'] = 'admin';
 
       payload['network_roles'] = {} as User['network_roles'];
       payload['user_group_ids'] = {} as User['user_group_ids'];
@@ -339,10 +340,11 @@ export default function AddUserModal({
                 label="Platform Access Level"
                 tooltip="This specifies the tenant-wide permissions this user will have"
                 rules={[{ required: true }]}
+                initialValue={isServerEE ? undefined : 'admin'}
               >
                 <Radio.Group>
                   {platformRoles.map((role) => (
-                    <Radio key={role.id} value={role.id}>
+                    <Radio key={role.id} value={role.id} disabled={!isServerEE && !isAdminUserOrRole(role)}>
                       {kebabCaseToTitleCase(role.id)}
                     </Radio>
                   ))}
@@ -351,18 +353,22 @@ export default function AddUserModal({
             </Col>
           </Row>
 
-          <Row>
-            <Col xs={24}>
-              <Tabs
-                defaultActiveKey={defaultTabKey}
-                items={tabs}
-                activeKey={activeTab}
-                onChange={(tabKey: string) => {
-                  setActiveTab(tabKey);
-                }}
-              />
-            </Col>
-          </Row>
+          {isServerEE && (
+            <>
+              <Row>
+                <Col xs={24}>
+                  <Tabs
+                    defaultActiveKey={defaultTabKey}
+                    items={tabs}
+                    activeKey={activeTab}
+                    onChange={(tabKey: string) => {
+                      setActiveTab(tabKey);
+                    }}
+                  />
+                </Col>
+              </Row>
+            </>
+          )}
         </Form>
       </div>
 
