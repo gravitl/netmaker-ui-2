@@ -83,9 +83,13 @@ export default function RolesPage(props: RolesPageProps) {
         render(networkId) {
           return <Typography.Text>{networkId}</Typography.Text>;
         },
-        filters: userRoles.map((r) => ({ text: r.id, value: r.id })),
+        filters: [...new Set([...userRoles.map((r) => r.network_id)])].map((networkId) => ({
+          key: networkId,
+          text: networkId,
+          value: networkId,
+        })),
         filterSearch: true,
-        onFilter: (value, record) => record.id === value,
+        onFilter: (value, record) => record.network_id === value,
       },
       {
         width: '1rem',
