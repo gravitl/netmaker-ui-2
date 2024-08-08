@@ -64,7 +64,7 @@ jobs:
           fi
 
           VERSION_WITH_DASHES=$(echo "${{ github.event.inputs.version }}" | tr '.' '-')
-          echo "VERSION_WITH_DASHES=${VERSION_WITH_DASHES}" >> $GITHUB_ENV
+          echo "VERSION_WITH_DASHES=netmaker-ui-${VERSION_WITH_DASHES}" >> $GITHUB_ENV
 
       - name: Set up kubectl
         uses: matootie/dokube@v1.4.1
