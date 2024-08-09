@@ -9,6 +9,8 @@ import {
   Layout,
   Row,
   Space,
+  Table,
+  TableColumnsType,
   Tooltip,
   Typography,
   notification,
@@ -20,21 +22,23 @@ import {
   LaptopOutlined,
   PlusOutlined,
   QuestionCircleOutlined,
+  ReloadOutlined,
   SearchOutlined,
 } from '@ant-design/icons';
 import UpgradeModal from '../components/modals/upgrade-modal/UpgradeModal';
 import { PageProps } from '../models/Page';
 import { AppRoutes } from '../routes';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import AddNetworkModal from '@/components/modals/add-network-modal/AddNetworkModal';
 import { useEffect, useMemo, useState } from 'react';
 import { useStore } from '@/store/store';
-import { getAmuiUrl, getLicenseDashboardUrl, resolveAppRoute } from '@/utils/RouteUtils';
+import { getAmuiUrl, getLicenseDashboardUrl, getNetworkRoute, resolveAppRoute } from '@/utils/RouteUtils';
 import NewHostModal from '@/components/modals/new-host-modal/NewHostModal';
 import { isSaasBuild } from '@/services/BaseService';
 import { useBranding } from '@/utils/Utils';
 import QuickSetupModal from '@/components/modals/quick-setup-modal/QuickSetupModal';
 import { UsecaseQuestionKey } from '@/constants/NetworkUseCases';
+import { Network } from '@/models/Network';
 
 export type TourType =
   | 'relays'
@@ -62,6 +66,7 @@ export default function DashboardPage(props: PageProps) {
   const [isNewHostModalOpen, setIsNewHostModalOpen] = useState(false);
   const [showUpgradeAlert, setShowUpgradeAlert] = useState(false);
   const [isQuickSetupModalOpen, setIsQuickSetupModalOpen] = useState(false);
+  const [searchText, setSearchText] = useState('');
   const [notify, notifyCtx] = notification.useNotification();
 
   const jumpToTourPage = (tourType: TourType, netId?: string) => {
@@ -103,6 +108,79 @@ export default function DashboardPage(props: PageProps) {
         break;
     }
   };
+  const filteredNetworks = useMemo(
+    () =>
+      store.networks.filter((network) => {
+        return network.netid.toLowerCase().includes(searchText.toLowerCase());
+      }),
+    [store.networks, searchText],
+  );
+
+  const tableColumns: TableColumnsType<Network> = [
+    {
+      title: 'Name',
+      dataIndex: 'netid',
+      key: 'netid',
+      sorter: {
+        compare: (a, b) => a.netid.localeCompare(b.netid),
+      },
+      defaultSortOrder: 'ascend',
+      render: (netId) => (
+        <Link to={`${resolveAppRoute(AppRoutes.NETWORKS_ROUTE)}/${encodeURIComponent(netId)}`}>{netId}</Link>
+      ),
+    },
+    {
+      title: 'Address Range (IPv4)',
+      dataIndex: 'addressrange',
+      key: 'addressrange',
+      render: (addressRange) => (
+        <div onClick={(ev) => ev.stopPropagation()}>
+          <Typography.Text>{addressRange}</Typography.Text>
+        </div>
+      ),
+    },
+    {
+      title: 'Address Range (IPv6)',
+      dataIndex: 'addressrange6',
+      key: 'addressrange6',
+      render: (addressRange6) => (
+        <div onClick={(ev) => ev.stopPropagation()}>
+          <Typography.Text>{addressRange6}</Typography.Text>
+        </div>
+      ),
+    },
+    {
+      title: 'Hosts Count',
+      render(_, network) {
+        const nodeCount = store.nodes?.filter((node) => node.network === network.netid).length ?? 0;
+        return (
+          <div onClick={(ev) => ev.stopPropagation()}>
+            <Typography.Text>{nodeCount}</Typography.Text>
+          </div>
+        );
+      },
+    },
+    {
+      title: 'Network Last Modified',
+      dataIndex: 'networklastmodified',
+      key: 'networklastmodified',
+      render: (date) => (
+        <div onClick={(ev) => ev.stopPropagation()}>
+          <Typography.Text>{new Date(date * 1000).toLocaleString()}</Typography.Text>
+        </div>
+      ),
+    },
+    {
+      title: 'Hosts Last Modified',
+      dataIndex: 'nodeslastmodified',
+      key: 'nodeslastmodified',
+      render: (date) => (
+        <div onClick={(ev) => ev.stopPropagation()}>
+          <Typography.Text>{new Date(date * 1000).toLocaleString()}</Typography.Text>
+        </div>
+      ),
+    },
+  ];
 
   useEffect(() => {
     if (!isServerEE && !isSaasBuild && !store.serverStatus.status?.is_on_trial_license) {
@@ -347,6 +425,62 @@ export default function DashboardPage(props: PageProps) {
                   </Button>
                 </div>
               </Card>
+            )}
+            {store.networks.length > 0 && (
+              <>
+                <Row>
+                  <Col xs={24}>
+                    <Typography.Text
+                      style={{
+                        fontSize: '1.5rem',
+                        fontWeight: 600,
+                      }}
+                    >
+                      Networks
+                    </Typography.Text>
+                  </Col>
+                </Row>
+
+                <Row justify="space-between">
+                  <Col xs={24} md={8}>
+                    <Input
+                      size="large"
+                      placeholder="Search networks"
+                      value={searchText}
+                      onChange={(ev) => setSearchText(ev.target.value)}
+                      prefix={<SearchOutlined />}
+                    />
+                  </Col>
+                  <Col xs={24} md={16} style={{ textAlign: 'right' }} className="networks-table-button">
+                    <Button size="large" style={{ marginRight: '0.5em' }} onClick={() => store.fetchNetworks()}>
+                      <ReloadOutlined /> Reload Networks
+                    </Button>
+                    <Button type="primary" size="large" onClick={() => setIsAddNetworkModalOpen(true)}>
+                      <PlusOutlined /> Create Network
+                    </Button>
+                  </Col>
+                </Row>
+
+                <Row justify="space-between">
+                  <Col xs={24}>
+                    <div className="table-wrapper">
+                      <Table
+                        columns={tableColumns}
+                        dataSource={filteredNetworks}
+                        rowKey="netid"
+                        scroll={{ x: true }}
+                        onRow={(network) => {
+                          return {
+                            onClick: () => {
+                              navigate(getNetworkRoute(network));
+                            },
+                          };
+                        }}
+                      />
+                    </div>
+                  </Col>
+                </Row>
+              </>
             )}
           </Space>
         </Col>
