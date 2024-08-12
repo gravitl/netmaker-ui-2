@@ -622,7 +622,11 @@ export default function NetworkRoleDetailsPage(props: PageProps) {
                   // rules={[{ required: true, whitespace: false }]}
                   style={{ width: '80%' }}
                 >
-                  <Typography.Text style={{ fontWeight: 'bold' }}>{role?.id ?? ''}</Typography.Text>
+                  <Typography.Text style={{ fontWeight: 'bold' }}>{role?.ui_name ?? ''}</Typography.Text>
+                  <br />
+                  <Typography.Text style={{ fontSize: '90%', fontWeight: 'light' }}>
+                    (ID: {role?.id ?? ''})
+                  </Typography.Text>
                 </Form.Item>
               </Col>
               <Col xs={24} md={12}>

@@ -63,6 +63,7 @@ export type RsrcTypeValue = {
 
 export interface UserRole {
   id: UserRoleId;
+  ui_name: string;
   default: boolean;
   deny_dashboard_access: boolean;
   full_access: boolean;

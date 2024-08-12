@@ -1,5 +1,6 @@
 import { useStore } from '@/store/store';
 import {
+  CheckOutlined,
   CopyOutlined,
   DeleteOutlined,
   InfoCircleOutlined,
@@ -8,6 +9,7 @@ import {
   QuestionCircleOutlined,
   ReloadOutlined,
   SearchOutlined,
+  StopOutlined,
 } from '@ant-design/icons';
 import {
   Button,
@@ -55,6 +57,7 @@ export const UsersPageTabs = {
   rolesTabKey: 'roles',
   groupsTabKey: 'groups',
   invitesTabKey: 'invites',
+  pendingUsers: 'pending-users',
 };
 const defaultTabKey = UsersPageTabs.usersTabKey;
 
@@ -78,9 +81,12 @@ export default function UsersPage(props: PageProps) {
   const [tourStep, setTourStep] = useState(0);
   const [invites, setInvites] = useState<UserInvite[]>([]);
   const [isLoadingInvites, setIsLoadingInvites] = useState(true);
-  const [pendingUserInvitesSearch, setUserInvitesSearch] = useState('');
+  const [userInvitesSearch, setUserInvitesSearch] = useState('');
   const [activeTab, setActiveTab] = useState(defaultTabKey);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const [pendingUsers, setPendingUsers] = useState<User[]>([]);
+  const [isLoadingPendingUsers, setIsLoadingPendingUsers] = useState(true);
+  const [pendingUsersSearch, setPendingUsersSearch] = useState('');
 
   const usersTableRef = useRef(null);
   const addUserButtonRef = useRef(null);
@@ -120,6 +126,21 @@ export default function UsersPage(props: PageProps) {
       });
     } finally {
       setIsLoadingInvites(false);
+    }
+  }, [notify]);
+
+  const loadPendingUsers = useCallback(async () => {
+    try {
+      setIsLoadingPendingUsers(true);
+      const users = (await UsersService.getPendingUsers()).data;
+      setPendingUsers(users);
+    } catch (err) {
+      notify.error({
+        message: 'Failed to load pending users',
+        description: extractErrorMsg(err as any),
+      });
+    } finally {
+      setIsLoadingPendingUsers(false);
     }
   }, [notify]);
 
@@ -253,6 +274,70 @@ export default function UsersPage(props: PageProps) {
     });
   }, [notify]);
 
+  const confirmApproveUser = useCallback(
+    async (user: User) => {
+      Modal.confirm({
+        title: 'Approve user',
+        content: `Are you sure you want to approve pending user ${user.username}?`,
+        onOk: async () => {
+          try {
+            await UsersService.approvePendingUser(user.username);
+            notify.success({ message: `User ${user.username} approved` });
+            setPendingUsers((users) => users.filter((u) => u.username !== user.username));
+            loadUsers(false);
+          } catch (err) {
+            notify.error({
+              message: 'Failed to approve user',
+              description: extractErrorMsg(err as any),
+            });
+          }
+        },
+      });
+    },
+    [loadUsers, notify],
+  );
+
+  const confirmDenyUser = useCallback(
+    async (user: User) => {
+      Modal.confirm({
+        title: 'Deny user',
+        content: `Are you sure you want to deny pending user ${user.username}?`,
+        onOk: async () => {
+          try {
+            await UsersService.denyPendingUser(user.username);
+            notify.success({ message: `User ${user.username} denied` });
+            setPendingUsers((users) => users.filter((u) => u.username !== user.username));
+          } catch (err) {
+            notify.error({
+              message: 'Failed to deny user',
+              description: extractErrorMsg(err as any),
+            });
+          }
+        },
+      });
+    },
+    [notify],
+  );
+
+  const confirmDenyAllPendingUsers = useCallback(async () => {
+    Modal.confirm({
+      title: 'Deny all panding users',
+      content: `Are you sure you want to deny all pending users?`,
+      onOk: async () => {
+        try {
+          await UsersService.denyAllPendingUsers();
+          notify.success({ message: `All pending users denied access` });
+          setPendingUsers([]);
+        } catch (err) {
+          notify.error({
+            message: 'Failed to deny users',
+            description: extractErrorMsg(err as any),
+          });
+        }
+      },
+    });
+  }, [notify]);
+
   const usersTableColumns = useMemo(() => {
     const cols: TableColumnsType<User> = [
       {
@@ -354,7 +439,7 @@ export default function UsersPage(props: PageProps) {
               <Typography.Link key={g} onClick={() => navigate(getUserGroupRoute(g))}>
                 {g}
               </Typography.Link>
-              {i !== Object.keys(user?.user_group_ids).length - 1 ? ', ' : ''}
+              {i !== Object.keys(user?.user_group_ids).length - 1 ? <span key={i}>, </span> : <span key={i}></span>}
             </>
           ));
         },
@@ -376,8 +461,8 @@ export default function UsersPage(props: PageProps) {
       },
       {
         title: 'Invite Code',
-        dataIndex: 'invite_code',
-        render(code, rowData) {
+        dataIndex: 'invite_url',
+        render(_, rowData) {
           return (
             <Row>
               <Col>
@@ -422,6 +507,39 @@ export default function UsersPage(props: PageProps) {
     [confirmDeleteInvite],
   );
 
+  const pendingUsersTableColumns: TableColumnsType<User> = useMemo(
+    () => [
+      {
+        title: 'Username',
+        dataIndex: 'username',
+        sorter(a, b) {
+          return a.username.localeCompare(b.username);
+        },
+        defaultSortOrder: 'ascend',
+      },
+      {
+        width: '300px',
+        render(_, user) {
+          return (
+            <Row>
+              <Col>
+                <Button style={{ marginRight: '1rem' }} onClick={() => confirmApproveUser(user)}>
+                  <CheckOutlined /> Approve
+                </Button>
+              </Col>
+              <Col>
+                <Button onClick={() => confirmDenyUser(user)}>
+                  <StopOutlined /> Deny
+                </Button>
+              </Col>
+            </Row>
+          );
+        },
+      },
+    ],
+    [confirmApproveUser, confirmDenyUser],
+  );
+
   const filteredUsers = useMemo(() => {
     return (
       users?.filter((u) => {
@@ -433,10 +551,16 @@ export default function UsersPage(props: PageProps) {
   const filteredUserInvites = useMemo(() => {
     return (
       invites?.filter((u) => {
-        return u.email.toLowerCase().includes(pendingUserInvitesSearch.trim().toLowerCase());
+        return u.email.toLowerCase().includes(userInvitesSearch.trim().toLowerCase());
       }) ?? []
     );
-  }, [invites, pendingUserInvitesSearch]);
+  }, [invites, userInvitesSearch]);
+
+  const filteredPendingUsers = useMemo(() => {
+    return pendingUsers.filter((u) => {
+      return u.username.toLowerCase().includes(pendingUsersSearch.trim().toLowerCase());
+    });
+  }, [pendingUsers, pendingUsersSearch]);
 
   const getUserAndUpdateInStore = async (username: User['username'] | undefined) => {
     if (!username) return;
@@ -538,7 +662,7 @@ export default function UsersPage(props: PageProps) {
               size="large"
               placeholder="Search user invites"
               prefix={<SearchOutlined />}
-              value={pendingUserInvitesSearch}
+              value={userInvitesSearch}
               onChange={(ev) => setUserInvitesSearch(ev.target.value)}
               allowClear
             />
@@ -584,12 +708,11 @@ export default function UsersPage(props: PageProps) {
                 loading={isLoadingInvites}
                 columns={userInvitesTableColumns}
                 dataSource={filteredUserInvites}
-                rowKey="username"
+                rowKey="invite_code"
                 size="small"
                 scroll={{
                   x: true,
                 }}
-                ref={pendingUsersTableRef}
               />
             </div>
           </Col>
@@ -602,8 +725,75 @@ export default function UsersPage(props: PageProps) {
     isLoadingInvites,
     loadInvites,
     onInviteUser,
-    pendingUserInvitesSearch,
+    userInvitesSearch,
     userInvitesTableColumns,
+  ]);
+
+  const getPendingUsersContent = useCallback(() => {
+    return (
+      <>
+        <Row>
+          <Col xs={24} md={8}>
+            <Input
+              size="large"
+              placeholder="Search pending users"
+              prefix={<SearchOutlined />}
+              value={pendingUsersSearch}
+              onChange={(ev) => setPendingUsersSearch(ev.target.value)}
+              allowClear
+            />
+          </Col>
+          <Col xs={24} md={16} style={{ textAlign: 'right' }} className="pending-user-table-button">
+            <Button
+              size="large"
+              onClick={() => {
+                setIsTourOpen(true);
+                setTourStep(5);
+              }}
+              style={{ marginRight: '0.5em' }}
+            >
+              <InfoCircleOutlined /> Start Tour
+            </Button>
+            <Button size="large" onClick={() => loadPendingUsers()} style={{ marginRight: '0.5em' }}>
+              <ReloadOutlined /> Reload users
+            </Button>
+            <Button type="primary" size="large" onClick={confirmDenyAllPendingUsers} ref={denyAllUsersButtonRef}>
+              <StopOutlined /> Deny all users
+            </Button>
+            <Button
+              title="Go to Users documentation"
+              style={{ marginLeft: '0.5rem' }}
+              href={USERS_DOCS_URL}
+              target="_blank"
+              icon={<QuestionCircleOutlined />}
+            />
+          </Col>
+        </Row>
+        <Row className="" style={{ marginTop: '1rem' }}>
+          <Col xs={24}>
+            <div className="table-wrapper">
+              <Table
+                loading={isLoadingPendingUsers}
+                columns={pendingUsersTableColumns}
+                dataSource={filteredPendingUsers}
+                rowKey="username"
+                scroll={{
+                  x: true,
+                }}
+                ref={pendingUsersTableRef}
+              />
+            </div>
+          </Col>
+        </Row>
+      </>
+    );
+  }, [
+    confirmDenyAllPendingUsers,
+    filteredPendingUsers,
+    isLoadingPendingUsers,
+    loadPendingUsers,
+    pendingUsersSearch,
+    pendingUsersTableColumns,
   ]);
 
   const usersTabs: TabsProps['items'] = useMemo(() => {
@@ -636,8 +826,23 @@ export default function UsersPage(props: PageProps) {
         },
       );
     }
+    if (!isSaasBuild) {
+      tabs.push({
+        key: UsersPageTabs.pendingUsers,
+        label: `Pending Users (${pendingUsers.length})`,
+        children: getPendingUsersContent(),
+      });
+    }
     return tabs;
-  }, [getInvitesContent, getUsersContent, invites.length, isServerEE, users]);
+  }, [
+    getInvitesContent,
+    getPendingUsersContent,
+    getUsersContent,
+    invites.length,
+    isServerEE,
+    pendingUsers.length,
+    users,
+  ]);
 
   const userTourSteps: TourProps['steps'] = [
     {
@@ -712,9 +917,10 @@ export default function UsersPage(props: PageProps) {
   useEffect(() => {
     loadUsers();
     loadInvites();
+    loadPendingUsers();
 
     queryParams.get('tab') && setActiveTab(queryParams.get('tab') as string);
-  }, [loadUsers, isServerEE, loadInvites]);
+  }, [loadUsers, isServerEE, loadInvites, loadPendingUsers]);
 
   return (
     <Layout.Content

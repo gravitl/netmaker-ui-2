@@ -74,6 +74,8 @@ export default function AddUserModal({
   const [selectedNetworkRoles, setSelectedNetworkRoles] = useState<NetworkRolePair[]>([]);
   const [activeTab, setActiveTab] = useState(defaultTabKey);
 
+  const palVal = Form.useWatch('platform_role_id', form);
+
   const networkRolesTableData = useMemo<NetworkRolesTableData[]>(() => {
     const roles = networkRoles
       .reduce(
@@ -353,7 +355,7 @@ export default function AddUserModal({
             </Col>
           </Row>
 
-          {isServerEE && (
+          {!!palVal && isServerEE && !isAdminUserOrRole(palVal) && (
             <>
               <Row>
                 <Col xs={24}>

@@ -16,17 +16,12 @@ export function deriveUserRoleType(role: UserRole): UserRoleType {
  * @param userOrRole user or role object
  * @returns whether user or role is admin or not
  */
-export function isAdminUserOrRole(userOrRole: Partial<UserRole & User>): boolean {
-  if (userOrRole?.platform_role_id === undefined) {
-    return (
-      (userOrRole as UserRole)?.id === 'admin' ||
-      (userOrRole as UserRole)?.id === 'super-admin' ||
-      (userOrRole as UserRole)?.id === 'super_admin'
-    );
+export function isAdminUserOrRole(userOrRole: string | Partial<UserRole & User>): boolean {
+  if (typeof userOrRole === 'string') {
+    return userOrRole === 'super-admin' || userOrRole === 'admin';
   }
-  return (
-    (userOrRole as User)?.platform_role_id === 'admin' ||
-    (userOrRole as User)?.platform_role_id === 'super-admin' ||
-    (userOrRole as User)?.platform_role_id === 'super_admin'
-  );
+  if (userOrRole?.platform_role_id === undefined) {
+    return (userOrRole as UserRole)?.id === 'admin' || (userOrRole as UserRole)?.id === 'super-admin';
+  }
+  return (userOrRole as User)?.platform_role_id === 'admin' || (userOrRole as User)?.platform_role_id === 'super-admin';
 }

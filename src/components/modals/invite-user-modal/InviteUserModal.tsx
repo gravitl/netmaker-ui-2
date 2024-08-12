@@ -89,6 +89,7 @@ export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCan
   const [activeTab, setActiveTab] = useState(defaultTabKey);
 
   const userGroupsVal = Form.useWatch('user-groups', form);
+  const palVal = Form.useWatch('platform_role_id', form);
 
   const resetModal = () => {
     setCurrentStep(0);
@@ -244,7 +245,7 @@ export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCan
 
       payload['network_roles'] = {} as User['network_roles'];
       payload['user_group_ids'] = {} as User['user_group_ids'];
-      payload['user_group_ids'] = formData['user-groups'].reduce((acc, g) => ({ ...acc, [g]: {} }), {});
+      payload['user_group_ids'] = (formData['user-groups'] ?? []).reduce((acc, g) => ({ ...acc, [g]: {} }), {}) ?? {};
       selectedNetworkRoles.forEach((r) => {
         if (payload['network_roles'][r.network]) {
           payload['network_roles'][r.network][r.role] = {};
@@ -397,7 +398,7 @@ export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCan
                 </Col>
               </Row>
 
-              {isServerEE && (
+              {!!palVal && isServerEE && !isAdminUserOrRole(palVal) && (
                 <>
                   <Row>
                     <Col xs={24}>

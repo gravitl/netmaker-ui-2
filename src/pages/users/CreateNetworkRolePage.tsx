@@ -92,7 +92,7 @@ export default function CreateNetworkRolePage(props: PageProps) {
   const loadNetworks = useCallback(async () => {
     try {
       const networks = (await NetworksService.getNetworks()).data;
-      setAvailbleNetworks(networks.map(convertNetworkPayloadToUiNetwork));
+      setAvailbleNetworks(networks?.map(convertNetworkPayloadToUiNetwork) ?? []);
     } catch (e: any) {
       notify.error({ message: 'Failed to load networks. Reload page', description: extractErrorMsg(e) });
     } finally {

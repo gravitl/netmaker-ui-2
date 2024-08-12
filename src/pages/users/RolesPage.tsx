@@ -67,10 +67,10 @@ export default function RolesPage(props: RolesPageProps) {
       {
         title: 'Name',
         dataIndex: 'id',
-        render(name) {
+        render(_, role) {
           return (
             <>
-              <Typography.Link>{name}</Typography.Link>
+              <Typography.Link>{role.ui_name || role.id}</Typography.Link>
             </>
           );
         },
