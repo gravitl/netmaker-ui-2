@@ -2,6 +2,7 @@ import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 import { UserRole } from '@/models/User';
 import { AppRoutes } from '@/routes';
 import { UsersService } from '@/services/UsersService';
+import { useStore } from '@/store/store';
 import { getNetworkRoleRoute, getPlatformRoleRoute, resolveAppRoute } from '@/utils/RouteUtils';
 import { deriveUserRoleType } from '@/utils/UserMgmtUtils';
 import { DeleteOutlined, MoreOutlined, PlusOutlined, QuestionCircleOutlined, SearchOutlined } from '@ant-design/icons';
@@ -28,6 +29,8 @@ interface RolesPageProps {}
 export default function RolesPage(props: RolesPageProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const navigate = useNavigate();
+  const store = useStore();
+  const isServerEE = store.serverConfig?.IsEE === 'yes';
 
   const [isLoading, setIsLoading] = useState(true);
   const [userRoles, setUserRoles] = useState<UserRole[]>([]);
@@ -162,8 +165,10 @@ export default function RolesPage(props: RolesPageProps) {
   }, [notify]);
 
   useEffect(() => {
-    loadRoles();
-  }, [loadRoles]);
+    if (isServerEE) {
+      loadRoles();
+    }
+  }, [isServerEE, loadRoles]);
 
   const isEmpty = userRoles.length === 0;
   return (

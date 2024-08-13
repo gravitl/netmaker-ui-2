@@ -72,6 +72,8 @@ export default function UserDetailsModal({
   const [isEditingUserPermissions, setIsEditingUserPermissions] = useState(false);
   const [activeTab, setActiveTab] = useState(defaultTabKey);
 
+  const palVal = Form.useWatch('platform_role_id', form);
+
   const networkRolesTableData = useMemo<NetworkRolesTableData[]>(() => {
     const roles = networkRoles
       .reduce(
@@ -378,7 +380,7 @@ export default function UserDetailsModal({
             </Col>
           </Row>
 
-          {isServerEE && (
+          {!!palVal && isServerEE && !isAdminUserOrRole(palVal) && (
             <Row>
               <Col xs={24}>
                 <Tabs

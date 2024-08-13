@@ -42,7 +42,7 @@ export default function LoginPage(props: LoginPageProps) {
   const [shouldRemember, setShouldRemember] = useState(false);
   const [isBasicAuthLoading, setIsBasicAuthLoading] = useState(false);
   const [isSsoLoading, setIsSsoLoading] = useState(false);
-  const [isUserLoggingIn, setIsUserLoggingIn] = useState(false);
+  const [isUserDeniedFromDashboard, setIsUserDeniedFromDashboard] = useState(false);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
 
   const getUserAndUpdateInStore = async (username: User['username']) => {
@@ -54,6 +54,7 @@ export default function LoginPage(props: LoginPageProps) {
           message: 'Failed to login',
           description: 'You do not have permissions to access the dashboard',
         });
+        setIsUserDeniedFromDashboard(true);
         return;
       }
       store.setStore({ user, userPlatformRole });
@@ -156,7 +157,7 @@ export default function LoginPage(props: LoginPageProps) {
           </Row>
 
           <Row style={{ marginTop: '4rem' }}>
-            {isUserLoggingIn && (
+            {isUserDeniedFromDashboard && (
               <Alert
                 description={
                   <>
