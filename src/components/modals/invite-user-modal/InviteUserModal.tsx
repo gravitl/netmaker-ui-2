@@ -87,6 +87,7 @@ export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCan
   const [selectedNetworkRoles, setSelectedNetworkRoles] = useState<NetworkRolePair[]>([]);
   const [isCreateGroupModalOpen, setIsCreateGroupModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(defaultTabKey);
+  const [isCreating, setIsCreating] = useState(false);
 
   const userGroupsVal = Form.useWatch('user-groups', form);
   const palVal = Form.useWatch('platform_role_id', form);
@@ -236,6 +237,7 @@ export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCan
   const inviteUser = async () => {
     try {
       const formData = await form.validateFields();
+      setIsCreating(true);
 
       const payload: any = {
         ...formData,
@@ -271,6 +273,8 @@ export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCan
         message: 'Failed to create user invites',
         description: extractErrorMsg(err as any),
       });
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -483,7 +487,7 @@ export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCan
           <Row>
             <Col xs={24} style={{ textAlign: 'right' }}>
               <Form.Item>
-                <Button type="primary" onClick={inviteUser}>
+                <Button type="primary" onClick={inviteUser} loading={isCreating}>
                   Create User Invite(s)
                 </Button>
               </Form.Item>
