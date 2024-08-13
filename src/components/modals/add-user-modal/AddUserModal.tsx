@@ -333,27 +333,31 @@ export default function AddUserModal({
             <Input placeholder="Confirm Password" type="password" />
           </Form.Item>
 
-          <Divider />
+          {isServerEE && (
+            <>
+              <Divider />
 
-          <Row>
-            <Col xs={24}>
-              <Form.Item
-                name="platform_role_id"
-                label="Platform Access Level"
-                tooltip="This specifies the tenant-wide permissions this user will have"
-                rules={[{ required: true }]}
-                initialValue={isServerEE ? undefined : 'admin'}
-              >
-                <Radio.Group>
-                  {platformRoles.map((role) => (
-                    <Radio key={role.id} value={role.id} disabled={!isServerEE && !isAdminUserOrRole(role)}>
-                      {kebabCaseToTitleCase(role.id)}
-                    </Radio>
-                  ))}
-                </Radio.Group>
-              </Form.Item>
-            </Col>
-          </Row>
+              <Row>
+                <Col xs={24}>
+                  <Form.Item
+                    name="platform_role_id"
+                    label="Platform Access Level"
+                    tooltip="This specifies the tenant-wide permissions this user will have"
+                    rules={[{ required: true }]}
+                    initialValue={isServerEE ? undefined : 'admin'}
+                  >
+                    <Radio.Group>
+                      {platformRoles.map((role) => (
+                        <Radio key={role.id} value={role.id} disabled={!isServerEE && !isAdminUserOrRole(role)}>
+                          {kebabCaseToTitleCase(role.id)}
+                        </Radio>
+                      ))}
+                    </Radio.Group>
+                  </Form.Item>
+                </Col>
+              </Row>
+            </>
+          )}
 
           {!!palVal && isServerEE && !isAdminUserOrRole(palVal) && (
             <>
