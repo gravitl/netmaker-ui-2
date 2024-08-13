@@ -161,7 +161,7 @@ export default function CreateNetworkRolePage(props: PageProps) {
       });
 
       notification.success({ message: 'Network role created successfully' });
-      navigate(resolveAppRoute(AppRoutes.USERS_ROUTE));
+      navigate(resolveAppRoute(AppRoutes.USERS_ROUTE, { tab: UsersPageTabs.rolesTabKey }));
     } catch (e: any) {
       notify.error({ message: 'Failed to create network role', description: extractErrorMsg(e) });
     } finally {

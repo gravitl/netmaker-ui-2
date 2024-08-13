@@ -29,7 +29,6 @@ import { Network } from '@/models/Network';
 import { NetworksService } from '@/services/NetworksService';
 import { convertNetworkPayloadToUiNetwork } from '@/utils/NetworkUtils';
 import AddUsersToGroupModal from '@/components/modals/add-users-to-group-modal/AddUsersToGroupModal';
-import { deriveUserRoleType } from '@/utils/UserMgmtUtils';
 import CreateNetworkRoleModal from './CreateNetworkRoleModal';
 import { UsersPageTabs } from './UsersPage';
 
@@ -189,7 +188,7 @@ export default function CreateUserGroupPage(props: PageProps) {
       });
 
       notification.success({ message: 'User group created successfully' });
-      navigate(resolveAppRoute(AppRoutes.USERS_ROUTE));
+      navigate(resolveAppRoute(AppRoutes.USERS_ROUTE, { tab: UsersPageTabs.groupsTabKey }));
     } catch (e: any) {
       notify.error({ message: 'Failed to create user group', description: extractErrorMsg(e) });
     } finally {
