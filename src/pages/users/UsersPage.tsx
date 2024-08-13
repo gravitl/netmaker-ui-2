@@ -618,12 +618,17 @@ export default function UsersPage(props: PageProps) {
                     label: 'Add a User',
                     onClick: onAddUser,
                   },
-                  {
-                    key: 'invite',
-                    label: 'Invite a User',
-                    onClick: onInviteUser,
-                  },
-                ],
+                ].concat(
+                  isServerEE
+                    ? [
+                        {
+                          key: 'invite',
+                          label: 'Invite a User',
+                          onClick: onInviteUser,
+                        },
+                      ]
+                    : [],
+                ),
               }}
             >
               <Button size="large" type="primary" style={{ display: 'inline', marginRight: '0.5rem' }}>
@@ -651,7 +656,7 @@ export default function UsersPage(props: PageProps) {
         </Row>
       </>
     );
-  }, [usersSearch, onAddUser, onInviteUser, usersTableColumns, filteredUsers, isLoadingUsers, loadUsers]);
+  }, [usersSearch, onAddUser, isServerEE, onInviteUser, usersTableColumns, filteredUsers, isLoadingUsers, loadUsers]);
 
   const getInvitesContent = useCallback(() => {
     return (
@@ -803,12 +808,6 @@ export default function UsersPage(props: PageProps) {
         label: 'Users',
         children: getUsersContent(),
       },
-
-      {
-        key: UsersPageTabs.invitesTabKey,
-        label: `Invites (${invites.length})`,
-        children: getInvitesContent(),
-      },
     ];
     if (isServerEE) {
       tabs.splice(
@@ -824,9 +823,14 @@ export default function UsersPage(props: PageProps) {
           label: 'Groups',
           children: <GroupsPage users={users} />,
         },
+        {
+          key: UsersPageTabs.invitesTabKey,
+          label: `Invites (${invites.length})`,
+          children: getInvitesContent(),
+        },
       );
     }
-    if (!isSaasBuild) {
+    if (!isSaasBuild && isServerEE) {
       tabs.push({
         key: UsersPageTabs.pendingUsers,
         label: `Pending Users (${pendingUsers.length})`,
@@ -916,8 +920,11 @@ export default function UsersPage(props: PageProps) {
 
   useEffect(() => {
     loadUsers();
-    loadInvites();
-    loadPendingUsers();
+
+    if (isServerEE) {
+      loadInvites();
+      loadPendingUsers();
+    }
 
     queryParams.get('tab') && setActiveTab(queryParams.get('tab') as string);
   }, [loadUsers, isServerEE, loadInvites, loadPendingUsers]);
@@ -1095,17 +1102,19 @@ export default function UsersPage(props: PageProps) {
           loadUsers();
         }}
       />
-      <InviteUserModal
-        isOpen={isInviteModalOpen}
-        onClose={() => setIsInviteModalOpen(false)}
-        onCancel={() => {
-          setIsInviteModalOpen(false);
-        }}
-        onInviteFinish={() => {
-          loadInvites();
-          setIsInviteModalOpen(false);
-        }}
-      />
+      {isServerEE && (
+        <InviteUserModal
+          isOpen={isInviteModalOpen}
+          onClose={() => setIsInviteModalOpen(false)}
+          onCancel={() => {
+            setIsInviteModalOpen(false);
+          }}
+          onInviteFinish={() => {
+            loadInvites();
+            setIsInviteModalOpen(false);
+          }}
+        />
+      )}
     </Layout.Content>
   );
 }
