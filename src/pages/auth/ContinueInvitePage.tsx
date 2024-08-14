@@ -2,7 +2,7 @@ import { AppRoutes, router } from '@/routes';
 import { AuthService } from '@/services/AuthService';
 import { useStore } from '@/store/store';
 import { LockOutlined, MailOutlined } from '@ant-design/icons';
-import { Button, Col, Divider, Form, Input, Layout, notification, Radio, Result, Row, Typography } from 'antd';
+import { Button, Col, Divider, Form, Image, Input, Layout, notification, Radio, Result, Row, Typography } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { UsersService } from '@/services/UsersService';
@@ -14,6 +14,7 @@ import { resolveAppRoute, useQuery } from '@/utils/RouteUtils';
 import { ApiRoutes } from '@/constants/ApiRoutes';
 import UpgradeModal from '@/components/modals/upgrade-modal/UpgradeModal';
 import { ServerConfigService } from '@/services/ServerConfigService';
+import { useBranding } from '@/utils/Utils';
 
 interface ContinueInvitePageProps {
   isFullScreen?: boolean;
@@ -33,6 +34,7 @@ export default function ContinueInvitePage(props: ContinueInvitePageProps) {
   const query = useQuery();
   const [notify, notifyCtx] = notification.useNotification();
   const isServerPro = store.serverStatus?.status?.is_pro;
+  const branding = useBranding();
 
   const [isSigninup, setIsSigningup] = useState(false);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
@@ -93,6 +95,16 @@ export default function ContinueInvitePage(props: ContinueInvitePageProps) {
           }}
           className="auth-page-container"
         >
+          <Row>
+            <Col xs={24} style={{ textAlign: 'center' }}>
+              <Image
+                preview={false}
+                width="200px"
+                src={store.currentTheme === 'dark' ? branding.logoDarkUrl : branding.logoLightUrl}
+              />
+            </Col>
+          </Row>
+
           {!inviteCode && (
             <Row>
               <Col xs={24}>

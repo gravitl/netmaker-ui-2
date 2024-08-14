@@ -400,7 +400,7 @@ export default function UsersPage(props: PageProps) {
                     },
                   },
                 ].concat(
-                  user.platform_role_id === 'super-admin' && store.username === user.username
+                  !isSaasBuild && user.platform_role_id === 'super-admin' && store.username === user.username
                     ? [
                         {
                           key: 'transfer',
@@ -612,23 +612,27 @@ export default function UsersPage(props: PageProps) {
             <Button size="large" onClick={() => loadUsers()} style={{ marginRight: '0.5rem' }}>
               <ReloadOutlined /> Reload users
             </Button>
-            {isServerEE && (
+            {isServerEE && ( // we dont have CE on SaaS
               <Dropdown
                 placement="bottomRight"
                 menu={{
                   items: [
                     {
-                      key: 'add',
-                      label: 'Add a User',
-                      onClick: onAddUser,
-                    },
-
-                    {
                       key: 'invite',
                       label: 'Invite a User',
                       onClick: onInviteUser,
                     },
-                  ],
+                  ].concat(
+                    isSaasBuild
+                      ? []
+                      : [
+                          {
+                            key: 'add',
+                            label: 'Add a User',
+                            onClick: onAddUser,
+                          },
+                        ],
+                  ),
                 }}
               >
                 <Button size="large" type="primary" style={{ display: 'inline', marginRight: '0.5rem' }}>
@@ -636,7 +640,7 @@ export default function UsersPage(props: PageProps) {
                 </Button>
               </Dropdown>
             )}
-            {!isServerEE && (
+            {!isSaasBuild && !isServerEE && (
               <Button
                 size="large"
                 type="primary"
