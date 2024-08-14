@@ -68,7 +68,7 @@ export default function UsersPage(props: PageProps) {
   const navigate = useNavigate();
   const queryParams = useQuery();
 
-  const isServerEE = store.serverConfig?.IsEE === 'yes';
+  const isServerEE = !!store.serverStatus.status?.is_pro;
   const [users, setUsers] = useState<User[]>([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [usersSearch, setUsersSearch] = useState('');
@@ -371,12 +371,6 @@ export default function UsersPage(props: PageProps) {
         },
       },
       {
-        title: 'Auth Type',
-        render(_, user) {
-          return <Typography.Text>{snakeCaseToTitleCase(user.auth_type)}</Typography.Text>;
-        },
-      },
-      {
         width: '1rem',
         render(_, user) {
           return (
@@ -431,7 +425,7 @@ export default function UsersPage(props: PageProps) {
     ];
 
     if (isServerEE) {
-      cols.splice(3, 0, {
+      cols.splice(2, 0, {
         title: 'Groups',
         render(_, user) {
           return Object.keys(user?.user_group_ids ?? {}).map((g, i) => (
@@ -442,6 +436,15 @@ export default function UsersPage(props: PageProps) {
               {i !== Object.keys(user?.user_group_ids).length - 1 ? <span key={i}>, </span> : <span key={i}></span>}
             </>
           ));
+        },
+      });
+    }
+
+    if (!isSaasBuild) {
+      cols.splice(cols.length - 1, 0, {
+        title: 'Auth Type',
+        render(_, user) {
+          return <Typography.Text>{snakeCaseToTitleCase(user.auth_type)}</Typography.Text>;
         },
       });
     }
@@ -609,32 +612,40 @@ export default function UsersPage(props: PageProps) {
             <Button size="large" onClick={() => loadUsers()} style={{ marginRight: '0.5rem' }}>
               <ReloadOutlined /> Reload users
             </Button>
-            <Dropdown
-              placement="bottomRight"
-              menu={{
-                items: [
-                  {
-                    key: 'add',
-                    label: 'Add a User',
-                    onClick: onAddUser,
-                  },
-                ].concat(
-                  isServerEE
-                    ? [
-                        {
-                          key: 'invite',
-                          label: 'Invite a User',
-                          onClick: onInviteUser,
-                        },
-                      ]
-                    : [],
-                ),
-              }}
-            >
-              <Button size="large" type="primary" style={{ display: 'inline', marginRight: '0.5rem' }}>
+            {isServerEE && (
+              <Dropdown
+                placement="bottomRight"
+                menu={{
+                  items: [
+                    {
+                      key: 'add',
+                      label: 'Add a User',
+                      onClick: onAddUser,
+                    },
+
+                    {
+                      key: 'invite',
+                      label: 'Invite a User',
+                      onClick: onInviteUser,
+                    },
+                  ],
+                }}
+              >
+                <Button size="large" type="primary" style={{ display: 'inline', marginRight: '0.5rem' }}>
+                  <PlusOutlined /> Add a User
+                </Button>
+              </Dropdown>
+            )}
+            {!isServerEE && (
+              <Button
+                size="large"
+                type="primary"
+                style={{ display: 'inline', marginRight: '0.5rem' }}
+                onClick={onAddUser}
+              >
                 <PlusOutlined /> Add a User
               </Button>
-            </Dropdown>
+            )}
           </Col>
         </Row>
         <Row className="" style={{ marginTop: '1rem' }}>

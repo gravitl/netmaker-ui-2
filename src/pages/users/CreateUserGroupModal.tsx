@@ -40,7 +40,7 @@ interface networkRolesFormValues {
 
 interface NetworkRolesTableData {
   network_id: UserRole['network_id'];
-  network_roles: UserRole['id'][];
+  network_roles: { roleId: UserRole['id']; uiName: UserRole['ui_name'] }[];
 }
 
 interface CreateUserGroupModalProps {
@@ -80,7 +80,9 @@ export default function CreateUserGroupModal({
   const networkRolesTableData = useMemo<NetworkRolesTableData[]>(() => {
     return availbleNetworks.map((network) => ({
       network_id: network.netid,
-      network_roles: availableUserRoles.filter((role) => role.network_id === network.netid).map((role) => role.id),
+      network_roles: availableUserRoles
+        .filter((role) => role.network_id === network.netid)
+        .map((role) => ({ uiName: role.ui_name, roleId: role.id })),
     }));
   }, [availbleNetworks, availableUserRoles]);
 
@@ -101,7 +103,7 @@ export default function CreateUserGroupModal({
               placeholder="Select a role for this network"
               options={[
                 ...rowData.network_roles
-                  .map((role) => ({ label: role, value: role }))
+                  .map((role) => ({ label: role.uiName || role.roleId, value: role.roleId }))
                   .sort((a, b) => a.label.localeCompare(b.label)),
                 { label: 'n/a', value: '' },
               ]}

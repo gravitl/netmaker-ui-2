@@ -136,7 +136,7 @@ export default function UserDetailsModal({
                 allowClear
                 options={rowData.roles
                   .sort((a, b) => a.id.localeCompare(b.id))
-                  .map((r) => ({ value: r.id, label: r.id }))}
+                  .map((r) => ({ value: r.id, label: r.ui_name || r.id }))}
               />
             </Form.Item>
           );
@@ -284,9 +284,11 @@ export default function UserDetailsModal({
   );
 
   useEffect(() => {
-    loadGroups();
-    loadRoles();
-  }, [loadGroups, loadRoles]);
+    if (isServerEE) {
+      loadGroups();
+      loadRoles();
+    }
+  }, [isServerEE, loadGroups, loadRoles]);
 
   return (
     <Modal
@@ -357,28 +359,32 @@ export default function UserDetailsModal({
             />
           </Form.Item>
 
-          <Divider />
+          {isServerEE && (
+            <>
+              <Divider />
 
-          <Row>
-            <Col xs={24}>
-              <Form.Item
-                name="platform_role_id"
-                label="Platform Access Level"
-                tooltip="This specifies the tenant-wide permissions this user will have"
-                initialValue={user.platform_role_id}
-                required
-              >
-                <Select
-                  placeholder="Select a platform access level for the user"
-                  options={platformRoles.map((r) => ({
-                    value: r.id,
-                    label: kebabCaseToTitleCase(r.id),
-                    disabled: !isServerEE && !isAdminUserOrRole(r),
-                  }))}
-                />
-              </Form.Item>
-            </Col>
-          </Row>
+              <Row>
+                <Col xs={24}>
+                  <Form.Item
+                    name="platform_role_id"
+                    label="Platform Access Level"
+                    tooltip="This specifies the tenant-wide permissions this user will have"
+                    initialValue={user.platform_role_id}
+                    required
+                  >
+                    <Select
+                      placeholder="Select a platform access level for the user"
+                      options={platformRoles.map((r) => ({
+                        value: r.id,
+                        label: kebabCaseToTitleCase(r.id),
+                        disabled: !isServerEE && !isAdminUserOrRole(r),
+                      }))}
+                    />
+                  </Form.Item>
+                </Col>
+              </Row>
+            </>
+          )}
 
           {!!palVal && isServerEE && !isAdminUserOrRole(palVal) && (
             <Row>
