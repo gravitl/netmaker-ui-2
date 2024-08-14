@@ -130,7 +130,7 @@ export default function AddUserModal({
               allowClear
               options={rowData.roles
                 .sort((a, b) => a.id.localeCompare(b.id))
-                .map((r) => ({ value: r.id, label: r.id }))}
+                .map((r) => ({ value: r.id, label: r.ui_name || r.id }))}
               onSelect={(roleId: UserRole['id']) => {
                 setSelectedNetworkRoles((prev) => {
                   return [...prev, { network: rowData.network, role: roleId }];
