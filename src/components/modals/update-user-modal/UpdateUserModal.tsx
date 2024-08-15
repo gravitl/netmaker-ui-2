@@ -30,7 +30,6 @@ export default function UpdateUserModal({ isOpen, user, onUpdateUser, onCancel }
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
 
-  const isServerEE = store.serverConfig?.IsEE === 'yes';
   const passwordVal = Form.useWatch('password', form);
 
   const canChangePassword: (user: User) => [boolean, string] = useCallback(

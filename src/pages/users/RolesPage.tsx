@@ -5,6 +5,7 @@ import { UsersService } from '@/services/UsersService';
 import { useStore } from '@/store/store';
 import { getNetworkRoleRoute, getPlatformRoleRoute, resolveAppRoute } from '@/utils/RouteUtils';
 import { deriveUserRoleType } from '@/utils/UserMgmtUtils';
+import { useServerLicense } from '@/utils/Utils';
 import { DeleteOutlined, MoreOutlined, PlusOutlined, QuestionCircleOutlined, SearchOutlined } from '@ant-design/icons';
 import {
   Button,
@@ -30,7 +31,7 @@ export default function RolesPage(props: RolesPageProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const navigate = useNavigate();
   const store = useStore();
-  const isServerEE = store.serverConfig?.IsEE === 'yes';
+  const { isServerEE } = useServerLicense();
 
   const [isLoading, setIsLoading] = useState(true);
   const [userRoles, setUserRoles] = useState<UserRole[]>([]);

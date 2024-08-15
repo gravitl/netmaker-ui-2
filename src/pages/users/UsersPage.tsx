@@ -42,7 +42,7 @@ import UpdateUserModal from '@/components/modals/update-user-modal/UpdateUserMod
 import { isSaasBuild } from '@/services/BaseService';
 import { getAmuiUrl, getUserGroupRoute, resolveAppRoute, useQuery } from '@/utils/RouteUtils';
 import TransferSuperAdminRightsModal from '@/components/modals/transfer-super-admin-rights/TransferSuperAdminRightsModal';
-import { copyTextToClipboard, snakeCaseToTitleCase, useBranding } from '@/utils/Utils';
+import { copyTextToClipboard, snakeCaseToTitleCase, useBranding, useServerLicense } from '@/utils/Utils';
 import RolesPage from './RolesPage';
 import GroupsPage from './GroupsPage';
 import UserDetailsModal from '@/components/modals/user-details-modal/UserDetailsModal';
@@ -68,7 +68,7 @@ export default function UsersPage(props: PageProps) {
   const navigate = useNavigate();
   const queryParams = useQuery();
 
-  const isServerEE = !!store.serverStatus.status?.is_pro;
+  const { isServerEE } = useServerLicense();
   const [users, setUsers] = useState<User[]>([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [usersSearch, setUsersSearch] = useState('');

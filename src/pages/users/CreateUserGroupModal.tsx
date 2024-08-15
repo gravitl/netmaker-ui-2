@@ -1,4 +1,3 @@
-import { useStore } from '@/store/store';
 import { PlusOutlined } from '@ant-design/icons';
 import {
   Button,
@@ -14,7 +13,6 @@ import {
   Skeleton,
   Table,
   TableColumnProps,
-  theme,
   Typography,
 } from 'antd';
 import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
@@ -59,9 +57,6 @@ export default function CreateUserGroupModal({
   showAddMembers,
 }: CreateUserGroupModalProps) {
   const [notify, notifyCtx] = notification.useNotification();
-  const store = useStore();
-  const { token: themeToken } = theme.useToken();
-  // const isServerEE = store.serverConfig?.IsEE === 'yes';
 
   const [metadataForm] = Form.useForm<metadataFormValues>();
   const [networkRolesForm] = Form.useForm<networkRolesFormValues>();

@@ -26,6 +26,7 @@ import { CloseOutlined, DownOutlined, SearchOutlined, UpOutlined } from '@ant-de
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { CreateNodeRelayDto } from '@/services/dtos/CreateNodeRelayDto';
 import { NodesService } from '@/services/NodesService';
+import { useServerLicense } from '@/utils/Utils';
 
 interface AddRelayModalProps {
   isOpen: boolean;
@@ -52,7 +53,7 @@ export default function AddRelayModal({
   const store = useStore();
   const { token: themeToken } = theme.useToken();
 
-  const isServerEE = store.serverConfig?.IsEE === 'yes';
+  const { isServerEE } = useServerLicense();
   const [form] = Form.useForm<AddRelayFormFields>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [relaySearch, setRelaySearch] = useState('');

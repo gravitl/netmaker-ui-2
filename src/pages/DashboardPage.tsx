@@ -27,14 +27,13 @@ import { PageProps } from '../models/Page';
 import { AppRoutes } from '../routes';
 import { useNavigate } from 'react-router-dom';
 import AddNetworkModal from '@/components/modals/add-network-modal/AddNetworkModal';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useStore } from '@/store/store';
 import { getAmuiUrl, getLicenseDashboardUrl, resolveAppRoute } from '@/utils/RouteUtils';
 import NewHostModal from '@/components/modals/new-host-modal/NewHostModal';
 import { isSaasBuild } from '@/services/BaseService';
-import { useBranding } from '@/utils/Utils';
+import { useBranding, useServerLicense } from '@/utils/Utils';
 import QuickSetupModal from '@/components/modals/quick-setup-modal/QuickSetupModal';
-import { UsecaseQuestionKey } from '@/constants/NetworkUseCases';
 
 export type TourType =
   | 'relays'
@@ -56,7 +55,7 @@ export default function DashboardPage(props: PageProps) {
   const store = useStore();
   const branding = useBranding();
 
-  const isServerEE = store.serverConfig?.IsEE === 'yes';
+  const { isServerEE } = useServerLicense();
   const [isAddNetworkModalOpen, setIsAddNetworkModalOpen] = useState(false);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [isNewHostModalOpen, setIsNewHostModalOpen] = useState(false);

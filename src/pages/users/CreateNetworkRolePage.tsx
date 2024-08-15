@@ -32,6 +32,7 @@ import { NetworksService } from '@/services/NetworksService';
 import { convertNetworkPayloadToUiNetwork } from '@/utils/NetworkUtils';
 import { getExtendedNode } from '@/utils/NodeUtils';
 import { UsersPageTabs } from './UsersPage';
+import { useServerLicense } from '@/utils/Utils';
 
 const permissionsTabKey = 'permissions';
 const vpnAccessTabKey = 'vpn-access';
@@ -65,7 +66,7 @@ export default function CreateNetworkRolePage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
   const { token: themeToken } = theme.useToken();
-  const isServerEE = store.serverConfig?.IsEE === 'yes';
+  const { isServerEE } = useServerLicense();
   const navigate = useNavigate();
 
   const [metadataForm] = Form.useForm<metadataFormValues>();

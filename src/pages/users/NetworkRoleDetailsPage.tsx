@@ -61,7 +61,6 @@ export default function NetworkRoleDetailsPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
   const { token: themeToken } = theme.useToken();
-  // const isServerEE = store.serverConfig?.IsEE === 'yes';
   const navigate = useNavigate();
   const { roleId } = useParams<{ roleId: string }>();
 

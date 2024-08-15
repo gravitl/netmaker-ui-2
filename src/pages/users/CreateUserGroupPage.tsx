@@ -52,7 +52,6 @@ export default function CreateUserGroupPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
   const { token: themeToken } = theme.useToken();
-  // const isServerEE = store.serverConfig?.IsEE === 'yes';
   const navigate = useNavigate();
 
   const [metadataForm] = Form.useForm<metadataFormValues>();

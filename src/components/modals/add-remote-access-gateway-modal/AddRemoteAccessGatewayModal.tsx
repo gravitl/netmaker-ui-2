@@ -31,6 +31,7 @@ import { CreateIngressNodeDto } from '@/services/dtos/CreateIngressNodeDto';
 import { PUBLIC_DNS_RESOLVERS } from '@/constants/AppConstants';
 import { coerce } from 'semver';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
+import { useServerLicense } from '@/utils/Utils';
 
 interface AddRemoteAccessGatewayModalProps {
   isOpen: boolean;
@@ -60,7 +61,7 @@ export default function AddRemoteAccessGatewayModal({
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
 
-  const isServerEE = store.serverConfig?.IsEE === 'yes';
+  const { isServerEE } = useServerLicense();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSelectOpen, setIsSelectOpen] = useState(false);
   const [selectedNode, setSelectedNode] = useState<ExtendedNode | null>(null);

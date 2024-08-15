@@ -31,7 +31,7 @@ import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { NodesService } from '@/services/NodesService';
 import { Host } from '@/models/Host';
 import { PUBLIC_DNS_RESOLVERS } from '@/constants/AppConstants';
-import { validateExtClientNameField } from '@/utils/Utils';
+import { useServerLicense, validateExtClientNameField } from '@/utils/Utils';
 import _ from 'lodash';
 
 interface AddClientModalProps {
@@ -80,7 +80,7 @@ export default function AddClientModal({
   const store = useStore();
   const { token: themeToken } = theme.useToken();
 
-  const isServerEE = store.serverConfig?.IsEE === 'yes';
+  const { isServerEE } = useServerLicense();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [gatewaySearch, setGatewaySearch] = useState('');
   const [selectedGateway, setSelectedGateway] = useState<ExtendedNode | null>(null);

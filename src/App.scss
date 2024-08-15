@@ -76,6 +76,10 @@
   max-height: 450px;
   overflow-y: auto;
 
+  /* For Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: #888 #fff; /* Scroll thumb color, Track color */
+
   /* For Webkit browsers like Chrome and Safari */
   &::-webkit-scrollbar {
     width: 5px; /* Adjust width for vertical scrollbar */
@@ -90,10 +94,6 @@
   &::-webkit-scrollbar-thumb:hover {
     background: #555; /* Color of the scroll thumb on hover */
   }
-
-  /* For Firefox */
-  scrollbar-width: thin;
-  scrollbar-color: #888 #fff; /* Scroll thumb color, Track color */
 }
 
 .auth-page-container {

@@ -522,3 +522,24 @@ export function kebabCaseToTitleCase(kebabCaseString: string): string {
   const titleCaseString = titleCaseWords.join(' ');
   return titleCaseString;
 }
+
+/**
+ * Utility hook to determine if the server is on a paid license or not.
+ *
+ * @returns whether the server on a paid license or not
+ */
+export function useServerLicense(): { isServerEE: boolean } {
+  const serverStatus = useStore((s) => s.serverStatus);
+
+  const [serverLicense, setServerLicense] = useState<'pro' | 'ce'>('ce');
+
+  useEffect(() => {
+    if (serverStatus?.status?.is_pro === true) {
+      setServerLicense('pro');
+    } else {
+      setServerLicense('ce');
+    }
+  }, [serverStatus?.status?.is_pro]);
+
+  return { isServerEE: serverLicense === 'pro' };
+}

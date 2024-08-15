@@ -51,7 +51,6 @@ export default function UserGroupDetailsPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
   const { token: themeToken } = theme.useToken();
-  // const isServerEE = store.serverConfig?.IsEE === 'yes';
   const navigate = useNavigate();
   const { groupId } = useParams<{ groupId: string }>();
 

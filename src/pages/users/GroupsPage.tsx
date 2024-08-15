@@ -2,8 +2,8 @@ import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 import { User, UserGroup } from '@/models/User';
 import { AppRoutes } from '@/routes';
 import { UsersService } from '@/services/UsersService';
-import { useStore } from '@/store/store';
 import { getUserGroupRoute, resolveAppRoute } from '@/utils/RouteUtils';
+import { useServerLicense } from '@/utils/Utils';
 import { DeleteOutlined, MoreOutlined, PlusOutlined, QuestionCircleOutlined, SearchOutlined } from '@ant-design/icons';
 import {
   Button,
@@ -30,8 +30,7 @@ interface GroupPageProps {
 export default function GroupsPage({ users }: GroupPageProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const navigate = useNavigate();
-  const store = useStore();
-  const isServerEE = store.serverConfig?.IsEE === 'yes';
+  const { isServerEE } = useServerLicense();
 
   const [isLoading, setIsLoading] = useState(true);
   const [userGroups, setUserGroups] = useState<UserGroup[]>([]);

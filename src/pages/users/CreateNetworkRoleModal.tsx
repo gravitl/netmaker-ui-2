@@ -28,6 +28,7 @@ import { Network } from '@/models/Network';
 import { NetworksService } from '@/services/NetworksService';
 import { convertNetworkPayloadToUiNetwork } from '@/utils/NetworkUtils';
 import { getExtendedNode } from '@/utils/NodeUtils';
+import { useServerLicense } from '@/utils/Utils';
 
 // const permissionsTabKey = 'permissions';
 const vpnAccessTabKey = 'vpn-access';
@@ -75,7 +76,7 @@ export default function CreateNetworkRoleModal({
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
   const { token: themeToken } = theme.useToken();
-  const isServerEE = store.serverConfig?.IsEE === 'yes';
+  const { isServerEE } = useServerLicense();
 
   const [metadataForm] = Form.useForm<metadataFormValues>();
   const [permissionsForm] = Form.useForm<permissionsFormValues>();

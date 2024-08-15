@@ -8,6 +8,7 @@ import { NodesService } from '@/services/NodesService';
 import { useStore } from '@/store/store';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import { isValidIp } from '@/utils/NetworkUtils';
+import { useServerLicense } from '@/utils/Utils';
 
 interface UpdateRemoteAccessGatewayModalProp {
   isOpen: boolean;
@@ -31,8 +32,7 @@ export default function UpdateRemoteAccessGatewayModal({
 }: UpdateRemoteAccessGatewayModalProp) {
   const [form] = Form.useForm<UpdateRemoteAccessGatewayForm>();
   const [notify, notifyCtx] = notification.useNotification();
-  const store = useStore();
-  const isServerEE = store.serverConfig?.IsEE === 'yes';
+  const { isServerEE } = useServerLicense();
 
   const storeUpdateNode = useStore().updateNode;
   const storeFetchNodes = useStore().fetchNodes;

@@ -20,7 +20,7 @@ import { useTranslation } from 'react-i18next';
 import { isSaasBuild } from '@/services/BaseService';
 import { ServerConfigService, getUiVersion } from '@/services/ServerConfigService';
 import { AppErrorBoundary } from '@/components/AppErrorBoundary';
-import { isManagedHost, useBranding } from '@/utils/Utils';
+import { isManagedHost, useBranding, useServerLicense } from '@/utils/Utils';
 import VersionUpgradeModal from '@/components/modals/version-upgrade-modal/VersionUpgradeModal';
 import { lt } from 'semver';
 import { isAdminUserOrRole } from '@/utils/UserMgmtUtils';
@@ -43,7 +43,7 @@ export default function MainLayout() {
   const storeLogout = useStore((state) => state.logout);
   const location = useLocation();
   const branding = useBranding();
-  const isServerEE = store.serverConfig?.IsEE === 'yes';
+  const { isServerEE } = useServerLicense();
 
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);

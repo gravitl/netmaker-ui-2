@@ -16,12 +16,11 @@ import {
   Typography,
 } from 'antd';
 import { MouseEvent, Ref, useCallback, useEffect, useMemo, useState } from 'react';
-import { useStore } from '@/store/store';
 import '../CustomModal.scss';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { User, UserGroup, UserRole, UserRoleId } from '@/models/User';
 import { UsersService } from '@/services/UsersService';
-import { kebabCaseToTitleCase, snakeCaseToTitleCase } from '@/utils/Utils';
+import { kebabCaseToTitleCase, snakeCaseToTitleCase, useServerLicense } from '@/utils/Utils';
 import { isAdminUserOrRole } from '@/utils/UserMgmtUtils';
 
 interface UserdetailsModalProps {
@@ -62,9 +61,8 @@ export default function UserDetailsModal({
 }: UserdetailsModalProps) {
   const [form] = Form.useForm<CreateUserForm>();
   const [notify, notifyCtx] = notification.useNotification();
-  const store = useStore();
 
-  const isServerEE = store.serverConfig?.IsEE === 'yes';
+  const { isServerEE } = useServerLicense();
   const passwordVal = Form.useWatch('password', form);
   const [networkRoles, setNetworkRoles] = useState<UserRole[]>([]);
   const [platformRoles, setPlatformRoles] = useState<UserRole[]>([]);

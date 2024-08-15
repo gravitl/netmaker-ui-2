@@ -24,10 +24,9 @@ import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { User, UserGroup, UserInvite, UserRole, UserRoleId } from '@/models/User';
 import { UsersService } from '@/services/UsersService';
 import { DeleteOutlined } from '@ant-design/icons';
-import { copyTextToClipboard, kebabCaseToTitleCase } from '@/utils/Utils';
+import { copyTextToClipboard, kebabCaseToTitleCase, useServerLicense } from '@/utils/Utils';
 import { getInviteMagicLink } from '@/utils/RouteUtils';
 import CreateUserGroupModal from '@/pages/users/CreateUserGroupModal';
-import { useStore } from '@/store/store';
 import { isAdminUserOrRole } from '@/utils/UserMgmtUtils';
 
 interface InviteUserModalProps {
@@ -73,10 +72,8 @@ const defaultTabKey = groupsTabKey;
 export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCancel }: InviteUserModalProps) {
   const [form] = Form.useForm<UserInviteForm>();
   const [notify, notifyCtx] = notification.useNotification();
-  const store = useStore();
-  const isServerEE = store.serverConfig?.IsEE === 'yes';
+  const { isServerEE } = useServerLicense();
 
-  // const isServerEE = store.serverConfig?.IsEE === 'yes';
   const [currentStep, setCurrentStep] = useState(0);
   const [groups, setGroups] = useState<UserGroup[]>([]);
   const [isLoadingGroups, setIsLoadingGroups] = useState(false);
