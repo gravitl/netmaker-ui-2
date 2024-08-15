@@ -29,13 +29,21 @@ export function isCurrentRouteVersioned() {
  */
 export function resolveAppRoute(route: string, ...queryParams: { [key: string]: string }[]) {
   if (isCurrentRouteVersioned()) {
-    return `/${ServerConfigService.getUiVersion()}${route}?${queryParams
+    const ret = `/${ServerConfigService.getUiVersion()}${route}?${queryParams
       .map((param) => `${Object.keys(param)[0]}=${encodeURIComponent(param[Object.keys(param)[0]])}`)
       .join('&')}`;
+    if (ret.endsWith('?')) {
+      return ret.slice(0, -1);
+    }
+    return ret;
   }
-  return `${route}?${queryParams
+  const ret = `${route}?${queryParams
     .map((param) => `${Object.keys(param)[0]}=${encodeURIComponent(param[Object.keys(param)[0]])}`)
     .join('&')}`;
+  if (ret.endsWith('?')) {
+    return ret.slice(0, -1);
+  }
+  return ret;
 }
 
 // Get host route from host obj or ID
