@@ -93,6 +93,7 @@ export default function NewHostModal({
 
   const filteredEnrollmentKeys = useMemo(
     () =>
+      enrollmentKeys &&
       enrollmentKeys
         .filter((key) => isEnrollmentKeyValid(key))
         .filter((key) =>
