@@ -129,31 +129,22 @@ export default function MainLayout() {
         },
       ]
         .concat(
+          userHasFullAccess
+            ? {
+                key: 'users',
+                icon: UserOutlined,
+                label: 'User Management',
+              }
+            : [],
+        )
+        .concat(
           isSaasBuild
             ? [
-                {
-                  key: 'amui',
-                  icon: UserOutlined,
-                  label: 'Manage Account',
-                },
                 {
                   key: 'amuitenants',
                   icon: RightOutlined,
                   label: 'Tenants',
                 },
-              ]
-            : [],
-        )
-        .concat(
-          !isSaasBuild
-            ? [
-                userHasFullAccess
-                  ? {
-                      key: 'users',
-                      icon: UserOutlined,
-                      label: 'User Management',
-                    }
-                  : undefined!,
               ]
             : [],
         )
