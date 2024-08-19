@@ -673,7 +673,7 @@ export default function NetworkRoleDetailsPage(props: PageProps) {
           }}
         >
           <Col xs={12}>
-            <Button type="default" size="large" danger onClick={confirmDeleteRole} disabled={role?.default}>
+            <Button type="default" size="large" danger onClick={confirmDeleteRole}>
               <DeleteOutlined /> Delete Role
             </Button>
           </Col>
@@ -683,8 +683,8 @@ export default function NetworkRoleDetailsPage(props: PageProps) {
               size="large"
               loading={isSubmitting}
               onClick={updateNetworkRole}
-              disabled={role?.default}
               title={role?.default ? 'Cannot update default roles' : undefined}
+              disabled={role?.default}
             >
               <EditOutlined /> Update Role
             </Button>

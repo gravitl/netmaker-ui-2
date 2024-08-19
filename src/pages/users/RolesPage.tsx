@@ -2,7 +2,6 @@ import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 import { UserRole } from '@/models/User';
 import { AppRoutes } from '@/routes';
 import { UsersService } from '@/services/UsersService';
-import { useStore } from '@/store/store';
 import { getNetworkRoleRoute, getPlatformRoleRoute, resolveAppRoute } from '@/utils/RouteUtils';
 import { deriveUserRoleType } from '@/utils/UserMgmtUtils';
 import { useServerLicense } from '@/utils/Utils';
@@ -30,13 +29,11 @@ interface RolesPageProps {}
 export default function RolesPage(props: RolesPageProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const navigate = useNavigate();
-  const store = useStore();
   const { isServerEE } = useServerLicense();
 
   const [isLoading, setIsLoading] = useState(true);
   const [userRoles, setUserRoles] = useState<UserRole[]>([]);
   const [searchRoles, setSearchRoles] = useState('');
-  const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
 
   const filteredRoles = useMemo(() => {
     return userRoles
@@ -55,7 +52,6 @@ export default function RolesPage(props: RolesPageProps) {
           try {
             await UsersService.deleteRole(role.id);
             setUserRoles((roles) => roles.filter((r) => r.id !== role.id));
-            setSelectedRole(null);
             notify.success({ message: `Role "${role.id}" deleted` });
           } catch (error) {
             notify.error({ message: `Failed to delete role "${role.id}"` });
@@ -128,16 +124,14 @@ export default function RolesPage(props: RolesPageProps) {
                   // },
                   {
                     key: 'delete',
-                    disabled: role.default,
                     danger: true,
                     label: (
-                      <span title={role.default ? 'Cannot delete a default role' : ''}>
+                      <span>
                         <DeleteOutlined /> Delete
                       </span>
                     ),
                     onClick: (info) => {
                       info.domEvent.stopPropagation();
-                      if (role.default) return;
                       confirmDeleteRole(role);
                     },
                   },
@@ -321,8 +315,6 @@ export default function RolesPage(props: RolesPageProps) {
                     return {
                       onClick: (ev) => {
                         ev.stopPropagation();
-                        // if (role.default) return;
-                        setSelectedRole(role);
                         if (deriveUserRoleType(role) === 'platform-role') {
                           navigate(getPlatformRoleRoute(role));
                           return;
