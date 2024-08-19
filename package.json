@@ -28,7 +28,7 @@
     "axios-mock-adapter": "^2.0.0",
     "buffer": "^6.0.3",
     "classnames": "^2.3.2",
-    "dayjs": "^1.11.11",
+    "dayjs": "^1.11.12",
     "graphology": "^0.25.4",
     "graphology-layout": "^0.6.1",
     "graphology-layout-force": "^0.2.4",
