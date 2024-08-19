@@ -36,7 +36,6 @@ import {
   SearchOutlined,
   SettingOutlined,
   StopOutlined,
-  UserOutlined,
   WarningOutlined,
 } from '@ant-design/icons';
 import {
@@ -884,29 +883,9 @@ export default function NetworkDetailsPage(props: PageProps) {
           },
         },
       ];
-
-      if (isServerEE) {
-        const addRemoveUsersOption: MenuProps['items'] = [
-          // {
-          //   key: 'addremove',
-          //   label: (
-          //     <Typography.Text>
-          //       <UserOutlined /> Add / Remove Users
-          //     </Typography.Text>
-          //   ),
-          //   onClick: (info) => {
-          //     setSelectedGateway(gateway);
-          //     setIsUpdateIngressUsersModalOpen(true);
-          //     info.domEvent.stopPropagation();
-          //   },
-          // },
-        ];
-        return [...addRemoveUsersOption, ...defaultOptions];
-      }
-
       return defaultOptions;
     },
-    [confirmDeleteGateway, isServerEE],
+    [confirmDeleteGateway],
   );
 
   const gatewaysTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(
@@ -979,22 +958,6 @@ export default function NetworkDetailsPage(props: PageProps) {
         render(_, gateway) {
           return (
             <Flex>
-              {isServerEE && (
-                <Button
-                  type="primary"
-                  onClick={(info) => {
-                    setSelectedGateway(gateway);
-                    setIsUpdateIngressUsersModalOpen(true);
-                    info.stopPropagation();
-                  }}
-                  icon={<UserOutlined />}
-                  style={{ marginRight: '0.5rem' }}
-                >
-                  {' '}
-                  Manage Users
-                </Button>
-              )}
-
               <Dropdown
                 placement="bottomRight"
                 menu={{
@@ -2758,6 +2721,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       </div>
     );
   }, [
+    isServerEE,
     clients.length,
     clientGateways.length,
     searchClientGateways,
