@@ -137,10 +137,10 @@ export function InternetGatewaysPage({
             store.updateNode(assocInetGw.id, newGateway);
             setSelectedGateway(newGateway);
             store.fetchNodes();
-            notify.success({ message: 'Internet gateway deleted' });
+            notify.success({ message: 'Host disconnected' });
           } catch (err) {
             notify.error({
-              message: 'Error deleting internet gateway',
+              message: 'Failed to disconnect host',
               description: extractErrorMsg(err as any),
             });
           }
@@ -492,6 +492,7 @@ export function InternetGatewaysPage({
           internetGateway={selectedGateway}
           onUpdateInternetGateway={(updatedNode: Node) => {
             setSelectedGateway(getExtendedNode(updatedNode, store.hostsCommonDetails));
+            store.updateNode(updatedNode.id, updatedNode);
             setIsUpdateInternetGatewayModalOpen(false);
           }}
           onCancel={() => {
