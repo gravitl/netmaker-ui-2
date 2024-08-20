@@ -23,6 +23,7 @@ import { Modify } from '@/types/react-app-env';
 import dayjs, { Dayjs } from 'dayjs';
 import { ExtendedNode } from '@/models/Node';
 import { getExtendedNode, isNodeRelay } from '@/utils/NodeUtils';
+import { useServerLicense } from '@/utils/Utils';
 
 interface AddEnrollmentKeyModalProps {
   isOpen: boolean;
@@ -50,7 +51,7 @@ export default function AddEnrollmentKeyModal({
   const [form] = Form.useForm<AddEnrollmentKeyFormData>();
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
-  const isServerEE = store.serverConfig?.IsEE === 'yes';
+  const { isServerEE } = useServerLicense();
   const networksVal = Form.useWatch('networks', form);
 
   const networkOptions = useMemo(() => {

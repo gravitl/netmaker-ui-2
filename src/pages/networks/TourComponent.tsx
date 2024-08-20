@@ -2,6 +2,7 @@ import { UsecaseQuestionKey } from '@/constants/NetworkUseCases';
 import { MetricCategories } from '@/models/Metrics';
 import { ExtendedNode } from '@/models/Node';
 import { useStore } from '@/store/store';
+import { useServerLicense } from '@/utils/Utils';
 import { Tour, TourProps, notification } from 'antd';
 import { NotificationInstance } from 'antd/es/notification/interface';
 import { t, use } from 'i18next';
@@ -199,7 +200,7 @@ export default function TourComponent(props: TourUtilsProps) {
     setIsUpdateIngressUsersModalOpen,
   } = props;
   const store = useStore();
-  const isServerEE = store.serverConfig?.IsEE === 'yes';
+  const { isServerEE } = useServerLicense();
   const location = useLocation();
   const [jumpToTourStepObj, setJumpToTourStepObj] = useState<JumpToTourStepObj>({
     overview: 0,

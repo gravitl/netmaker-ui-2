@@ -16,6 +16,13 @@ import { isSaasBuild } from './services/BaseService';
 import NetworkHostDetailsPage from './pages/hosts/NetworkHostDetailsPage';
 import HostDetailsPage from './pages/hosts/HostDetailsPage';
 import { ServerConfigService } from './services/ServerConfigService';
+import CreateNetworkRolePage from './pages/users/CreateNetworkRolePage';
+import NetworkRoleDetailsPage from './pages/users/NetworkRoleDetailsPage';
+import CreateUserGroupPage from './pages/users/CreateUserGroupPage';
+import ContinueInvitePage from './pages/auth/ContinueInvitePage';
+import UserGroupDetailsPage from './pages/users/UserGroupDetailsPage';
+import PlatformRoleDetailsPage from './pages/users/PlatformRoleDetailsPage';
+import ProfilePage from './pages/users/ProfilePage';
 
 export const AppRoutes = {
   DASHBOARD_ROUTE: '/',
@@ -32,6 +39,13 @@ export const AppRoutes = {
   ENROLLMENT_KEYS_ROUTE: '/enrollment-keys',
   USERS_ROUTE: '/users',
   SIGNUP_ROUTE: '/signup',
+  CREATE_NETWORK_ROLE_ROUTE: '/users/create-network-role',
+  NETWORK_ROLE_DETAILS_ROUTE: '/users/network-role/:roleId',
+  CREATE_GROUP_ROUTE: '/users/create-group',
+  CONTINUE_INVITE_ROUTE: '/invite',
+  USER_GROUP_DETAILS_ROUTE: '/users/group/:groupId',
+  PLATFORM_ROLE_DETAILS_ROUTE: '/users/platform-role/:roleId',
+  PROFILE_ROUTE: '/profile',
 };
 
 function generateRoutePair(path: string, element: JSX.Element): RouteObject[] {
@@ -112,10 +126,47 @@ const routes: RouteObject[] = [
           <UsersPage isFullScreen />
         </ProtectedRoute>,
       ),
+      ...generateRoutePair(
+        AppRoutes.CREATE_NETWORK_ROLE_ROUTE.split('/').slice(1).join('/'),
+        <ProtectedRoute>
+          <CreateNetworkRolePage isFullScreen />
+        </ProtectedRoute>,
+      ),
+      ...generateRoutePair(
+        AppRoutes.NETWORK_ROLE_DETAILS_ROUTE.split('/').slice(1).join('/'),
+        <ProtectedRoute>
+          <NetworkRoleDetailsPage isFullScreen />
+        </ProtectedRoute>,
+      ),
+      ...generateRoutePair(
+        AppRoutes.PLATFORM_ROLE_DETAILS_ROUTE.split('/').slice(1).join('/'),
+        <ProtectedRoute>
+          <PlatformRoleDetailsPage isFullScreen />
+        </ProtectedRoute>,
+      ),
+      ...generateRoutePair(
+        AppRoutes.CREATE_GROUP_ROUTE.split('/').slice(1).join('/'),
+        <ProtectedRoute>
+          <CreateUserGroupPage isFullScreen />
+        </ProtectedRoute>,
+      ),
+      ...generateRoutePair(
+        AppRoutes.USER_GROUP_DETAILS_ROUTE.split('/').slice(1).join('/'),
+        <ProtectedRoute>
+          <UserGroupDetailsPage isFullScreen />
+        </ProtectedRoute>,
+      ),
+      ...generateRoutePair(
+        AppRoutes.PROFILE_ROUTE.split('/').slice(1).join('/'),
+        <ProtectedRoute>
+          <ProfilePage isFullScreen />
+        </ProtectedRoute>,
+      ),
     ],
   },
   ...generateRoutePair(AppRoutes.STARTUP_ROUTE.split('/')[1], <StartupPage />),
   ...generateRoutePair(AppRoutes.LOGIN_ROUTE.split('/')[1], <LoginPage />),
+  ...generateRoutePair(AppRoutes.CONTINUE_INVITE_ROUTE.split('/')[1], <ContinueInvitePage isFullScreen />),
 
   // fallback route
   { path: '*', element: <Error404Page /> },

@@ -28,6 +28,7 @@ import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { CreateNodeRelayDto } from '@/services/dtos/CreateNodeRelayDto';
 import { NodesService } from '@/services/NodesService';
 import { NULL_NODE } from '@/constants/Types';
+import { useServerLicense } from '@/utils/Utils';
 
 interface UpdateRelayModalProps {
   isOpen: boolean;
@@ -53,7 +54,7 @@ export default function UpdateRelayModal({
   const store = useStore();
   const { token: themeToken } = theme.useToken();
 
-  const isServerEE = store.serverConfig?.IsEE === 'yes';
+  const { isServerEE } = useServerLicense();
   const [form] = Form.useForm<UpdateRelayFormFields>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedRelayedIds, setSelectedRelayedIds] = useState<Host['id'][]>(relay.relaynodes ?? []);

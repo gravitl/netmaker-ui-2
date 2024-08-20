@@ -7,7 +7,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AxiosError } from 'axios';
 import { ServerConfigService, getUiVersion } from './services/ServerConfigService';
 import ServerMalfunctionModal from './components/modals/server-malfunction-modal/ServerMalfunctionModal';
-import { useBranding } from './utils/Utils';
+import { useBranding, useServerLicense } from './utils/Utils';
 import { isSaasBuild } from './services/BaseService';
 import { APP_UPDATE_POLL_INTERVAL } from './constants/AppConstants';
 import { useIntercom } from 'react-use-intercom';
@@ -24,7 +24,7 @@ function App() {
   const posthog = usePostHog();
 
   const branding = useBranding();
-  const isServerEE = store.serverConfig?.IsEE === 'yes';
+  const { isServerEE } = useServerLicense();
   const storeFetchServerConfig = store.fetchServerConfig;
   const storeSetServerStatus = store.setServerStatus;
   const storeFetchNodes = store.fetchNodes;

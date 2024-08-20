@@ -20,14 +20,15 @@ import { useTranslation } from 'react-i18next';
 import { isSaasBuild } from '@/services/BaseService';
 import { ServerConfigService, getUiVersion } from '@/services/ServerConfigService';
 import { AppErrorBoundary } from '@/components/AppErrorBoundary';
-import { isManagedHost, useBranding } from '@/utils/Utils';
+import { isManagedHost, useBranding, useServerLicense } from '@/utils/Utils';
 import VersionUpgradeModal from '@/components/modals/version-upgrade-modal/VersionUpgradeModal';
 import { lt } from 'semver';
+import { isAdminUserOrRole } from '@/utils/UserMgmtUtils';
 
 const { Content, Sider } = Layout;
 
-const SIDE_NAV_EXPANDED_WIDTH = '200px';
-const SIDE_NAV_COLLAPSED_WIDTH = '80px';
+export const SIDE_NAV_EXPANDED_WIDTH = '200px';
+export const SIDE_NAV_COLLAPSED_WIDTH = '80px';
 
 // const SELECTED_COLOR = '#1668dc';
 
@@ -42,7 +43,7 @@ export default function MainLayout() {
   const storeLogout = useStore((state) => state.logout);
   const location = useLocation();
   const branding = useBranding();
-  const isServerEE = store.serverConfig?.IsEE === 'yes';
+  const { isServerEE } = useServerLicense();
 
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -60,6 +61,8 @@ export default function MainLayout() {
         .slice(0, 10),
     [store.networks],
   );
+
+  const userHasFullAccess = useMemo(() => isAdminUserOrRole(store.user!), [store.user]);
 
   const sidebarLogo = useMemo(() => {
     const { logoDarkUrl, logoLightUrl, logoDarkSmallUrl, logoLightSmallUrl } = branding;
@@ -107,28 +110,36 @@ export default function MainLayout() {
             },
           ],
         },
-        {
-          key: 'hosts',
-          icon: LaptopOutlined,
-          label: 'Hosts',
-        },
-        {
-          key: 'enrollment-keys',
-          icon: KeyOutlined,
-          label: 'Enrollment Keys',
-        },
+        userHasFullAccess
+          ? {
+              key: 'hosts',
+              icon: LaptopOutlined,
+              label: 'Hosts',
+            }
+          : undefined!,
+        userHasFullAccess
+          ? {
+              key: 'enrollment-keys',
+              icon: KeyOutlined,
+              label: 'Enrollment Keys',
+            }
+          : undefined!,
         {
           type: 'divider',
         },
       ]
         .concat(
+          userHasFullAccess
+            ? {
+                key: 'users',
+                icon: UserOutlined,
+                label: 'User Management',
+              }
+            : [],
+        )
+        .concat(
           isSaasBuild
             ? [
-                {
-                  key: 'amui',
-                  icon: UserOutlined,
-                  label: 'Manage Account',
-                },
                 {
                   key: 'amuitenants',
                   icon: RightOutlined,
@@ -137,33 +148,25 @@ export default function MainLayout() {
               ]
             : [],
         )
-        .concat(
-          !isSaasBuild
-            ? [
-                {
-                  key: 'users',
-                  icon: UserOutlined,
-                  label: 'Users',
-                },
-              ]
-            : [],
-        )
-        .map((item) => ({
-          key: item.key,
-          type: item.type as any,
-          style: {
-            marginTop: item.type === 'divider' ? '1rem' : '',
-            marginBottom: item.type === 'divider' ? '1rem' : '',
-          },
-          icon: item.icon && React.createElement(item.icon),
-          label: item.label,
-          children: item.children?.map((child) => ({
-            key: (child as any)?.key,
-            label: (child as any)?.label,
-            type: (child as any)?.type,
-          })),
-        })),
-    [recentNetworks],
+        .map(
+          (item) =>
+            item && {
+              key: item.key,
+              type: item.type as any,
+              style: {
+                marginTop: item.type === 'divider' ? '1rem' : '',
+                marginBottom: item.type === 'divider' ? '1rem' : '',
+              },
+              icon: item.icon && React.createElement(item.icon),
+              label: item.label,
+              children: item.children?.map((child) => ({
+                key: (child as any)?.key,
+                label: (child as any)?.label,
+                type: (child as any)?.type,
+              })),
+            },
+        ),
+    [recentNetworks, userHasFullAccess],
   );
 
   const sideNavBottomItems: MenuProps['items'] = useMemo(
@@ -268,6 +271,29 @@ export default function MainLayout() {
                   alignItems: 'center',
                 }}
                 onClick={() => {
+                  navigate(resolveAppRoute(AppRoutes.PROFILE_ROUTE));
+                }}
+              >
+                <UserOutlined /> Profile
+              </div>
+            ),
+          },
+          {
+            style: {
+              paddingLeft: isSidebarCollapsed ? '.2rem' : '1rem',
+              paddingRight: isSidebarCollapsed ? '.2rem' : '1rem',
+              paddingTop: isSidebarCollapsed ? '.2rem' : '1rem',
+              paddingBottom: isSidebarCollapsed ? '.2rem' : '1rem',
+            },
+            label: (
+              <div
+                style={{
+                  display: 'flex',
+                  flexFlow: 'row nowrap',
+                  gap: '1rem',
+                  alignItems: 'center',
+                }}
+                onClick={() => {
                   storeLogout();
                   navigate(resolveAppRoute(AppRoutes.LOGIN_ROUTE));
                 }}
@@ -339,7 +365,7 @@ export default function MainLayout() {
   const contentMarginLeft = useMemo(() => {
     if (isSidebarCollapsed) {
       if (isSmallScreen) {
-        return 0;
+        return '0px';
       }
       return SIDE_NAV_COLLAPSED_WIDTH;
     }
@@ -358,6 +384,10 @@ export default function MainLayout() {
     const isManagedHostLoaded = store.hosts.some((host) => isManagedHost(host.name));
     return isSaasBuild && isNewTenant && !isManagedHostLoaded;
   }, [store.isNewTenant, store.hosts]);
+
+  useEffect(() => {
+    store.setSidebarWidth(contentMarginLeft);
+  }, [contentMarginLeft]);
 
   useEffect(() => {
     if (store.serverStatus?.status?.trial_end_date) {
@@ -393,14 +423,13 @@ export default function MainLayout() {
         <Sider
           collapsible
           collapsed={isSidebarCollapsed}
-          onCollapse={(value) => {
-            setIsSidebarCollapsed(value);
-            store.setIsSidebarCollapsed(value);
+          onCollapse={(isCollapsed) => {
+            setIsSidebarCollapsed(isCollapsed);
+            store.setIsSidebarCollapsed(isCollapsed);
           }}
           collapsedWidth={isSmallScreen ? 0 : SIDE_NAV_COLLAPSED_WIDTH}
           width={SIDE_NAV_EXPANDED_WIDTH}
           theme="light"
-          breakpoint="lg"
           style={{
             height: '100vh',
             position: 'fixed',
@@ -417,7 +446,10 @@ export default function MainLayout() {
             color: branding.primaryColor,
             top: 0,
           }}
-          onBreakpoint={(broken: boolean) => setIsSmallScreen(broken)}
+          breakpoint="lg"
+          onBreakpoint={(broken: boolean) => {
+            setIsSmallScreen(broken);
+          }}
         >
           {/* logo */}
           <Link to={resolveAppRoute(AppRoutes.DASHBOARD_ROUTE)}>

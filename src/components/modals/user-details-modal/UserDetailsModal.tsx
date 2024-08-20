@@ -6,7 +6,6 @@ import {
   Input,
   Modal,
   notification,
-  Radio,
   Row,
   Select,
   Table,
@@ -21,12 +20,13 @@ import '../CustomModal.scss';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { User, UserGroup, UserRole, UserRoleId } from '@/models/User';
 import { UsersService } from '@/services/UsersService';
-import { kebabCaseToTitleCase, useServerLicense } from '@/utils/Utils';
+import { kebabCaseToTitleCase, snakeCaseToTitleCase, useServerLicense } from '@/utils/Utils';
 import { isAdminUserOrRole } from '@/utils/UserMgmtUtils';
 
-interface AddUserModalProps {
+interface UserdetailsModalProps {
   isOpen: boolean;
-  onCreateUser: (user: User) => any;
+  user: User;
+  onUpdateUser: (user: User) => any;
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
   addUserButtonRef?: Ref<HTMLDivElement>;
   addUserNameInputRef?: Ref<HTMLDivElement>;
@@ -37,7 +37,9 @@ interface AddUserModalProps {
 type CreateUserForm = User & {
   password: string;
   'confirm-password': string;
+  'role-assignment-type': 'by-group' | 'by-manual';
   'user-groups': UserGroup['id'][];
+  networkRoles: { [network: string]: UserRoleId[] };
 };
 
 interface NetworkRolesTableData {
@@ -45,22 +47,18 @@ interface NetworkRolesTableData {
   roles: UserRole[];
 }
 
-interface NetworkRolePair {
-  network: string;
-  role: UserRoleId;
-}
-
 const groupsTabKey = 'groups';
 const customRolesTabKey = 'custom-roles';
 const defaultTabKey = groupsTabKey;
 
-export default function AddUserModal({
+export default function UserDetailsModal({
   isOpen,
-  onCreateUser,
+  user,
+  onUpdateUser,
   onCancel,
   addUserNameInputRef,
   addUserPasswordInputRef,
-}: AddUserModalProps) {
+}: UserdetailsModalProps) {
   const [form] = Form.useForm<CreateUserForm>();
   const [notify, notifyCtx] = notification.useNotification();
 
@@ -69,7 +67,7 @@ export default function AddUserModal({
   const [networkRoles, setNetworkRoles] = useState<UserRole[]>([]);
   const [platformRoles, setPlatformRoles] = useState<UserRole[]>([]);
   const [groups, setGroups] = useState<UserGroup[]>([]);
-  const [selectedNetworkRoles, setSelectedNetworkRoles] = useState<NetworkRolePair[]>([]);
+  const [isEditingUserPermissions, setIsEditingUserPermissions] = useState(false);
   const [activeTab, setActiveTab] = useState(defaultTabKey);
 
   const palVal = Form.useWatch('platform_role_id', form);
@@ -122,29 +120,28 @@ export default function AddUserModal({
         width: '70%',
         render(_, rowData) {
           return (
-            <Select
-              mode="multiple"
-              placeholder="Select user roles for this network"
-              allowClear
-              options={rowData.roles
-                .sort((a, b) => a.id.localeCompare(b.id))
-                .map((r) => ({ value: r.id, label: r.ui_name || r.id }))}
-              onSelect={(roleId: UserRole['id']) => {
-                setSelectedNetworkRoles((prev) => {
-                  return [...prev, { network: rowData.network, role: roleId }];
-                });
-              }}
-              onDeselect={(roleId: UserRole['id']) => {
-                setSelectedNetworkRoles((prev) =>
-                  prev.filter((r) => r.network !== rowData.network && r.role !== roleId),
-                );
-              }}
-            />
+            <Form.Item
+              name={['networkRoles', rowData.network]}
+              initialValue={(() => {
+                const ret = Object.keys(user?.network_roles?.[rowData.network] ?? {}) ?? [];
+                return ret;
+              })()}
+              noStyle
+            >
+              <Select
+                mode="multiple"
+                placeholder="Select user roles for this network"
+                allowClear
+                options={rowData.roles
+                  .sort((a, b) => a.id.localeCompare(b.id))
+                  .map((r) => ({ value: r.id, label: r.ui_name || r.id }))}
+              />
+            </Form.Item>
           );
         },
       },
     ],
-    [],
+    [user?.network_roles],
   );
 
   const resetModal = () => {
@@ -168,9 +165,7 @@ export default function AddUserModal({
       const networkRoles = (await UsersService.getRoles()).data.Response;
       const platformRoles = (await UsersService.getRoles('platform-role')).data.Response;
       setNetworkRoles(networkRoles);
-      setPlatformRoles(
-        platformRoles.filter((r) => !r.id.includes('super-admin')).sort((a, b) => a.id.localeCompare(b.id)),
-      );
+      setPlatformRoles(platformRoles.filter((r) => r.id !== 'super-admin'));
     } catch (err) {
       notify.error({
         message: 'Failed to load roles',
@@ -179,54 +174,59 @@ export default function AddUserModal({
     }
   }, [notify]);
 
-  const createUser = async () => {
+  const updateUser = async () => {
     try {
       const formData = await form.validateFields();
 
       const payload: any = {
-        ...formData,
+        ...JSON.parse(JSON.stringify(formData)),
+        username: user.username,
+        password: formData.password || undefined,
       };
 
       if (!isServerEE) payload['platform_role_id'] = 'admin';
 
       payload['network_roles'] = {} as User['network_roles'];
       payload['user_group_ids'] = {} as User['user_group_ids'];
+
       payload['user_group_ids'] = (formData['user-groups'] ?? []).reduce((acc, g) => ({ ...acc, [g]: {} }), {});
-      selectedNetworkRoles.forEach((r) => {
-        if (payload['network_roles'][r.network]) {
-          payload['network_roles'][r.network][r.role] = {};
-        } else {
-          payload['network_roles'][r.network] = { [r.role]: {} };
+      Object.keys(formData.networkRoles ?? {}).forEach((networkId) => {
+        payload.network_roles[networkId] = {};
+        formData.networkRoles[networkId].forEach((roleId) => {
+          payload.network_roles[networkId][roleId] = {};
+        });
+        // remove empty network roles
+        if (Object.keys(payload.network_roles[networkId]).length === 0) {
+          delete payload.network_roles[networkId];
         }
       });
+      delete payload['role-assignment-type'];
       delete payload['user-groups'];
       delete payload['confirm-password'];
-      delete payload['issuperadmin'];
-      const newUser = (await UsersService.createUser(payload)).data;
+      delete payload['networkRoles'];
+
+      const newUser = (await UsersService.updateUser(user.username, payload)).data;
       resetModal();
-      notify.success({ message: `User ${newUser.username} created` });
-      onCreateUser(newUser);
+      notification.success({ message: `User ${newUser.username} updated` });
+      onUpdateUser(newUser);
     } catch (err) {
       notify.error({
-        message: 'Failed to create user',
+        message: 'Failed to update user',
         description: extractErrorMsg(err as any),
       });
     }
   };
-
-  useEffect(() => {
-    if (isOpen) {
-      loadGroups();
-      loadRoles();
-    }
-  }, [isOpen, loadGroups, loadRoles]);
 
   // ui components
   const getGroupsContent = useCallback(() => {
     return (
       <Row>
         <Col xs={24}>
-          <Form.Item name="user-groups" label="Which groups will the user join">
+          <Form.Item
+            name="user-groups"
+            label="Which groups will the user join"
+            initialValue={Object.keys(user.user_group_ids ?? {})}
+          >
             <Select
               mode="multiple"
               placeholder="Select groups"
@@ -241,7 +241,7 @@ export default function AddUserModal({
         </Col>
       </Row>
     );
-  }, [groups]);
+  }, [groups, user.user_group_ids]);
 
   const getCustomRolesContent = useCallback(() => {
     return (
@@ -281,9 +281,16 @@ export default function AddUserModal({
     [getGroupsContent, getCustomRolesContent],
   );
 
+  useEffect(() => {
+    if (isServerEE && isOpen) {
+      loadGroups();
+      loadRoles();
+    }
+  }, [isOpen, isServerEE, loadGroups, loadRoles]);
+
   return (
     <Modal
-      title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold', minWidth: '60vw' }}>Create a User</span>}
+      title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold', minWidth: '60vw' }}>User Details</span>}
       open={isOpen}
       onCancel={(ev) => {
         resetModal();
@@ -296,19 +303,32 @@ export default function AddUserModal({
     >
       <Divider style={{ margin: '0px 0px 2rem 0px' }} />
       <div className="CustomModalBody" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
-        <Form name="add-user-form" form={form} layout="vertical">
+        <Form name="update-user-form" form={form} layout="vertical">
           <Row ref={addUserNameInputRef}>
             <Col xs={24}>
-              <Form.Item label="Username" name="username" rules={[{ required: true }]}>
-                <Input placeholder="Username" />
+              <Form.Item label="Username" name="username">
+                <Typography.Text>{user.username}</Typography.Text>
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row>
+            <Col xs={24}>
+              <Form.Item label="User Login Type">
+                <Typography.Text>{snakeCaseToTitleCase(user.auth_type)}</Typography.Text>
               </Form.Item>
             </Col>
           </Row>
 
           <Row ref={addUserPasswordInputRef}>
             <Col xs={24}>
-              <Form.Item label="Password" name="password" rules={[{ required: true }]}>
-                <Input placeholder="Password" type="password" />
+              <Form.Item label="Password" name="password">
+                <Input
+                  placeholder="(unchanged)"
+                  type="password"
+                  disabled={user.auth_type === 'oauth'}
+                  title={user.auth_type === 'oauth' ? 'You cannot change the password of an OAuth user' : ''}
+                />
               </Form.Item>
             </Col>
           </Row>
@@ -317,7 +337,6 @@ export default function AddUserModal({
             label="Confirm Password"
             name="confirm-password"
             rules={[
-              { required: true, message: '' },
               {
                 validator(_, value) {
                   if (value !== passwordVal) {
@@ -330,7 +349,12 @@ export default function AddUserModal({
             ]}
             dependencies={['password']}
           >
-            <Input placeholder="Confirm Password" type="password" />
+            <Input
+              placeholder="(unchanged)"
+              type="password"
+              disabled={user.auth_type === 'oauth'}
+              title={user.auth_type === 'oauth' ? 'You cannot change the password of an OAuth user' : ''}
+            />
           </Form.Item>
 
           {isServerEE && (
@@ -343,16 +367,17 @@ export default function AddUserModal({
                     name="platform_role_id"
                     label="Platform Access Level"
                     tooltip="This specifies the tenant-wide permissions this user will have"
-                    rules={[{ required: true }]}
-                    initialValue={isServerEE ? undefined : 'admin'}
+                    initialValue={user.platform_role_id}
+                    required
                   >
-                    <Radio.Group>
-                      {platformRoles.map((role) => (
-                        <Radio key={role.id} value={role.id} disabled={!isServerEE && !isAdminUserOrRole(role)}>
-                          {kebabCaseToTitleCase(role.id)}
-                        </Radio>
-                      ))}
-                    </Radio.Group>
+                    <Select
+                      placeholder="Select a platform access level for the user"
+                      options={platformRoles.map((r) => ({
+                        value: r.id,
+                        label: kebabCaseToTitleCase(r.id),
+                        disabled: !isServerEE && !isAdminUserOrRole(r),
+                      }))}
+                    />
                   </Form.Item>
                 </Col>
               </Row>
@@ -360,20 +385,18 @@ export default function AddUserModal({
           )}
 
           {!!palVal && isServerEE && !isAdminUserOrRole(palVal) && (
-            <>
-              <Row>
-                <Col xs={24}>
-                  <Tabs
-                    defaultActiveKey={defaultTabKey}
-                    items={tabs}
-                    activeKey={activeTab}
-                    onChange={(tabKey: string) => {
-                      setActiveTab(tabKey);
-                    }}
-                  />
-                </Col>
-              </Row>
-            </>
+            <Row>
+              <Col xs={24}>
+                <Tabs
+                  defaultActiveKey={defaultTabKey}
+                  items={tabs}
+                  activeKey={activeTab}
+                  onChange={(tabKey: string) => {
+                    setActiveTab(tabKey);
+                  }}
+                />
+              </Col>
+            </Row>
           )}
         </Form>
       </div>
@@ -382,11 +405,9 @@ export default function AddUserModal({
         <Divider style={{ margin: '0px 0px 2rem 0px' }} />
         <Row>
           <Col xs={24} style={{ textAlign: 'right' }}>
-            <Form.Item>
-              <Button type="primary" onClick={createUser}>
-                Create User
-              </Button>
-            </Form.Item>
+            <Button type="primary" onClick={updateUser}>
+              Update User
+            </Button>
           </Col>
         </Row>
       </div>

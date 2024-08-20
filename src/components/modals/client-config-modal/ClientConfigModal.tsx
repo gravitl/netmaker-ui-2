@@ -9,6 +9,7 @@ import { Node } from '@/models/Node';
 import { useStore } from '@/store/store';
 import { getExtendedNode } from '@/utils/NodeUtils';
 import { Buffer } from 'buffer';
+import { copyTextToClipboard, useServerLicense } from '@/utils/Utils';
 
 const { TextArea } = Input;
 interface ClientConfigModalProps {
@@ -27,7 +28,7 @@ function convertQrCodeArrayBufferToImgString(qrData: ArrayBuffer): string {
 export default function ClientConfigModal({ client, gateway, isOpen, onCancel }: ClientConfigModalProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
-  const isServerEE = store.serverConfig?.IsEE === 'yes';
+  const { isServerEE } = useServerLicense();
 
   const [config, setConfig] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -122,7 +123,7 @@ export default function ClientConfigModal({ client, gateway, isOpen, onCancel }:
             disabled={isLoading}
             onClick={async () => {
               try {
-                await navigator.clipboard.writeText(config);
+                await copyTextToClipboard(config);
                 notify.success({ message: 'Copied to clipboard' });
               } catch (err) {
                 notify.error({
