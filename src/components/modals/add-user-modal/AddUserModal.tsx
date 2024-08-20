@@ -215,9 +215,11 @@ export default function AddUserModal({
   };
 
   useEffect(() => {
-    loadGroups();
-    loadRoles();
-  }, [loadGroups, loadRoles]);
+    if (isOpen) {
+      loadGroups();
+      loadRoles();
+    }
+  }, [isOpen, loadGroups, loadRoles]);
 
   // ui components
   const getGroupsContent = useCallback(() => {

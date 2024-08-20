@@ -282,11 +282,11 @@ export default function UserDetailsModal({
   );
 
   useEffect(() => {
-    if (isServerEE) {
+    if (isServerEE && isOpen) {
       loadGroups();
       loadRoles();
     }
-  }, [isServerEE, loadGroups, loadRoles]);
+  }, [isOpen, isServerEE, loadGroups, loadRoles]);
 
   return (
     <Modal

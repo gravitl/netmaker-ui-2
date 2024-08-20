@@ -276,9 +276,11 @@ export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCan
   };
 
   useEffect(() => {
-    loadRoles();
-    loadGroups();
-  }, [loadGroups, loadRoles]);
+    if (isOpen) {
+      loadRoles();
+      loadGroups();
+    }
+  }, [isOpen, loadGroups, loadRoles]);
 
   // ui components
   const getGroupsContent = useCallback(() => {
