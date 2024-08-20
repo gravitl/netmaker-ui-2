@@ -144,6 +144,10 @@ export default function UsersPage(props: PageProps) {
     }
   }, [notify]);
 
+  const triggerDataRefresh = useCallback(() => {
+    loadUsers(false);
+  }, [loadUsers]);
+
   const confirmDeleteUser = useCallback(
     async (user: User) => {
       Modal.confirm({
@@ -831,12 +835,12 @@ export default function UsersPage(props: PageProps) {
         {
           key: UsersPageTabs.rolesTabKey,
           label: 'Network Roles',
-          children: <RolesPage />,
+          children: <RolesPage triggerDataRefresh={triggerDataRefresh} />,
         },
         {
           key: UsersPageTabs.groupsTabKey,
           label: 'Groups',
-          children: <GroupsPage users={users} />,
+          children: <GroupsPage users={users} triggerDataRefresh={triggerDataRefresh} />,
         },
         {
           key: UsersPageTabs.invitesTabKey,
@@ -860,6 +864,7 @@ export default function UsersPage(props: PageProps) {
     invites.length,
     isServerEE,
     pendingUsers.length,
+    triggerDataRefresh,
     users,
   ]);
 

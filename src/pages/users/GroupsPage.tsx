@@ -25,9 +25,10 @@ import { useNavigate } from 'react-router-dom';
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface GroupPageProps {
   users: User[];
+  triggerDataRefresh?: () => void;
 }
 
-export default function GroupsPage({ users }: GroupPageProps) {
+export default function GroupsPage({ users, triggerDataRefresh }: GroupPageProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const navigate = useNavigate();
   const { isServerEE } = useServerLicense();
@@ -68,13 +69,14 @@ export default function GroupsPage({ users }: GroupPageProps) {
             setUserGroups((roles) => roles.filter((r) => r.id !== group.id));
             setSelectedGroup(null);
             notify.success({ message: `Group "${group.id}" successfully deleted` });
+            triggerDataRefresh?.();
           } catch (error) {
             notify.error({ message: 'Failed to delete group' });
           }
         },
       });
     },
-    [notify],
+    [notify, triggerDataRefresh],
   );
 
   const groupTableColumns = useMemo<TableColumnProps<UserGroup>[]>(

@@ -1,5 +1,5 @@
 import { useStore } from '@/store/store';
-import { EditOutlined, PlusOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import {
   Button,
   Card,
@@ -7,6 +7,7 @@ import {
   Form,
   Input,
   Layout,
+  Modal,
   notification,
   Row,
   Select,
@@ -206,6 +207,26 @@ export default function UserGroupDetailsPage(props: PageProps) {
     }
   }, [notify]);
 
+  const confirmDeleteGroup = useCallback(() => {
+    if (!group) {
+      notify.error({ message: 'An error occured. Cannot delete group' });
+      return;
+    }
+    Modal.confirm({
+      title: 'Delete Group',
+      content: `Are you sure you want to delete the group "${group.id}"? This will remove the role from all users, and they will lose any associated permissions.`,
+      onOk: async () => {
+        try {
+          await UsersService.deleteGroup(group.id);
+          notification.success({ message: `Group "${group.id}" deleted` });
+          navigate(resolveAppRoute(AppRoutes.USERS_ROUTE, { tab: UsersPageTabs.groupsTabKey }));
+        } catch (error) {
+          notify.error({ message: `Failed to delete group "${group.id}"` });
+        }
+      },
+    });
+  }, [navigate, notify, group]);
+
   const updateGroup = useCallback(async () => {
     try {
       if (!group) throw new Error('Group details did not load. Refresh page');
@@ -379,7 +400,12 @@ export default function UserGroupDetailsPage(props: PageProps) {
             borderTop: `1px solid ${themeToken.colorBorder}`,
           }}
         >
-          <Col xs={24} style={{ textAlign: 'end' }}>
+          <Col xs={12}>
+            <Button type="default" size="large" danger onClick={confirmDeleteGroup}>
+              <DeleteOutlined /> Delete Group
+            </Button>
+          </Col>
+          <Col xs={12} style={{ textAlign: 'end' }}>
             <Button type="primary" size="large" loading={isSubmitting} onClick={updateGroup}>
               <EditOutlined /> Update Group
             </Button>

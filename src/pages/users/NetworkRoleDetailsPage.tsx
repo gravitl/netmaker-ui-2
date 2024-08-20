@@ -187,14 +187,14 @@ export default function NetworkRoleDetailsPage(props: PageProps) {
     }
     Modal.confirm({
       title: 'Delete Role',
-      content: `Are you sure you want to delete the role "${role.id}"? This will remove the role from all users/groups, and they will lose any associated permissions.`,
+      content: `Are you sure you want to delete the role "${role.ui_name || role.id}"? This will remove the role from all users/groups, and they will lose any associated permissions.`,
       onOk: async () => {
         try {
-          await UsersService.deleteRole(role.id);
+          await UsersService.deleteRole(role.ui_name || role.id);
           notification.success({ message: `Role "${role.id}" deleted` });
-          navigate(resolveAppRoute(AppRoutes.USERS_ROUTE));
+          navigate(resolveAppRoute(AppRoutes.USERS_ROUTE, { tab: UsersPageTabs.rolesTabKey }));
         } catch (error) {
-          notify.error({ message: `Failed to delete role "${role.id}"` });
+          notify.error({ message: `Failed to delete role "${role.ui_name || role.id}"` });
         }
       },
     });

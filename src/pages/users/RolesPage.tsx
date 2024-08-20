@@ -24,9 +24,11 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface RolesPageProps {}
+interface RolesPageProps {
+  triggerDataRefresh?: () => void;
+}
 
-export default function RolesPage(props: RolesPageProps) {
+export default function RolesPage({ triggerDataRefresh }: RolesPageProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const navigate = useNavigate();
   const { isServerEE } = useServerLicense();
@@ -53,13 +55,14 @@ export default function RolesPage(props: RolesPageProps) {
             await UsersService.deleteRole(role.id);
             setUserRoles((roles) => roles.filter((r) => r.id !== role.id));
             notify.success({ message: `Role "${role.id}" deleted` });
+            triggerDataRefresh?.();
           } catch (error) {
             notify.error({ message: `Failed to delete role "${role.id}"` });
           }
         },
       });
     },
-    [notify],
+    [notify, triggerDataRefresh],
   );
 
   const roleTableColumns = useMemo<TableColumnProps<UserRole>[]>(
