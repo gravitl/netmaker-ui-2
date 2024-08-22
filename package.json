@@ -78,6 +78,9 @@
     "vite": "^5.3.5",
     "vitest": "^2.0.5"
   },
+  "overrides": {
+    "rollup": "npm:@rollup/wasm-node"
+  },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": "eslint --cache --fix"
   }
