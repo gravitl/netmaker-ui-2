@@ -12,6 +12,7 @@ import {
   NMUI_ACCESS_TOKEN_LOCALSTORAGE_KEY,
   NMUI_USERNAME_LOCALSTORAGE_KEY,
   NMUI_USER_LOCALSTORAGE_KEY,
+  NMUI_USER_PLATFORM_ROLE_LOCALSTORAGE_KEY,
   isSaasBuild,
 } from '../../services/BaseService';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
@@ -66,6 +67,7 @@ export default function LoginPage(props: LoginPageProps) {
 
       store.setStore({ user });
       window?.localStorage?.setItem(NMUI_USER_LOCALSTORAGE_KEY, JSON.stringify(user));
+      window?.localStorage?.setItem(NMUI_USER_PLATFORM_ROLE_LOCALSTORAGE_KEY, JSON.stringify(user.platform_role));
     } catch (err) {
       notify.error({ message: 'Failed to get user details', description: extractErrorMsg(err as any) });
     }
