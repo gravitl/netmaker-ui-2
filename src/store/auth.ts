@@ -9,6 +9,7 @@ import {
   NMUI_TENANT_NAME_LOCALSTORAGE_KEY,
   NMUI_USERNAME_LOCALSTORAGE_KEY,
   NMUI_USER_LOCALSTORAGE_KEY,
+  NMUI_USER_PLATFORM_ROLE_LOCALSTORAGE_KEY,
   isSaasBuild,
 } from '@/services/BaseService';
 import { isValidJwt } from '@/utils/Utils';
@@ -76,6 +77,9 @@ const createAuthSlice: StateCreator<IAuthSlice, [], [], IAuthSlice> = (set, get)
     window?.localStorage?.removeItem(NMUI_TENANT_NAME_LOCALSTORAGE_KEY);
     window?.localStorage?.removeItem(NMUI_AMUI_USER_ID_LOCALSTORAGE_KEY);
     window?.localStorage?.removeItem(NMUI_USER_LOCALSTORAGE_KEY);
+    window?.localStorage?.removeItem(NMUI_USER_PLATFORM_ROLE_LOCALSTORAGE_KEY);
+    // TODO: consider using localStorage.clear()
+    // window?.localStorage?.clear();
   },
 });
 
