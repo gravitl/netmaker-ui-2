@@ -20,6 +20,7 @@ export const NMUI_TENANT_ID_LOCALSTORAGE_KEY = 'nmui-tid-lsk';
 export const NMUI_TENANT_NAME_LOCALSTORAGE_KEY = 'nmui-tn-lsk';
 export const NMUI_AMUI_USER_ID_LOCALSTORAGE_KEY = 'nmui-amuiuid-lsk';
 export const NMUI_USER_LOCALSTORAGE_KEY = 'nmui-u-lsk';
+export const NMUI_USER_PLATFORM_ROLE_LOCALSTORAGE_KEY = 'nmui-upr-lsk';
 
 // function to resolve the particular SaaS tenant's backend URL, ...
 export async function setupTenantConfig(): Promise<void> {
@@ -31,6 +32,7 @@ export async function setupTenantConfig(): Promise<void> {
       jwt: window?.localStorage?.getItem(NMUI_ACCESS_TOKEN_LOCALSTORAGE_KEY) ?? '',
       username: window?.localStorage?.getItem(NMUI_USERNAME_LOCALSTORAGE_KEY) ?? '',
       user: JSON.parse(window?.localStorage?.getItem(NMUI_USER_LOCALSTORAGE_KEY) ?? 'null'),
+      userPlatformRole: JSON.parse(window?.localStorage?.getItem(NMUI_USER_PLATFORM_ROLE_LOCALSTORAGE_KEY) ?? 'null'),
     });
     axiosService.defaults.baseURL = resolvedBaseUrl;
     return;
@@ -96,6 +98,7 @@ export async function setupTenantConfig(): Promise<void> {
     amuiUserId: amuiUserId || (window?.localStorage?.getItem(NMUI_AMUI_USER_ID_LOCALSTORAGE_KEY) ?? ''),
     isNewTenant: isNewTenant,
     // user,
+    // userPlatformRole,
   });
 }
 
