@@ -629,7 +629,7 @@ export default function UsersPage(props: PageProps) {
                       : [
                           {
                             key: 'add',
-                            label: 'Add a User',
+                            label: 'Create a User',
                             onClick: onAddUser,
                           },
                         ],
@@ -648,7 +648,7 @@ export default function UsersPage(props: PageProps) {
                 style={{ display: 'inline', marginRight: '0.5rem' }}
                 onClick={onAddUser}
               >
-                <PlusOutlined /> Add a User
+                <PlusOutlined /> Create a User
               </Button>
             )}
           </Col>
