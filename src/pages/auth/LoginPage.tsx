@@ -65,7 +65,7 @@ export default function LoginPage(props: LoginPageProps) {
         return;
       }
 
-      store.setStore({ user });
+      store.setStore({ user, userPlatformRole });
       window?.localStorage?.setItem(NMUI_USER_LOCALSTORAGE_KEY, JSON.stringify(user));
       window?.localStorage?.setItem(NMUI_USER_PLATFORM_ROLE_LOCALSTORAGE_KEY, JSON.stringify(user.platform_role));
     } catch (err) {
