@@ -116,6 +116,7 @@ import { convertNetworkPayloadToUiNetwork, convertUiNetworkToNetworkPayload } fr
 import { TourType } from '../DashboardPage';
 import { Waypoints } from 'lucide-react';
 import { isAdminUserOrRole } from '@/utils/UserMgmtUtils';
+import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -157,7 +158,6 @@ type ItemStepMap = {
   [key in keyof NetworkUsage]: NetworkDetailTourStep;
 };
 
-const DNS_DOCS_URL = 'https://docs.netmaker.io/architecture.html#coredns';
 const HOSTS_DOCS_URL = 'https://docs.netmaker.io/ui-reference.html#hosts';
 const ACLS_DOCS_URL = 'https://docs.netmaker.io/acls.html';
 const RELAYS_DOCS_URL = 'https://docs.netmaker.io/pro/pro-relay-server.html';
@@ -1144,7 +1144,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         width: 200,
         render(_, client) {
           const assocIngress = networkNodes.find((node) => node.id === client.ingressgatewayid);
-          return assocIngress ? getExtendedNode(assocIngress, store.hostsCommonDetails).name ?? '' : '';
+          return assocIngress ? (getExtendedNode(assocIngress, store.hostsCommonDetails).name ?? '') : '';
         },
       },
       {
@@ -2396,7 +2396,7 @@ export default function NetworkDetailsPage(props: PageProps) {
             <Button
               title="Go to DNS documentation"
               style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
-              href={DNS_DOCS_URL}
+              href={ExternalLinks.CORE_DNS_SETUP_LINK}
               target="_blank"
               icon={<QuestionCircleOutlined />}
             />
@@ -3799,7 +3799,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         relays: 'Relays',
       };
 
-      return number === 1 ? itemTextMap[item]?.slice(0, -1) ?? '' : itemTextMap[item] ?? '';
+      return number === 1 ? (itemTextMap[item]?.slice(0, -1) ?? '') : (itemTextMap[item] ?? '');
     };
 
     const getSteps = () => {
