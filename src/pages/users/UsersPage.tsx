@@ -3,7 +3,6 @@ import {
   CheckOutlined,
   CopyOutlined,
   DeleteOutlined,
-  InfoCircleOutlined,
   MoreOutlined,
   PlusOutlined,
   QuestionCircleOutlined,
@@ -27,8 +26,6 @@ import {
   TableColumnsType,
   Tabs,
   TabsProps,
-  Tour,
-  TourProps,
   Typography,
 } from 'antd';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -77,8 +74,8 @@ export default function UsersPage(props: PageProps) {
   const [isUpdateUserModalOpen, setIsUpdateUserModalOpen] = useState(false);
   const [isTransferSuperAdminRightsModalOpen, setIsTransferSuperAdminRightsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [isTourOpen, setIsTourOpen] = useState(false);
-  const [tourStep, setTourStep] = useState(0);
+  // const [isTourOpen, setIsTourOpen] = useState(false);
+  // const [tourStep, setTourStep] = useState(0);
   const [invites, setInvites] = useState<UserInvite[]>([]);
   const [isLoadingInvites, setIsLoadingInvites] = useState(true);
   const [userInvitesSearch, setUserInvitesSearch] = useState('');
@@ -603,7 +600,7 @@ export default function UsersPage(props: PageProps) {
               icon={<QuestionCircleOutlined />}
               style={{ marginRight: '0.5rem' }}
             />
-            <Button
+            {/* <Button
               size="large"
               onClick={() => {
                 setIsTourOpen(true);
@@ -612,7 +609,7 @@ export default function UsersPage(props: PageProps) {
               style={{ marginRight: '0.5rem' }}
             >
               <InfoCircleOutlined /> Start Tour
-            </Button>
+            </Button> */}
             <Button size="large" onClick={() => loadUsers()} style={{ marginRight: '0.5rem' }}>
               <ReloadOutlined /> Reload users
             </Button>
@@ -768,7 +765,7 @@ export default function UsersPage(props: PageProps) {
             />
           </Col>
           <Col xs={24} md={16} style={{ textAlign: 'right' }} className="pending-user-table-button">
-            <Button
+            {/* <Button
               size="large"
               onClick={() => {
                 setIsTourOpen(true);
@@ -777,7 +774,7 @@ export default function UsersPage(props: PageProps) {
               style={{ marginRight: '0.5em' }}
             >
               <InfoCircleOutlined /> Start Tour
-            </Button>
+            </Button> */}
             <Button size="large" onClick={() => loadPendingUsers()} style={{ marginRight: '0.5em' }}>
               <ReloadOutlined /> Reload users
             </Button>
@@ -868,75 +865,75 @@ export default function UsersPage(props: PageProps) {
     users,
   ]);
 
-  const userTourSteps: TourProps['steps'] = [
-    {
-      title: 'Users',
-      description: 'View users and their roles, you can also edit or delete users and transfer super admin rights',
-      target: () => usersTableRef.current,
-      placement: 'bottom',
-    },
-    {
-      title: 'Add a User',
-      description: 'Click here to add a user',
-      target: () => addUserButtonRef.current,
-      placement: 'bottom',
-    },
-    {
-      title: 'Username',
-      description: 'Enter a username for the user',
-      target: () => addUserNameInputRef.current,
-      placement: 'bottom',
-    },
-    {
-      title: 'Password',
-      description: 'Enter a password for the user',
-      target: () => addUserPasswordInputRef.current,
-      placement: 'bottom',
-    },
-    {
-      title: 'Set as Admin',
-      description: 'Check this box to set the user as admin',
-      target: () => addUserSetAsAdminCheckboxRef.current,
-      placement: 'bottom',
-    },
-    {
-      title: 'Review pending users',
-      description:
-        'An admin can allow or deny access to accounts that try accessing the server via SSO from this table.',
-      target: () => pendingUsersTableRef.current,
-      placement: 'bottom',
-    },
-    {
-      title: 'Deny all pending users',
-      description: 'A quick way to deny access to all pending users.',
-      target: () => denyAllUsersButtonRef.current,
-      placement: 'bottom',
-    },
-  ];
+  // const userTourSteps: TourProps['steps'] = [
+  //   {
+  //     title: 'Users',
+  //     description: 'View users and their roles, you can also edit or delete users and transfer super admin rights',
+  //     target: () => usersTableRef.current,
+  //     placement: 'bottom',
+  //   },
+  //   {
+  //     title: 'Add a User',
+  //     description: 'Click here to add a user',
+  //     target: () => addUserButtonRef.current,
+  //     placement: 'bottom',
+  //   },
+  //   {
+  //     title: 'Username',
+  //     description: 'Enter a username for the user',
+  //     target: () => addUserNameInputRef.current,
+  //     placement: 'bottom',
+  //   },
+  //   {
+  //     title: 'Password',
+  //     description: 'Enter a password for the user',
+  //     target: () => addUserPasswordInputRef.current,
+  //     placement: 'bottom',
+  //   },
+  //   {
+  //     title: 'Set as Admin',
+  //     description: 'Check this box to set the user as admin',
+  //     target: () => addUserSetAsAdminCheckboxRef.current,
+  //     placement: 'bottom',
+  //   },
+  //   {
+  //     title: 'Review pending users',
+  //     description:
+  //       'An admin can allow or deny access to accounts that try accessing the server via SSO from this table.',
+  //     target: () => pendingUsersTableRef.current,
+  //     placement: 'bottom',
+  //   },
+  //   {
+  //     title: 'Deny all pending users',
+  //     description: 'A quick way to deny access to all pending users.',
+  //     target: () => denyAllUsersButtonRef.current,
+  //     placement: 'bottom',
+  //   },
+  // ];
 
-  const handleTourOnChange = (current: number) => {
-    switch (current) {
-      case 1:
-        setIsAddUserModalOpen(false);
-        break;
-      case 2:
-        setIsAddUserModalOpen(true);
-        break;
-      case 4:
-        setIsAddUserModalOpen(true);
-        setActiveTab(UsersPageTabs.usersTabKey);
-        break;
-      case 5:
-        setIsAddUserModalOpen(false);
-        setActiveTab(UsersPageTabs.invitesTabKey);
-        break;
-      default:
-        break;
-    }
-    setTimeout(() => {
-      setTourStep(current);
-    }, 200);
-  };
+  // const handleTourOnChange = (current: number) => {
+  //   switch (current) {
+  //     case 1:
+  //       setIsAddUserModalOpen(false);
+  //       break;
+  //     case 2:
+  //       setIsAddUserModalOpen(true);
+  //       break;
+  //     case 4:
+  //       setIsAddUserModalOpen(true);
+  //       setActiveTab(UsersPageTabs.usersTabKey);
+  //       break;
+  //     case 5:
+  //       setIsAddUserModalOpen(false);
+  //       setActiveTab(UsersPageTabs.invitesTabKey);
+  //       break;
+  //     default:
+  //       break;
+  //   }
+  //   setTimeout(() => {
+  //     setTourStep(current);
+  //   }, 200);
+  // };
 
   useEffect(() => {
     loadUsers();
@@ -1057,13 +1054,13 @@ export default function UsersPage(props: PageProps) {
         )}
       </Skeleton>
 
-      <Tour
+      {/* <Tour
         steps={userTourSteps}
         open={isTourOpen}
         onClose={() => setIsTourOpen(false)}
         onChange={handleTourOnChange}
         current={tourStep}
-      />
+      /> */}
 
       {/* misc */}
       {notifyCtx}
