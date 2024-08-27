@@ -215,11 +215,11 @@ export default function AddUserModal({
   };
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && isServerEE) {
       loadGroups();
       loadRoles();
     }
-  }, [isOpen, loadGroups, loadRoles]);
+  }, [isOpen, isServerEE, loadGroups, loadRoles]);
 
   // ui components
   const getGroupsContent = useCallback(() => {
