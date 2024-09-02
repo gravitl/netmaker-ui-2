@@ -37,7 +37,7 @@
     "i18next": "^23.12.2",
     "immer": "^10.1.1",
     "lodash": "^4.17.21",
-    "lucide-react": "^0.408.0",
+    "lucide-react": "^0.438.0",
     "rc-virtual-list": "^3.14.5",
     "posthog-js": "^1.155.4",
     "react": "^18.3.1",
