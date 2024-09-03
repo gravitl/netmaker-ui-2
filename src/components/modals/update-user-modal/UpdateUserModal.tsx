@@ -1,4 +1,4 @@
-import { Button, Col, Collapse, Divider, Form, Input, Modal, notification, Row, Switch } from 'antd';
+import { Button, Col, Divider, Form, Input, Modal, notification, Row } from 'antd';
 import { MouseEvent, useCallback } from 'react';
 import '../CustomModal.scss';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
@@ -6,7 +6,6 @@ import { User } from '@/models/User';
 import { UsersService } from '@/services/UsersService';
 import { useStore } from '@/store/store';
 import { confirmDirtyModalClose } from '@/utils/Utils';
-import { isSaasBuild } from '@/services/BaseService';
 
 interface UpdateUserModalProps {
   isOpen: boolean;
@@ -31,8 +30,29 @@ export default function UpdateUserModal({ isOpen, user, onUpdateUser, onCancel }
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
 
-  const isServerEE = store.serverConfig?.IsEE === 'yes';
   const passwordVal = Form.useWatch('password', form);
+
+  const canChangePassword: (user: User) => [boolean, string] = useCallback(
+    (user: User) => {
+      if (store.user?.username === user.username) return [true, ''];
+      if (user.auth_type === 'oauth') return [false, 'Cannot change password of an oauth user'];
+      // if current user is super admin, they can change password of any other user
+      if (store.user?.platform_role_id === 'super-admin') {
+        return [true, ''];
+      }
+      if (store.user?.platform_role_id === 'admin') {
+        if (user.platform_role_id === 'super-admin') {
+          return [false, 'Cannot change password of the super admin'];
+        }
+        if (user.platform_role_id === 'admin') {
+          return [false, "Cannot change another admin' password"];
+        }
+        return [true, ''];
+      }
+      return [false, 'Cannot change another user password'];
+    },
+    [store.user],
+  );
 
   const updateUser = async () => {
     try {
@@ -41,44 +61,21 @@ export default function UpdateUserModal({ isOpen, user, onUpdateUser, onCancel }
 
       let newUser: User = user;
       // super admin can update any user or user can update himself
-      if (
-        store.user?.issuperadmin ||
-        (store.user?.isadmin && !user.isadmin) ||
-        (user.username === store.username && formData.password)
-      ) {
+      if (canChangePassword(user)[0]) {
         newUser = (await UsersService.updateUser(user.username, { ...user, ...restFormData })).data;
       } else {
-        notify.error({ message: 'You are not authorized to update this user' });
+        notification.error({ message: "Cannot update this user's password", description: canChangePassword(user)[1] });
         return;
       }
-      notify.success({ message: `User ${newUser.username} updated` });
+      notification.success({ message: `User ${newUser.username} updated` });
       onUpdateUser(newUser);
     } catch (err) {
-      notify.error({
+      notification.error({
         message: 'Failed to update user',
         description: extractErrorMsg(err as any),
       });
     }
   };
-
-  const shouldInputBeDisabled = useCallback(() => {
-    if (store.user?.issuperadmin) {
-      return false;
-    } else if (user.isadmin && user.username !== store.username) {
-      return true;
-    }
-    return false;
-  }, [store.user?.issuperadmin, store.username, user.isadmin, user.username]);
-
-  const checkIfSwitchShouldBeDisabled = useCallback(() => {
-    if (store.user?.issuperadmin) {
-      return false;
-    } else if (!isServerEE && !isSaasBuild) {
-      return true;
-    } else {
-      return true;
-    }
-  }, [isServerEE, store.user?.issuperadmin]);
 
   return (
     <Modal
@@ -99,7 +96,12 @@ export default function UpdateUserModal({ isOpen, user, onUpdateUser, onCancel }
       <div className="CustomModalBody">
         <Form name="update-user-form" form={form} layout="vertical">
           <Form.Item label="Password" name="password">
-            <Input disabled={shouldInputBeDisabled()} placeholder="(unchanged)" type="password" />
+            <Input
+              disabled={!canChangePassword(user)[0]}
+              placeholder="(unchanged)"
+              type="password"
+              title={canChangePassword(user)[1]}
+            />
           </Form.Item>
 
           <Form.Item
@@ -118,18 +120,13 @@ export default function UpdateUserModal({ isOpen, user, onUpdateUser, onCancel }
             ]}
             dependencies={['password']}
           >
-            <Input disabled={shouldInputBeDisabled()} placeholder="(unchanged)" type="password" />
+            <Input
+              disabled={!canChangePassword(user)[0]}
+              placeholder="(unchanged)"
+              type="password"
+              title={canChangePassword(user)[1]}
+            />
           </Form.Item>
-
-          {store.user?.issuperadmin && (
-            <Collapse ghost size="small" defaultActiveKey={user.username !== store.username ? ['user-auth'] : []}>
-              <Collapse.Panel header="User authorizations" key="user-auth">
-                <Form.Item label="Is Admin" name="isadmin" valuePropName="checked" initialValue={user.isadmin}>
-                  <Switch disabled={checkIfSwitchShouldBeDisabled()} />
-                </Form.Item>
-              </Collapse.Panel>
-            </Collapse>
-          )}
         </Form>
         <Row>
           <Col xs={24} style={{ textAlign: 'right' }}>

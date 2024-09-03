@@ -25,6 +25,7 @@ import { getExtendedNode, getNodeConnectivityStatus } from '@/utils/NodeUtils';
 import { CloseOutlined, DownOutlined, SearchOutlined, UpOutlined } from '@ant-design/icons';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { NodesService } from '@/services/NodesService';
+import { useServerLicense } from '@/utils/Utils';
 
 interface AddInternetGatewayModalProps {
   isOpen: boolean;
@@ -55,7 +56,7 @@ export default function AddInternetGatewayModal({
   const store = useStore();
   const { token: themeToken } = theme.useToken();
 
-  const isServerEE = store.serverConfig?.IsEE === 'yes';
+  const { isServerEE } = useServerLicense();
   const [form] = Form.useForm<AddInternetGatewayFormFields>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [gatewaySearch, setGatewaySearch] = useState('');

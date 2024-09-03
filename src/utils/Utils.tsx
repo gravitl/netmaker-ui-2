@@ -476,3 +476,70 @@ export const networkUsecaseMapText: NetworkUsecaseMap = {
   egress_to_cloud_vpc: 'Egress to Cloud VPC',
   // egress_to_office_lan_ips: 'Egress to Office LAN IPs',
 };
+
+/**
+ * Util funtion that copies text to clipboard
+ *
+ * @param text string to write to system clipboard
+ */
+export async function copyTextToClipboard(text: string) {
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch (err) {
+    console.error('Failed to copy to clipboard', err);
+    throw new Error('Failed to copy to clipboard');
+  }
+}
+
+/**
+ * Converts a snake case string to title case.
+ *
+ * @param snakeCaseString the snake case string to convert
+ * @returns the title case string
+ */
+export function snakeCaseToTitleCase(snakeCaseString: string): string {
+  const words = snakeCaseString.split('_');
+  const titleCaseWords = words.map((word) => {
+    const capitalizedWord = word.charAt(0).toUpperCase() + word.slice(1);
+    return capitalizedWord;
+  });
+  const titleCaseString = titleCaseWords.join(' ');
+  return titleCaseString;
+}
+
+/**
+ * Converts a kebab case string to title case.
+ *
+ * @param kebabCaseString the snake case string to convert
+ * @returns the title case string
+ */
+export function kebabCaseToTitleCase(kebabCaseString: string): string {
+  const words = kebabCaseString.split('-');
+  const titleCaseWords = words.map((word) => {
+    const capitalizedWord = word.charAt(0).toUpperCase() + word.slice(1);
+    return capitalizedWord;
+  });
+  const titleCaseString = titleCaseWords.join(' ');
+  return titleCaseString;
+}
+
+/**
+ * Utility hook to determine if the server is on a paid license or not.
+ *
+ * @returns whether the server on a paid license or not
+ */
+export function useServerLicense(): { isServerEE: boolean } {
+  const serverStatus = useStore((s) => s.serverStatus);
+
+  const [serverLicense, setServerLicense] = useState<'pro' | 'ce'>('ce');
+
+  useEffect(() => {
+    if (serverStatus?.status?.is_pro === true) {
+      setServerLicense('pro');
+    } else {
+      setServerLicense('ce');
+    }
+  }, [serverStatus?.status?.is_pro]);
+
+  return { isServerEE: serverLicense === 'pro' };
+}

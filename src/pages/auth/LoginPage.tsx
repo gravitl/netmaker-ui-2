@@ -7,10 +7,17 @@ import { Alert, Button, Checkbox, Col, Divider, Form, Image, Input, Layout, noti
 import { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { AMUI_URL, isSaasBuild } from '../../services/BaseService';
+import {
+  AMUI_URL,
+  NMUI_ACCESS_TOKEN_LOCALSTORAGE_KEY,
+  NMUI_USERNAME_LOCALSTORAGE_KEY,
+  NMUI_USER_LOCALSTORAGE_KEY,
+  NMUI_USER_PLATFORM_ROLE_LOCALSTORAGE_KEY,
+  isSaasBuild,
+} from '../../services/BaseService';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { UsersService } from '@/services/UsersService';
-import { User } from '@/models/User';
+import { User, UserRole } from '@/models/User';
 import { ApiRoutes } from '@/constants/ApiRoutes';
 import { resolveAppRoute, truncateQueryParamsFromCurrentUrl, useQuery } from '@/utils/RouteUtils';
 import { AppErrorBoundary } from '@/components/AppErrorBoundary';
@@ -21,7 +28,7 @@ interface LoginPageProps {
   isFullScreen?: boolean;
 }
 
-const USER_ERROR_MESSAGE = 'only admins can access dashboard';
+// const USER_ERROR_MESSAGE = 'only admins can access dashboard';
 
 export default function LoginPage(props: LoginPageProps) {
   const [form] = Form.useForm<LoginDto>();
@@ -42,29 +49,28 @@ export default function LoginPage(props: LoginPageProps) {
   const [shouldRemember, setShouldRemember] = useState(false);
   const [isBasicAuthLoading, setIsBasicAuthLoading] = useState(false);
   const [isSsoLoading, setIsSsoLoading] = useState(false);
-  const [isUserLoggingIn, setIsUserLoggingIn] = useState(false);
+  const [isUserDeniedFromDashboard, setIsUserDeniedFromDashboard] = useState(false);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
 
   const getUserAndUpdateInStore = async (username: User['username']) => {
     try {
-      const user = await (await UsersService.getUser(username)).data;
-
-      if (!user?.issuperadmin && !user?.isadmin) {
-        notify.error({ message: 'Failed to login', description: 'User is not an admin' });
+      const user = await (await UsersService.getUser(username)).data.Response;
+      const userPlatformRole: UserRole = user.platform_role;
+      if (userPlatformRole.deny_dashboard_access) {
+        notify.error({
+          message: 'Failed to login',
+          description: 'You do not have permissions to access the dashboard',
+        });
+        setIsUserDeniedFromDashboard(true);
         return;
       }
-      store.setStore({ user });
+
+      store.setStore({ user, userPlatformRole });
+      window?.localStorage?.setItem(NMUI_USER_LOCALSTORAGE_KEY, JSON.stringify(user));
+      window?.localStorage?.setItem(NMUI_USER_PLATFORM_ROLE_LOCALSTORAGE_KEY, JSON.stringify(user.platform_role));
     } catch (err) {
       notify.error({ message: 'Failed to get user details', description: extractErrorMsg(err as any) });
     }
-  };
-
-  const checkLoginErrorMessage = (err: string) => {
-    if (err.toLowerCase() === USER_ERROR_MESSAGE.toLowerCase()) {
-      setIsUserLoggingIn(true);
-      return;
-    }
-    setIsUserLoggingIn(false);
   };
 
   const onLogin = async () => {
@@ -73,12 +79,14 @@ export default function LoginPage(props: LoginPageProps) {
       setIsBasicAuthLoading(true);
       const data = await (await AuthService.login(formData)).data;
       store.setStore({ jwt: data.Response.AuthToken, username: data.Response.UserName });
+      window?.localStorage?.setItem(NMUI_ACCESS_TOKEN_LOCALSTORAGE_KEY, data.Response.AuthToken);
+      window?.localStorage?.setItem(NMUI_USERNAME_LOCALSTORAGE_KEY, data.Response.UserName);
       await storeFetchServerConfig();
       await getUserAndUpdateInStore(data.Response.UserName);
     } catch (err) {
       const errorMessage = extractErrorMsg(err as any);
       notify.error({ message: 'Failed to login', description: errorMessage });
-      checkLoginErrorMessage(errorMessage);
+      // checkLoginErrorMessage(errorMessage);
     } finally {
       setIsBasicAuthLoading(false);
     }
@@ -153,7 +161,7 @@ export default function LoginPage(props: LoginPageProps) {
           </Row>
 
           <Row style={{ marginTop: '4rem' }}>
-            {isUserLoggingIn && (
+            {isUserDeniedFromDashboard && (
               <Alert
                 description={
                   <>

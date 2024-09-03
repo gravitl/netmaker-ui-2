@@ -36,7 +36,6 @@ import {
   SearchOutlined,
   SettingOutlined,
   StopOutlined,
-  UserOutlined,
   WarningOutlined,
 } from '@ant-design/icons';
 import {
@@ -74,7 +73,7 @@ import {
 } from 'antd';
 import { AxiosError } from 'axios';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { PageProps } from '../../models/Page';
 import '@react-sigma/core/lib/react-sigma.min.css';
 import './NetworkDetailsPage.scss';
@@ -82,7 +81,14 @@ import { ControlsContainer, FullScreenControl, SearchControl, SigmaContainer, Zo
 import NetworkGraph from '@/components/NetworkGraph';
 import UpdateRelayModal from '@/components/modals/update-relay-modal/UpdateRelayModal';
 import { MetricCategories, NetworkMetrics, NodeOrClientMetric, UptimeNodeMetrics } from '@/models/Metrics';
-import { getHostHealth, isManagedHost, networkUsecaseMapText, renderMetricValue, useBranding } from '@/utils/Utils';
+import {
+  getHostHealth,
+  isManagedHost,
+  networkUsecaseMapText,
+  renderMetricValue,
+  useBranding,
+  useServerLicense,
+} from '@/utils/Utils';
 import AddHostsToNetworkModal from '@/components/modals/add-hosts-to-network-modal/AddHostsToNetworkModal';
 import NewHostModal from '@/components/modals/new-host-modal/NewHostModal';
 import UpdateIngressModal from '@/components/modals/update-remote-access-gateway-modal/UpdateRemoteAccessGatewayModal';
@@ -109,6 +115,8 @@ import SetNetworkFailoverModal from '@/components/modals/set-network-failover-mo
 import { convertNetworkPayloadToUiNetwork, convertUiNetworkToNetworkPayload } from '@/utils/NetworkUtils';
 import { TourType } from '../DashboardPage';
 import { Waypoints } from 'lucide-react';
+import { isAdminUserOrRole } from '@/utils/UserMgmtUtils';
+import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -150,7 +158,6 @@ type ItemStepMap = {
   [key in keyof NetworkUsage]: NetworkDetailTourStep;
 };
 
-const DNS_DOCS_URL = 'https://docs.netmaker.io/architecture.html#coredns';
 const HOSTS_DOCS_URL = 'https://docs.netmaker.io/ui-reference.html#hosts';
 const ACLS_DOCS_URL = 'https://docs.netmaker.io/acls.html';
 const RELAYS_DOCS_URL = 'https://docs.netmaker.io/pro/pro-relay-server.html';
@@ -162,14 +169,13 @@ export default function NetworkDetailsPage(props: PageProps) {
   const { networkId } = useParams<{ networkId: string }>();
   const store = useStore();
   const navigate = useNavigate();
-  const location = useLocation();
   const [notify, notifyCtx] = notification.useNotification();
   const { token: themeToken } = theme.useToken();
   const branding = useBranding();
 
   const storeFetchNodes = store.fetchNodes;
   const storeDeleteNode = store.deleteNode;
-  const isServerEE = store.serverConfig?.IsEE === 'yes';
+  const { isServerEE } = useServerLicense();
   const [form] = Form.useForm<Network>();
   const isIpv4Watch = Form.useWatch('isipv4', form);
   const isIpv6Watch = Form.useWatch('isipv6', form);
@@ -239,8 +245,8 @@ export default function NetworkDetailsPage(props: PageProps) {
     remoteAccessVPNConfigModal: 14,
   });
   const [isSetNetworkFailoverModalOpen, setIsSetNetworkFailoverModalOpen] = useState(false);
-  const [selectedGatewayTabKey, setSelectedGatewayTabKey] = useState('vpn-config');
   const [isAddInternetGatewayModalOpen, setIsAddInternetGatewayModalOpen] = useState(false);
+  // const [networkNodes, setNetworkNodes] = useState<ExtendedNode[]>([]);
 
   const overviewTabContainerRef = useRef(null);
   const hostsTabContainerTableRef = useRef(null);
@@ -578,6 +584,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       setAcls(acls);
     } catch (err) {
       if (err instanceof AxiosError) {
+        if (err instanceof AxiosError && err.response?.status === 403) return;
         notify.error({
           message: 'Error loading ACLs',
           description: extractErrorMsg(err),
@@ -599,6 +606,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       const networkClients = (await NodesService.getNetworkExternalClients(networkId)).data ?? [];
       setClients(networkClients);
     } catch (err) {
+      if (err instanceof AxiosError && err.response?.status === 403) return;
       notify.error({
         message: 'Error loading clients',
         description: extractErrorMsg(err as any),
@@ -875,29 +883,9 @@ export default function NetworkDetailsPage(props: PageProps) {
           },
         },
       ];
-
-      if (isServerEE) {
-        const addRemoveUsersOption: MenuProps['items'] = [
-          {
-            key: 'addremove',
-            label: (
-              <Typography.Text>
-                <UserOutlined /> Add / Remove Users
-              </Typography.Text>
-            ),
-            onClick: (info) => {
-              setSelectedGateway(gateway);
-              setIsUpdateIngressUsersModalOpen(true);
-              info.domEvent.stopPropagation();
-            },
-          },
-        ];
-        return [...addRemoveUsersOption, ...defaultOptions];
-      }
-
       return defaultOptions;
     },
-    [confirmDeleteGateway, isServerEE],
+    [confirmDeleteGateway],
   );
 
   const gatewaysTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(
@@ -927,25 +915,38 @@ export default function NetworkDetailsPage(props: PageProps) {
         title: 'Addresses',
         dataIndex: 'address',
         render(_, node) {
-          const addrs = ([] as Array<string>).concat(node.address || [], node.address6 || []).join(', ');
-          return (
-            <Typography.Text copyable style={{ width: 200 }} ellipsis={{ tooltip: addrs }}>
-              {addrs}
-            </Typography.Text>
-          );
-        },
-      },
-      {
-        title: 'Endpoint',
-        render(_, node) {
-          const addrs = ([] as Array<string>)
+          const addrs = ([] as Array<string>).concat(node.address || [], node.address6 || []);
+          const endPointAddrs = ([] as Array<string>)
             .concat(node.endpointip ?? '', node.endpointipv6 ?? '', node.additional_rag_ips ?? '')
-            .filter(Boolean)
-            .join(', ');
+            .filter(Boolean);
+
           return (
-            <Typography.Text copyable style={{ width: 150 }} ellipsis={{ tooltip: addrs }}>
-              {addrs}
-            </Typography.Text>
+            <>
+              <Typography.Paragraph>
+                <b>Private Adresses: </b>
+                <br></br>
+                {addrs.map((addr) => (
+                  <>
+                    <Typography.Text key={addr} copyable style={{ width: 200 }} ellipsis={{ tooltip: addrs }}>
+                      {addr}
+                    </Typography.Text>
+                    <br></br>
+                  </>
+                ))}
+              </Typography.Paragraph>
+              <Typography.Paragraph>
+                <b>Endpoints: </b>
+                <br></br>
+                {endPointAddrs.map((addr) => (
+                  <>
+                    <Typography.Text key={addr} copyable style={{ width: 200 }} ellipsis={{ tooltip: endPointAddrs }}>
+                      {addr}
+                    </Typography.Text>
+                    <br></br>
+                  </>
+                ))}
+              </Typography.Paragraph>
+            </>
           );
         },
       },
@@ -957,22 +958,6 @@ export default function NetworkDetailsPage(props: PageProps) {
         render(_, gateway) {
           return (
             <Flex>
-              {isServerEE && (
-                <Button
-                  type="primary"
-                  onClick={(info) => {
-                    setSelectedGateway(gateway);
-                    setIsUpdateIngressUsersModalOpen(true);
-                    info.stopPropagation();
-                  }}
-                  icon={<UserOutlined />}
-                  style={{ marginRight: '0.5rem' }}
-                >
-                  {' '}
-                  Add / Remove Users
-                </Button>
-              )}
-
               <Dropdown
                 placement="bottomRight"
                 menu={{
@@ -1159,7 +1144,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         width: 200,
         render(_, client) {
           const assocIngress = networkNodes.find((node) => node.id === client.ingressgatewayid);
-          return assocIngress ? getExtendedNode(assocIngress, store.hostsCommonDetails).name ?? '' : '';
+          return assocIngress ? (getExtendedNode(assocIngress, store.hostsCommonDetails).name ?? '') : '';
         },
       },
       {
@@ -1186,10 +1171,11 @@ export default function NetworkDetailsPage(props: PageProps) {
                   {
                     key: 'edit',
                     label: (
-                      <Typography.Text>
+                      <Typography.Text disabled={!isAdminUserOrRole(store.user!) && store.username !== client.ownerid}>
                         <EditOutlined /> Edit
                       </Typography.Text>
                     ),
+                    disabled: !isAdminUserOrRole(store.user!) && store.username !== client.ownerid,
                     onClick: () => {
                       setTargetClient(client);
                       setIsUpdateClientModalOpen(true);
@@ -1198,10 +1184,11 @@ export default function NetworkDetailsPage(props: PageProps) {
                   {
                     key: 'view',
                     label: (
-                      <Typography.Text>
+                      <Typography.Text disabled={!isAdminUserOrRole(store.user!) && store.username !== client.ownerid}>
                         <EyeOutlined /> View Config
                       </Typography.Text>
                     ),
+                    disabled: !isAdminUserOrRole(store.user!) && store.username !== client.ownerid,
                     onClick: () => {
                       setTargetClient(client);
                       setIsClientConfigModalOpen(true);
@@ -1215,6 +1202,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                         <DeleteOutlined /> Delete
                       </>
                     ),
+                    disabled: !isAdminUserOrRole(store.user!) && store.username !== client.ownerid,
                     onClick: () => {
                       confirmDeleteClient(client);
                     },
@@ -1228,7 +1216,15 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       },
     ],
-    [confirmDeleteClient, networkNodes, openClientDetails, store.hostsCommonDetails, toggleClientStatus],
+    [
+      confirmDeleteClient,
+      networkNodes,
+      openClientDetails,
+      store.hostsCommonDetails,
+      store.user,
+      store.username,
+      toggleClientStatus,
+    ],
   );
 
   const relayTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(
@@ -2400,7 +2396,7 @@ export default function NetworkDetailsPage(props: PageProps) {
             <Button
               title="Go to DNS documentation"
               style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
-              href={DNS_DOCS_URL}
+              href={ExternalLinks.CORE_DNS_SETUP_LINK}
               target="_blank"
               icon={<QuestionCircleOutlined />}
             />
@@ -2549,39 +2545,41 @@ export default function NetworkDetailsPage(props: PageProps) {
         {!isEmpty && (
           <>
             <Row>
-              <Row style={{ width: '100%' }}>
-                <Col
-                  style={{
-                    marginBottom: '1rem',
-                    background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
-                    padding: '1rem',
-                    width: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                  }}
-                >
-                  <span>
-                    Introducing the Remote Access Client (RAC) - a graphical user interface (GUI) tool designed for
-                    convenient connectivity to a Netmaker network. RAC is particularly well-suited for offsite machines
-                    requiring access to a Netmaker network and is compatible with Windows, Mac, Linux and mobile
-                    (Android, iOS) operating systems.
-                  </span>
-                  <Button
-                    // href={ExternalLinks.RAC_DOWNLOAD_DOCS_LINK}
-                    onClick={() => setIsDownloadRemoteAccessClientModalOpen(true)}
-                    target="_blank"
-                    rel="noreferrer"
-                    type="primary"
+              {isServerEE && (
+                <Row style={{ width: '100%' }}>
+                  <Col
                     style={{
-                      marginLeft: 'auto',
+                      marginBottom: '1rem',
+                      background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
+                      padding: '1rem',
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
                     }}
-                    ref={remoteAccessTabDownloadClientRef}
                   >
-                    {' '}
-                    Download RAC
-                  </Button>
-                </Col>
-              </Row>
+                    <span>
+                      Introducing the Remote Access Client (RAC) - a graphical user interface (GUI) tool designed for
+                      convenient connectivity to a Netmaker network. RAC is particularly well-suited for offsite
+                      machines requiring access to a Netmaker network and is compatible with Windows, Mac, Linux and
+                      mobile (Android, iOS) operating systems.
+                    </span>
+                    <Button
+                      // href={ExternalLinks.RAC_DOWNLOAD_DOCS_LINK}
+                      onClick={() => setIsDownloadRemoteAccessClientModalOpen(true)}
+                      target="_blank"
+                      rel="noreferrer"
+                      type="primary"
+                      style={{
+                        marginLeft: 'auto',
+                      }}
+                      ref={remoteAccessTabDownloadClientRef}
+                    >
+                      {' '}
+                      Download RAC
+                    </Button>
+                  </Col>
+                </Row>
+              )}
 
               <Row style={{ width: '100%' }}>
                 <Col xs={24} xl={12} style={{ marginBottom: '2rem' }}>
@@ -2723,6 +2721,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       </div>
     );
   }, [
+    isServerEE,
     clients.length,
     clientGateways.length,
     searchClientGateways,
@@ -3584,22 +3583,6 @@ export default function NetworkDetailsPage(props: PageProps) {
     internetGatewaysCount,
   ]);
 
-  const loadDnses = useCallback(async () => {
-    try {
-      if (!networkId) return;
-      const dnses = (await NetworksService.getDnses()).data;
-      const networkDnses = dnses.filter((dns) => dns.network === networkId);
-      setDnses(networkDnses);
-    } catch (err) {
-      if (err instanceof AxiosError) {
-        notify.error({
-          message: 'Error loading DNSes',
-          description: extractErrorMsg(err),
-        });
-      }
-    }
-  }, [networkId, notify]);
-
   const loadMetrics = useCallback(async () => {
     try {
       if (!networkId) return;
@@ -3608,8 +3591,37 @@ export default function NetworkDetailsPage(props: PageProps) {
       const clientMetrics = (await NetworksService.getClientMetrics(networkId)).data ?? {};
       setClientMetrics(clientMetrics);
     } catch (err) {
+      if (err instanceof AxiosError && err.response?.status === 403) return;
       notify.error({
         message: 'Error loading host metrics',
+        description: extractErrorMsg(err as any),
+      });
+    }
+  }, [networkId, notify]);
+
+  // const loadNetworkNodes = useCallback(async () => {
+  //   try {
+  //     if (!networkId) return;
+  //     const nodes = (await NodesService.getNetworkNodes(networkId)).data;
+  //     setNetworkNodes(nodes);
+  //   } catch (err) {
+  //     if (err instanceof AxiosError && err.response?.status === 403) return;
+  //     notify.error({
+  //       message: 'Error loading network nodes',
+  //       description: extractErrorMsg(err as any),
+  //     });
+  //   }
+  // }, [networkId, notify]);
+
+  const loadNetworkDnses = useCallback(async () => {
+    try {
+      if (!networkId) return;
+      const dnses = (await NetworksService.getDnsesPerNetwork(networkId)).data ?? [];
+      setDnses(dnses);
+    } catch (err) {
+      if (err instanceof AxiosError && err.response?.status === 403) return;
+      notify.error({
+        message: 'Error loading network DNS',
         description: extractErrorMsg(err as any),
       });
     }
@@ -3631,7 +3643,8 @@ export default function NetworkDetailsPage(props: PageProps) {
     setNetwork(network);
 
     // load extra data
-    loadDnses();
+    // loadNetworkNodes();
+    loadNetworkDnses();
     loadAcls();
     loadClients();
 
@@ -3640,7 +3653,18 @@ export default function NetworkDetailsPage(props: PageProps) {
     }
 
     setIsLoading(false);
-  }, [networkId, store.networks, loadDnses, loadAcls, loadClients, isServerEE, navigate, notify, loadMetrics]);
+  }, [
+    networkId,
+    store.networks,
+    // loadNetworkNodes,
+    loadNetworkDnses,
+    loadAcls,
+    loadClients,
+    isServerEE,
+    navigate,
+    notify,
+    loadMetrics,
+  ]);
 
   const onNetworkFormEdit = useCallback(async () => {
     try {
@@ -3775,7 +3799,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         relays: 'Relays',
       };
 
-      return number === 1 ? itemTextMap[item]?.slice(0, -1) ?? '' : itemTextMap[item] ?? '';
+      return number === 1 ? (itemTextMap[item]?.slice(0, -1) ?? '') : (itemTextMap[item] ?? '');
     };
 
     const getSteps = () => {

@@ -25,6 +25,7 @@ import { NODE_EXP_TIME_FORMAT } from '@/constants/AppConstants';
 import { WarningOutlined } from '@ant-design/icons';
 import { getExtendedNode } from '@/utils/NodeUtils';
 import { NULL_NODE } from '@/constants/Types';
+import { useServerLicense } from '@/utils/Utils';
 
 interface UpdateNodeModalProps {
   isOpen: boolean;
@@ -38,7 +39,7 @@ export default function UpdateNodeModal({ isOpen, node, onUpdateNode, onCancel }
   const store = useStore();
   const navigate = useNavigate();
   const storeUpdateNode = store.updateNode;
-  const isServerEE = store.serverConfig?.IsEE === 'yes';
+  const { isServerEE } = useServerLicense();
 
   const [isLoading, setIsLoading] = useState(false);
 

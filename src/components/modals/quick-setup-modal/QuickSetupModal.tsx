@@ -47,6 +47,7 @@ import { ExternalClient } from '@/models/ExternalClient';
 import { User } from '@/models/User';
 import { UsersService } from '@/services/UsersService';
 import AddUserModal from '../add-user-modal/AddUserModal';
+import { useServerLicense } from '@/utils/Utils';
 
 interface ModalProps {
   isModalOpen: boolean;
@@ -165,7 +166,7 @@ export default function QuickSetupModal(props: ModalProps) {
   const [ingressNodeId, setIngressNodeId] = useState<string>('');
   const [egressNodeId, setEgressNodeId] = useState<string>('');
   const [tourType, setTourType] = useState<TourType>('remoteaccess_specificmachines_our_rac');
-  const isServerEE = store.serverConfig?.IsEE === 'yes';
+  const { isServerEE } = useServerLicense();
   const [users, setUsers] = useState<User[]>([]);
   const [ingressUsers, setIngressUsers] = useState<User[]>([]);
   const [isUsersLoading, setIsUsersLoading] = useState(false);

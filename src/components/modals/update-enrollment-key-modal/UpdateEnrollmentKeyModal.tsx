@@ -7,22 +7,10 @@ import { useStore } from '@/store/store';
 import { Modify } from '@/types/react-app-env';
 import { getExtendedNode, isNodeRelay } from '@/utils/NodeUtils';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
-import {
-  Button,
-  Col,
-  DatePicker,
-  Divider,
-  Form,
-  Input,
-  InputNumber,
-  Modal,
-  Radio,
-  Row,
-  Select,
-  notification,
-} from 'antd';
+import { useServerLicense } from '@/utils/Utils';
+import { Button, Col, Divider, Form, Input, Modal, Row, Select, notification } from 'antd';
 import { Dayjs } from 'dayjs';
-import { MouseEvent, useCallback, useMemo, useState } from 'react';
+import { MouseEvent, useMemo } from 'react';
 
 interface UpdateEnrollmentKeyModalProps {
   isOpen: boolean;
@@ -41,12 +29,7 @@ export default function UpdateEnrollmentKeyModal({
 }: UpdateEnrollmentKeyModalProps) {
   const [form] = Form.useForm<UpdateEnrollmentKeyFormData>();
   const store = useStore();
-  const [type, setType] = useState<'unlimited' | 'uses' | 'time'>('unlimited');
-  const isServerEE = store.serverConfig?.IsEE === 'yes';
-
-  const networkOptions = useMemo(() => {
-    return store.networks.map((n) => ({ label: n.netid, value: n.netid }));
-  }, [store.networks]);
+  const { isServerEE } = useServerLicense();
 
   const resetModal = () => {
     form.resetFields();

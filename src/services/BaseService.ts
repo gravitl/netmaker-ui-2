@@ -13,6 +13,15 @@ export const AMUI_URL = isSaasBuild ? (window as any).NMUI_AMUI_URL : '';
 
 export const INTERCOM_APP_ID = isSaasBuild ? (window as any).NMUI_INTERCOM_APP_ID : '';
 
+export const NMUI_ACCESS_TOKEN_LOCALSTORAGE_KEY = 'nmui-at-lsk';
+export const NMUI_USERNAME_LOCALSTORAGE_KEY = 'nmui-un-lsk';
+export const NMUI_BASE_URL_LOCALSTORAGE_KEY = 'nmui-burl-lsk';
+export const NMUI_TENANT_ID_LOCALSTORAGE_KEY = 'nmui-tid-lsk';
+export const NMUI_TENANT_NAME_LOCALSTORAGE_KEY = 'nmui-tn-lsk';
+export const NMUI_AMUI_USER_ID_LOCALSTORAGE_KEY = 'nmui-amuiuid-lsk';
+export const NMUI_USER_LOCALSTORAGE_KEY = 'nmui-u-lsk';
+export const NMUI_USER_PLATFORM_ROLE_LOCALSTORAGE_KEY = 'nmui-upr-lsk';
+
 // function to resolve the particular SaaS tenant's backend URL, ...
 export async function setupTenantConfig(): Promise<void> {
   if (!isSaasBuild) {
@@ -20,6 +29,10 @@ export async function setupTenantConfig(): Promise<void> {
     const resolvedBaseUrl = dynamicBaseUrl ? `${dynamicBaseUrl}/api` : `${import.meta.env.VITE_BASE_URL}/api`;
     useStore.getState().setStore({
       baseUrl: resolvedBaseUrl,
+      jwt: window?.localStorage?.getItem(NMUI_ACCESS_TOKEN_LOCALSTORAGE_KEY) ?? '',
+      username: window?.localStorage?.getItem(NMUI_USERNAME_LOCALSTORAGE_KEY) ?? '',
+      user: JSON.parse(window?.localStorage?.getItem(NMUI_USER_LOCALSTORAGE_KEY) ?? 'null'),
+      userPlatformRole: JSON.parse(window?.localStorage?.getItem(NMUI_USER_PLATFORM_ROLE_LOCALSTORAGE_KEY) ?? 'null'),
     });
     axiosService.defaults.baseURL = resolvedBaseUrl;
     return;
@@ -34,13 +47,6 @@ export async function setupTenantConfig(): Promise<void> {
   const username = url.searchParams.get('username') ?? '';
   const amuiUserId = url.searchParams.get('userId') ?? '';
   const isNewTenant = url.searchParams.get('isNewTenant') === 'true';
-
-  const resolvedBaseUrl = baseUrl
-    ? baseUrl?.startsWith('https')
-      ? `${baseUrl}/api`
-      : `https://${baseUrl}/api`
-    : useStore.getState().baseUrl;
-  axiosService.defaults.baseURL = resolvedBaseUrl;
 
   truncateQueryParamsFromCurrentUrl();
 
@@ -57,16 +63,42 @@ export async function setupTenantConfig(): Promise<void> {
   //   return;
   // }
 
+  let resolvedBaseUrl;
+  if (baseUrl) {
+    resolvedBaseUrl = baseUrl?.startsWith('https') ? `${baseUrl}/api` : `https://${baseUrl}/api`;
+    window?.localStorage?.setItem(NMUI_BASE_URL_LOCALSTORAGE_KEY, resolvedBaseUrl);
+  } else {
+    resolvedBaseUrl = window?.localStorage?.getItem(NMUI_BASE_URL_LOCALSTORAGE_KEY) ?? '';
+  }
+  axiosService.defaults.baseURL = resolvedBaseUrl;
+
+  if (accessToken) {
+    window?.localStorage?.setItem(NMUI_ACCESS_TOKEN_LOCALSTORAGE_KEY, accessToken);
+  }
+  if (username) {
+    window?.localStorage?.setItem(NMUI_USERNAME_LOCALSTORAGE_KEY, username);
+  }
+  if (tenantId) {
+    window?.localStorage?.setItem(NMUI_TENANT_ID_LOCALSTORAGE_KEY, tenantId);
+  }
+  if (tenantName) {
+    window?.localStorage?.setItem(NMUI_TENANT_NAME_LOCALSTORAGE_KEY, tenantName);
+  }
+  if (amuiUserId) {
+    window?.localStorage?.setItem(NMUI_AMUI_USER_ID_LOCALSTORAGE_KEY, amuiUserId);
+  }
+
   useStore.getState().setStore({
     baseUrl: resolvedBaseUrl,
-    jwt: accessToken || useStore.getState().jwt,
-    tenantId: tenantId || useStore.getState().tenantId,
-    tenantName: tenantName || useStore.getState().tenantName,
+    jwt: accessToken || (window?.localStorage?.getItem(NMUI_ACCESS_TOKEN_LOCALSTORAGE_KEY) ?? ''),
+    tenantId: tenantId || (window?.localStorage?.getItem(NMUI_TENANT_ID_LOCALSTORAGE_KEY) ?? ''),
+    tenantName: tenantName || (window?.localStorage?.getItem(NMUI_TENANT_NAME_LOCALSTORAGE_KEY) ?? ''),
     amuiAuthToken,
-    username: username || useStore.getState().username,
-    amuiUserId: amuiUserId || useStore.getState().amuiUserId,
+    username: username || (window?.localStorage?.getItem(NMUI_USERNAME_LOCALSTORAGE_KEY) ?? ''),
+    amuiUserId: amuiUserId || (window?.localStorage?.getItem(NMUI_AMUI_USER_ID_LOCALSTORAGE_KEY) ?? ''),
     isNewTenant: isNewTenant,
     // user,
+    // userPlatformRole,
   });
 }
 

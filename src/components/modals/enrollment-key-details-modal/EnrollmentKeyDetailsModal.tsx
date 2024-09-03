@@ -5,7 +5,8 @@ import { MouseEvent, useMemo } from 'react';
 import { isEnrollmentKeyValid, renderEnrollmentKeyType } from '@/utils/EnrollmentKeysUtils';
 import dayjs from 'dayjs';
 import { useStore } from '@/store/store';
-import { getExtendedNode, isNodeRelay } from '@/utils/NodeUtils';
+import { getExtendedNode } from '@/utils/NodeUtils';
+import { useServerLicense } from '@/utils/Utils';
 
 interface EnrollmentKeyDetailsModalProps {
   isOpen: boolean;
@@ -19,7 +20,7 @@ export default function EnrollmentKeyDetailsModal({ isOpen, enrollmentKey, onCan
     (enrollmentKey.uses_remaining === 0 && enrollmentKey.unlimited === false);
 
   const store = useStore();
-  const isServerEE = store.serverConfig?.IsEE === 'yes';
+  const { isServerEE } = useServerLicense();
 
   const relayName = useMemo<string>(() => {
     const networkNodes = store.nodes
@@ -31,7 +32,7 @@ export default function EnrollmentKeyDetailsModal({ isOpen, enrollmentKey, onCan
     }
 
     return networkNodes[0]?.name || '';
-  }, [isServerEE, enrollmentKey.relay, store.nodes, store.hostsCommonDetails, enrollmentKey.networks]);
+  }, [isServerEE, enrollmentKey.relay, store.nodes, store.hostsCommonDetails]);
 
   return (
     <Modal

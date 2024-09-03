@@ -7,6 +7,7 @@ import { useStore } from '@/store/store';
 import { AvailableArchs, AvailableOses } from '@/models/AvailableOses';
 import { BUG_REPORT_URL } from '@/constants/AppConstants';
 import { ServerConfigService } from '@/services/ServerConfigService';
+import { UserGroup, UserRole } from '@/models/User';
 
 type AmuiRouteAction = '' | 'upgrade' | 'invite-user';
 
@@ -26,11 +27,23 @@ export function isCurrentRouteVersioned() {
  * @param route route to resolve
  * @returns the resolved route
  */
-export function resolveAppRoute(route: string) {
+export function resolveAppRoute(route: string, ...queryParams: { [key: string]: string }[]) {
   if (isCurrentRouteVersioned()) {
-    return `/${ServerConfigService.getUiVersion()}${route}`;
+    const ret = `/${ServerConfigService.getUiVersion()}${route}?${queryParams
+      .map((param) => `${Object.keys(param)[0]}=${encodeURIComponent(param[Object.keys(param)[0]])}`)
+      .join('&')}`;
+    if (ret.endsWith('?')) {
+      return ret.slice(0, -1);
+    }
+    return ret;
   }
-  return route;
+  const ret = `${route}?${queryParams
+    .map((param) => `${Object.keys(param)[0]}=${encodeURIComponent(param[Object.keys(param)[0]])}`)
+    .join('&')}`;
+  if (ret.endsWith('?')) {
+    return ret.slice(0, -1);
+  }
+  return ret;
 }
 
 // Get host route from host obj or ID
@@ -64,6 +77,30 @@ export function getNetworkRoute(networkOrId: Network | Network['netid']): string
   if (typeof networkOrId === 'string')
     return `${resolveAppRoute(AppRoutes.NETWORK_DETAILS_ROUTE).replace(placeholder, networkOrId)}`;
   return `${resolveAppRoute(AppRoutes.NETWORK_DETAILS_ROUTE).replace(placeholder, networkOrId.netid)}`;
+}
+
+// Get network role details route from role obj or ID
+export function getNetworkRoleRoute(roleOrId: UserRole | UserRole['id']): string {
+  const placeholder = ':roleId';
+  if (typeof roleOrId === 'string')
+    return `${resolveAppRoute(AppRoutes.NETWORK_ROLE_DETAILS_ROUTE).replace(placeholder, roleOrId)}`;
+  return `${resolveAppRoute(AppRoutes.NETWORK_ROLE_DETAILS_ROUTE).replace(placeholder, roleOrId.id)}`;
+}
+
+// Get platform access level details route from role obj or ID
+export function getPlatformRoleRoute(roleOrId: UserRole | UserRole['id']): string {
+  const placeholder = ':roleId';
+  if (typeof roleOrId === 'string')
+    return `${resolveAppRoute(AppRoutes.PLATFORM_ROLE_DETAILS_ROUTE).replace(placeholder, roleOrId)}`;
+  return `${resolveAppRoute(AppRoutes.PLATFORM_ROLE_DETAILS_ROUTE).replace(placeholder, roleOrId.id)}`;
+}
+
+// Get user group details route from role obj or ID
+export function getUserGroupRoute(groupOrId: UserGroup | UserGroup['id']): string {
+  const placeholder = ':groupId';
+  if (typeof groupOrId === 'string')
+    return `${resolveAppRoute(AppRoutes.USER_GROUP_DETAILS_ROUTE).replace(placeholder, groupOrId)}`;
+  return `${resolveAppRoute(AppRoutes.USER_GROUP_DETAILS_ROUTE).replace(placeholder, groupOrId.id)}`;
 }
 
 // Get new host route
@@ -103,6 +140,16 @@ export function getNetmakerSupportEmail() {
 // Function to get Netmaker trial period docs
 export function getNetmakerTrialPeriodDocs() {
   return import.meta.env.VITE_NETMAKER_TRIAL_PERIOD_DOCS_URL;
+}
+
+// Function to get PostHog public API key
+export function getPostHogPublicApiKey() {
+  return (window as any).NMUI_PUBLIC_POSTHOG_KEY || import.meta.env.VITE_PUBLIC_POSTHOG_KEY;
+}
+
+// Function to get PostHog host
+export function getPostHogHost() {
+  return (window as any).NMUI_PUBLIC_POSTHOG_HOST || import.meta.env.VITE_PUBLIC_POSTHOG_HOST;
 }
 
 // Function to get netclient download link and filename based on OS, arch and type
@@ -202,4 +249,27 @@ export function fileBugReport(body: string) {
 export function reloadNmuiWithVersion(uiVersion = '') {
   const newUrl = `${window.location.origin}/${uiVersion ? `${uiVersion}/` : ''}`;
   window.location.href = newUrl;
+}
+
+/**
+ * Get the frontend URL NMUI runs on
+ *
+ * @returns the frontend URL NMUI runs on
+ */
+export function getNetmakerUiHost() {
+  return window?.location?.host || '';
+}
+
+/**
+ * Get the magic link for the invite code
+ *
+ * @param inviteCode
+ * @param username
+ * @returns invite code magic link
+ */
+export function getInviteMagicLink(inviteCode: string, username: string): string {
+  if (window?.location?.protocol.includes('https')) {
+    return `https://${getNetmakerUiHost()}/invite?invite_code=${encodeURIComponent(inviteCode)}&email=${encodeURIComponent(username)}`;
+  }
+  return `http://${getNetmakerUiHost()}/invite?invite_code=${encodeURIComponent(inviteCode)}&email=${encodeURIComponent(username)}`;
 }

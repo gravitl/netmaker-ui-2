@@ -1,7 +1,8 @@
 import { useStore } from '@/store/store';
 import {
   CheckOutlined,
-  InfoCircleOutlined,
+  CopyOutlined,
+  DeleteOutlined,
   MoreOutlined,
   PlusOutlined,
   QuestionCircleOutlined,
@@ -25,9 +26,6 @@ import {
   TableColumnsType,
   Tabs,
   TabsProps,
-  Tag,
-  Tour,
-  TourProps,
   Typography,
 } from 'antd';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -35,39 +33,57 @@ import { PageProps } from '../../models/Page';
 import './UsersPage.scss';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { UsersService } from '@/services/UsersService';
-import { User } from '@/models/User';
+import { User, UserInvite } from '@/models/User';
 import AddUserModal from '@/components/modals/add-user-modal/AddUserModal';
 import UpdateUserModal from '@/components/modals/update-user-modal/UpdateUserModal';
 import { isSaasBuild } from '@/services/BaseService';
-import { getAmuiUrl } from '@/utils/RouteUtils';
+import { getAmuiUrl, getUserGroupRoute, resolveAppRoute, useQuery } from '@/utils/RouteUtils';
 import TransferSuperAdminRightsModal from '@/components/modals/transfer-super-admin-rights/TransferSuperAdminRightsModal';
-import { useBranding } from '@/utils/Utils';
+import { copyTextToClipboard, snakeCaseToTitleCase, useBranding, useServerLicense } from '@/utils/Utils';
+import RolesPage from './RolesPage';
+import GroupsPage from './GroupsPage';
+import UserDetailsModal from '@/components/modals/user-details-modal/UserDetailsModal';
+import InviteUserModal from '@/components/modals/invite-user-modal/InviteUserModal';
+import { useNavigate } from 'react-router-dom';
+import { AppRoutes } from '@/routes';
 
 const USERS_DOCS_URL = 'https://docs.netmaker.io/pro/pro-users.html';
 
-const usersTabKey = 'users';
-const pendingUsersTabKey = 'pending-users';
-const defaultTabKey = usersTabKey;
+export const UsersPageTabs = {
+  usersTabKey: 'users',
+  rolesTabKey: 'roles',
+  groupsTabKey: 'groups',
+  invitesTabKey: 'invites',
+  pendingUsers: 'pending-users',
+};
+const defaultTabKey = UsersPageTabs.usersTabKey;
 
 export default function UsersPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
   const branding = useBranding();
+  const navigate = useNavigate();
+  const queryParams = useQuery();
 
-  const isServerEE = store.serverConfig?.IsEE === 'yes';
+  const { isServerEE } = useServerLicense();
   const [users, setUsers] = useState<User[]>([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [usersSearch, setUsersSearch] = useState('');
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
+  const [isUserDetailsModalOpen, setIsUserDetailsModalOpen] = useState(false);
   const [isUpdateUserModalOpen, setIsUpdateUserModalOpen] = useState(false);
   const [isTransferSuperAdminRightsModalOpen, setIsTransferSuperAdminRightsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [isTourOpen, setIsTourOpen] = useState(false);
-  const [tourStep, setTourStep] = useState(0);
+  // const [isTourOpen, setIsTourOpen] = useState(false);
+  // const [tourStep, setTourStep] = useState(0);
+  const [invites, setInvites] = useState<UserInvite[]>([]);
+  const [isLoadingInvites, setIsLoadingInvites] = useState(true);
+  const [userInvitesSearch, setUserInvitesSearch] = useState('');
+  const [activeTab, setActiveTab] = useState(defaultTabKey);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [pendingUsers, setPendingUsers] = useState<User[]>([]);
   const [isLoadingPendingUsers, setIsLoadingPendingUsers] = useState(true);
   const [pendingUsersSearch, setPendingUsersSearch] = useState('');
-  const [activeTab, setActiveTab] = useState(defaultTabKey);
 
   const usersTableRef = useRef(null);
   const addUserButtonRef = useRef(null);
@@ -95,6 +111,21 @@ export default function UsersPage(props: PageProps) {
     [notify],
   );
 
+  const loadInvites = useCallback(async () => {
+    try {
+      setIsLoadingInvites(true);
+      const invites = (await UsersService.getUserInvites()).data.Response;
+      setInvites(invites);
+    } catch (err) {
+      notify.error({
+        message: 'Failed to load user invites',
+        description: extractErrorMsg(err as any),
+      });
+    } finally {
+      setIsLoadingInvites(false);
+    }
+  }, [notify]);
+
   const loadPendingUsers = useCallback(async () => {
     try {
       setIsLoadingPendingUsers(true);
@@ -109,6 +140,10 @@ export default function UsersPage(props: PageProps) {
       setIsLoadingPendingUsers(false);
     }
   }, [notify]);
+
+  const triggerDataRefresh = useCallback(() => {
+    loadUsers(false);
+  }, [loadUsers]);
 
   const confirmDeleteUser = useCallback(
     async (user: User) => {
@@ -146,51 +181,99 @@ export default function UsersPage(props: PageProps) {
     }
   }, []);
 
-  const getUserTagColor = (user: User) => {
-    if (user.issuperadmin) {
-      return 'success';
-    } else if (user.isadmin) {
-      return 'warning';
+  const onInviteUser = useCallback(() => {
+    if (isSaasBuild) {
+      window.location = getAmuiUrl('invite-user') as any;
+      return;
     } else {
-      return 'default';
+      setIsInviteModalOpen(true);
     }
-  };
+  }, []);
 
-  const getUserTagText = (user: User) => {
-    if (user.issuperadmin) {
-      return 'Super Admin';
-    } else if (user.isadmin) {
-      return 'Admin';
-    } else {
-      return 'User';
-    }
-  };
-
-  const checkIfCurrentUserCanEditOrDeleteUsers = useCallback(
+  const canDeleteUser: (user: User) => [boolean, string] = useCallback(
     (user: User) => {
-      // if current user is super admin, he can edit or delete any user
-      if (store.user?.issuperadmin) {
-        return false;
+      // cannot delete oneself
+      if (store.user?.username === user.username) return [false, 'Cannot delete oneself'];
+      // if current user is super admin, they can delete any other user
+      if (store.user?.platform_role_id === 'super-admin') {
+        return [true, ''];
       }
-
-      if (store.user?.isadmin) {
-        // if current user is admin and he is editing his own profile, he can edit/delete his own profile
-        if (user.username === store.username) {
-          return false;
+      if (store.user?.platform_role_id === 'admin') {
+        if (user.platform_role_id === 'super-admin') {
+          return [false, 'Cannot delete the super admin'];
         }
-
-        // if current user is admin, he can edit or delete any user except super admin and he can't edit/delete other admin users
-        if (user.issuperadmin || user.isadmin) {
-          return true;
+        if (user.platform_role_id === 'admin') {
+          return [false, 'Cannot delete another admin'];
         }
-        return false;
+        return [true, ''];
       }
-
-      // if current user is not admin or super admin, he can't edit or delete any user
-      return true;
+      return [false, 'Cannot delete another user'];
     },
-    [store.user, store.username],
+    [store.user],
   );
+
+  const canChangePassword: (user: User) => [boolean, string] = useCallback(
+    (user: User) => {
+      if (store.user?.username === user.username) return [true, ''];
+      if (user.auth_type === 'oauth') return [false, 'Cannot change password of an oauth user'];
+      // if current user is super admin, they can change password of any other user
+      if (store.user?.platform_role_id === 'super-admin') {
+        return [true, ''];
+      }
+      if (store.user?.platform_role_id === 'admin') {
+        if (user.platform_role_id === 'super-admin') {
+          return [false, 'Cannot change password of the super admin'];
+        }
+        if (user.platform_role_id === 'admin') {
+          return [false, "Cannot change another admin' password"];
+        }
+        return [true, ''];
+      }
+      return [false, 'Cannot change another user password'];
+    },
+    [store.user],
+  );
+
+  const confirmDeleteInvite = useCallback(
+    async (invite: UserInvite) => {
+      Modal.confirm({
+        title: 'Delete invite',
+        content: `Are you sure you want to delete this user invite for ${invite.email}?`,
+        onOk: async () => {
+          try {
+            await UsersService.deleteUserInvite(invite.email);
+            notify.success({ message: `Invite for ${invite.email} deleted` });
+            setInvites((invites) => invites.filter((i) => i.email !== invite.email));
+          } catch (err) {
+            notify.error({
+              message: 'Failed to delete invite',
+              description: extractErrorMsg(err as any),
+            });
+          }
+        },
+      });
+    },
+    [notify],
+  );
+
+  const confirmDeleteAllInvitesUsers = useCallback(async () => {
+    Modal.confirm({
+      title: 'Delete all user invites',
+      content: `Are you sure you want to clear all pending invites?`,
+      onOk: async () => {
+        try {
+          await UsersService.deleteAllUserInvites();
+          notify.success({ message: `All user invites cleared` });
+          setInvites([]);
+        } catch (err) {
+          notify.error({
+            message: 'Failed to delete invites',
+            description: extractErrorMsg(err as any),
+          });
+        }
+      },
+    });
+  }, [notify]);
 
   const confirmApproveUser = useCallback(
     async (user: User) => {
@@ -256,20 +339,36 @@ export default function UsersPage(props: PageProps) {
     });
   }, [notify]);
 
-  const usersTableColumns: TableColumnsType<User> = useMemo(
-    () => [
+  const usersTableColumns = useMemo(() => {
+    const cols: TableColumnsType<User> = [
       {
         title: 'Username',
         dataIndex: 'username',
+        render(username: string, user) {
+          return (
+            <Typography.Link
+              onClick={() => {
+                if (username === store.username) {
+                  navigate(resolveAppRoute(AppRoutes.PROFILE_ROUTE));
+                  return;
+                }
+                setSelectedUser(user);
+                setIsUserDetailsModalOpen(true);
+              }}
+            >
+              {username}
+            </Typography.Link>
+          );
+        },
         sorter(a, b) {
           return a.username.localeCompare(b.username);
         },
         defaultSortOrder: 'ascend',
       },
       {
-        title: 'Role',
+        title: 'Platform Access Level',
         render(_, user) {
-          return <Tag color={getUserTagColor(user)}>{getUserTagText(user)}</Tag>;
+          return <Typography.Text>{snakeCaseToTitleCase(user.platform_role_id)}</Typography.Text>;
         },
       },
       {
@@ -282,9 +381,9 @@ export default function UsersPage(props: PageProps) {
                 items: [
                   {
                     key: 'edit',
-                    label: 'Edit',
-                    disabled: checkIfCurrentUserCanEditOrDeleteUsers(user),
-                    title: checkIfCurrentUserCanEditOrDeleteUsers(user) ? 'You cannot edit another admin user' : null,
+                    label: 'Change Password',
+                    disabled: !canChangePassword(user)[0],
+                    title: canChangePassword(user)[0] ? canChangePassword(user)[1] : '',
                     onClick: (ev: any) => {
                       ev.domEvent.stopPropagation();
                       const userClone = structuredClone(user);
@@ -292,27 +391,23 @@ export default function UsersPage(props: PageProps) {
                     },
                   },
                   {
-                    key: 'default',
-                    disabled: checkIfCurrentUserCanEditOrDeleteUsers(user),
-                    title: checkIfCurrentUserCanEditOrDeleteUsers(user)
-                      ? 'You cannot delete another admin user or the super admin'
-                      : null,
-                    label: (
-                      <Typography.Text disabled={checkIfCurrentUserCanEditOrDeleteUsers(user)}>Delete</Typography.Text>
-                    ),
+                    key: 'delete',
+                    disabled: !canDeleteUser(user)[0],
+                    title: canDeleteUser(user)[0] ? canDeleteUser(user)[1] : '',
+                    label: 'Delete',
                     onClick: (ev: any) => {
                       ev.domEvent.stopPropagation();
                       confirmDeleteUser(user);
                     },
                   },
                 ].concat(
-                  user.issuperadmin && store.username === user.username
+                  !isSaasBuild && user.platform_role_id === 'super-admin' && store.username === user.username
                     ? [
                         {
                           key: 'transfer',
                           label: 'Transfer Super Admin Rights',
                           disabled: false,
-                          title: null,
+                          title: '',
                           onClick: (ev) => {
                             ev.domEvent.stopPropagation();
                             setIsTransferSuperAdminRightsModalOpen(true);
@@ -328,8 +423,92 @@ export default function UsersPage(props: PageProps) {
           );
         },
       },
+    ];
+
+    if (isServerEE) {
+      cols.splice(2, 0, {
+        title: 'Groups',
+        render(_, user) {
+          return Object.keys(user?.user_group_ids ?? {}).map((g, i) => (
+            <>
+              <Typography.Link key={g} onClick={() => navigate(getUserGroupRoute(g))}>
+                {g}
+              </Typography.Link>
+              {i !== Object.keys(user?.user_group_ids).length - 1 ? <span key={i}>, </span> : <span key={i}></span>}
+            </>
+          ));
+        },
+      });
+    }
+
+    if (!isSaasBuild) {
+      cols.splice(cols.length - 1, 0, {
+        title: 'Auth Type',
+        render(_, user) {
+          return <Typography.Text>{snakeCaseToTitleCase(user.auth_type)}</Typography.Text>;
+        },
+      });
+    }
+
+    return cols;
+  }, [isServerEE, store.username, navigate, canChangePassword, canDeleteUser, onEditUser, confirmDeleteUser]);
+
+  const userInvitesTableColumns: TableColumnsType<UserInvite> = useMemo(
+    () => [
+      {
+        title: 'Username',
+        dataIndex: 'email',
+        sorter(a, b) {
+          return a.email.localeCompare(b.email);
+        },
+        defaultSortOrder: 'ascend',
+      },
+      {
+        title: 'Invite Code',
+        dataIndex: 'invite_url',
+        render(_, rowData) {
+          return (
+            <Row>
+              <Col>
+                <Button
+                  style={{ marginRight: '1rem' }}
+                  type="link"
+                  onClick={() => copyTextToClipboard(rowData.invite_url)}
+                >
+                  Copy Magic Link <CopyOutlined />
+                </Button>
+              </Col>
+            </Row>
+          );
+        },
+      },
+      {
+        width: '300px',
+        render(_, invite) {
+          return (
+            <Row>
+              {/* <Col>
+                <Tooltip title="Copy invite code">
+                  <Button
+                    style={{ marginRight: '1rem' }}
+                    type="link"
+                    onClick={() => copyTextToClipboard(invite.invite_code)}
+                  >
+                    <CopyOutlined />
+                  </Button>
+                </Tooltip>
+              </Col> */}
+              <Col>
+                <Button onClick={() => confirmDeleteInvite(invite)}>
+                  <DeleteOutlined /> Delete
+                </Button>
+              </Col>
+            </Row>
+          );
+        },
+      },
     ],
-    [checkIfCurrentUserCanEditOrDeleteUsers, store.username, onEditUser, confirmDeleteUser],
+    [confirmDeleteInvite],
   );
 
   const pendingUsersTableColumns: TableColumnsType<User> = useMemo(
@@ -366,10 +545,20 @@ export default function UsersPage(props: PageProps) {
   );
 
   const filteredUsers = useMemo(() => {
-    return users.filter((u) => {
-      return u.username.toLowerCase().includes(usersSearch.trim().toLowerCase());
-    });
+    return (
+      users?.filter((u) => {
+        return u.username.toLowerCase().includes(usersSearch.trim().toLowerCase());
+      }) ?? []
+    );
   }, [users, usersSearch]);
+
+  const filteredUserInvites = useMemo(() => {
+    return (
+      invites?.filter((u) => {
+        return u.email.toLowerCase().includes(userInvitesSearch.trim().toLowerCase());
+      }) ?? []
+    );
+  }, [invites, userInvitesSearch]);
 
   const filteredPendingUsers = useMemo(() => {
     return pendingUsers.filter((u) => {
@@ -380,7 +569,7 @@ export default function UsersPage(props: PageProps) {
   const getUserAndUpdateInStore = async (username: User['username'] | undefined) => {
     if (!username) return;
     try {
-      const user = await (await UsersService.getUser(username)).data;
+      const user: User = await (await UsersService.getUser(username)).data.Response;
       store.setStore({ user });
     } catch (err) {
       notify.error({ message: 'Failed to get user details', description: extractErrorMsg(err as any) });
@@ -404,28 +593,64 @@ export default function UsersPage(props: PageProps) {
           </Col>
           <Col xs={24} md={16} style={{ textAlign: 'right' }} className="user-table-button">
             <Button
+              title="Go to Users documentation"
+              size="large"
+              href={USERS_DOCS_URL}
+              target="_blank"
+              icon={<QuestionCircleOutlined />}
+              style={{ marginRight: '0.5rem' }}
+            />
+            {/* <Button
               size="large"
               onClick={() => {
                 setIsTourOpen(true);
                 setTourStep(0);
               }}
-              style={{ marginRight: '0.5em' }}
+              style={{ marginRight: '0.5rem' }}
             >
               <InfoCircleOutlined /> Start Tour
-            </Button>
-            <Button size="large" onClick={() => loadUsers()} style={{ marginRight: '0.5em' }}>
+            </Button> */}
+            <Button size="large" onClick={() => loadUsers()} style={{ marginRight: '0.5rem' }}>
               <ReloadOutlined /> Reload users
             </Button>
-            <Button type="primary" size="large" onClick={onAddUser} ref={addUserButtonRef}>
-              <PlusOutlined /> Add a User
-            </Button>
-            <Button
-              title="Go to Users documentation"
-              style={{ marginLeft: '0.5rem' }}
-              href={USERS_DOCS_URL}
-              target="_blank"
-              icon={<QuestionCircleOutlined />}
-            />
+            {isServerEE && ( // we dont have CE on SaaS
+              <Dropdown
+                placement="bottomRight"
+                menu={{
+                  items: [
+                    {
+                      key: 'invite',
+                      label: 'Invite a User',
+                      onClick: onInviteUser,
+                    },
+                  ].concat(
+                    isSaasBuild
+                      ? []
+                      : [
+                          {
+                            key: 'add',
+                            label: 'Create a User',
+                            onClick: onAddUser,
+                          },
+                        ],
+                  ),
+                }}
+              >
+                <Button size="large" type="primary" style={{ display: 'inline', marginRight: '0.5rem' }}>
+                  <PlusOutlined /> Add a User
+                </Button>
+              </Dropdown>
+            )}
+            {!isSaasBuild && !isServerEE && (
+              <Button
+                size="large"
+                type="primary"
+                style={{ display: 'inline', marginRight: '0.5rem' }}
+                onClick={onAddUser}
+              >
+                <PlusOutlined /> Create a User
+              </Button>
+            )}
           </Col>
         </Row>
         <Row className="" style={{ marginTop: '1rem' }}>
@@ -435,6 +660,7 @@ export default function UsersPage(props: PageProps) {
                 columns={usersTableColumns}
                 dataSource={filteredUsers}
                 rowKey="username"
+                size="small"
                 scroll={{
                   x: true,
                 }}
@@ -446,7 +672,83 @@ export default function UsersPage(props: PageProps) {
         </Row>
       </>
     );
-  }, [usersSearch, onAddUser, usersTableColumns, filteredUsers, isLoadingUsers, loadUsers]);
+  }, [usersSearch, onAddUser, isServerEE, onInviteUser, usersTableColumns, filteredUsers, isLoadingUsers, loadUsers]);
+
+  const getInvitesContent = useCallback(() => {
+    return (
+      <>
+        <Row>
+          <Col xs={24} md={8}>
+            <Input
+              size="large"
+              placeholder="Search user invites"
+              prefix={<SearchOutlined />}
+              value={userInvitesSearch}
+              onChange={(ev) => setUserInvitesSearch(ev.target.value)}
+              allowClear
+            />
+          </Col>
+          <Col xs={24} md={16} style={{ textAlign: 'right' }} className="pending-user-table-button">
+            <Button
+              title="Go to Users documentation"
+              size="large"
+              href={USERS_DOCS_URL}
+              target="_blank"
+              icon={<QuestionCircleOutlined />}
+            />
+            {/* <Button
+              size="large"
+              onClick={() => {
+                setIsTourOpen(true);
+                setTourStep(5);
+              }}
+              style={{ marginRight: '0.5em' }}
+            >
+              <InfoCircleOutlined /> Start Tour
+            </Button> */}
+            <Button size="large" onClick={() => loadInvites()} style={{ marginRight: '0.5em' }}>
+              <ReloadOutlined /> Reload invites
+            </Button>
+            <Button
+              size="large"
+              onClick={confirmDeleteAllInvitesUsers}
+              ref={denyAllUsersButtonRef}
+              style={{ marginRight: '0.5em' }}
+            >
+              <DeleteOutlined /> Clear All Invites
+            </Button>
+            <Button type="primary" size="large" onClick={onInviteUser} style={{ marginRight: '0.5em' }}>
+              <PlusOutlined /> Invite User(s)
+            </Button>
+          </Col>
+        </Row>
+        <Row className="" style={{ marginTop: '1rem' }}>
+          <Col xs={24}>
+            <div className="table-wrapper">
+              <Table
+                loading={isLoadingInvites}
+                columns={userInvitesTableColumns}
+                dataSource={filteredUserInvites}
+                rowKey="invite_code"
+                size="small"
+                scroll={{
+                  x: true,
+                }}
+              />
+            </div>
+          </Col>
+        </Row>
+      </>
+    );
+  }, [
+    confirmDeleteAllInvitesUsers,
+    filteredUserInvites,
+    isLoadingInvites,
+    loadInvites,
+    onInviteUser,
+    userInvitesSearch,
+    userInvitesTableColumns,
+  ]);
 
   const getPendingUsersContent = useCallback(() => {
     return (
@@ -463,7 +765,7 @@ export default function UsersPage(props: PageProps) {
             />
           </Col>
           <Col xs={24} md={16} style={{ textAlign: 'right' }} className="pending-user-table-button">
-            <Button
+            {/* <Button
               size="large"
               onClick={() => {
                 setIsTourOpen(true);
@@ -472,7 +774,7 @@ export default function UsersPage(props: PageProps) {
               style={{ marginRight: '0.5em' }}
             >
               <InfoCircleOutlined /> Start Tour
-            </Button>
+            </Button> */}
             <Button size="large" onClick={() => loadPendingUsers()} style={{ marginRight: '0.5em' }}>
               <ReloadOutlined /> Reload users
             </Button>
@@ -515,102 +817,134 @@ export default function UsersPage(props: PageProps) {
     pendingUsersTableColumns,
   ]);
 
-  const tabs: TabsProps['items'] = useMemo(
-    () =>
-      [
+  const usersTabs: TabsProps['items'] = useMemo(() => {
+    const tabs = [
+      {
+        key: UsersPageTabs.usersTabKey,
+        label: 'Users',
+        children: getUsersContent(),
+      },
+    ];
+    if (isServerEE) {
+      tabs.splice(
+        1,
+        0,
         {
-          key: usersTabKey,
-          label: 'Users',
-          children: getUsersContent(),
+          key: UsersPageTabs.rolesTabKey,
+          label: 'Network Roles',
+          children: <RolesPage triggerDataRefresh={triggerDataRefresh} />,
         },
-      ].concat(
-        isSaasBuild
-          ? []
-          : [
-              {
-                key: pendingUsersTabKey,
-                label: `Pending Users (${pendingUsers.length})`,
-                children: getPendingUsersContent(),
-              },
-            ],
-      ),
-    [getPendingUsersContent, getUsersContent, pendingUsers.length],
-  );
-
-  const userTourSteps: TourProps['steps'] = [
-    {
-      title: 'Users',
-      description: 'View users and their roles, you can also edit or delete users and transfer super admin rights',
-      target: () => usersTableRef.current,
-      placement: 'bottom',
-    },
-    {
-      title: 'Add a User',
-      description: 'Click here to add a user',
-      target: () => addUserButtonRef.current,
-      placement: 'bottom',
-    },
-    {
-      title: 'Username',
-      description: 'Enter a username for the user',
-      target: () => addUserNameInputRef.current,
-      placement: 'bottom',
-    },
-    {
-      title: 'Password',
-      description: 'Enter a password for the user',
-      target: () => addUserPasswordInputRef.current,
-      placement: 'bottom',
-    },
-    {
-      title: 'Set as Admin',
-      description: 'Check this box to set the user as admin',
-      target: () => addUserSetAsAdminCheckboxRef.current,
-      placement: 'bottom',
-    },
-    {
-      title: 'Review pending users',
-      description:
-        'An admin can allow or deny access to accounts that try accessing the server via SSO from this table.',
-      target: () => pendingUsersTableRef.current,
-      placement: 'bottom',
-    },
-    {
-      title: 'Deny all pending users',
-      description: 'A quick way to deny access to all pending users.',
-      target: () => denyAllUsersButtonRef.current,
-      placement: 'bottom',
-    },
-  ];
-
-  const handleTourOnChange = (current: number) => {
-    switch (current) {
-      case 1:
-        setIsAddUserModalOpen(false);
-        break;
-      case 2:
-        setIsAddUserModalOpen(true);
-        break;
-      case 4:
-        setIsAddUserModalOpen(true);
-        setActiveTab(usersTabKey);
-        break;
-      case 5:
-        setIsAddUserModalOpen(false);
-        setActiveTab(pendingUsersTabKey);
-        break;
-      default:
-        break;
+        {
+          key: UsersPageTabs.groupsTabKey,
+          label: 'Groups',
+          children: <GroupsPage users={users} triggerDataRefresh={triggerDataRefresh} />,
+        },
+        {
+          key: UsersPageTabs.invitesTabKey,
+          label: `Invites (${invites.length})`,
+          children: getInvitesContent(),
+        },
+      );
     }
-    setTimeout(() => {
-      setTourStep(current);
-    }, 200);
-  };
+    if (!isSaasBuild && isServerEE) {
+      tabs.push({
+        key: UsersPageTabs.pendingUsers,
+        label: `Pending Users (${pendingUsers.length})`,
+        children: getPendingUsersContent(),
+      });
+    }
+    return tabs;
+  }, [
+    getInvitesContent,
+    getPendingUsersContent,
+    getUsersContent,
+    invites.length,
+    isServerEE,
+    pendingUsers.length,
+    triggerDataRefresh,
+    users,
+  ]);
+
+  // const userTourSteps: TourProps['steps'] = [
+  //   {
+  //     title: 'Users',
+  //     description: 'View users and their roles, you can also edit or delete users and transfer super admin rights',
+  //     target: () => usersTableRef.current,
+  //     placement: 'bottom',
+  //   },
+  //   {
+  //     title: 'Add a User',
+  //     description: 'Click here to add a user',
+  //     target: () => addUserButtonRef.current,
+  //     placement: 'bottom',
+  //   },
+  //   {
+  //     title: 'Username',
+  //     description: 'Enter a username for the user',
+  //     target: () => addUserNameInputRef.current,
+  //     placement: 'bottom',
+  //   },
+  //   {
+  //     title: 'Password',
+  //     description: 'Enter a password for the user',
+  //     target: () => addUserPasswordInputRef.current,
+  //     placement: 'bottom',
+  //   },
+  //   {
+  //     title: 'Set as Admin',
+  //     description: 'Check this box to set the user as admin',
+  //     target: () => addUserSetAsAdminCheckboxRef.current,
+  //     placement: 'bottom',
+  //   },
+  //   {
+  //     title: 'Review pending users',
+  //     description:
+  //       'An admin can allow or deny access to accounts that try accessing the server via SSO from this table.',
+  //     target: () => pendingUsersTableRef.current,
+  //     placement: 'bottom',
+  //   },
+  //   {
+  //     title: 'Deny all pending users',
+  //     description: 'A quick way to deny access to all pending users.',
+  //     target: () => denyAllUsersButtonRef.current,
+  //     placement: 'bottom',
+  //   },
+  // ];
+
+  // const handleTourOnChange = (current: number) => {
+  //   switch (current) {
+  //     case 1:
+  //       setIsAddUserModalOpen(false);
+  //       break;
+  //     case 2:
+  //       setIsAddUserModalOpen(true);
+  //       break;
+  //     case 4:
+  //       setIsAddUserModalOpen(true);
+  //       setActiveTab(UsersPageTabs.usersTabKey);
+  //       break;
+  //     case 5:
+  //       setIsAddUserModalOpen(false);
+  //       setActiveTab(UsersPageTabs.invitesTabKey);
+  //       break;
+  //     default:
+  //       break;
+  //   }
+  //   setTimeout(() => {
+  //     setTourStep(current);
+  //   }, 200);
+  // };
 
   useEffect(() => {
     loadUsers();
-    loadPendingUsers();
-  }, [loadUsers, isServerEE, loadPendingUsers]);
+
+    if (isServerEE) {
+      loadInvites();
+      loadPendingUsers();
+    }
+
+    queryParams.get('tab') && setActiveTab(queryParams.get('tab') as string);
+  }, [loadUsers, isServerEE, loadInvites, loadPendingUsers]);
 
   return (
     <Layout.Content
@@ -628,19 +962,18 @@ export default function UsersPage(props: PageProps) {
             >
               <Col xs={24} xl={(24 * 2) / 3}>
                 <Typography.Title level={3} style={{ color: 'white ' }}>
-                  Users
+                  User Management
                 </Typography.Title>
                 <Typography.Text style={{ color: 'white ' }}>
-                  {branding.productName} allows you to perform Identity and Access Management (IAM) with users. You can
-                  create multiple profiles and restrict access to networks.
+                  {branding.productName} allows you to perform Identity and Access Management (IAM) with users, roles
+                  and groups. You can create multiple users, assign them roles and groups to restrict access to
+                  networks, devices and other resources.
                 </Typography.Text>
               </Col>
               <Col xs={24} xl={(24 * 1) / 3} style={{ position: 'relative' }}>
                 <Card className="header-card" style={{ height: '20rem', position: 'absolute', width: '100%' }}>
                   <Typography.Title level={3}>Add a User</Typography.Title>
-                  <Typography.Text>
-                    Users access the {branding.productName} UI to configure their networks.
-                  </Typography.Text>
+                  <Typography.Text>Users can access the this dashboard to configure their networks.</Typography.Text>
                   <Row style={{ marginTop: 'auto' }}>
                     <Col>
                       <Button type="primary" size="large" onClick={onAddUser}>
@@ -663,19 +996,19 @@ export default function UsersPage(props: PageProps) {
                     Manage access to {branding.productName}
                   </Typography.Title>
                   <Typography.Text>
-                    {branding.productName} allows you to perform Identity and Access Management (IAM) with users. You
-                    can create multiple profiles and restrict access to networks.
+                    {branding.productName} allows you to perform Identity and Access Management (IAM) with users, roles
+                    and groups. You can create multiple profiles and restrict access to networks.
                   </Typography.Text>
                 </Card>
               </Col>
               <Col xs={24} xl={7} style={{ marginRight: '1rem' }}>
                 <Card>
                   <Typography.Title level={4} style={{ marginTop: '0px' }}>
-                    User Groups
+                    User Groups and Roles
                   </Typography.Title>
                   <Typography.Text>
-                    Easily manage access to a {branding.productName} resources by creating user groups. You can create
-                    multiple groups and assign users to them, then control access to the groups. This is a{' '}
+                    Easily manage access to a {branding.productName} resources by creating user groups and roles. You
+                    can create multiple groups and assign users to them, then control access to the groups. This is a{' '}
                     <a href={getAmuiUrl('upgrade')} referrerPolicy="no-referrer">
                       Pro
                     </a>{' '}
@@ -701,7 +1034,7 @@ export default function UsersPage(props: PageProps) {
           <>
             <Row className="page-row-padding">
               <Col xs={24}>
-                <Typography.Title level={3}>Users</Typography.Title>
+                <Typography.Title level={3}>User Management</Typography.Title>
               </Col>
             </Row>
 
@@ -709,7 +1042,7 @@ export default function UsersPage(props: PageProps) {
               <Col xs={24}>
                 <Tabs
                   defaultActiveKey={defaultTabKey}
-                  items={tabs}
+                  items={usersTabs}
                   activeKey={activeTab}
                   onChange={(tabKey: string) => {
                     setActiveTab(tabKey);
@@ -721,13 +1054,13 @@ export default function UsersPage(props: PageProps) {
         )}
       </Skeleton>
 
-      <Tour
+      {/* <Tour
         steps={userTourSteps}
         open={isTourOpen}
         onClose={() => setIsTourOpen(false)}
         onChange={handleTourOnChange}
         current={tourStep}
-      />
+      /> */}
 
       {/* misc */}
       {notifyCtx}
@@ -746,9 +1079,25 @@ export default function UsersPage(props: PageProps) {
         addUserSetAsAdminCheckboxRef={addUserSetAsAdminCheckboxRef}
       />
       {selectedUser && (
+        <UserDetailsModal
+          isOpen={isUserDetailsModalOpen}
+          key={`user-detail-${selectedUser.username}`}
+          user={selectedUser}
+          onUpdateUser={(newUser) => {
+            setUsers(users.map((u) => (u.username === newUser.username ? newUser : u)));
+            setIsUserDetailsModalOpen(false);
+            setSelectedUser(null);
+          }}
+          onCancel={() => {
+            setIsUserDetailsModalOpen(false);
+            setSelectedUser(null);
+          }}
+        />
+      )}
+      {selectedUser && (
         <UpdateUserModal
           isOpen={isUpdateUserModalOpen}
-          key={selectedUser.username}
+          key={`user-update-${selectedUser.username}`}
           user={selectedUser}
           onUpdateUser={(newUser) => {
             // loadUsers();
@@ -770,6 +1119,19 @@ export default function UsersPage(props: PageProps) {
           loadUsers();
         }}
       />
+      {isServerEE && (
+        <InviteUserModal
+          isOpen={isInviteModalOpen}
+          onClose={() => setIsInviteModalOpen(false)}
+          onCancel={() => {
+            setIsInviteModalOpen(false);
+          }}
+          onInviteFinish={() => {
+            loadInvites();
+            setIsInviteModalOpen(false);
+          }}
+        />
+      )}
     </Layout.Content>
   );
 }

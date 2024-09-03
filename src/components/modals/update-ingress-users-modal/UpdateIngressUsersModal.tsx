@@ -1,5 +1,4 @@
 import { Network } from '@/models/Network';
-import { useStore } from '@/store/store';
 import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { Button, Col, Input, Modal, notification, Row, Table, TableColumnsType, Tooltip, Typography } from 'antd';
 import { User } from '@/models/User';
@@ -8,6 +7,7 @@ import { UsersService } from '@/services/UsersService';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { SearchOutlined } from '@ant-design/icons';
 import AddUserModal from '../add-user-modal/AddUserModal';
+import { useServerLicense } from '@/utils/Utils';
 
 interface UpdateIngressUsersModalProps {
   isOpen: boolean;
@@ -29,9 +29,8 @@ export default function UpdateIngressUsersModal({
   const [users, setUsers] = useState<User[]>([]);
   const [usersSearch, setUsersSearch] = useState<string>('');
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
-  const store = useStore();
   const [ingressUsers, setIngressUsers] = useState<User[]>([]);
-  const isServerEE = store.serverConfig?.IsEE === 'yes';
+  const { isServerEE } = useServerLicense();
 
   const loadUsers = useCallback(async () => {
     try {
