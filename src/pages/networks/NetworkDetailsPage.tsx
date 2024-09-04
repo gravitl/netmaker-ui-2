@@ -96,7 +96,7 @@ import UpdateClientModal from '@/components/modals/update-client-modal/UpdateCli
 import { NULL_HOST, NULL_NODE } from '@/constants/Types';
 import UpdateNodeModal from '@/components/modals/update-node-modal/UpdateNodeModal';
 import VirtualisedTable from '@/components/VirtualisedTable';
-import { NETWORK_GRAPH_SIGMA_CONTAINER_ID } from '@/constants/AppConstants';
+import { APP_UPDATE_POLL_INTERVAL, NETWORK_GRAPH_SIGMA_CONTAINER_ID } from '@/constants/AppConstants';
 import UpdateIngressUsersModal from '@/components/modals/update-ingress-users-modal/UpdateIngressUsersModal';
 import getNodeImageProgram from 'sigma/rendering/webgl/programs/node.image';
 import { HOST_HEALTH_STATUS } from '@/models/NodeConnectivityStatus';
@@ -172,11 +172,12 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const { token: themeToken } = theme.useToken();
   const branding = useBranding();
-
   const storeFetchNodes = store.fetchNodes;
   const storeDeleteNode = store.deleteNode;
   const { isServerEE } = useServerLicense();
+
   const [form] = Form.useForm<Network>();
+  // const [networkNodes, setNetworkNodes] = useState<ExtendedNode[]>([]);
   const isIpv4Watch = Form.useWatch('isipv4', form);
   const isIpv6Watch = Form.useWatch('isipv6', form);
   const [network, setNetwork] = useState<Network | null>(null);
@@ -246,7 +247,6 @@ export default function NetworkDetailsPage(props: PageProps) {
   });
   const [isSetNetworkFailoverModalOpen, setIsSetNetworkFailoverModalOpen] = useState(false);
   const [isAddInternetGatewayModalOpen, setIsAddInternetGatewayModalOpen] = useState(false);
-  // const [networkNodes, setNetworkNodes] = useState<ExtendedNode[]>([]);
 
   const overviewTabContainerRef = useRef(null);
   const hostsTabContainerTableRef = useRef(null);
@@ -319,6 +319,33 @@ export default function NetworkDetailsPage(props: PageProps) {
         .filter((node) => node.network === networkId),
     [store.nodes, store.hostsCommonDetails, networkId],
   );
+
+  // const loadNetworkNodes = useCallback(async () => {
+  //   try {
+  //     if (!networkId) return;
+  //     const nodes = (await NodesService.getNetworkNodes(networkId)).data;
+  //     setNetworkNodes(nodes.map((n) => getExtendedNode(n, store.hostsCommonDetails)));
+  //   } catch (err) {
+  //     if (err instanceof AxiosError && err.response?.status === 403) return;
+  //     notify.error({
+  //       message: 'Error loading network nodes',
+  //       description: extractErrorMsg(err as any),
+  //     });
+  //   }
+  // }, [networkId, notify, store.hostsCommonDetails]);
+
+  // const updateNode = useCallback(
+  //   (nodeId: Node['id'], newNode: Node) => {
+  //     setNetworkNodes((prev) =>
+  //       prev.map((n) => (n.id === nodeId ? getExtendedNode(newNode, store.hostsCommonDetails) : n)),
+  //     );
+  //   },
+  //   [store.hostsCommonDetails],
+  // );
+
+  // const deleteNode = useCallback((nodeId: Node['id']) => {
+  //   setNetworkNodes((prev) => prev.filter((n) => n.id !== nodeId));
+  // }, []);
 
   const filteredNetworkNodes = useMemo<ExtendedNode[]>(
     () =>
@@ -3599,20 +3626,6 @@ export default function NetworkDetailsPage(props: PageProps) {
     }
   }, [networkId, notify]);
 
-  // const loadNetworkNodes = useCallback(async () => {
-  //   try {
-  //     if (!networkId) return;
-  //     const nodes = (await NodesService.getNetworkNodes(networkId)).data;
-  //     setNetworkNodes(nodes);
-  //   } catch (err) {
-  //     if (err instanceof AxiosError && err.response?.status === 403) return;
-  //     notify.error({
-  //       message: 'Error loading network nodes',
-  //       description: extractErrorMsg(err as any),
-  //     });
-  //   }
-  // }, [networkId, notify]);
-
   const loadNetworkDnses = useCallback(async () => {
     try {
       if (!networkId) return;
@@ -3993,6 +4006,14 @@ export default function NetworkDetailsPage(props: PageProps) {
     loadNetwork();
     // setIsTourOpen(true);
   }, [loadNetwork]);
+
+  // useEffect(() => {
+  //   const handle = setInterval(() => {
+  //     loadNetworkNodes();
+  //   }, APP_UPDATE_POLL_INTERVAL);
+
+  //   return () => clearInterval(handle);
+  // }, [loadNetworkNodes]);
 
   // refresh form to prevent stick network data across different network details pages
   useEffect(() => {
