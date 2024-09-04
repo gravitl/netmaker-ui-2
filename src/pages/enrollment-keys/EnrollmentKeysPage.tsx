@@ -153,7 +153,7 @@ export default function EnrollmentKeysPage(props: PageProps) {
                 {
                   key: 'delete',
                   label: (
-                    <Typography.Text style={{ color: 'red' }}>
+                    <Typography.Text type="danger">
                       <DeleteOutlined /> Delete Key
                     </Typography.Text>
                   ),
