@@ -2,5 +2,6 @@
   "workbench.colorTheme": "GitHub Dark Dimmed",
   "githubPullRequests.ignoredPullRequestBranches": [
     "master"
-  ]
+  ],
+  "nuxt.isNuxtApp": false
 }

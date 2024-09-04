@@ -9,6 +9,7 @@ import {
   LogoutOutlined,
   RightOutlined,
   UserOutlined,
+  BookOutlined,
 } from '@ant-design/icons';
 import { Alert, Col, MenuProps, Row, Select, Switch, Typography } from 'antd';
 import { Layout, Menu, theme } from 'antd';
@@ -126,6 +127,11 @@ export default function MainLayout() {
           : undefined!,
         {
           type: 'divider',
+        },
+        {
+          key: 'documentation',
+          icon: BookOutlined,
+          label: 'Documentation',
         },
       ]
         .concat(
@@ -498,6 +504,9 @@ export default function MainLayout() {
                   break;
                 case 'users':
                   navigate(resolveAppRoute(AppRoutes.USERS_ROUTE));
+                  break;
+                case 'documentation':
+                  window.open('https://docs.v2.netmaker.io/guide/about', '_blank');
                   break;
                 default:
                   if (menu.key.startsWith('networks/')) {
