@@ -12,7 +12,8 @@ export const DEFAULT_BRANDING_CONFIG: BrandingConfig = {
   logoLightSmallUrl: '/logo-small-light.png',
   logoAltText: 'Netmaker logo',
   favicon: '/favicon.ico',
-  primaryColor: '#A298E7',
+  primaryColorDark: '#A298E7',
+  primaryColorLight: '#513DD1',
 };
 
 export const BUG_REPORT_URL = `https://github.com/gravitl/netmaker-ui-2/issues/new?title=${encodeURIComponent(

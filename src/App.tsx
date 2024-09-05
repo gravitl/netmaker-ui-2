@@ -217,8 +217,8 @@ function App() {
         theme={{
           algorithm: store.currentTheme === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm,
           token: {
-            colorPrimary: branding.primaryColor,
-            colorLink: branding.primaryColor,
+            colorPrimary: store.currentTheme === 'dark' ? branding.primaryColorDark : branding.primaryColorLight,
+            colorLink: store.currentTheme === 'dark' ? branding.primaryColorDark : branding.primaryColorLight,
             fontFamily: 'Inter, SFPro, system-ui, Avenir, Helvetica, Arial, sans-serif',
             fontSize: 16,
             // colorBgContainer: 'black',
