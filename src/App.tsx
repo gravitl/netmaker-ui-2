@@ -223,6 +223,12 @@ function App() {
             fontSize: 16,
             // colorBgContainer: 'black',
           },
+          components: {
+            Button: {
+              colorPrimary: '#624AF4',
+              algorithm: true, // Enable algorithm
+            },
+          },
         }}
       >
         <RouterProvider router={router} />
