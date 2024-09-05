@@ -12,7 +12,6 @@ interface ProtectedRouteProps {
 export default function ProtectedRoute({ condition, redirectPath, children }: ProtectedRouteProps): JSX.Element {
   condition ??= () => useStore.getState().isLoggedIn();
   redirectPath ??= resolveAppRoute(AppRoutes.LOGIN_ROUTE);
-
   if (!condition()) {
     return <Navigate to={redirectPath} replace />;
   }
