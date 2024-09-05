@@ -9,6 +9,7 @@ import {
   LogoutOutlined,
   RightOutlined,
   UserOutlined,
+  BookOutlined,
 } from '@ant-design/icons';
 import { Alert, Col, MenuProps, Row, Select, Switch, Typography } from 'antd';
 import { Layout, Menu, theme } from 'antd';
@@ -24,6 +25,7 @@ import { isManagedHost, useBranding, useServerLicense } from '@/utils/Utils';
 import VersionUpgradeModal from '@/components/modals/version-upgrade-modal/VersionUpgradeModal';
 import { lt } from 'semver';
 import { isAdminUserOrRole } from '@/utils/UserMgmtUtils';
+import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 
 const { Content, Sider } = Layout;
 
@@ -148,6 +150,13 @@ export default function MainLayout() {
               ]
             : [],
         )
+        .concat([
+          {
+            key: 'documentation',
+            icon: BookOutlined,
+            label: 'Documentation',
+          },
+        ])
         .map(
           (item) =>
             item && {
@@ -498,6 +507,9 @@ export default function MainLayout() {
                   break;
                 case 'users':
                   navigate(resolveAppRoute(AppRoutes.USERS_ROUTE));
+                  break;
+                case 'documentation':
+                  window.open(ExternalLinks.UI_DOCS_URL, '_blank');
                   break;
                 default:
                   if (menu.key.startsWith('networks/')) {
