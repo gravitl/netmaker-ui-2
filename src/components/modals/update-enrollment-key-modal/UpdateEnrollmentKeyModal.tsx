@@ -92,17 +92,19 @@ export default function UpdateEnrollmentKeyModal({
             <Input placeholder="Name" disabled />
           </Form.Item>
 
-          <Form.Item name="relay" label="Relay" data-nmui-intercom="update-enrollment-key-form_relays">
-            <Select
-              placeholder="Select relay to join with key"
-              allowClear
-              style={{ width: '100%' }}
-              options={[
-                { label: 'Select relay to join with key', value: NULL_NODE_ID, disabled: true },
-                ...relays.map((node) => ({ label: `${node.name} (${node.network})`, value: node.id })),
-              ]}
-            />
-          </Form.Item>
+          {isServerEE && (
+            <Form.Item name="relay" label="Relay" data-nmui-intercom="update-enrollment-key-form_relays">
+              <Select
+                placeholder="Select relay to join with key"
+                allowClear
+                style={{ width: '100%' }}
+                options={[
+                  { label: 'Select relay to join with key', value: NULL_NODE_ID, disabled: true },
+                  ...relays.map((node) => ({ label: `${node.name} (${node.network})`, value: node.id })),
+                ]}
+              />
+            </Form.Item>
+          )}
 
           <Row>
             <Col xs={24} style={{ textAlign: 'right' }}>
