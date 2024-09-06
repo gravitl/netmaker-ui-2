@@ -436,6 +436,8 @@ export default function QuickSetupModal(props: ModalProps) {
             extclientdns: '',
             is_internet_gw: false,
             metadata: '',
+            mtu: 1500,
+            persistentkeepalive: 20,
           });
           props.notify.success({ message: `Remote access gateway created` });
           setIngressNodeId(answer);
@@ -557,6 +559,8 @@ export default function QuickSetupModal(props: ModalProps) {
             extclientdns: '',
             is_internet_gw: false,
             metadata: '',
+            mtu: 1500,
+            persistentkeepalive: 20,
           });
           await NodesService.createExternalClient(answer, networkId, {
             clientid: '',
