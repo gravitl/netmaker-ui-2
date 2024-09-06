@@ -50,27 +50,7 @@ export async function setupTenantConfig(): Promise<void> {
 
   truncateQueryParamsFromCurrentUrl();
 
-  let user: (User & { platform_role: UserRole }) | undefined;
-  let userPlatformRole: UserRole | undefined;
-  try {
-    user = (
-      await axiosService.get<GenericResponseDto<User & { platform_role: UserRole }>>(
-        `${ApiRoutes.USERS_V1}?username=${encodeURIComponent(username)}`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken || (window?.localStorage?.getItem(NMUI_ACCESS_TOKEN_LOCALSTORAGE_KEY) ?? '')}`,
-            user: username,
-          },
-        },
-      )
-    ).data.Response;
-    userPlatformRole = user?.platform_role;
-  } catch (err) {
-    console.error(err);
-    alert('Failed to fetch user details: ' + String(err));
-    return;
-  }
-
+  // resolve server url
   let resolvedBaseUrl;
   if (baseUrl) {
     resolvedBaseUrl = baseUrl?.startsWith('https') ? `${baseUrl}/api` : `https://${baseUrl}/api`;
@@ -79,6 +59,24 @@ export async function setupTenantConfig(): Promise<void> {
     resolvedBaseUrl = window?.localStorage?.getItem(NMUI_BASE_URL_LOCALSTORAGE_KEY) ?? '';
   }
   axiosService.defaults.baseURL = resolvedBaseUrl;
+
+  let user: (User & { platform_role: UserRole }) | undefined;
+  let userPlatformRole: UserRole | undefined;
+  try {
+    user = (
+      await axiosService.get<GenericResponseDto<User & { platform_role: UserRole }>>(
+        `${ApiRoutes.USERS_V1}?username=${encodeURIComponent(username || (window?.localStorage?.getItem(NMUI_USERNAME_LOCALSTORAGE_KEY) ?? ''))}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken || (window?.localStorage?.getItem(NMUI_ACCESS_TOKEN_LOCALSTORAGE_KEY) ?? '')}`,
+          },
+        },
+      )
+    ).data.Response;
+    userPlatformRole = user?.platform_role;
+  } catch (err) {
+    console.error(err);
+  }
 
   if (accessToken) {
     window?.localStorage?.setItem(NMUI_ACCESS_TOKEN_LOCALSTORAGE_KEY, accessToken);

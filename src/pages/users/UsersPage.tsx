@@ -182,12 +182,7 @@ export default function UsersPage(props: PageProps) {
   }, []);
 
   const onInviteUser = useCallback(() => {
-    if (isSaasBuild) {
-      window.location = getAmuiUrl('invite-user') as any;
-      return;
-    } else {
-      setIsInviteModalOpen(true);
-    }
+    setIsInviteModalOpen(true);
   }, []);
 
   const canDeleteUser: (user: User) => [boolean, string] = useCallback(
