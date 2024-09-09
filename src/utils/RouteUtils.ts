@@ -235,9 +235,12 @@ export function openInNewTab(url: string) {
 }
 
 // Function to file a bug report for the UI
-export function fileBugReport(body: string) {
+export function fileBugReport(body: string, pageRoute: string) {
   openInNewTab(
-    BUG_REPORT_URL.replace(':body', `Describe what happened...%0A%0A Error log: %0A\`${encodeURIComponent(body)}\``),
+    BUG_REPORT_URL.replace(
+      ':body',
+      `Describe what happened...%0A%0APage route: ${pageRoute}%0A%0AError log: %0A\`${encodeURIComponent(body)}\``,
+    ),
   );
 }
 
