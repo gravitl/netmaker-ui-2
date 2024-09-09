@@ -259,17 +259,3 @@ export function reloadNmuiWithVersion(uiVersion = '') {
 export function getNetmakerUiHost() {
   return window?.location?.host || '';
 }
-
-/**
- * Get the magic link for the invite code
- *
- * @param inviteCode
- * @param username
- * @returns invite code magic link
- */
-export function getInviteMagicLink(inviteCode: string, username: string): string {
-  if (window?.location?.protocol.includes('https')) {
-    return `https://${getNetmakerUiHost()}/invite?invite_code=${encodeURIComponent(inviteCode)}&email=${encodeURIComponent(username)}`;
-  }
-  return `http://${getNetmakerUiHost()}/invite?invite_code=${encodeURIComponent(inviteCode)}&email=${encodeURIComponent(username)}`;
-}
