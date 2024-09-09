@@ -373,44 +373,51 @@ export default function UsersPage(props: PageProps) {
             <Dropdown
               placement="bottomRight"
               menu={{
-                items: [
-                  {
-                    key: 'edit',
-                    label: 'Change Password',
-                    disabled: !canChangePassword(user)[0],
-                    title: canChangePassword(user)[0] ? canChangePassword(user)[1] : '',
-                    onClick: (ev: any) => {
-                      ev.domEvent.stopPropagation();
-                      const userClone = structuredClone(user);
-                      onEditUser(userClone);
+                items: (() => {
+                  const items = [
+                    {
+                      key: 'delete',
+                      disabled: !canDeleteUser(user)[0],
+                      title: canDeleteUser(user)[0] ? canDeleteUser(user)[1] : '',
+                      label: 'Delete',
+                      onClick: (ev: any) => {
+                        ev.domEvent.stopPropagation();
+                        confirmDeleteUser(user);
+                      },
                     },
-                  },
-                  {
-                    key: 'delete',
-                    disabled: !canDeleteUser(user)[0],
-                    title: canDeleteUser(user)[0] ? canDeleteUser(user)[1] : '',
-                    label: 'Delete',
-                    onClick: (ev: any) => {
-                      ev.domEvent.stopPropagation();
-                      confirmDeleteUser(user);
-                    },
-                  },
-                ].concat(
-                  !isSaasBuild && user.platform_role_id === 'super-admin' && store.username === user.username
-                    ? [
-                        {
-                          key: 'transfer',
-                          label: 'Transfer Super Admin Rights',
-                          disabled: false,
-                          title: '',
-                          onClick: (ev) => {
-                            ev.domEvent.stopPropagation();
-                            setIsTransferSuperAdminRightsModalOpen(true);
+                  ].concat(
+                    !isSaasBuild && user.platform_role_id === 'super-admin' && store.username === user.username
+                      ? [
+                          {
+                            key: 'transfer',
+                            label: 'Transfer Super Admin Rights',
+                            disabled: false,
+                            title: '',
+                            onClick: (ev) => {
+                              ev.domEvent.stopPropagation();
+                              setIsTransferSuperAdminRightsModalOpen(true);
+                            },
                           },
-                        },
-                      ]
-                    : [],
-                ) as MenuProps['items'],
+                        ]
+                      : [],
+                  ) as MenuProps['items'];
+
+                  if (!isSaasBuild) {
+                    items?.unshift({
+                      key: 'edit',
+                      label: 'Change Password',
+                      disabled: !canChangePassword(user)[0],
+                      title: canChangePassword(user)[0] ? canChangePassword(user)[1] : '',
+                      onClick: (ev: any) => {
+                        ev.domEvent.stopPropagation();
+                        const userClone = structuredClone(user);
+                        onEditUser(userClone);
+                      },
+                    });
+                  }
+
+                  return items;
+                })(),
               }}
             >
               <Button type="text" icon={<MoreOutlined />} />
