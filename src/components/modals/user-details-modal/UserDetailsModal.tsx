@@ -22,6 +22,7 @@ import { User, UserGroup, UserRole, UserRoleId } from '@/models/User';
 import { UsersService } from '@/services/UsersService';
 import { kebabCaseToTitleCase, snakeCaseToTitleCase, useServerLicense } from '@/utils/Utils';
 import { isAdminUserOrRole } from '@/utils/UserMgmtUtils';
+import { isSaasBuild } from '@/services/BaseService';
 
 interface UserdetailsModalProps {
   isOpen: boolean;
@@ -320,9 +321,37 @@ export default function UserDetailsModal({
             </Col>
           </Row>
 
-          <Row ref={addUserPasswordInputRef}>
-            <Col xs={24}>
-              <Form.Item label="Password" name="password">
+          {!isSaasBuild && (
+            <>
+              <Row ref={addUserPasswordInputRef}>
+                <Col xs={24}>
+                  <Form.Item label="Password" name="password">
+                    <Input
+                      placeholder="(unchanged)"
+                      type="password"
+                      disabled={user.auth_type === 'oauth'}
+                      title={user.auth_type === 'oauth' ? 'You cannot change the password of an OAuth user' : ''}
+                    />
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              <Form.Item
+                label="Confirm Password"
+                name="confirm-password"
+                rules={[
+                  {
+                    validator(_, value) {
+                      if (value !== passwordVal) {
+                        return Promise.reject('Password must match');
+                      } else {
+                        return Promise.resolve();
+                      }
+                    },
+                  },
+                ]}
+                dependencies={['password']}
+              >
                 <Input
                   placeholder="(unchanged)"
                   type="password"
@@ -330,32 +359,8 @@ export default function UserDetailsModal({
                   title={user.auth_type === 'oauth' ? 'You cannot change the password of an OAuth user' : ''}
                 />
               </Form.Item>
-            </Col>
-          </Row>
-
-          <Form.Item
-            label="Confirm Password"
-            name="confirm-password"
-            rules={[
-              {
-                validator(_, value) {
-                  if (value !== passwordVal) {
-                    return Promise.reject('Password must match');
-                  } else {
-                    return Promise.resolve();
-                  }
-                },
-              },
-            ]}
-            dependencies={['password']}
-          >
-            <Input
-              placeholder="(unchanged)"
-              type="password"
-              disabled={user.auth_type === 'oauth'}
-              title={user.auth_type === 'oauth' ? 'You cannot change the password of an OAuth user' : ''}
-            />
-          </Form.Item>
+            </>
+          )}
 
           {isServerEE && (
             <>
