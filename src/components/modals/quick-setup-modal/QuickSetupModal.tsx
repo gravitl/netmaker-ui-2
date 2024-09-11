@@ -49,7 +49,7 @@ import { UsersService } from '@/services/UsersService';
 import AddUserModal from '../add-user-modal/AddUserModal';
 import { useServerLicense } from '@/utils/Utils';
 
-interface ModalProps {
+interface QuickSetupModalProps {
   isModalOpen: boolean;
   handleCancel: () => void;
   notify: NotificationInstance;
@@ -151,7 +151,7 @@ const NodeSelectDropdownChecks = [
 
 const NodeSelectDropdownChecks2 = ['gateway_users'];
 
-export default function QuickSetupModal(props: ModalProps) {
+export default function QuickSetupModal(props: QuickSetupModalProps) {
   const store = useStore();
   const { currentTheme } = store;
   const [userQuestionsAsked, setUserQuestionsAsked] = useState<UsecaseQuestionAndAnswer[]>([]);
@@ -181,6 +181,8 @@ export default function QuickSetupModal(props: ModalProps) {
         .filter((node) => node.network === networkId),
     [store.nodes, store.hostsCommonDetails, networkId],
   );
+
+  // const networkNodes = props.networkNodes;
 
   const clientGateways = useMemo<ExtendedNode[]>(() => {
     return networkNodes
