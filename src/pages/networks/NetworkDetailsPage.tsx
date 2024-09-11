@@ -901,7 +901,9 @@ export default function NetworkDetailsPage(props: PageProps) {
               {node.isinternetgateway && (
                 <GlobalOutlined
                   title="This host serves as an internet gateway: all traffic of connected clients would be routed through this host just like a traditional VPN"
-                  style={{ color: branding.primaryColor }}
+                  style={{
+                    color: store.currentTheme === 'dark' ? branding.primaryColorDark : branding.primaryColorLight,
+                  }}
                   className="internet-gw-icon"
                 />
               )}
@@ -971,7 +973,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       },
     ],
-    [branding.primaryColor, getGatewayDropdownOptions],
+    [store.currentTheme === 'dark' ? branding.primaryColorDark : branding.primaryColorLight, getGatewayDropdownOptions],
   );
 
   const egressTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(
@@ -2199,7 +2201,9 @@ export default function NetworkDetailsPage(props: PageProps) {
                             <Tooltip title="This host is acting as the network's failover host">
                               <Waypoints
                                 style={{ marginLeft: '.5rem' }}
-                                color={branding.primaryColor}
+                                color={
+                                  store.currentTheme === 'dark' ? branding.primaryColorDark : branding.primaryColorLight
+                                }
                                 size="1.2rem"
                                 strokeWidth={1.5}
                               />
@@ -2354,7 +2358,8 @@ export default function NetworkDetailsPage(props: PageProps) {
     filteredNetworkNodes,
     jumpToTourStep,
     store.hostsCommonDetails,
-    branding.primaryColor,
+    branding.primaryColorDark,
+    branding.primaryColorLight,
     editNode,
     confirmNodeFailoverStatusChange,
     disconnectNodeFromNetwork,

@@ -440,10 +440,10 @@ export default function MainLayout() {
             zIndex: 1000,
           }}
           zeroWidthTriggerStyle={{
-            border: `2px solid ${branding.primaryColor}`,
+            border: `2px solid ${store.currentTheme === 'dark' ? branding.primaryColorDark : branding.primaryColorLight}`,
             background: 'transparent',
             borderLeft: 'none',
-            color: branding.primaryColor,
+            color: store.currentTheme === 'dark' ? branding.primaryColorDark : branding.primaryColorLight,
             top: 0,
           }}
           breakpoint="lg"

@@ -461,7 +461,8 @@ export function useBranding(): BrandingConfig {
           import.meta.env.VITE_TENANT_LOGO_LIGHT_SMALL_URL ||
           import.meta.env.VITE_TENANT_LOGO_LIGHT_URL ||
           DEFAULT_BRANDING_CONFIG.favicon,
-        primaryColor: import.meta.env.VITE_TENANT_PRIMARY_COLOR || DEFAULT_BRANDING_CONFIG.primaryColor,
+        primaryColorDark: import.meta.env.VITE_TENANT_PRIMARY_COLOR_DARK || DEFAULT_BRANDING_CONFIG.primaryColorDark,
+        primaryColorLight: import.meta.env.VITE_TENANT_PRIMARY_COLOR_LIGHT || DEFAULT_BRANDING_CONFIG.primaryColorLight,
       });
     } else {
       setBranding(DEFAULT_BRANDING_CONFIG);
