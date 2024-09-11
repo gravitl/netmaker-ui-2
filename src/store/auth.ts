@@ -10,7 +10,6 @@ import {
   NMUI_USERNAME_LOCALSTORAGE_KEY,
   NMUI_USER_LOCALSTORAGE_KEY,
   NMUI_USER_PLATFORM_ROLE_LOCALSTORAGE_KEY,
-  isSaasBuild,
 } from '@/services/BaseService';
 import { isValidJwt } from '@/utils/Utils';
 
@@ -48,12 +47,7 @@ const createAuthSlice: StateCreator<IAuthSlice, [], [], IAuthSlice> = (set, get)
 
   isLoggedIn() {
     // TODO: fix username retrieval for SaaS
-    return (
-      !!get().baseUrl &&
-      !!get().jwt &&
-      isValidJwt(get().jwt || '') &&
-      (!isSaasBuild ? !!get().user && !!get().userPlatformRole : true)
-    );
+    return !!get().baseUrl && !!get().jwt && isValidJwt(get().jwt || '') && !!get().user && !!get().userPlatformRole;
   },
   setStore(config) {
     set(config);

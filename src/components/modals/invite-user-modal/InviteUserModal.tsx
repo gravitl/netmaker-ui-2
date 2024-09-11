@@ -25,7 +25,6 @@ import { User, UserGroup, UserInvite, UserRole, UserRoleId } from '@/models/User
 import { UsersService } from '@/services/UsersService';
 import { DeleteOutlined } from '@ant-design/icons';
 import { copyTextToClipboard, kebabCaseToTitleCase, useServerLicense } from '@/utils/Utils';
-import { getInviteMagicLink } from '@/utils/RouteUtils';
 import CreateUserGroupModal from '@/pages/users/CreateUserGroupModal';
 import { isAdminUserOrRole } from '@/utils/UserMgmtUtils';
 
@@ -440,7 +439,7 @@ export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCan
                           type="link"
                           style={{ marginRight: '1rem' }}
                           onClick={async () => {
-                            await copyTextToClipboard(getInviteMagicLink(invite.invite_code, invite.email));
+                            await copyTextToClipboard(invite.invite_url);
                             notify.success({ message: 'Invite code copied to clipboard' });
                           }}
                         >
