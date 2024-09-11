@@ -1021,7 +1021,7 @@ export default function HostsPage(props: PageProps) {
           <>
             <Row className="page-row-padding">
               <Col xs={24}>
-                <Typography.Title level={3}>Hosts</Typography.Title>
+                <Typography.Title level={3}>Global Hosts</Typography.Title>
               </Col>
             </Row>
 
