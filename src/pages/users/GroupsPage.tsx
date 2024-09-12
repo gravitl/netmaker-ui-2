@@ -4,7 +4,14 @@ import { AppRoutes } from '@/routes';
 import { UsersService } from '@/services/UsersService';
 import { getUserGroupRoute, resolveAppRoute } from '@/utils/RouteUtils';
 import { useServerLicense } from '@/utils/Utils';
-import { DeleteOutlined, MoreOutlined, PlusOutlined, QuestionCircleOutlined, SearchOutlined } from '@ant-design/icons';
+import {
+  DeleteOutlined,
+  InfoCircleOutlined,
+  MoreOutlined,
+  PlusOutlined,
+  QuestionCircleOutlined,
+  SearchOutlined,
+} from '@ant-design/icons';
 import {
   Button,
   Card,
@@ -19,16 +26,29 @@ import {
   Typography,
   notification,
 } from 'antd';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { RefObject, useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface GroupPageProps {
   users: User[];
   triggerDataRefresh?: () => void;
+  setIsTourOpen: (isOpen: boolean) => void;
+  groupsHelpButtonRef: RefObject<HTMLDivElement>;
+  groupsTableRef: RefObject<HTMLDivElement>;
+  groupsSearchInputRef: RefObject<HTMLDivElement>;
+  groupsCreateGroupButtonRef: RefObject<HTMLDivElement>;
 }
 
-export default function GroupsPage({ users, triggerDataRefresh }: GroupPageProps) {
+export default function GroupsPage({
+  users,
+  triggerDataRefresh,
+  setIsTourOpen,
+  groupsHelpButtonRef,
+  groupsTableRef,
+  groupsSearchInputRef,
+  groupsCreateGroupButtonRef,
+}: GroupPageProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const navigate = useNavigate();
   const { isServerEE } = useServerLicense();
@@ -221,7 +241,7 @@ export default function GroupsPage({ users, triggerDataRefresh }: GroupPageProps
       {!isEmpty && (
         <>
           <Row style={{ width: '100%', marginBottom: '2rem' }}>
-            <Col xs={24} md={12}>
+            <Col xs={24} md={12} ref={groupsSearchInputRef}>
               <Input
                 placeholder="Search group"
                 size="large"
@@ -241,13 +261,24 @@ export default function GroupsPage({ users, triggerDataRefresh }: GroupPageProps
                 target="_blank"
                 referrerPolicy="no-referrer"
                 icon={<QuestionCircleOutlined />}
+                ref={groupsHelpButtonRef}
               />
+              <Button
+                size="large"
+                onClick={() => {
+                  setIsTourOpen(true);
+                }}
+                style={{ marginRight: '0.5rem' }}
+              >
+                <InfoCircleOutlined /> Start Tour
+              </Button>
               <Button
                 type="primary"
                 size="large"
                 onClick={() => {
                   navigate(resolveAppRoute(AppRoutes.CREATE_GROUP_ROUTE));
                 }}
+                ref={groupsCreateGroupButtonRef}
               >
                 <PlusOutlined /> Create Group
               </Button>
@@ -262,6 +293,7 @@ export default function GroupsPage({ users, triggerDataRefresh }: GroupPageProps
                   rowKey="id"
                   size="small"
                   scroll={{ x: true }}
+                  ref={groupsTableRef}
                   // rowClassName={(role) => {
                   //   return role.id === selectedRole?.id ? 'selected-row' : '';
                   // }}

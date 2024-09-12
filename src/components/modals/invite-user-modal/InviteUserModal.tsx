@@ -19,7 +19,7 @@ import {
   Tooltip,
   Typography,
 } from 'antd';
-import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { MouseEvent, Ref, useCallback, useEffect, useMemo, useState } from 'react';
 import '../CustomModal.scss';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { User, UserGroup, UserInvite, UserRole, UserRoleId } from '@/models/User';
@@ -35,6 +35,8 @@ interface InviteUserModalProps {
   onInviteFinish: () => any;
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
   onClose?: () => void;
+  inviteUserModalPlatformAccessLevelRef: Ref<HTMLDivElement>;
+  inviteUserModalEmailAddressesInputRef: Ref<HTMLDivElement>;
 }
 
 interface UserInviteForm {
@@ -70,7 +72,14 @@ const groupsTabKey = 'groups';
 const customRolesTabKey = 'custom-roles';
 const defaultTabKey = groupsTabKey;
 
-export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCancel }: InviteUserModalProps) {
+export default function InviteUserModal({
+  isOpen,
+  onInviteFinish,
+  onClose,
+  onCancel,
+  inviteUserModalPlatformAccessLevelRef,
+  inviteUserModalEmailAddressesInputRef,
+}: InviteUserModalProps) {
   const [form] = Form.useForm<UserInviteForm>();
   const [notify, notifyCtx] = notification.useNotification();
   const { isServerEE } = useServerLicense();
@@ -372,7 +381,7 @@ export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCan
           <>
             <Form name="invite-user-form" form={form} layout="vertical">
               <Row>
-                <Col xs={24}>
+                <Col xs={24} ref={inviteUserModalEmailAddressesInputRef}>
                   <Form.Item
                     label="Email address(es)"
                     name="user_emails"
@@ -388,7 +397,7 @@ export default function InviteUserModal({ isOpen, onInviteFinish, onClose, onCan
                   <Divider />
 
                   <Row>
-                    <Col xs={24}>
+                    <Col xs={24} ref={inviteUserModalPlatformAccessLevelRef}>
                       <Skeleton active loading={isLoadingPlatformRoles} paragraph={false}>
                         <Form.Item
                           name="platform_role_id"

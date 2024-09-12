@@ -5,7 +5,14 @@ import { UsersService } from '@/services/UsersService';
 import { getNetworkRoleRoute, getPlatformRoleRoute, resolveAppRoute } from '@/utils/RouteUtils';
 import { deriveUserRoleType } from '@/utils/UserMgmtUtils';
 import { useServerLicense } from '@/utils/Utils';
-import { DeleteOutlined, MoreOutlined, PlusOutlined, QuestionCircleOutlined, SearchOutlined } from '@ant-design/icons';
+import {
+  DeleteOutlined,
+  InfoCircleOutlined,
+  MoreOutlined,
+  PlusOutlined,
+  QuestionCircleOutlined,
+  SearchOutlined,
+} from '@ant-design/icons';
 import {
   Button,
   Card,
@@ -20,15 +27,27 @@ import {
   Typography,
   notification,
 } from 'antd';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { RefObject, useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface RolesPageProps {
   triggerDataRefresh?: () => void;
+  setIsTourOpen: (isOpen: boolean) => void;
+  networkRolesHelpButtonRef: RefObject<HTMLDivElement>;
+  networkRolesTableRef: RefObject<HTMLDivElement>;
+  networkRolesSearchInputRef: RefObject<HTMLDivElement>;
+  networkRolesCreateRoleButtonRef: RefObject<HTMLDivElement>;
 }
 
-export default function RolesPage({ triggerDataRefresh }: RolesPageProps) {
+export default function RolesPage({
+  triggerDataRefresh,
+  setIsTourOpen,
+  networkRolesCreateRoleButtonRef,
+  networkRolesHelpButtonRef,
+  networkRolesSearchInputRef,
+  networkRolesTableRef,
+}: RolesPageProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const navigate = useNavigate();
   const { isServerEE } = useServerLicense();
@@ -246,7 +265,7 @@ export default function RolesPage({ triggerDataRefresh }: RolesPageProps) {
       {!isEmpty && (
         <>
           <Row style={{ width: '100%', marginBottom: '2rem' }}>
-            <Col xs={24} md={12}>
+            <Col xs={24} md={12} ref={networkRolesSearchInputRef}>
               <Input
                 placeholder="Search roles"
                 size="large"
@@ -266,7 +285,17 @@ export default function RolesPage({ triggerDataRefresh }: RolesPageProps) {
                 target="_blank"
                 referrerPolicy="no-referrer"
                 icon={<QuestionCircleOutlined />}
+                ref={networkRolesHelpButtonRef}
               />
+              <Button
+                size="large"
+                onClick={() => {
+                  setIsTourOpen(true);
+                }}
+                style={{ marginRight: '0.5rem' }}
+              >
+                <InfoCircleOutlined /> Start Tour
+              </Button>
               {/* <Dropdown
                 placement="bottomRight"
                 menu={{
@@ -296,6 +325,7 @@ export default function RolesPage({ triggerDataRefresh }: RolesPageProps) {
                 onClick={() => {
                   navigate(resolveAppRoute(AppRoutes.CREATE_NETWORK_ROLE_ROUTE));
                 }}
+                ref={networkRolesCreateRoleButtonRef}
               >
                 <PlusOutlined /> Create Network Role
               </Button>
@@ -326,6 +356,7 @@ export default function RolesPage({ triggerDataRefresh }: RolesPageProps) {
                       },
                     };
                   }}
+                  ref={networkRolesTableRef}
                   // rowSelection={{
                   //   type: 'radio',
                   //   hideSelectAll: true,

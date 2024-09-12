@@ -1,5 +1,5 @@
 import { useStore } from '@/store/store';
-import { PlusOutlined } from '@ant-design/icons';
+import { InfoCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import {
   Button,
   Card,
@@ -16,9 +16,11 @@ import {
   Tabs,
   TabsProps,
   theme,
+  Tour,
+  TourProps,
   Typography,
 } from 'antd';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PageProps } from '../../models/Page';
 import './UsersPage.scss';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
@@ -77,6 +79,13 @@ export default function CreateNetworkRolePage(props: PageProps) {
   const [isLoadingNetworks, setIsLoadingNetworks] = useState(true);
   const [searchRag, setSearchRag] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isTourOpen, setIsTourOpen] = useState(false);
+
+  const networkRoleName = useRef(null);
+  const networkName = useRef(null);
+  const networkAdminAccess = useRef(null);
+  const networkRolePermissions = useRef(null);
+  const createRoleButton = useRef(null);
 
   const networkVal = Form.useWatch('network', metadataForm);
 
@@ -489,6 +498,39 @@ export default function CreateNetworkRolePage(props: PageProps) {
     ],
   );
 
+  const createNetworkRoleTourSteps: TourProps['steps'] = [
+    {
+      title: 'Role Name',
+      description: 'Set network role name',
+      target: () => networkRoleName.current,
+      placement: 'bottom',
+    },
+    {
+      title: 'Network',
+      description: 'Select the network this role will apply to',
+      target: () => networkName.current,
+      placement: 'bottom',
+    },
+    {
+      title: 'Admin Access',
+      description: 'Assign admin access to the network',
+      target: () => networkAdminAccess.current,
+      placement: 'bottom',
+    },
+    {
+      title: 'Role Permissions',
+      description: 'Set role permissions for the network, turn on the permissions you want to grant',
+      target: () => networkRolePermissions.current,
+      placement: 'bottom',
+    },
+    {
+      title: 'Create Role',
+      description: 'Click here to create the network role',
+      target: () => createRoleButton.current,
+      placement: 'bottom',
+    },
+  ];
+
   useEffect(() => {
     loadNetworks();
   }, [isServerEE, loadNetworks]);
@@ -509,6 +551,16 @@ export default function CreateNetworkRolePage(props: PageProps) {
                   Create a Network Role
                 </Typography.Title>
               </Col>
+              <Col xs={24} lg={12} style={{ textAlign: 'end' }}>
+                <Button
+                  size="large"
+                  onClick={() => {
+                    setIsTourOpen(true);
+                  }}
+                >
+                  <InfoCircleOutlined /> Start Tour
+                </Button>
+              </Col>
             </Row>
           </Col>
         </Row>
@@ -519,7 +571,7 @@ export default function CreateNetworkRolePage(props: PageProps) {
           </Col>
           <Form form={metadataForm} layout="vertical" style={{ width: '100%' }}>
             <Row gutter={[24, 0]}>
-              <Col xs={24} md={12}>
+              <Col xs={24} md={12} ref={networkRoleName}>
                 <Form.Item
                   name="name"
                   label="Role Name"
@@ -529,7 +581,7 @@ export default function CreateNetworkRolePage(props: PageProps) {
                   <Input placeholder="Enter a name for this new role" style={{ width: '100%' }} />
                 </Form.Item>
               </Col>
-              <Col xs={24} md={12}>
+              <Col xs={24} md={12} ref={networkName}>
                 <Form.Item
                   name="network"
                   label="Specify the network this role will apply to"
@@ -542,7 +594,7 @@ export default function CreateNetworkRolePage(props: PageProps) {
                   />
                 </Form.Item>
               </Col>
-              <Col xs={24} md={12}>
+              <Col xs={24} md={12} ref={networkAdminAccess}>
                 <Form.Item
                   name="full_access"
                   label="Assign Admin Access To Network"
@@ -557,7 +609,7 @@ export default function CreateNetworkRolePage(props: PageProps) {
           </Form>
         </Row>
 
-        <Row className="tabbed-page-row-padding" style={{ paddingBottom: '5rem' }}>
+        <Row className="tabbed-page-row-padding" style={{ paddingBottom: '5rem' }} ref={networkRolePermissions}>
           <Col xs={24}>
             <Typography.Title level={4}>Role Permissions</Typography.Title>
           </Col>
@@ -583,14 +635,20 @@ export default function CreateNetworkRolePage(props: PageProps) {
           }}
         >
           <Col xs={24} style={{ textAlign: 'end' }}>
-            <Button type="primary" size="large" loading={isSubmitting} onClick={createNetworkRole}>
+            <Button
+              type="primary"
+              size="large"
+              loading={isSubmitting}
+              onClick={createNetworkRole}
+              ref={createRoleButton}
+            >
               <PlusOutlined /> Create Role
             </Button>
           </Col>
         </Row>
       </Skeleton>
-
       {/* misc */}
+      <Tour steps={createNetworkRoleTourSteps} open={isTourOpen} onClose={() => setIsTourOpen(false)} />
       {notifyCtx}
     </Layout.Content>
   );
