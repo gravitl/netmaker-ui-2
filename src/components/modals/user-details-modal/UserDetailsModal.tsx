@@ -23,6 +23,7 @@ import { UsersService } from '@/services/UsersService';
 import { kebabCaseToTitleCase, snakeCaseToTitleCase, useServerLicense } from '@/utils/Utils';
 import { isAdminUserOrRole } from '@/utils/UserMgmtUtils';
 import { isSaasBuild } from '@/services/BaseService';
+import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 
 interface UserdetailsModalProps {
   isOpen: boolean;
@@ -371,9 +372,20 @@ export default function UserDetailsModal({
                   <Form.Item
                     name="platform_role_id"
                     label="Platform Access Level"
-                    tooltip="This specifies the tenant-wide permissions this user will have"
+                    tooltip="This specifies the server-wide permissions this user will have"
                     initialValue={user.platform_role_id}
                     required
+                    extra={
+                      <Typography.Text type="secondary">
+                        Admins can access all features and manage all users. Platform users can log into the dashboard
+                        and access the networks they are assigned to. Service users cannot log into the dashboard; they
+                        use{' '}
+                        <Typography.Link href={ExternalLinks.RAC_DOWNLOAD_DOCS_LINK} target="_blank">
+                          RAC
+                        </Typography.Link>{' '}
+                        to access their assigned networks.
+                      </Typography.Text>
+                    }
                   >
                     <Select
                       placeholder="Select a platform access level for the user"
