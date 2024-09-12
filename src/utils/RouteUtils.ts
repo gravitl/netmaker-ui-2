@@ -127,6 +127,11 @@ export function getAmuiTenantsUrl() {
   return `${AMUI_URL}/tenants`;
 }
 
+// Function to get AMUI profile route
+export function getAmuiProfileUrl() {
+  return `${AMUI_URL}/profile`;
+}
+
 // Function to get license dashboard route
 export function getLicenseDashboardUrl() {
   return import.meta.env.VITE_LICENSE_DASHBOARD_URL;
