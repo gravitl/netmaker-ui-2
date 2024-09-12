@@ -50,6 +50,8 @@ import { HOST_HEALTH_STATUS } from '@/models/NodeConnectivityStatus';
 
 const HOST_DOCS_URL = 'https://docs.netmaker.io/ui-reference.html#hosts';
 
+const test0: any = undefined;
+
 export default function HostsPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
@@ -933,6 +935,7 @@ export default function HostsPage(props: PageProps) {
       className="HostsPage"
       style={{ position: 'relative', height: '100%', padding: props.isFullScreen ? 0 : 24 }}
     >
+      {test0.test}
       <Skeleton loading={!hasLoaded && store.isFetchingHosts} active title={true} className="page-padding">
         {hosts.length === 0 && (
           <>
