@@ -24,6 +24,7 @@ import { kebabCaseToTitleCase, snakeCaseToTitleCase, useServerLicense } from '@/
 import { isAdminUserOrRole } from '@/utils/UserMgmtUtils';
 import { isSaasBuild } from '@/services/BaseService';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
+import { useStore } from '@/store/store';
 
 interface UserdetailsModalProps {
   isOpen: boolean;
@@ -63,6 +64,7 @@ export default function UserDetailsModal({
 }: UserdetailsModalProps) {
   const [form] = Form.useForm<CreateUserForm>();
   const [notify, notifyCtx] = notification.useNotification();
+  const store = useStore();
 
   const { isServerEE } = useServerLicense();
   const passwordVal = Form.useWatch('password', form);
@@ -149,6 +151,27 @@ export default function UserDetailsModal({
   const resetModal = () => {
     form.resetFields();
   };
+
+  const canChangePlatformRole: (user: User) => [boolean, string] = useCallback(
+    (user: User) => {
+      if (store.user?.username === user.username) return [false, 'Cannot change your own platform access level'];
+      // if current user is super admin, they can change PAL of any other user
+      if (store.user?.platform_role_id === 'super-admin') {
+        return [true, ''];
+      }
+      if (store.user?.platform_role_id === 'admin') {
+        if (user.platform_role_id === 'super-admin') {
+          return [false, 'Cannot change platform access level of the super admin'];
+        }
+        if (user.platform_role_id === 'admin') {
+          return [false, "Cannot change another admin's platform access level"];
+        }
+        return [true, ''];
+      }
+      return [false, "Cannot change another user's platform access level"];
+    },
+    [store.user],
+  );
 
   const loadGroups = useCallback(async () => {
     try {
@@ -314,16 +337,16 @@ export default function UserDetailsModal({
             </Col>
           </Row>
 
-          <Row>
-            <Col xs={24}>
-              <Form.Item label="User Login Type">
-                <Typography.Text>{snakeCaseToTitleCase(user.auth_type)}</Typography.Text>
-              </Form.Item>
-            </Col>
-          </Row>
-
           {!isSaasBuild && (
             <>
+              <Row>
+                <Col xs={24}>
+                  <Form.Item label="User Login Type">
+                    <Typography.Text>{snakeCaseToTitleCase(user.auth_type)}</Typography.Text>
+                  </Form.Item>
+                </Col>
+              </Row>
+
               <Row ref={addUserPasswordInputRef}>
                 <Col xs={24}>
                   <Form.Item label="Password" name="password">
@@ -394,6 +417,8 @@ export default function UserDetailsModal({
                         label: kebabCaseToTitleCase(r.id),
                         disabled: !isServerEE && !isAdminUserOrRole(r),
                       }))}
+                      disabled={!canChangePlatformRole(user)[0]}
+                      title={canChangePlatformRole(user)[1]}
                     />
                   </Form.Item>
                 </Col>
