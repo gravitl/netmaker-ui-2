@@ -22,6 +22,9 @@ import { User, UserGroup, UserRole, UserRoleId } from '@/models/User';
 import { UsersService } from '@/services/UsersService';
 import { kebabCaseToTitleCase, snakeCaseToTitleCase, useServerLicense } from '@/utils/Utils';
 import { isAdminUserOrRole } from '@/utils/UserMgmtUtils';
+import { isSaasBuild } from '@/services/BaseService';
+import { ExternalLinks } from '@/constants/LinkAndImageConstants';
+import { useStore } from '@/store/store';
 
 interface UserdetailsModalProps {
   isOpen: boolean;
@@ -61,6 +64,7 @@ export default function UserDetailsModal({
 }: UserdetailsModalProps) {
   const [form] = Form.useForm<CreateUserForm>();
   const [notify, notifyCtx] = notification.useNotification();
+  const store = useStore();
 
   const { isServerEE } = useServerLicense();
   const passwordVal = Form.useWatch('password', form);
@@ -147,6 +151,27 @@ export default function UserDetailsModal({
   const resetModal = () => {
     form.resetFields();
   };
+
+  const canChangePlatformRole: (user: User) => [boolean, string] = useCallback(
+    (user: User) => {
+      if (store.user?.username === user.username) return [false, 'Cannot change your own platform access level'];
+      // if current user is super admin, they can change PAL of any other user
+      if (store.user?.platform_role_id === 'super-admin') {
+        return [true, ''];
+      }
+      if (store.user?.platform_role_id === 'admin') {
+        if (user.platform_role_id === 'super-admin') {
+          return [false, 'Cannot change platform access level of the super admin'];
+        }
+        if (user.platform_role_id === 'admin') {
+          return [false, "Cannot change another admin's platform access level"];
+        }
+        return [true, ''];
+      }
+      return [false, "Cannot change another user's platform access level"];
+    },
+    [store.user],
+  );
 
   const loadGroups = useCallback(async () => {
     try {
@@ -312,17 +337,45 @@ export default function UserDetailsModal({
             </Col>
           </Row>
 
-          <Row>
-            <Col xs={24}>
-              <Form.Item label="User Login Type">
-                <Typography.Text>{snakeCaseToTitleCase(user.auth_type)}</Typography.Text>
-              </Form.Item>
-            </Col>
-          </Row>
+          {!isSaasBuild && (
+            <>
+              <Row>
+                <Col xs={24}>
+                  <Form.Item label="User Login Type">
+                    <Typography.Text>{snakeCaseToTitleCase(user.auth_type)}</Typography.Text>
+                  </Form.Item>
+                </Col>
+              </Row>
 
-          <Row ref={addUserPasswordInputRef}>
-            <Col xs={24}>
-              <Form.Item label="Password" name="password">
+              <Row ref={addUserPasswordInputRef}>
+                <Col xs={24}>
+                  <Form.Item label="Password" name="password">
+                    <Input
+                      placeholder="(unchanged)"
+                      type="password"
+                      disabled={user.auth_type === 'oauth'}
+                      title={user.auth_type === 'oauth' ? 'You cannot change the password of an OAuth user' : ''}
+                    />
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              <Form.Item
+                label="Confirm Password"
+                name="confirm-password"
+                rules={[
+                  {
+                    validator(_, value) {
+                      if (value !== passwordVal) {
+                        return Promise.reject('Password must match');
+                      } else {
+                        return Promise.resolve();
+                      }
+                    },
+                  },
+                ]}
+                dependencies={['password']}
+              >
                 <Input
                   placeholder="(unchanged)"
                   type="password"
@@ -330,32 +383,8 @@ export default function UserDetailsModal({
                   title={user.auth_type === 'oauth' ? 'You cannot change the password of an OAuth user' : ''}
                 />
               </Form.Item>
-            </Col>
-          </Row>
-
-          <Form.Item
-            label="Confirm Password"
-            name="confirm-password"
-            rules={[
-              {
-                validator(_, value) {
-                  if (value !== passwordVal) {
-                    return Promise.reject('Password must match');
-                  } else {
-                    return Promise.resolve();
-                  }
-                },
-              },
-            ]}
-            dependencies={['password']}
-          >
-            <Input
-              placeholder="(unchanged)"
-              type="password"
-              disabled={user.auth_type === 'oauth'}
-              title={user.auth_type === 'oauth' ? 'You cannot change the password of an OAuth user' : ''}
-            />
-          </Form.Item>
+            </>
+          )}
 
           {isServerEE && (
             <>
@@ -366,9 +395,20 @@ export default function UserDetailsModal({
                   <Form.Item
                     name="platform_role_id"
                     label="Platform Access Level"
-                    tooltip="This specifies the tenant-wide permissions this user will have"
+                    tooltip="This specifies the server-wide permissions this user will have"
                     initialValue={user.platform_role_id}
                     required
+                    extra={
+                      <Typography.Text type="secondary">
+                        Admins can access all features and manage all users. Platform users can log into the dashboard
+                        and access the networks they are assigned to. Service users cannot log into the dashboard; they
+                        use{' '}
+                        <Typography.Link href={ExternalLinks.RAC_DOWNLOAD_DOCS_LINK} target="_blank">
+                          RAC
+                        </Typography.Link>{' '}
+                        to access their assigned networks.
+                      </Typography.Text>
+                    }
                   >
                     <Select
                       placeholder="Select a platform access level for the user"
@@ -377,6 +417,8 @@ export default function UserDetailsModal({
                         label: kebabCaseToTitleCase(r.id),
                         disabled: !isServerEE && !isAdminUserOrRole(r),
                       }))}
+                      disabled={!canChangePlatformRole(user)[0]}
+                      title={canChangePlatformRole(user)[1]}
                     />
                   </Form.Item>
                 </Col>

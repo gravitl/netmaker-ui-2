@@ -1,9 +1,9 @@
-// import { ApiRoutes } from '@/constants/ApiRoutes';
-// import { User } from '@/models/User';
 import { ApiRoutes } from '@/constants/ApiRoutes';
+import { User, UserRole } from '@/models/User';
 import { useStore } from '@/store/store';
 import { truncateQueryParamsFromCurrentUrl } from '@/utils/RouteUtils';
 import axios from 'axios';
+import { GenericResponseDto } from './dtos/GenericDto';
 
 export const isSaasBuild = import.meta.env.VITE_IS_SAAS_BUILD?.toLocaleLowerCase() === 'true';
 
@@ -50,19 +50,7 @@ export async function setupTenantConfig(): Promise<void> {
 
   truncateQueryParamsFromCurrentUrl();
 
-  // let user: User | undefined;
-  // try {
-  //   user = (
-  //     await baseService.get(`${ApiRoutes.USERS}/${encodeURIComponent(username)}`, {
-  //       headers: { Authorization: `Bearer ${accessToken || useStore.getState().jwt}`, user: username },
-  //     })
-  //   ).data;
-  // } catch (err) {
-  //   console.error(err);
-  //   alert('Failed to fetch user details: ' + String(err));
-  //   return;
-  // }
-
+  // resolve server url
   let resolvedBaseUrl;
   if (baseUrl) {
     resolvedBaseUrl = baseUrl?.startsWith('https') ? `${baseUrl}/api` : `https://${baseUrl}/api`;
@@ -71,6 +59,24 @@ export async function setupTenantConfig(): Promise<void> {
     resolvedBaseUrl = window?.localStorage?.getItem(NMUI_BASE_URL_LOCALSTORAGE_KEY) ?? '';
   }
   axiosService.defaults.baseURL = resolvedBaseUrl;
+
+  let user: (User & { platform_role: UserRole }) | undefined;
+  let userPlatformRole: UserRole | undefined;
+  try {
+    user = (
+      await axiosService.get<GenericResponseDto<User & { platform_role: UserRole }>>(
+        `${ApiRoutes.USERS_V1}?username=${encodeURIComponent(username || (window?.localStorage?.getItem(NMUI_USERNAME_LOCALSTORAGE_KEY) ?? ''))}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken || (window?.localStorage?.getItem(NMUI_ACCESS_TOKEN_LOCALSTORAGE_KEY) ?? '')}`,
+          },
+        },
+      )
+    ).data.Response;
+    userPlatformRole = user?.platform_role;
+  } catch (err) {
+    console.error(err);
+  }
 
   if (accessToken) {
     window?.localStorage?.setItem(NMUI_ACCESS_TOKEN_LOCALSTORAGE_KEY, accessToken);
@@ -87,6 +93,12 @@ export async function setupTenantConfig(): Promise<void> {
   if (amuiUserId) {
     window?.localStorage?.setItem(NMUI_AMUI_USER_ID_LOCALSTORAGE_KEY, amuiUserId);
   }
+  if (user) {
+    window?.localStorage?.setItem(NMUI_USER_LOCALSTORAGE_KEY, JSON.stringify(user));
+  }
+  if (userPlatformRole) {
+    window?.localStorage?.setItem(NMUI_USER_PLATFORM_ROLE_LOCALSTORAGE_KEY, JSON.stringify(userPlatformRole));
+  }
 
   useStore.getState().setStore({
     baseUrl: resolvedBaseUrl,
@@ -97,8 +109,9 @@ export async function setupTenantConfig(): Promise<void> {
     username: username || (window?.localStorage?.getItem(NMUI_USERNAME_LOCALSTORAGE_KEY) ?? ''),
     amuiUserId: amuiUserId || (window?.localStorage?.getItem(NMUI_AMUI_USER_ID_LOCALSTORAGE_KEY) ?? ''),
     isNewTenant: isNewTenant,
-    // user,
-    // userPlatformRole,
+    user: user || JSON.parse(window?.localStorage?.getItem(NMUI_USER_LOCALSTORAGE_KEY) ?? '{}'),
+    userPlatformRole:
+      userPlatformRole || JSON.parse(window?.localStorage?.getItem(NMUI_USER_PLATFORM_ROLE_LOCALSTORAGE_KEY) ?? '{}'),
   });
 }
 

@@ -9,6 +9,7 @@ import {
   Radio,
   Row,
   Select,
+  Skeleton,
   Table,
   TableColumnProps,
   Tabs,
@@ -23,6 +24,7 @@ import { User, UserGroup, UserRole, UserRoleId } from '@/models/User';
 import { UsersService } from '@/services/UsersService';
 import { kebabCaseToTitleCase, useServerLicense } from '@/utils/Utils';
 import { isAdminUserOrRole } from '@/utils/UserMgmtUtils';
+import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 
 interface AddUserModalProps {
   isOpen: boolean;
@@ -71,6 +73,7 @@ export default function AddUserModal({
   const [groups, setGroups] = useState<UserGroup[]>([]);
   const [selectedNetworkRoles, setSelectedNetworkRoles] = useState<NetworkRolePair[]>([]);
   const [activeTab, setActiveTab] = useState(defaultTabKey);
+  const [isLoadingPlatformRoles, setIsLoadingPlatformRoles] = useState(true);
 
   const palVal = Form.useWatch('platform_role_id', form);
 
@@ -176,6 +179,8 @@ export default function AddUserModal({
         message: 'Failed to load roles',
         description: extractErrorMsg(err as any),
       });
+    } finally {
+      setIsLoadingPlatformRoles(false);
     }
   }, [notify]);
 
@@ -339,21 +344,34 @@ export default function AddUserModal({
 
               <Row>
                 <Col xs={24}>
-                  <Form.Item
-                    name="platform_role_id"
-                    label="Platform Access Level"
-                    tooltip="This specifies the tenant-wide permissions this user will have"
-                    rules={[{ required: true }]}
-                    initialValue={isServerEE ? undefined : 'admin'}
-                  >
-                    <Radio.Group>
-                      {platformRoles.map((role) => (
-                        <Radio key={role.id} value={role.id} disabled={!isServerEE && !isAdminUserOrRole(role)}>
-                          {kebabCaseToTitleCase(role.id)}
-                        </Radio>
-                      ))}
-                    </Radio.Group>
-                  </Form.Item>
+                  <Skeleton active loading={isLoadingPlatformRoles} paragraph={false}>
+                    <Form.Item
+                      name="platform_role_id"
+                      label="Platform Access Level"
+                      tooltip="This specifies the server-wide permissions this user will have"
+                      rules={[{ required: true }]}
+                      initialValue={isServerEE ? undefined : 'admin'}
+                      extra={
+                        <Typography.Text type="secondary">
+                          Admins can access all features and manage all users. Platform users can log into the dashboard
+                          and access the networks they are assigned to. Service users cannot log into the dashboard;
+                          they use{' '}
+                          <Typography.Link href={ExternalLinks.RAC_DOWNLOAD_DOCS_LINK} target="_blank">
+                            RAC
+                          </Typography.Link>{' '}
+                          to access their assigned networks.
+                        </Typography.Text>
+                      }
+                    >
+                      <Radio.Group>
+                        {platformRoles.map((role) => (
+                          <Radio key={role.id} value={role.id} disabled={!isServerEE && !isAdminUserOrRole(role)}>
+                            {kebabCaseToTitleCase(role.id)}
+                          </Radio>
+                        ))}
+                      </Radio.Group>
+                    </Form.Item>
+                  </Skeleton>
                 </Col>
               </Row>
             </>

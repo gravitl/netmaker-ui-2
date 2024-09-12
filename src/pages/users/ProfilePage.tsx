@@ -9,6 +9,7 @@ import { UsersService } from '@/services/UsersService';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { useState } from 'react';
 import { kebabCaseToTitleCase, snakeCaseToTitleCase } from '@/utils/Utils';
+import { isSaasBuild } from '@/services/BaseService';
 
 export default function ProfilePage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
@@ -82,71 +83,75 @@ export default function ProfilePage(props: PageProps) {
               </Col>
             </Row>
 
-            <Row>
-              <Col xs={24}>
-                <Form.Item label="Authentication Type">
-                  <Typography.Text>{snakeCaseToTitleCase(store.user?.auth_type ?? '')}</Typography.Text>
-                </Form.Item>
-              </Col>
-            </Row>
+            {!isSaasBuild && (
+              <>
+                <Row>
+                  <Col xs={24}>
+                    <Form.Item label="Authentication Type">
+                      <Typography.Text>{snakeCaseToTitleCase(store.user?.auth_type ?? '')}</Typography.Text>
+                    </Form.Item>
+                  </Col>
+                </Row>
 
-            <Row>
-              <Col xs={24}>
-                <Form.Item label="Password" name="password">
-                  <Input
-                    placeholder="(unchanged)"
-                    type="password"
-                    disabled={store.user?.auth_type === 'oauth'}
-                    title={store.user?.auth_type === 'oauth' ? 'Cannot change password of an oauth user' : ''}
-                  />
-                </Form.Item>
-              </Col>
-            </Row>
+                <Row>
+                  <Col xs={24}>
+                    <Form.Item label="Password" name="password">
+                      <Input
+                        placeholder="(unchanged)"
+                        type="password"
+                        disabled={store.user?.auth_type === 'oauth'}
+                        title={store.user?.auth_type === 'oauth' ? 'Cannot change password of an oauth user' : ''}
+                      />
+                    </Form.Item>
+                  </Col>
+                </Row>
 
-            <Row>
-              <Col xs={24}>
-                <Form.Item
-                  label="Confirm Password"
-                  name="confirm-password"
-                  rules={[
-                    {
-                      validator(_, value) {
-                        if (value !== passwordVal) {
-                          return Promise.reject('Password must match');
-                        } else {
-                          return Promise.resolve();
-                        }
-                      },
-                    },
-                  ]}
-                  dependencies={['password']}
-                >
-                  <Input
-                    placeholder="(unchanged)"
-                    type="password"
-                    disabled={store.user?.auth_type === 'oauth'}
-                    title={store.user?.auth_type === 'oauth' ? 'Cannot change password of an oauth user' : ''}
-                  />
-                </Form.Item>
-              </Col>
-            </Row>
+                <Row>
+                  <Col xs={24}>
+                    <Form.Item
+                      label="Confirm Password"
+                      name="confirm-password"
+                      rules={[
+                        {
+                          validator(_, value) {
+                            if (value !== passwordVal) {
+                              return Promise.reject('Password must match');
+                            } else {
+                              return Promise.resolve();
+                            }
+                          },
+                        },
+                      ]}
+                      dependencies={['password']}
+                    >
+                      <Input
+                        placeholder="(unchanged)"
+                        type="password"
+                        disabled={store.user?.auth_type === 'oauth'}
+                        title={store.user?.auth_type === 'oauth' ? 'Cannot change password of an oauth user' : ''}
+                      />
+                    </Form.Item>
+                  </Col>
+                </Row>
 
-            <Divider />
-            <Row>
-              <Col xs={24} style={{ textAlign: 'end' }}>
-                <Form.Item>
-                  <Button
-                    type="primary"
-                    loading={isSubmitting}
-                    onClick={() => {
-                      updateUser();
-                    }}
-                  >
-                    Update Profile
-                  </Button>
-                </Form.Item>
-              </Col>
-            </Row>
+                <Divider />
+                <Row>
+                  <Col xs={24} style={{ textAlign: 'end' }}>
+                    <Form.Item>
+                      <Button
+                        type="primary"
+                        loading={isSubmitting}
+                        onClick={() => {
+                          updateUser();
+                        }}
+                      >
+                        Update Profile
+                      </Button>
+                    </Form.Item>
+                  </Col>
+                </Row>
+              </>
+            )}
           </Form>
         </Card>
       </div>
