@@ -551,7 +551,7 @@ export default function MainLayout() {
             mode="inline"
             selectable={false}
             items={sideNavBottomItems}
-            style={{ borderRight: 'none', position: 'absolute', bottom: '0' }}
+            className={isSidebarCollapsed ? 'bottom-sidebar-menu-close' : 'bottom-sidebar-menu-open'}
           />
         </Sider>
 
