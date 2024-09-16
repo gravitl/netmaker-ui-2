@@ -1,4 +1,18 @@
-import { Button, Col, Divider, Form, Input, Modal, notification, Row, Select, Switch, Tooltip, Typography } from 'antd';
+import {
+  Button,
+  Col,
+  Divider,
+  Form,
+  Input,
+  InputNumber,
+  Modal,
+  notification,
+  Row,
+  Select,
+  Switch,
+  Tooltip,
+  Typography,
+} from 'antd';
 import { MouseEvent, useState } from 'react';
 import '../CustomModal.scss';
 import { Network } from '@/models/Network';
@@ -21,6 +35,9 @@ interface UpdateRemoteAccessGatewayModalProp {
 
 interface UpdateRemoteAccessGatewayForm {
   ingressdns: string;
+  isinternetgateway?: boolean;
+  ingresspersistentkeepalive: Node['ingresspersistentkeepalive'];
+  ingressmtu: Node['ingressmtu'];
 }
 
 export default function UpdateRemoteAccessGatewayModal({
@@ -50,6 +67,8 @@ export default function UpdateRemoteAccessGatewayModal({
         await NodesService.updateNode(ingress.id, networkId, {
           ...ingress,
           ingressdns: formData.ingressdns,
+          ingressmtu: formData.ingressmtu,
+          ingresspersistentkeepalive: formData.ingresspersistentkeepalive,
           isinternetgateway: form.getFieldValue('isinternetgateway'),
           additional_rag_ips: form.getFieldValue('additional_rag_ips'),
           metadata: form.getFieldValue('metadata'),
@@ -83,7 +102,7 @@ export default function UpdateRemoteAccessGatewayModal({
       style={{ minWidth: '50vw' }}
     >
       <Divider style={{ margin: '0px 0px 2rem 0px' }} />
-      <Form name="update-ingress-form" form={form} layout="vertical" initialValues={ingress}>
+      <Form name="update-ingress-form" form={form} layout="vertical" initialValues={{ ...ingress }}>
         <div className="" style={{ maxHeight: '60vh', overflow: 'auto' }}>
           <div className="CustomModalBody">
             <Form.Item
@@ -93,6 +112,32 @@ export default function UpdateRemoteAccessGatewayModal({
             >
               <Input placeholder="DNS" />
             </Form.Item>
+
+            <Row>
+              <Col xs={24}>
+                <Form.Item
+                  label="Client config MTU"
+                  name="ingressmtu"
+                  style={{ marginTop: '1rem' }}
+                  data-nmui-intercom="add-ingress-form_mtu"
+                >
+                  <InputNumber min={0} style={{ width: '100%' }} placeholder="Maximum Transmission Unit" />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Row>
+              <Col xs={24}>
+                <Form.Item
+                  label="Client config Persistent Keepalive"
+                  name="ingresspersistentkeepalive"
+                  style={{ marginTop: '1rem' }}
+                  data-nmui-intercom="add-ingress-form_pka"
+                >
+                  <InputNumber type="number" min={0} style={{ width: '100%' }} placeholder="Persistent Keepalive" />
+                </Form.Item>
+              </Col>
+            </Row>
 
             {isServerEE && (
               <Form.Item

@@ -7,6 +7,7 @@ import {
   Divider,
   Form,
   Input,
+  InputNumber,
   Modal,
   notification,
   Row,
@@ -29,7 +30,6 @@ import { NodesService } from '@/services/NodesService';
 import { Host } from '@/models/Host';
 import { CreateIngressNodeDto } from '@/services/dtos/CreateIngressNodeDto';
 import { PUBLIC_DNS_RESOLVERS } from '@/constants/AppConstants';
-import { coerce } from 'semver';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 import { useServerLicense } from '@/utils/Utils';
 
@@ -69,21 +69,21 @@ export default function AddRemoteAccessGatewayModal({
   const isInternetGatewayVal = Form.useWatch('is_internet_gw', form);
   const defaultClientDNS = Form.useWatch('extclientdns', form);
 
-  const networkHosts = useMemo<ExtendedNode[]>(() => {
+  const networkNodes = useMemo<ExtendedNode[]>(() => {
     return store.nodes
       .filter((node) => node.network === networkId)
       .map((node) => getExtendedNode(node, store.hostsCommonDetails));
   }, [networkId, store.hostsCommonDetails, store.nodes]);
 
-  const filteredNetworkNonIngressHosts = useMemo<ExtendedNode[]>(
+  const filteredNetworkNonIngressNodes = useMemo<ExtendedNode[]>(
     () =>
-      networkHosts.filter(
+      networkNodes.filter(
         (node) =>
           (node.name?.toLowerCase().includes(gatewaySearch.toLowerCase()) ||
             node.address?.toLowerCase().includes(gatewaySearch.toLowerCase())) &&
           node.isingressgateway === false,
       ),
-    [gatewaySearch, networkHosts],
+    [gatewaySearch, networkNodes],
   );
 
   const selectedGatewayHost = useMemo<Host | null>(() => {
@@ -172,6 +172,8 @@ export default function AddRemoteAccessGatewayModal({
           extclientdns: formData.extclientdns,
           is_internet_gw: formData.is_internet_gw,
           metadata: formData.metadata,
+          mtu: formData.mtu,
+          persistentkeepalive: formData.persistentkeepalive,
         })
       ).data;
       resetModal();
@@ -207,7 +209,7 @@ export default function AddRemoteAccessGatewayModal({
     >
       <Divider style={{ margin: '0px 0px 2rem 0px' }} />
 
-      <Form name="add-ingress-form" form={form} layout="vertical">
+      <Form name="add-ingress-form" form={form} layout="vertical" initialValues={{}}>
         <div className="" style={{ maxHeight: '60vh', overflow: 'auto' }}>
           <div className="CustomModalBody">
             <Row>
@@ -252,7 +254,7 @@ export default function AddRemoteAccessGatewayModal({
                               <Table
                                 size="small"
                                 columns={gatewayTableCols}
-                                dataSource={filteredNetworkNonIngressHosts}
+                                dataSource={filteredNetworkNonIngressNodes}
                                 rowKey="id"
                                 onRow={(node) => {
                                   return {
@@ -353,6 +355,32 @@ export default function AddRemoteAccessGatewayModal({
                   />
                 </Form.Item>
                 {coreDNSSetupInstructions}
+              </Col>
+            </Row>
+
+            <Row>
+              <Col xs={24}>
+                <Form.Item
+                  label="Client config MTU"
+                  name="mtu"
+                  style={{ marginTop: '1rem' }}
+                  data-nmui-intercom="add-ingress-form_mtu"
+                >
+                  <InputNumber min={0} style={{ width: '100%' }} placeholder="Maximum Transmission Unit" />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Row>
+              <Col xs={24}>
+                <Form.Item
+                  label="Client config Persistent Keepalive"
+                  name="persistentkeepalive"
+                  style={{ marginTop: '1rem' }}
+                  data-nmui-intercom="add-ingress-form_pka"
+                >
+                  <InputNumber min={0} style={{ width: '100%' }} placeholder="Persistent Keepalive" />
+                </Form.Item>
               </Col>
             </Row>
 
