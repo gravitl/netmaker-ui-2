@@ -550,7 +550,7 @@ export default function MainLayout() {
                   {canUpgrade && <CloudSyncOutlined style={{ marginLeft: '.5rem' }} className="update-btn" />}
                 </Typography.Text>
                 <br />
-                <Typography.Text style={{ fontSize: 'inherit' }} type="secondary">
+                <Typography.Text style={{ fontSize: 'inherit' }}>
                   Server: {store.serverConfig?.Version ?? 'n/a'}
                 </Typography.Text>
               </div>

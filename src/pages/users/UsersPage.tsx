@@ -377,6 +377,7 @@ export default function UsersPage(props: PageProps) {
                   const items = [
                     {
                       key: 'delete',
+                      danger: true,
                       disabled: !canDeleteUser(user)[0],
                       title: canDeleteUser(user)[0] ? canDeleteUser(user)[1] : '',
                       label: 'Delete',
@@ -390,6 +391,7 @@ export default function UsersPage(props: PageProps) {
                       ? [
                           {
                             key: 'transfer',
+                            danger: false,
                             label: 'Transfer Super Admin Rights',
                             disabled: false,
                             title: '',
@@ -405,6 +407,7 @@ export default function UsersPage(props: PageProps) {
                   if (!isSaasBuild) {
                     items?.unshift({
                       key: 'edit',
+                      danger: false,
                       label: 'Change Password',
                       disabled: !canChangePassword(user)[0],
                       title: canChangePassword(user)[0] ? canChangePassword(user)[1] : '',
@@ -501,7 +504,7 @@ export default function UsersPage(props: PageProps) {
                 </Tooltip>
               </Col> */}
               <Col>
-                <Button onClick={() => confirmDeleteInvite(invite)}>
+                <Button danger onClick={() => confirmDeleteInvite(invite)}>
                   <DeleteOutlined /> Delete
                 </Button>
               </Col>
@@ -534,7 +537,7 @@ export default function UsersPage(props: PageProps) {
                 </Button>
               </Col>
               <Col>
-                <Button onClick={() => confirmDenyUser(user)}>
+                <Button danger onClick={() => confirmDenyUser(user)}>
                   <StopOutlined /> Deny
                 </Button>
               </Col>
@@ -668,6 +671,7 @@ export default function UsersPage(props: PageProps) {
                 }}
                 ref={usersTableRef}
                 loading={isLoadingUsers}
+                pagination={{ size: 'small', hideOnSinglePage: true, pageSize: 50 }}
               />
             </div>
           </Col>
@@ -736,6 +740,7 @@ export default function UsersPage(props: PageProps) {
                 scroll={{
                   x: true,
                 }}
+                pagination={{ size: 'small', hideOnSinglePage: true, pageSize: 50 }}
               />
             </div>
           </Col>
@@ -800,10 +805,12 @@ export default function UsersPage(props: PageProps) {
                 columns={pendingUsersTableColumns}
                 dataSource={filteredPendingUsers}
                 rowKey="username"
+                size="small"
                 scroll={{
                   x: true,
                 }}
                 ref={pendingUsersTableRef}
+                pagination={{ size: 'small', hideOnSinglePage: true, pageSize: 50 }}
               />
             </div>
           </Col>
