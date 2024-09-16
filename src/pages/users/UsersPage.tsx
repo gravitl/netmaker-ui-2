@@ -50,6 +50,7 @@ import InviteUserModal from '@/components/modals/invite-user-modal/InviteUserMod
 import { useNavigate } from 'react-router-dom';
 import { AppRoutes } from '@/routes';
 import { set } from 'lodash';
+import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 
 const USERS_DOCS_URL = 'https://docs.netmaker.io/pro/pro-users.html';
 
@@ -111,6 +112,7 @@ export default function UsersPage(props: PageProps) {
   const groupsSearchInputRef = useRef(null);
   const groupsCreateGroupButtonRef = useRef(null);
   const invitesHelpButtonRef = useRef(null);
+  const invitesReloadButtonRef = useRef(null);
   const invitesTableRef = useRef(null);
   const invitesSearchInputRef = useRef(null);
   const invitesCreateInviteButtonRef = useRef(null);
@@ -791,7 +793,7 @@ export default function UsersPage(props: PageProps) {
     {
       title: 'Reload Invites',
       description: 'Click here to reload invites',
-      target: () => reloadUsersButtonRef.current,
+      target: () => invitesReloadButtonRef.current,
       placement: 'bottom',
     },
     {
@@ -968,9 +970,10 @@ export default function UsersPage(props: PageProps) {
             <Button
               title="Go to Users documentation"
               size="large"
-              href={USERS_DOCS_URL}
+              href={ExternalLinks.USER_MGMT_DOCS_INVITES_URL}
               target="_blank"
               icon={<QuestionCircleOutlined />}
+              style={{ marginRight: '0.5em' }}
               ref={invitesHelpButtonRef}
             />
             <Button
@@ -982,7 +985,12 @@ export default function UsersPage(props: PageProps) {
             >
               <InfoCircleOutlined /> Start Tour
             </Button>
-            <Button size="large" onClick={() => loadInvites()} style={{ marginRight: '0.5em' }}>
+            <Button
+              size="large"
+              onClick={() => loadInvites()}
+              style={{ marginRight: '0.5em' }}
+              ref={invitesReloadButtonRef}
+            >
               <ReloadOutlined /> Reload invites
             </Button>
             <Button

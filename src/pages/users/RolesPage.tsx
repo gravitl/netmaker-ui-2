@@ -281,7 +281,7 @@ export default function RolesPage({
                 title="Go to user management documentation"
                 size="large"
                 style={{ marginRight: '1rem' }}
-                href={ExternalLinks.USER_MGMT_DOCS_URL}
+                href={ExternalLinks.USER_MGMT_DOCS_NETWORK_ROLES_URL}
                 target="_blank"
                 referrerPolicy="no-referrer"
                 icon={<QuestionCircleOutlined />}
