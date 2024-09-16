@@ -83,16 +83,16 @@ export default function ProfilePage(props: PageProps) {
               </Col>
             </Row>
 
-            <Row>
-              <Col xs={24}>
-                <Form.Item label="Authentication Type">
-                  <Typography.Text>{snakeCaseToTitleCase(store.user?.auth_type ?? '')}</Typography.Text>
-                </Form.Item>
-              </Col>
-            </Row>
-
             {!isSaasBuild && (
               <>
+                <Row>
+                  <Col xs={24}>
+                    <Form.Item label="Authentication Type">
+                      <Typography.Text>{snakeCaseToTitleCase(store.user?.auth_type ?? '')}</Typography.Text>
+                    </Form.Item>
+                  </Col>
+                </Row>
+
                 <Row>
                   <Col xs={24}>
                     <Form.Item label="Password" name="password">

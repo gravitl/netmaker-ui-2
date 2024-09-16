@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  AppstoreOutlined,
   CloudSyncOutlined,
   DatabaseOutlined,
   GlobalOutlined,
@@ -7,14 +8,20 @@ import {
   LaptopOutlined,
   LoadingOutlined,
   LogoutOutlined,
-  RightOutlined,
   UserOutlined,
   BookOutlined,
 } from '@ant-design/icons';
 import { Alert, Col, MenuProps, Row, Select, Switch, Typography } from 'antd';
 import { Layout, Menu, theme } from 'antd';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { getAmuiTenantsUrl, getAmuiUrl, getHostRoute, getNetworkRoute, resolveAppRoute } from '../utils/RouteUtils';
+import {
+  getAmuiProfileUrl,
+  getAmuiTenantsUrl,
+  getAmuiUrl,
+  getHostRoute,
+  getNetworkRoute,
+  resolveAppRoute,
+} from '../utils/RouteUtils';
 import { BrowserStore, useStore } from '../store/store';
 import { AppRoutes } from '@/routes';
 import { useTranslation } from 'react-i18next';
@@ -144,7 +151,7 @@ export default function MainLayout() {
             ? [
                 {
                   key: 'amuitenants',
-                  icon: RightOutlined,
+                  icon: AppstoreOutlined,
                   label: 'Tenants',
                 },
               ]
@@ -280,10 +287,14 @@ export default function MainLayout() {
                   alignItems: 'center',
                 }}
                 onClick={() => {
+                  if (isSaasBuild) {
+                    window.location = getAmuiProfileUrl() as any;
+                    return;
+                  }
                   navigate(resolveAppRoute(AppRoutes.PROFILE_ROUTE));
                 }}
               >
-                <UserOutlined /> Profile
+                <UserOutlined /> {isSaasBuild ? 'Manage Account' : 'Profile'}
               </div>
             ),
           },
