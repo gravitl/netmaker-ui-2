@@ -1351,10 +1351,11 @@ export default function NetworkDetailsPage(props: PageProps) {
                 items: [
                   {
                     key: 'delete',
+                    danger: true,
                     label: (
-                      <Typography.Text>
+                      <>
                         <DeleteOutlined /> Stop being relayed
-                      </Typography.Text>
+                      </>
                     ),
                     onClick: (info) => {
                       confirmRemoveRelayed(
@@ -2391,6 +2392,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     confirmNodeFailoverStatusChange,
     disconnectNodeFromNetwork,
     removeNodeFromNetwork,
+    store.currentTheme,
   ]);
 
   const getDnsContent = useCallback(() => {
@@ -3613,6 +3615,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     relays.length,
     getRelayContent,
     internetGatewaysCount,
+    isAddInternetGatewayModalOpen,
   ]);
 
   const loadMetrics = useCallback(async () => {

@@ -409,6 +409,7 @@ export default function NetworksPage(props: PageProps) {
                       };
                     }}
                     ref={tableColumnsNameRow}
+                    pagination={{ size: 'small', hideOnSinglePage: true, pageSize: 50 }}
                   />
                 </div>
               </Col>
