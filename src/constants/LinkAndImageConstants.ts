@@ -11,6 +11,12 @@ const ROUTE_LOCAL_NETWORK_TRAFFIC_LINK = 'https://docs.netmaker.io/'; /// NEED T
 const HOW_TO_ADD_USERS_TO_NETWORK = 'https://www.netmaker.io/resources/how-to-add-users-to-netmaker-saas';
 const USER_MGMT_DOCS_URL = 'https://docs.netmaker.io/#';
 const UI_DOCS_URL = 'https://docs.v2.netmaker.io/guide/references/user-interface';
+const USER_MGMT_DOCS_NETWORK_ROLES_URL =
+  'https://docs.v2.netmaker.io/guide/netmaker-professional/users-in-netmaker-professional#network-roles';
+const USER_MGMT_DOCS_USER_GROUPS_URL =
+  'https://docs.v2.netmaker.io/guide/netmaker-professional/users-in-netmaker-professional#user-groups';
+const USER_MGMT_DOCS_INVITES_URL =
+  'https://docs.v2.netmaker.io/guide/netmaker-professional/users-in-netmaker-professional#adding-users__user-invite';
 
 const EGRESS_IMG = '/egress.webp';
 const RAG_IMG = '/rag.webp';
@@ -29,6 +35,9 @@ export const ExternalLinks = {
   HOW_TO_ADD_USERS_TO_NETWORK,
   USER_MGMT_DOCS_URL,
   UI_DOCS_URL,
+  USER_MGMT_DOCS_NETWORK_ROLES_URL,
+  USER_MGMT_DOCS_USER_GROUPS_URL,
+  USER_MGMT_DOCS_INVITES_URL,
 };
 
 export const AppImages = {

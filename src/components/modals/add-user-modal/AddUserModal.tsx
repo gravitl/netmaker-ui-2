@@ -33,7 +33,7 @@ interface AddUserModalProps {
   addUserButtonRef?: Ref<HTMLDivElement>;
   addUserNameInputRef?: Ref<HTMLDivElement>;
   addUserPasswordInputRef?: Ref<HTMLDivElement>;
-  addUserSetAsAdminCheckboxRef?: Ref<HTMLDivElement>;
+  createUserModalPlatformAccessLevelRef?: Ref<HTMLDivElement>;
 }
 
 type CreateUserForm = User & {
@@ -62,6 +62,7 @@ export default function AddUserModal({
   onCancel,
   addUserNameInputRef,
   addUserPasswordInputRef,
+  createUserModalPlatformAccessLevelRef,
 }: AddUserModalProps) {
   const [form] = Form.useForm<CreateUserForm>();
   const [notify, notifyCtx] = notification.useNotification();
@@ -343,7 +344,7 @@ export default function AddUserModal({
               <Divider />
 
               <Row>
-                <Col xs={24}>
+                <Col xs={24} ref={createUserModalPlatformAccessLevelRef}>
                   <Skeleton active loading={isLoadingPlatformRoles} paragraph={false}>
                     <Form.Item
                       name="platform_role_id"
