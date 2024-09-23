@@ -1,16 +1,214 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300&display=swap');
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 @font-face {
   font-family: SFPro;
   src: url('/SFProText-Regular.ttf');
 }
 
-
 :root {
-  font-family:'Inter', SFPro, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Inter', SFPro, system-ui, Avenir, Helvetica, Arial, sans-serif;
   color-scheme: light dark;
 }
 
 * {
   box-sizing: border-box;
+}
+
+:root {
+  /*White*/
+  --color-white: #ffffff;
+
+  /* Black */
+  --color-black: #000000;
+
+  /*Transparent*/
+  --color-transparent: transparent;
+
+  /* Zinc Colors */
+  --color-zinc-50: #fafafa;
+  --color-zinc-100: #f4f4f5;
+  --color-zinc-150: #ececee; /* Custom shade */
+  --color-zinc-200: #e4e4e7;
+  --color-zinc-300: #d4d4d8;
+  --color-zinc-400: #a1a1aa;
+  --color-zinc-500: #71717a;
+  --color-zinc-600: #52525b;
+  --color-zinc-700: #3f3f46;
+  --color-zinc-750: #333338; /* Custom shade */
+  --color-zinc-800: #27272a;
+  --color-zinc-850: #1f1f22; /* Custom shade */
+  --color-zinc-900: #18181b;
+
+  /* Indigo Colors */
+  --color-indigo-50: #eef2ff;
+  --color-indigo-100: #e0e7ff;
+  --color-indigo-200: #c7d2fe;
+  --color-indigo-300: #a5b4fc;
+  --color-indigo-400: #818cf8;
+  --color-indigo-500: #6366f1;
+  --color-indigo-600: #4f46e5;
+  --color-indigo-700: #4338ca;
+  --color-indigo-800: #3730a3;
+  --color-indigo-900: #312e81;
+
+  /* Neutral Colors (based on Zinc) */
+  --color-neutral-50: var(--color-zinc-50);
+  --color-neutral-100: var(--color-zinc-100);
+  --color-neutral-150: var(--color-zinc-150);
+  --color-neutral-200: var(--color-zinc-200);
+  --color-neutral-300: var(--color-zinc-300);
+  --color-neutral-400: var(--color-zinc-400);
+  --color-neutral-500: var(--color-zinc-500);
+  --color-neutral-600: var(--color-zinc-600);
+  --color-neutral-700: var(--color-zinc-700);
+  --color-neutral-750: var(--color-zinc-750);
+  --color-neutral-800: var(--color-zinc-800);
+  --color-neutral-850: var(--color-zinc-850);
+  --color-neutral-900: var(--color-zinc-900);
+
+  /* Primary Colors (based on Indigo) */
+  --color-primary-50: var(--color-indigo-50);
+  --color-primary-100: var(--color-indigo-100);
+  --color-primary-200: var(--color-indigo-200);
+  --color-primary-300: var(--color-indigo-300);
+  --color-primary-400: var(--color-indigo-400);
+  --color-primary-500: var(--color-indigo-500);
+  --color-primary-600: var(--color-indigo-600);
+  --color-primary-700: var(--color-indigo-700);
+  --color-primary-800: var(--color-indigo-800);
+  --color-primary-900: var(--color-indigo-900);
+
+  /* Global Variables - Light Theme (Default) */
+  --color-bg-default: var(--color-neutral-100);
+  --color-bg-hover: var(--color-neutral-150);
+  --color-bg-contrast-default: var(--color-white);
+  --color-bg-contrast-hover: var(--color-neutral-50);
+
+  --color-stroke-default: var(--color-neutral-200);
+
+  --color-text-primary: var(--color-neutral-800);
+  --color-text-secondary: var(--color-neutral-400);
+
+  /* Button Variables - Light Theme (Default) */
+  --color-button-primary-fill-default: var(--color-primary-500);
+  --color-button-primary-fill-hover: var(--color-primary-600);
+  --color-button-primary-fill-disabled: var(--color-primary-600);
+
+  --color-button-primary-text-default: var(--color-primary-50);
+  --color-button-primary-text-disabled: var(--color-primary-400);
+
+  --color-button-plain-fill-default: var(--color-neutral-800);
+  --color-button-plain-fill-hover: var(--color-neutral-900);
+  --color-button-plain-fill-disabled: var(--color-neutral-800);
+
+  --color-button-plain-text-default: var(--color-neutral-100);
+  --color-button-plain-text-disabled: var(--color-neutral-800);
+
+  --color-button-secondary-fill-default: var(--color-neutral-200);
+  --color-button-secondary-fill-hover: var(--color-neutral-300);
+  --color-button-secondary-fill-disabled: var(--color-neutral-800);
+
+  --color-button-secondary-text-default: var(--color-neutral-800);
+  --color-button-secondary-text-disabled: var(--color-neutral-800);
+
+  --color-button-outline-fill-default: var(--color-transparent);
+  --color-button-outline-fill-hover: var(--color-neutral-200);
+  --color-button-outline-fill-disabled: var(--color-transparent);
+
+  --color-button-outline-stroke-default: var(--color-neutral-500);
+
+  --color-button-outline-text-default: var(--color-neutral-800);
+  --button-outline-text-disabled: var(--color-neutral-300);
+
+  /* Dark theme overrides */
+
+  /* Global Variables - Dark Theme  */
+
+  --color-bg-default-dark: var(--color-neutral-800);
+  --color-bg-hover-dark: var(--color-neutral-750);
+  --color-bg-contrast-default-dark: var(--color-neutral-900);
+  --color-bg-contrast-hover-dark: var(--color-neutral-850);
+
+  --color-stroke-default-dark: var(--color-neutral-700);
+
+  --color-text-primary-dark: var(--color-neutral-200);
+  --color-text-secondary-dark: var(--color-neutral-500);
+
+  /* Button Variables - Dark Theme */
+
+  --color-button-primary-fill-default-dark: var(--color-primary-500);
+  --color-button-primary-fill-hover-dark: var(--color-primary-600);
+  --color-button-primary-fill-disabled-dark: var(--color-primary-600);
+
+  --color-button-primary-text-default-dark: var(--color-primary-50);
+  --color-button-primary-text-disabled-dark: var(--color-primary-400);
+
+  --color-button-plain-fill-default-dark: var(--color-neutral-200);
+  --color-button-plain-fill-hover-dark: var(--color-neutral-300);
+  --color-button-plain-fill-disabled-dark: var(--color-neutral-200);
+
+  --color-button-plain-text-default: var(--color-neutral-800);
+  --color-button-plain-text-disabled: var(--color-neutral-200);
+
+  --color-button-secondary-fill-default-dark: var(--color-neutral-700);
+  --color-button-secondary-fill-hover-dark: var(--color-neutral-800);
+  --color-button-secondary-fill-disabled-dark: var(--color-neutral-200);
+
+  --color-button-secondary-text-default-dark: var(--color-neutral-200);
+  --color-button-secondary-text-disabled-dark: var(--color-neutral-200);
+
+  --color-button-outline-fill-default-dark: var(--color-transparent);
+  --color-button-outline-fill-hover-dark: var(--color-neutral-200);
+  --color-button-outline-fill-disabled-dark: var(--color-transparent);
+
+  --color-button-outline-stroke-default-dark: var(--color-neutral-200);
+
+  --color-button-outline-text-default-dark: var(--color-neutral-100);
+  --color-button-outline-text-disabled-dark: var(--color-neutral-600);
+}
+
+.dark {
+  --color-button-primary-fill-default: var(--color-button-primary-fill-default-dark);
+  --color-button-primary-fill-hover: var(--color-button-primary-fill-hover-dark);
+  --color-button-primary-fill-disabled: var(--color-button-primary-fill-disabled-dark);
+
+  --color-button-primary-text-default: var(--color-button-primary-text-default-dark);
+  --color-button-primary-text-disabled: var(--color-button-primary-text-disabled-dark);
+
+  --color-button-plain-fill-default: var(--color-button-plain-fill-default-dark);
+  --color-button-plain-fill-hover: var(--color-button-plain-fill-hover-dark);
+  --color-button-plain-fill-disabled: var(--color-button-plain-fill-disabled-dark);
+
+  --color-button-plain-text-default: var(--color-button-plain-text-default-dark);
+  --color-button-plain-text-disabled: var(--color-button-plain-text-disabled-dark);
+
+  --color-button-secondary-fill-default: var(--color-button-secondary-fill-default-dark);
+  --color-button-secondary-fill-hover: var(--color-button-secondary-fill-hover-dark);
+  --color-button-secondary-fill-disabled: var(--color-button-secondary-fill-disabled-dark);
+
+  --color-button-secondary-text-default: var(--color-button-secondary-text-default-dark);
+  --color-button-secondary-text-disabled: var(--color-button-secondary-text-disabled-dark);
+
+  --color-button-outline-fill-default: var(--color-button-outline-fill-default-dark);
+  --color-button-outline-fill-hover: var(--color-button-outline-fill-hover-dark);
+  --color-button-outline-fill-disabled: var(--color-button-outline-fill-disabled-dark);
+
+  --color-button-outline-stroke-default: var(--color-button-outline-stroke-default-dark);
+
+  --color-button-outline-text-default: var(--color-button-outline-text-default-dark);
+  --color-button-outline-text-disabled: var(--color-button-outline-text-disabled-dark);
+
+  --color-bg-default: var(--color-bg-default-dark);
+  --color-bg-hover: var(--color-bg-hover-dark);
+  --color-bg-contrast-default: var(--color-bg-contrast-default-dark);
+  --color-bg-contrast-hover: var(--color-bg-contrast-hover-dark);
+
+  --color-stroke-default: var(--color-stroke-default-dark);
+
+  --color-text-primary: var(--color-text-primary-dark);
+  --color-text-secondary: var(--color-text-secondary-dark);
 }

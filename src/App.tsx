@@ -15,7 +15,9 @@ import { reloadNmuiWithVersion } from './utils/RouteUtils';
 import { usePostHog } from 'posthog-js/react';
 
 function App() {
-  const store = useStore();
+  const store = useStore(); // Access the store
+  const isDarkMode = store.currentTheme === 'dark'; // Determine if dark mode is active
+
   const {
     boot: intercomBoot,
     shutdown: intercomShutdown,
@@ -212,10 +214,12 @@ function App() {
   }, [store.serverStatus.isHealthy]);
 
   return (
-    <div className="App">
+    <div className={`App ${isDarkMode ? 'dark' : ''}`}>
+      {' '}
+      {/* Conditionally add .dark class */}
       <ConfigProvider
         theme={{
-          algorithm: store.currentTheme === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm,
+          algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
           token: {
             colorPrimary: store.currentTheme === 'dark' ? branding.primaryColorDark : branding.primaryColorLight,
             colorLink: store.currentTheme === 'dark' ? branding.primaryColorDark : branding.primaryColorLight,
@@ -233,7 +237,6 @@ function App() {
       >
         <RouterProvider router={router} />
       </ConfigProvider>
-
       <ServerMalfunctionModal isOpen={showServerMalfunctionModal} />
     </div>
   );
