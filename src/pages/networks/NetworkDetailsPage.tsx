@@ -3791,16 +3791,6 @@ export default function NetworkDetailsPage(props: PageProps) {
             network={network.netid}
             networkNodes={networkNodes}
             staticNetworkNodes={staticNetworkNodes}
-            // activeTabKey={activeTabKey}
-            // internetGatewaysTableRef={internetGatewaysTableRef}
-            // createInternetGatewayButtonRef={createInternetGatewayButtonRef}
-            // internetGatewaysConnectedHostsTableRef={internetGatewaysConnectedHostsTableRef}
-            // internetGatewaysUpdateConnectedHostsRef={internetGatewaysUpdateConnectedHostsRef}
-            // createInternetGatewayModalSelectHostRef={createInternetGatewayModalSelectHostRef}
-            // createInternetGatewayModalSelectConnectedHostsRef={createInternetGatewayModalSelectConnectedHostsRef}
-            // updateInternetGatewayModalSelectConnectedHostsRef={updateInternetGatewayModalSelectConnectedHostsRef}
-            // isAddInternetGatewayModalOpen={isAddInternetGatewayModalOpen}
-            // setIsAddInternetGatewayModalOpen={setIsAddInternetGatewayModalOpen}
           />
         ) : (
           <Skeleton active />
