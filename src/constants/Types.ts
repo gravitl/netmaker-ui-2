@@ -1,6 +1,7 @@
 import { Host } from '@/models/Host';
 import { Node } from '@/models/Node';
 import { ProSettings } from '@/models/ProSettings';
+import { Tag } from '@/models/Tags';
 import { User } from '@/models/User';
 
 export const NULL_HOST: Host = {
@@ -85,6 +86,16 @@ export const NULL_NETWORK_PROSETTINGS: ProSettings = {
 };
 
 export const NULL_NODE_ID = '00000000-0000-0000-0000-000000000000';
+
+export const NULL_TAG: Tag = {
+  id: '',
+  tag_name: '',
+  network: '',
+  tagged_nodes: [],
+  used_by_count: 0,
+  created_by: '',
+  created_at: new Date(),
+};
 
 export const mockNewUserWithGroup: User = {
   username: 'mock-user',

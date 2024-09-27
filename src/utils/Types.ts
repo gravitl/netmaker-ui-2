@@ -1,3 +1,6 @@
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
 export type MutableRequired<T> = { -readonly [P in keyof T]-?: T[P] };
 
 export type RequiredField<T, K extends keyof T> = T & Required<Pick<T, K>>;
@@ -14,3 +17,7 @@ export type NetworkDetailTourStep =
   | 'dns'
   | 'graph'
   | 'metrics';
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
