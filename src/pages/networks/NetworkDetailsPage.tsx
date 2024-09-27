@@ -117,6 +117,7 @@ import { TourType } from '../DashboardPage';
 import { Waypoints } from 'lucide-react';
 import { isAdminUserOrRole } from '@/utils/UserMgmtUtils';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
+import { TagManagementPage } from './tag-management/TagManagementPage';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -3589,6 +3590,29 @@ export default function NetworkDetailsPage(props: PageProps) {
           ),
       });
     }
+
+    tabs.push({
+      key: 'tag-mgmt',
+      label: <Typography.Text>Tag Management</Typography.Text>,
+      children:
+        network && !isRefreshingNetwork ? (
+          <TagManagementPage
+          // network={network}
+          // activeTabKey={activeTabKey}
+          // internetGatewaysTableRef={internetGatewaysTableRef}
+          // createInternetGatewayButtonRef={createInternetGatewayButtonRef}
+          // internetGatewaysConnectedHostsTableRef={internetGatewaysConnectedHostsTableRef}
+          // internetGatewaysUpdateConnectedHostsRef={internetGatewaysUpdateConnectedHostsRef}
+          // createInternetGatewayModalSelectHostRef={createInternetGatewayModalSelectHostRef}
+          // createInternetGatewayModalSelectConnectedHostsRef={createInternetGatewayModalSelectConnectedHostsRef}
+          // updateInternetGatewayModalSelectConnectedHostsRef={updateInternetGatewayModalSelectConnectedHostsRef}
+          // isAddInternetGatewayModalOpen={isAddInternetGatewayModalOpen}
+          // setIsAddInternetGatewayModalOpen={setIsAddInternetGatewayModalOpen}
+          />
+        ) : (
+          <Skeleton active />
+        ),
+    });
 
     tabs.push({
       key: 'overview',
