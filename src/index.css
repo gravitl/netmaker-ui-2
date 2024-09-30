@@ -18,6 +18,10 @@
   box-sizing: border-box;
 }
 
+.anticon {
+  vertical-align: 0;
+}
+
 :root {
   /*White*/
   --color-white: #ffffff;

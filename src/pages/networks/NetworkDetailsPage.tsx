@@ -2414,7 +2414,7 @@ export default function NetworkDetailsPage(props: PageProps) {
               type="primary"
               size="large"
               onClick={() => setIsAddDnsModalOpen(true)}
-              className="full-width-button-xs mt-10"
+              className="mt-10 full-width-button-xs"
               ref={dnsTabAddDNSRef}
               style={{ marginBottom: '.5rem' }}
             >
@@ -4059,7 +4059,9 @@ export default function NetworkDetailsPage(props: PageProps) {
           {/* top bar */}
           <Row className="tabbed-page-row-padding">
             <Col xs={24}>
-              <Link to={resolveAppRoute(AppRoutes.NETWORKS_ROUTE)}>View All Networks</Link>
+              <Link className="text-button-primary-fill-default" to={resolveAppRoute(AppRoutes.NETWORKS_ROUTE)}>
+                View All Networks
+              </Link>
               <Row>
                 <Col xs={18} lg={12}>
                   <Typography.Title level={2} style={{ marginTop: '.5rem', marginBottom: '2rem' }}>
