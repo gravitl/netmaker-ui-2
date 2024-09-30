@@ -10,7 +10,7 @@ function createTag(payload: CreateTagReqDto) {
 }
 
 function getTagsPerNetwork(networkId: Network['netid']) {
-  return axiosService.get<GenericResponseDto<Tag[]>>(`${ApiRoutes.TAGS}?network=${networkId}`);
+  return axiosService.get<GenericResponseDto<Tag[]>>(`${ApiRoutes.TAGS}?network=${encodeURIComponent(networkId)}`);
 }
 
 function updateTag(tagId: Tag['id'], payload: Tag) {

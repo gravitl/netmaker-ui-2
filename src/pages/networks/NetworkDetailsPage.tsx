@@ -3597,17 +3597,17 @@ export default function NetworkDetailsPage(props: PageProps) {
       children:
         network && !isRefreshingNetwork ? (
           <TagManagementPage
-          // network={network}
-          // activeTabKey={activeTabKey}
-          // internetGatewaysTableRef={internetGatewaysTableRef}
-          // createInternetGatewayButtonRef={createInternetGatewayButtonRef}
-          // internetGatewaysConnectedHostsTableRef={internetGatewaysConnectedHostsTableRef}
-          // internetGatewaysUpdateConnectedHostsRef={internetGatewaysUpdateConnectedHostsRef}
-          // createInternetGatewayModalSelectHostRef={createInternetGatewayModalSelectHostRef}
-          // createInternetGatewayModalSelectConnectedHostsRef={createInternetGatewayModalSelectConnectedHostsRef}
-          // updateInternetGatewayModalSelectConnectedHostsRef={updateInternetGatewayModalSelectConnectedHostsRef}
-          // isAddInternetGatewayModalOpen={isAddInternetGatewayModalOpen}
-          // setIsAddInternetGatewayModalOpen={setIsAddInternetGatewayModalOpen}
+            network={network.netid}
+            // activeTabKey={activeTabKey}
+            // internetGatewaysTableRef={internetGatewaysTableRef}
+            // createInternetGatewayButtonRef={createInternetGatewayButtonRef}
+            // internetGatewaysConnectedHostsTableRef={internetGatewaysConnectedHostsTableRef}
+            // internetGatewaysUpdateConnectedHostsRef={internetGatewaysUpdateConnectedHostsRef}
+            // createInternetGatewayModalSelectHostRef={createInternetGatewayModalSelectHostRef}
+            // createInternetGatewayModalSelectConnectedHostsRef={createInternetGatewayModalSelectConnectedHostsRef}
+            // updateInternetGatewayModalSelectConnectedHostsRef={updateInternetGatewayModalSelectConnectedHostsRef}
+            // isAddInternetGatewayModalOpen={isAddInternetGatewayModalOpen}
+            // setIsAddInternetGatewayModalOpen={setIsAddInternetGatewayModalOpen}
           />
         ) : (
           <Skeleton active />

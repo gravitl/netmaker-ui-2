@@ -20,6 +20,10 @@
   },
   "dependencies": {
     "@ant-design/icons": "^5.4.0",
+    "@hookform/resolvers": "^3.9.0",
+    "@radix-ui/react-dialog": "^1.1.1",
+    "@radix-ui/react-label": "^2.1.0",
+    "@radix-ui/react-popover": "^1.1.1",
     "@radix-ui/react-slot": "^1.1.0",
     "@react-sigma/core": "^3.4.2",
     "@tailwindcss/typography": "^0.5.15",
@@ -32,6 +36,7 @@
     "class-variance-authority": "^0.7.0",
     "classnames": "^2.3.2",
     "clsx": "^2.1.1",
+    "cmdk": "^1.0.0",
     "dayjs": "^1.11.12",
     "graphology": "^0.25.4",
     "graphology-layout": "^0.6.1",
@@ -46,6 +51,7 @@
     "rc-virtual-list": "^3.14.5",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-hook-form": "^7.53.0",
     "react-i18next": "^15.0.1",
     "react-router-dom": "^6.26.2",
     "react-use-intercom": "^5.4.1",
@@ -55,6 +61,7 @@
     "swr": "^2.2.5",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
+    "zod": "^3.23.8",
     "zustand": "^4.5.4"
   },
   "devDependencies": {

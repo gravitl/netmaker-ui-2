@@ -1,19 +1,35 @@
 import { cn } from '@/utils/Types';
-import { forwardRef, InputHTMLAttributes } from 'react';
+import { FC, forwardRef, InputHTMLAttributes } from 'react';
 
-export type InputProps = InputHTMLAttributes<HTMLInputElement>;
+export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+  startIcon?: FC<{ className?: string }>;
+  endIcon?: FC<{ className?: string }>;
+}
 
-const Input = forwardRef<HTMLInputElement, InputProps>(({ className, type, ...props }, ref) => {
+const Input = forwardRef<HTMLInputElement, InputProps>(({ className, type, startIcon, endIcon, ...props }, ref) => {
+  const StartIcon = startIcon;
+  const EndIcon = endIcon;
+
   return (
-    <input
-      type={type}
-      className={cn(
-        'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
-        className,
+    <div className="w-full relative">
+      <input
+        type={type}
+        className={cn(
+          'peer flex h-10 w-full rounded-md border border-input bg-background py-2 px-4 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50',
+          startIcon ? 'pl-8' : '',
+          endIcon ? 'pr-8' : '',
+          className,
+        )}
+        ref={ref}
+        {...props}
+      />
+      {StartIcon && (
+        <StartIcon className=" absolute left-1.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500 peer-focus:text-gray-900" />
       )}
-      ref={ref}
-      {...props}
-    />
+      {EndIcon && (
+        <EndIcon className=" absolute right-1.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500 peer-focus:text-gray-900" />
+      )}
+    </div>
   );
 });
 Input.displayName = 'Input';
