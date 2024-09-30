@@ -244,12 +244,12 @@ export default function MainLayout() {
               >
                 <GlobalOutlined />
                 <Select
-                  style={{ width: '100%' }}
                   value={i18n.language}
+                  className="w-full "
                   options={[
                     {
                       label: (
-                        <>
+                        <span className="flex items-center gap-2">
                           <img
                             style={{ width: '20px', height: '12px' }}
                             src="https://img.freepik.com/free-vector/illustration-uk-flag_53876-18166.jpg?w=1800&t=st=1679225900~exp=1679226500~hmac=0cc9ee0d4d5196bb3c610ca92d669f3c0ebf95431423a2c4ff7196f81c10891e"
@@ -258,7 +258,7 @@ export default function MainLayout() {
                             referrerPolicy="no-referrer"
                           />{' '}
                           English
-                        </>
+                        </span>
                       ),
                       value: 'en',
                     },
