@@ -36,7 +36,7 @@ interface UpdateInternetGatewayModalProps {
   closeModal?: () => void;
   onOk?: (e: MouseEvent<HTMLButtonElement>) => void;
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
-  selectConnectedHostsRef: React.RefObject<HTMLDivElement>;
+  selectConnectedHostsRef?: React.RefObject<HTMLDivElement>;
 }
 
 const nodeIdFormName = 'nodeid';

@@ -4,6 +4,7 @@ import { AvailableThemes } from '../models/AvailableThemes';
 import { ServerConfigService } from '@/services/ServerConfigService';
 import { SIDE_NAV_EXPANDED_WIDTH } from '@/layouts/MainLayout';
 import { NMUI_ACL_VERSION } from '@/services/BaseService';
+import { Network } from '@/models/Network';
 
 export interface IAppSlice {
   currentTheme: AvailableThemes;
@@ -14,6 +15,7 @@ export interface IAppSlice {
   isSidebarCollapsed: boolean;
   sidebarWidth: string;
   aclVersion: 1 | 2;
+  activeNetwork: Network['netid'];
 
   // methods
   setCurrentTheme: (theme: AvailableThemes) => void;
@@ -24,6 +26,7 @@ export interface IAppSlice {
   setIsSidebarCollapsed: (isCollapsed: boolean) => void;
   setSidebarWidth: (width: string) => void;
   setAclVersion: (version: 1 | 2) => void;
+  setActiveNetwork: (networkId: Network['netid']) => void;
 }
 
 const createAppSlice: StateCreator<IAppSlice, [], [], IAppSlice> = (set) => ({
@@ -35,6 +38,7 @@ const createAppSlice: StateCreator<IAppSlice, [], [], IAppSlice> = (set) => ({
   isSidebarCollapsed: false,
   sidebarWidth: SIDE_NAV_EXPANDED_WIDTH,
   aclVersion: 1,
+  activeNetwork: '',
 
   setCurrentTheme: (theme) => set(() => ({ currentTheme: theme })),
   setLogoUrl: (url) => set(() => ({ logoUrl: url })),
@@ -68,6 +72,7 @@ const createAppSlice: StateCreator<IAppSlice, [], [], IAppSlice> = (set) => ({
       set(() => ({ aclVersion: 1 }));
     }
   },
+  setActiveNetwork: (networkId) => set(() => ({ activeNetwork: networkId })),
 });
 
 export const AppSlice = {

@@ -26,6 +26,18 @@ import ProfilePage from './pages/users/ProfilePage';
 import { useStore } from './store/store';
 import { useEffect, useState } from 'react';
 import { getNetworkRoute, resolveAppRoute } from './utils/RouteUtils';
+import NetworkNodesPage from './pages/networks/nodes/NetworkNodesPage';
+import NetworkRemoteAccessPage from './pages/networks/remote-access/NetworkRemoteAccessPage';
+import NetworkRelaysPage from './pages/networks/relays/NetworkRelaysPage';
+import NetworkEgressPage from './pages/networks/egress/NetworkEgressPage';
+import { NetworkInternetGatewaysPage } from './pages/networks/internet-gateways/InternetGatewaysPage';
+import NetworkDnsPage from './pages/networks/dns/NetworkDnsPage';
+import NetworkGraphPage from './pages/networks/graph/NetworkGraphPage';
+import NetworkMetricsPage from './pages/networks/metrics/NetworkMetricsPage';
+import NetworkInfoPage from './pages/networks/info/NetworkInfoPage';
+import NetworkAclsPage from './pages/networks/acl/ACLPage';
+import NetworkOldAclsPage from './pages/networks/acl-old/OldAclPage';
+import { NetworkTagsPage } from './pages/networks/tags/NetworkTagsPage';
 
 export const AppRoutes = {
   INDEX_ROUTE: '/',
@@ -50,6 +62,19 @@ export const AppRoutes = {
   USER_GROUP_DETAILS_ROUTE: '/users/group/:groupId',
   PLATFORM_ROLE_DETAILS_ROUTE: '/users/platform-role/:roleId',
   PROFILE_ROUTE: '/profile',
+  ROUTE_404: '/404',
+  NETWORK_NODES_ROUTE: '/networks/:networkId/nodes',
+  NETWORK_REMOTE_ACCESS_ROUTE: '/networks/:networkId/remote-access',
+  NETWORK_RELAYS_ROUTE: '/networks/:networkId/relays',
+  NETWORK_EGRESS_ROUTE: '/networks/:networkId/egress',
+  NETWORK_INTERNET_GATEWAYS_ROUTE: '/networks/:networkId/internet-gateways',
+  NETWORK_DNS_ROUTE: '/networks/:networkId/dns',
+  NETWORK_GRAPH_ROUTE: '/networks/:networkId/graph',
+  NETWORK_METRICS_ROUTE: '/networks/:networkId/metrics',
+  NETWORK_INFO_ROUTE: '/networks/:networkId/info',
+  NETWORK_ACLS_ROUTE: '/networks/:networkId/acls',
+  NETWORK_OLD_ACLS_ROUTE: '/networks/:networkId/old-acls',
+  NETWORK_TAGS_ROUTE: '/networks/:networkId/tags',
 };
 
 function generateRoutePair(path: string, element: JSX.Element): RouteObject[] {
@@ -93,6 +118,7 @@ const RedirectToFirstNetwork = () => {
     return null;
   }
   if (store.networks.length > 0) {
+    store.setActiveNetwork(store.networks[0].netid);
     return <Navigate to={getNetworkRoute(store.networks[0].netid)} replace />;
   }
 
@@ -193,6 +219,78 @@ const routes: RouteObject[] = [
         AppRoutes.PROFILE_ROUTE.split('/').slice(1).join('/'),
         <ProtectedRoute>
           <ProfilePage isFullScreen />
+        </ProtectedRoute>,
+      ),
+      ...generateRoutePair(
+        AppRoutes.NETWORK_NODES_ROUTE.split('/').slice(1).join('/'),
+        <ProtectedRoute>
+          <NetworkNodesPage isFullScreen />
+        </ProtectedRoute>,
+      ),
+      ...generateRoutePair(
+        AppRoutes.NETWORK_REMOTE_ACCESS_ROUTE.split('/').slice(1).join('/'),
+        <ProtectedRoute>
+          <NetworkRemoteAccessPage isFullScreen />
+        </ProtectedRoute>,
+      ),
+      ...generateRoutePair(
+        AppRoutes.NETWORK_RELAYS_ROUTE.split('/').slice(1).join('/'),
+        <ProtectedRoute>
+          <NetworkRelaysPage isFullScreen />
+        </ProtectedRoute>,
+      ),
+      ...generateRoutePair(
+        AppRoutes.NETWORK_EGRESS_ROUTE.split('/').slice(1).join('/'),
+        <ProtectedRoute>
+          <NetworkEgressPage isFullScreen />
+        </ProtectedRoute>,
+      ),
+      ...generateRoutePair(
+        AppRoutes.NETWORK_INTERNET_GATEWAYS_ROUTE.split('/').slice(1).join('/'),
+        <ProtectedRoute>
+          <NetworkInternetGatewaysPage isFullScreen />
+        </ProtectedRoute>,
+      ),
+      ...generateRoutePair(
+        AppRoutes.NETWORK_DNS_ROUTE.split('/').slice(1).join('/'),
+        <ProtectedRoute>
+          <NetworkDnsPage isFullScreen />
+        </ProtectedRoute>,
+      ),
+      ...generateRoutePair(
+        AppRoutes.NETWORK_GRAPH_ROUTE.split('/').slice(1).join('/'),
+        <ProtectedRoute>
+          <NetworkGraphPage isFullScreen />
+        </ProtectedRoute>,
+      ),
+      ...generateRoutePair(
+        AppRoutes.NETWORK_METRICS_ROUTE.split('/').slice(1).join('/'),
+        <ProtectedRoute>
+          <NetworkMetricsPage isFullScreen />
+        </ProtectedRoute>,
+      ),
+      ...generateRoutePair(
+        AppRoutes.NETWORK_INFO_ROUTE.split('/').slice(1).join('/'),
+        <ProtectedRoute>
+          <NetworkInfoPage isFullScreen />
+        </ProtectedRoute>,
+      ),
+      ...generateRoutePair(
+        AppRoutes.NETWORK_ACLS_ROUTE.split('/').slice(1).join('/'),
+        <ProtectedRoute>
+          <NetworkAclsPage isFullScreen />
+        </ProtectedRoute>,
+      ),
+      ...generateRoutePair(
+        AppRoutes.NETWORK_OLD_ACLS_ROUTE.split('/').slice(1).join('/'),
+        <ProtectedRoute>
+          <NetworkOldAclsPage isFullScreen />
+        </ProtectedRoute>,
+      ),
+      ...generateRoutePair(
+        AppRoutes.NETWORK_TAGS_ROUTE.split('/').slice(1).join('/'),
+        <ProtectedRoute>
+          <NetworkTagsPage isFullScreen />
         </ProtectedRoute>,
       ),
     ],

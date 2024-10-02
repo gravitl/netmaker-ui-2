@@ -10,6 +10,42 @@ import { ServerConfigService } from '@/services/ServerConfigService';
 import { UserGroup, UserRole } from '@/models/User';
 
 type AmuiRouteAction = '' | 'upgrade' | 'invite-user';
+export type NetworkPage =
+  | 'nodes'
+  | 'remote-access'
+  | 'relays'
+  | 'egress'
+  | 'internet-gateways'
+  | 'acls'
+  | 'old-acls'
+  | 'tags'
+  | 'dns'
+  | 'graph'
+  | 'metrics'
+  | 'info';
+
+/**
+ * Function to check if the page key is a network page
+ *
+ * @param key the page key to check
+ * @returns true if the page key is a network page
+ */
+export function isNetworkPage(key: string): key is NetworkPage {
+  return [
+    'nodes',
+    'remote-access',
+    'relays',
+    'egress',
+    'internet-gateways',
+    'acls',
+    'dns',
+    'graph',
+    'metrics',
+    'info',
+    'tags',
+    'old-acls',
+  ].includes(key);
+}
 
 /**
  * Function to check if the current route is versioned.
@@ -77,6 +113,49 @@ export function getNetworkRoute(networkOrId: Network | Network['netid']): string
   if (typeof networkOrId === 'string')
     return `${resolveAppRoute(AppRoutes.NETWORK_DETAILS_ROUTE).replace(placeholder, networkOrId)}`;
   return `${resolveAppRoute(AppRoutes.NETWORK_DETAILS_ROUTE).replace(placeholder, networkOrId.netid)}`;
+}
+
+/**
+ * Get the route for the network page. eg: /networks/:networkId/nodes
+ *
+ * @param page The network page to get the route for. eg: nodes, remote-access, relays, ...
+ * @returns the route for the network page
+ */
+export function getNetworkPageRoute(page: NetworkPage, networkId?: Network['netid']): string {
+  const routePlaceholder = ':networkId';
+  const currentNetwork = useStore.getState().activeNetwork || networkId;
+  if (!currentNetwork) {
+    console.log('No network ID found. Redirecting to networks page');
+    return resolveAppRoute(AppRoutes.NETWORKS_ROUTE);
+  }
+  switch (page) {
+    case 'nodes':
+      return resolveAppRoute(AppRoutes.NETWORK_NODES_ROUTE.replace(routePlaceholder, currentNetwork));
+    case 'remote-access':
+      return resolveAppRoute(AppRoutes.NETWORK_REMOTE_ACCESS_ROUTE.replace(routePlaceholder, currentNetwork));
+    case 'relays':
+      return resolveAppRoute(AppRoutes.NETWORK_RELAYS_ROUTE.replace(routePlaceholder, currentNetwork));
+    case 'egress':
+      return resolveAppRoute(AppRoutes.NETWORK_EGRESS_ROUTE.replace(routePlaceholder, currentNetwork));
+    case 'internet-gateways':
+      return resolveAppRoute(AppRoutes.NETWORK_INTERNET_GATEWAYS_ROUTE.replace(routePlaceholder, currentNetwork));
+    case 'acls':
+      return resolveAppRoute(AppRoutes.NETWORK_ACLS_ROUTE.replace(routePlaceholder, currentNetwork));
+    case 'old-acls':
+      return resolveAppRoute(AppRoutes.NETWORK_OLD_ACLS_ROUTE.replace(routePlaceholder, currentNetwork));
+    case 'tags':
+      return resolveAppRoute(AppRoutes.NETWORK_TAGS_ROUTE.replace(routePlaceholder, currentNetwork));
+    case 'dns':
+      return resolveAppRoute(AppRoutes.NETWORK_DNS_ROUTE.replace(routePlaceholder, currentNetwork));
+    case 'graph':
+      return resolveAppRoute(AppRoutes.NETWORK_GRAPH_ROUTE.replace(routePlaceholder, currentNetwork));
+    case 'metrics':
+      return resolveAppRoute(AppRoutes.NETWORK_METRICS_ROUTE.replace(routePlaceholder, currentNetwork));
+    case 'info':
+      return resolveAppRoute(AppRoutes.NETWORK_INFO_ROUTE.replace(routePlaceholder, currentNetwork));
+    default:
+      return resolveAppRoute(AppRoutes.ROUTE_404);
+  }
 }
 
 // Get network role details route from role obj or ID

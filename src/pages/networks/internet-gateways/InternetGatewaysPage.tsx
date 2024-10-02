@@ -1,11 +1,13 @@
 import AddInternetGatewayModal from '@/components/modals/add-internet-gateway-modal/AddInternetGatewayModal';
 import UpdateInternetGatewayModal from '@/components/modals/update-internet-gateway-modal/UpdateInternetGatewayModal';
+import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 import { Network } from '@/models/Network';
 import { ExtendedNode, Node } from '@/models/Node';
 import { NodesService } from '@/services/NodesService';
 import { useStore } from '@/store/store';
 import { getExtendedNode } from '@/utils/NodeUtils';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
+import { useGetActiveNetwork } from '@/utils/Utils';
 import {
   DeleteOutlined,
   EditOutlined,
@@ -17,65 +19,72 @@ import {
 import { EllipsisHorizontalIcon } from '@heroicons/react/24/solid';
 import { Button, Card, Col, Dropdown, Input, Modal, Row, Table, TableColumnProps, Tooltip, Typography } from 'antd';
 import useNotification from 'antd/es/notification/useNotification';
-import { RefObject, useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useParams } from 'react-router-dom';
 
-interface InternetGatewaysPageProps {
-  network: Network;
-  activeTabKey: string;
-  internetGatewaysTableRef: RefObject<HTMLDivElement>;
-  createInternetGatewayButtonRef: RefObject<HTMLDivElement>;
-  internetGatewaysConnectedHostsTableRef: RefObject<HTMLDivElement>;
-  internetGatewaysUpdateConnectedHostsRef: RefObject<HTMLDivElement>;
-  createInternetGatewayModalSelectHostRef: RefObject<HTMLDivElement>;
-  createInternetGatewayModalSelectConnectedHostsRef: RefObject<HTMLDivElement>;
-  updateInternetGatewayModalSelectConnectedHostsRef: RefObject<HTMLDivElement>;
-  isAddInternetGatewayModalOpen: boolean;
-  setIsAddInternetGatewayModalOpen: (isOpen: boolean) => void;
+interface NetworkInternetGatewaysPageProps {
+  isFullScreen: boolean;
+  networkId?: Network['netid'];
+  // activeTabKey?: string;
+  // internetGatewaysTableRef?: RefObject<HTMLDivElement>;
+  // createInternetGatewayButtonRef?: RefObject<HTMLDivElement>;
+  // internetGatewaysConnectedHostsTableRef?: RefObject<HTMLDivElement>;
+  // internetGatewaysUpdateConnectedHostsRef?: RefObject<HTMLDivElement>;
+  // createInternetGatewayModalSelectHostRef?: RefObject<HTMLDivElement>;
+  // createInternetGatewayModalSelectConnectedHostsRef?: RefObject<HTMLDivElement>;
+  // updateInternetGatewayModalSelectConnectedHostsRef?: RefObject<HTMLDivElement>;
+  // isAddInternetGatewayModalOpen: boolean;
+  // setIsAddInternetGatewayModalOpen: (isOpen: boolean) => void;
 }
 
-const INTERNET_GATEWAYS_DOCS_URL = 'https://docs.netmaker.io/docs/features/internet-gateways-pro';
+// const INTERNET_GATEWAYS_DOCS_URL = 'https://docs.netmaker.io/pro/internet-gateways.html';
 
-export function InternetGatewaysPage({
-  network,
-  activeTabKey,
-  internetGatewaysTableRef,
-  createInternetGatewayButtonRef,
-  internetGatewaysConnectedHostsTableRef,
-  internetGatewaysUpdateConnectedHostsRef,
-  createInternetGatewayModalSelectHostRef,
-  createInternetGatewayModalSelectConnectedHostsRef,
-  updateInternetGatewayModalSelectConnectedHostsRef,
-  isAddInternetGatewayModalOpen,
-  setIsAddInternetGatewayModalOpen,
-}: InternetGatewaysPageProps) {
+export function NetworkInternetGatewaysPage({
+  isFullScreen,
+  // network,
+  // activeTabKey,
+  // internetGatewaysTableRef,
+  // createInternetGatewayButtonRef,
+  // internetGatewaysConnectedHostsTableRef,
+  // internetGatewaysUpdateConnectedHostsRef,
+  // createInternetGatewayModalSelectHostRef,
+  // createInternetGatewayModalSelectConnectedHostsRef,
+  // updateInternetGatewayModalSelectConnectedHostsRef,
+  // isAddInternetGatewayModalOpen,
+  // setIsAddInternetGatewayModalOpen,
+}: NetworkInternetGatewaysPageProps) {
   const store = useStore();
   const [notify, notifyCtx] = useNotification();
+  const { networkId } = useParams<{ networkId: string }>();
+  const resolvedNetworkId = networkId || store.activeNetwork;
+  const { network, isLoadingNetwork } = useGetActiveNetwork(resolvedNetworkId);
 
   const [searchConnectedHosts, setSearchConnectedHosts] = useState('');
   const [searchInternetGateways, setSearchInternetGateways] = useState('');
   const [selectedGateway, setSelectedGateway] = useState<Node | null>(null);
   const [isUpdateInternetGatewayModalOpen, setIsUpdateInternetGatewayModalOpen] = useState(false);
+  const [isAddInternetGatewayModalOpen, setIsAddInternetGatewayModalOpen] = useState(false);
 
   const networkNodesMap = useMemo(
     () =>
       store.nodes.reduce(
         (acc, node) => {
-          if (node.network === network.netid) acc[node.id] = node;
+          if (node.network === resolvedNetworkId) acc[node.id] = node;
           return acc;
         },
         {} as Record<Node['id'], Node>,
       ),
-    [network.netid, store.nodes],
+    [resolvedNetworkId, store.nodes],
   );
 
   const networkInternetGateways = useMemo<ExtendedNode[]>(
     () =>
       store.nodes
         .filter((node) => {
-          return node.network === network.netid && node.isinternetgateway;
+          return node.network === resolvedNetworkId && node.isinternetgateway;
         })
         .map((node) => getExtendedNode(node, store.hostsCommonDetails)),
-    [network.netid, store.hostsCommonDetails, store.nodes],
+    [resolvedNetworkId, store.hostsCommonDetails, store.nodes],
   );
 
   const networkInternetGatewaysMap = useMemo<Record<Node['id'], ExtendedNode>>(
@@ -97,7 +106,7 @@ export function InternetGatewaysPage({
         content: `Are you sure you want to delete this internet gateway?`,
         onOk: async () => {
           try {
-            await NodesService.deleteInternetGateway(gateway.id, network.netid);
+            await NodesService.deleteInternetGateway(gateway.id, resolvedNetworkId);
             const newGateway = {
               ...gateway,
               isinternetgateway: false,
@@ -115,7 +124,7 @@ export function InternetGatewaysPage({
         },
       });
     },
-    [network.netid, store, networkInternetGateways, notify],
+    [resolvedNetworkId, store, networkInternetGateways, notify],
   );
 
   const confirmDisconnectHost = useCallback(
@@ -128,7 +137,7 @@ export function InternetGatewaysPage({
             const assocInetGw = networkInternetGatewaysMap[host.internetgw_node_id];
             const newConnectedHosts =
               assocInetGw.inet_node_req.inet_node_client_ids?.filter((id) => id !== host.id) ?? [];
-            await NodesService.updateInternetGateway(assocInetGw.id, network.netid, {
+            await NodesService.updateInternetGateway(assocInetGw.id, resolvedNetworkId, {
               inet_node_client_ids: newConnectedHosts,
             });
             const newGateway = {
@@ -148,7 +157,7 @@ export function InternetGatewaysPage({
         },
       });
     },
-    [network.netid, networkInternetGatewaysMap, notify, store],
+    [resolvedNetworkId, networkInternetGatewaysMap, notify, store],
   );
 
   const filteredInternetGateways = useMemo(() => {
@@ -314,180 +323,188 @@ export function InternetGatewaysPage({
     [confirmDisconnectHost, networkInternetGatewaysMap],
   );
 
-  useEffect(() => {
-    if (activeTabKey === 'internet-gateways') {
-      const autoSelectedGateway = filteredInternetGateways?.[0] ?? null;
-      setSelectedGateway(autoSelectedGateway);
-    }
-  }, [activeTabKey]);
+  // useEffect(() => {
+  //   if (activeTabKey === 'internet-gateways') {
+  //     const autoSelectedGateway = filteredInternetGateways?.[0] ?? null;
+  //     setSelectedGateway(autoSelectedGateway);
+  //   }
+  // }, [activeTabKey]);
 
   const isEmpty = networkInternetGateways.length === 0;
 
   return (
-    <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-      {isEmpty && (
-        <Row
-          className="page-padding"
-          style={{
-            background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
-            width: '100%',
-          }}
-        >
-          <Col xs={24} xl={(24 * 2) / 3}>
-            <Typography.Title level={3} style={{ color: 'white ' }}>
-              Internet Gateways
-            </Typography.Title>
-            <Typography.Text style={{ color: 'white ' }}>
-              Internet Gateways allows Netmaker to work like a normal VPN. A gateway forwards traffic from the connected
-              hosts to the internet and vice versa. Internet gateways can help you to hide your true IP address and
-              bypass geo-restrictions.
-            </Typography.Text>
-          </Col>
-          <Col xs={24} xl={(24 * 1) / 3} style={{ position: 'relative' }}>
-            <Card className="header-card" style={{ position: 'absolute', width: '100%' }}>
-              <Typography.Title level={3}>Setup an Internet Gateway</Typography.Title>
-              <Typography.Text>
-                Setup an internet gateway to access the internet without revealing your true IP address.
-                <br />
-                <br />
-                Internet gateways behave like tradiitonal VPNs and forward traffic from connected hosts to the internet.
-              </Typography.Text>
-              <Row style={{ marginTop: '1rem' }}>
-                <Col>
-                  <Button type="primary" size="large" onClick={() => setIsAddInternetGatewayModalOpen(true)}>
-                    <PlusOutlined /> Create Internet Gateway
-                  </Button>
-                </Col>
-              </Row>
-            </Card>
+    <div
+      className="NetworkInternetGatewaysPage"
+      style={{ position: 'relative', height: '100%', padding: isFullScreen ? 0 : 24 }}
+    >
+      <div className={`${isFullScreen ? 'page-padding' : ''}`}>
+        <Row style={{ marginBottom: '1rem', width: '100%' }}>
+          <Col>
+            <Typography.Title level={2}>Internet Gateways</Typography.Title>
           </Col>
         </Row>
-      )}
-      {!isEmpty && (
-        <Row style={{ width: '100%' }}>
-          <Col xs={24} xl={12} style={{ marginBottom: '2rem' }}>
-            <Input
-              placeholder="Search gateways"
-              value={searchInternetGateways}
-              onChange={(ev) => setSearchInternetGateways(ev.target.value.trim())}
-              prefix={<SearchOutlined />}
-              style={{ width: '60%' }}
-              allowClear
-            />
-          </Col>
-          <Col xs={24} xl={12} style={{ marginBottom: '2rem' }}>
-            <Input
-              placeholder="Search connected hosts"
-              value={searchConnectedHosts}
-              onChange={(ev) => setSearchConnectedHosts(ev.target.value.trim())}
-              prefix={<SearchOutlined />}
-              style={{ width: '60%' }}
-              allowClear
-            />
-          </Col>
-          <Col xs={24} xl={12}>
-            <Row style={{ width: '100%' }}>
-              <Col xs={24} md={12}>
-                <Typography.Title style={{ marginTop: '0px' }} level={5}>
-                  Gateways
-                </Typography.Title>
-              </Col>
-              <Col xs={23} md={11} style={{ textAlign: 'right' }}>
-                <Button
-                  type="primary"
-                  onClick={() => setIsAddInternetGatewayModalOpen(true)}
-                  className="full-width-button-xs"
-                  ref={createInternetGatewayButtonRef}
-                  style={{ marginBottom: '.5rem' }}
-                >
-                  <PlusOutlined /> Create Gateway
-                </Button>
-                <Button
-                  title="Go to internet gateways documentation"
-                  style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
-                  href={INTERNET_GATEWAYS_DOCS_URL}
-                  target="_blank"
-                  referrerPolicy="no-referrer"
-                  icon={<QuestionCircleOutlined />}
-                />
-              </Col>
-            </Row>
-            <Row style={{ marginTop: '1rem' }}>
-              <Col xs={23}>
-                <div className="table-wrapper">
-                  <Table
-                    columns={internetGatewaysTableCols}
-                    dataSource={filteredInternetGateways}
-                    ref={internetGatewaysTableRef}
-                    rowKey="id"
-                    size="small"
-                    scroll={{ x: true }}
-                    rowClassName={(gateway) => {
-                      return gateway.id === selectedGateway?.id ? 'selected-row' : '';
-                    }}
-                    onRow={(gateway) => {
-                      return {
-                        onClick: () => {
-                          setSelectedGateway(gateway);
-                        },
-                      };
-                    }}
-                    rowSelection={{
-                      type: 'radio',
-                      hideSelectAll: true,
-                      selectedRowKeys: selectedGateway ? [selectedGateway.id] : [],
-                      onSelect: (gateway) => {
-                        setSelectedGateway(gateway);
-                      },
-                    }}
-                  />
-                </div>
-              </Col>
-            </Row>
-          </Col>
-          <Col xs={24} xl={12}>
-            <Row style={{ width: '100%' }}>
-              <Col xs={24} md={12}>
-                <Typography.Title style={{ marginTop: '0px' }} level={5}>
-                  Connected Hosts
-                </Typography.Title>
-              </Col>
-              <Col xs={24} md={12} style={{ textAlign: 'right' }}>
-                {selectedGateway && (
+        {isEmpty && (
+          <Row
+            className="page-padding"
+            style={{
+              background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
+              width: '100%',
+            }}
+          >
+            <Col xs={24} xl={(24 * 2) / 3}>
+              <Typography.Title level={3} style={{ color: 'white ' }}>
+                Internet Gateways
+              </Typography.Title>
+              <Typography.Text style={{ color: 'white ' }}>
+                Internet Gateways allows Netmaker to work like a normal VPN. A gateway forwards traffic from the
+                connected hosts to the internet and vice versa. Internet gateways can help you to hide your true IP
+                address and bypass geo-restrictions.
+              </Typography.Text>
+            </Col>
+            <Col xs={24} xl={(24 * 1) / 3} style={{ position: 'relative' }}>
+              <Card className="header-card" style={{ position: 'absolute', width: '100%' }}>
+                <Typography.Title level={3}>Setup an Internet Gateway</Typography.Title>
+                <Typography.Text>
+                  Setup an internet gateway to access the internet without revealing your true IP address.
+                  <br />
+                  <br />
+                  Internet gateways behave like tradiitonal VPNs and forward traffic from connected hosts to the
+                  internet.
+                </Typography.Text>
+                <Row style={{ marginTop: '1rem' }}>
+                  <Col>
+                    <Button type="primary" size="large" onClick={() => setIsAddInternetGatewayModalOpen(true)}>
+                      <PlusOutlined /> Create Internet Gateway
+                    </Button>
+                  </Col>
+                </Row>
+              </Card>
+            </Col>
+          </Row>
+        )}
+        {!isEmpty && (
+          <Row style={{ width: '100%' }}>
+            <Col xs={24} xl={12} style={{ marginBottom: '2rem' }}>
+              <Input
+                placeholder="Search gateways"
+                value={searchInternetGateways}
+                onChange={(ev) => setSearchInternetGateways(ev.target.value.trim())}
+                prefix={<SearchOutlined />}
+                style={{ width: '60%' }}
+                allowClear
+              />
+            </Col>
+            <Col xs={24} xl={12} style={{ marginBottom: '2rem' }}>
+              <Input
+                placeholder="Search connected hosts"
+                value={searchConnectedHosts}
+                onChange={(ev) => setSearchConnectedHosts(ev.target.value.trim())}
+                prefix={<SearchOutlined />}
+                style={{ width: '60%' }}
+                allowClear
+              />
+            </Col>
+            <Col xs={24} xl={12}>
+              <Row style={{ width: '100%' }}>
+                <Col xs={24} md={12}>
+                  <Typography.Title style={{ marginTop: '0px' }} level={5}>
+                    Gateways
+                  </Typography.Title>
+                </Col>
+                <Col xs={23} md={11} style={{ textAlign: 'right' }}>
                   <Button
                     type="primary"
-                    style={{ marginRight: '1rem', marginBottom: '.5rem' }}
-                    onClick={() => setIsUpdateInternetGatewayModalOpen(true)}
+                    onClick={() => setIsAddInternetGatewayModalOpen(true)}
                     className="full-width-button-xs"
-                    ref={internetGatewaysUpdateConnectedHostsRef}
+                    style={{ marginBottom: '.5rem' }}
                   >
-                    <EditOutlined /> Update Connected Hosts
+                    <PlusOutlined /> Create Gateway
                   </Button>
-                )}
-              </Col>
-            </Row>
-            <Row style={{ marginTop: '1rem' }}>
-              <Col xs={24}>
-                <div className="table-wrapper">
-                  <Table
-                    columns={connectedHostsTableCols}
-                    dataSource={filteredConnectedHosts}
-                    rowKey="id"
-                    size="small"
-                    scroll={{ x: true }}
-                    ref={internetGatewaysConnectedHostsTableRef}
+                  <Button
+                    title="Go to internet gateways documentation"
+                    style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
+                    href={ExternalLinks.INTERNET_GATEWAYS_DOCS_URL}
+                    target="_blank"
+                    referrerPolicy="no-referrer"
+                    icon={<QuestionCircleOutlined />}
                   />
-                </div>
-              </Col>
-            </Row>
-          </Col>
-        </Row>
-      )}
+                </Col>
+              </Row>
+              <Row style={{ marginTop: '1rem' }}>
+                <Col xs={23}>
+                  <div className="table-wrapper">
+                    <Table
+                      columns={internetGatewaysTableCols}
+                      dataSource={filteredInternetGateways}
+                      rowKey="id"
+                      size="small"
+                      scroll={{ x: true }}
+                      rowClassName={(gateway) => {
+                        return gateway.id === selectedGateway?.id ? 'selected-row' : '';
+                      }}
+                      onRow={(gateway) => {
+                        return {
+                          onClick: () => {
+                            setSelectedGateway(gateway);
+                          },
+                        };
+                      }}
+                      rowSelection={{
+                        type: 'radio',
+                        hideSelectAll: true,
+                        selectedRowKeys: selectedGateway ? [selectedGateway.id] : [],
+                        onSelect: (gateway) => {
+                          setSelectedGateway(gateway);
+                        },
+                      }}
+                    />
+                  </div>
+                </Col>
+              </Row>
+            </Col>
+            <Col xs={24} xl={12}>
+              <Row style={{ width: '100%' }}>
+                <Col xs={24} md={12}>
+                  <Typography.Title style={{ marginTop: '0px' }} level={5}>
+                    Connected Hosts
+                  </Typography.Title>
+                </Col>
+                <Col xs={24} md={12} style={{ textAlign: 'right' }}>
+                  {selectedGateway && (
+                    <Button
+                      type="primary"
+                      style={{ marginRight: '1rem', marginBottom: '.5rem' }}
+                      onClick={() => setIsUpdateInternetGatewayModalOpen(true)}
+                      className="full-width-button-xs"
+                    >
+                      <EditOutlined /> Update Connected Hosts
+                    </Button>
+                  )}
+                </Col>
+              </Row>
+              <Row style={{ marginTop: '1rem' }}>
+                <Col xs={24}>
+                  <div className="table-wrapper">
+                    <Table
+                      columns={connectedHostsTableCols}
+                      dataSource={filteredConnectedHosts}
+                      rowKey="id"
+                      size="small"
+                      scroll={{ x: true }}
+                    />
+                  </div>
+                </Col>
+              </Row>
+            </Col>
+          </Row>
+        )}
+      </div>
 
       {/* misc */}
+      {notifyCtx}
       <AddInternetGatewayModal
         isOpen={isAddInternetGatewayModalOpen}
-        networkId={network.netid}
+        networkId={resolvedNetworkId}
         onCreateInternetGateway={(newNode: Node) => {
           store.updateNode(newNode.id, newNode);
           setSelectedGateway(getExtendedNode(newNode, store.hostsCommonDetails));
@@ -496,12 +513,10 @@ export function InternetGatewaysPage({
         onCancel={() => {
           setIsAddInternetGatewayModalOpen(false);
         }}
-        selectHostRef={createInternetGatewayModalSelectHostRef}
-        selectConnectedHostsRef={createInternetGatewayModalSelectConnectedHostsRef}
       />
       {selectedGateway && (
         <UpdateInternetGatewayModal
-          networkId={network.netid}
+          networkId={resolvedNetworkId}
           key={`update-internet-gateway-${selectedGateway.id}`}
           isOpen={isUpdateInternetGatewayModalOpen}
           internetGateway={selectedGateway}
@@ -513,10 +528,8 @@ export function InternetGatewaysPage({
           onCancel={() => {
             setIsUpdateInternetGatewayModalOpen(false);
           }}
-          selectConnectedHostsRef={updateInternetGatewayModalSelectConnectedHostsRef}
         />
       )}
-      {notifyCtx}
     </div>
   );
 }

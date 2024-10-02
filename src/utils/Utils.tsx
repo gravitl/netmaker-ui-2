@@ -19,6 +19,7 @@ import { BrandingConfig } from '@/models/BrandingConfig';
 import { isSaasBuild } from '@/services/BaseService';
 import { NetworkUsecaseString } from '@/store/networkusecase';
 import NodeStatus from '@/components/ui/Status';
+import { Network } from '@/models/Network';
 
 export type NetworkUsecaseMap = {
   [key in NetworkUsecaseString]: string;
@@ -536,4 +537,43 @@ export function useServerLicense(): { isServerEE: boolean } {
   }, [serverStatus?.status?.is_pro]);
 
   return { isServerEE: serverLicense === 'pro' };
+}
+
+/**
+ * Utility hook to get the active network.
+ * If a network id is provided, it will get the network with that id.
+ *
+ * @param networkId  optional network id of the network to get
+ * @returns  network object and loading status
+ */
+export function useGetActiveNetwork(networkId?: Network['netid']): {
+  network: Network | null;
+  isLoadingNetwork: boolean;
+} {
+  const store = useStore();
+  const [network, setNetwork] = useState<Network | null>(null);
+  const [isLoadingNetwork, setIsLoadingNetwork] = useState(true);
+
+  useEffect(() => {
+    const resolvedNetworkId = networkId || store.activeNetwork;
+
+    if (!resolvedNetworkId) {
+      setIsLoadingNetwork(false);
+      setNetwork(null);
+      return;
+    }
+
+    const activeNetwork = store.networks.find((n) => n.netid === resolvedNetworkId);
+    if (activeNetwork) {
+      setNetwork(activeNetwork);
+      setIsLoadingNetwork(false);
+    } else {
+      console.log('Network not found in store');
+      setIsLoadingNetwork(false);
+      setNetwork(null);
+      return;
+    }
+  }, [networkId, store.activeNetwork, store.networks]);
+
+  return { network, isLoadingNetwork };
 }

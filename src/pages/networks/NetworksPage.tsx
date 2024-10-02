@@ -24,7 +24,7 @@ import AddNetworkModal from '../../components/modals/add-network-modal/AddNetwor
 import { PageProps } from '../../models/Page';
 import { useStore } from '../../store/store';
 import './NetworksPage.scss';
-import { getNetworkRoute, resolveAppRoute } from '@/utils/RouteUtils';
+import { getNetworkPageRoute, getNetworkRoute, resolveAppRoute } from '@/utils/RouteUtils';
 import { NetworksService } from '@/services/NetworksService';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 
@@ -85,12 +85,16 @@ export default function NetworksPage(props: PageProps) {
         compare: (a, b) => a.netid.localeCompare(b.netid),
       },
       defaultSortOrder: 'ascend',
-      render: (netId, network) => (
+      render: (netId) => (
         <Link
+          to={'#'}
+          onClick={() => {
+            store.setActiveNetwork(netId);
+            navigate(getNetworkPageRoute('nodes', netId));
+          }}
           className="text-button-primary-fill-default"
-          to={`${resolveAppRoute(AppRoutes.NETWORKS_ROUTE)}/${encodeURIComponent(netId)}`}
         >
-          {network.displayName}
+          {netId}
         </Link>
       ),
     },
@@ -412,7 +416,8 @@ export default function NetworksPage(props: PageProps) {
                     onRow={(network) => {
                       return {
                         onClick: () => {
-                          navigate(getNetworkRoute(network));
+                          store.setActiveNetwork(network.netid);
+                          navigate(getNetworkPageRoute('nodes', network.netid));
                         },
                       };
                     }}
