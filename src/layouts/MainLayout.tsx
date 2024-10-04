@@ -10,6 +10,7 @@ import {
   LogoutOutlined,
   UserOutlined,
   BookOutlined,
+  DownloadOutlined,
 } from '@ant-design/icons';
 import { Alert, Col, MenuProps, Row, Select, Switch, Typography } from 'antd';
 import { Layout, Menu, theme } from 'antd';
@@ -33,6 +34,7 @@ import VersionUpgradeModal from '@/components/modals/version-upgrade-modal/Versi
 import { lt } from 'semver';
 import { isAdminUserOrRole } from '@/utils/UserMgmtUtils';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
+import DownloadRemotesAccessClientModal from '@/components/modals/remote-access-client-modal/DownloadRemoteAccessClientModal';
 
 const { Content, Sider } = Layout;
 
@@ -185,17 +187,26 @@ export default function MainLayout() {
     [recentNetworks, userHasFullAccess],
   );
 
-  const sideNavBottomItems: MenuProps['items'] = useMemo(
-    () =>
-      [
-        {
-          icon: UserOutlined,
-          label: store.username,
+  const bottomMenuItems: MenuProps['items'] = useMemo(
+    () => [
+      {
+        type: 'divider',
+      },
+      {
+        key: 'download-rac',
+        icon: React.createElement(DownloadOutlined),
+        label: 'Download RAC',
+        onClick: () => {
+          window.open(ExternalLinks.RAC_DOWNLOAD_LINK, '_blank');
         },
-      ].map((item, index) => ({
-        key: String(index + 1),
-        icon: React.createElement(item.icon),
-        label: item.label,
+      },
+      {
+        type: 'divider',
+      },
+      {
+        key: 'user-menu',
+        icon: React.createElement(UserOutlined),
+        label: store.username,
         children: [
           {
             style: {
@@ -323,9 +334,9 @@ export default function MainLayout() {
             ),
           },
         ],
-      })),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isSidebarCollapsed, currentTheme, i18n.language, navigate, setCurrentTheme, store.username, storeLogout],
+      },
+    ],
+    [store.username, isSidebarCollapsed, currentTheme, i18n.language, navigate, setCurrentTheme, storeLogout],
   );
 
   const getActiveSideNavKeys = useCallback(() => {
@@ -557,13 +568,18 @@ export default function MainLayout() {
             </div>
           )}
 
-          {/* bottom items */}
+          {/* bottom items including Download RAC and user menu */}
           <Menu
             theme="light"
             mode="inline"
             selectable={false}
-            items={sideNavBottomItems}
-            style={{ borderRight: 'none', position: 'absolute', bottom: '0' }}
+            items={bottomMenuItems}
+            style={{
+              borderRight: 'none',
+              position: 'absolute',
+              bottom: '0',
+              width: '100%',
+            }}
           />
         </Sider>
 
