@@ -125,7 +125,12 @@ export default function DashboardPage(props: PageProps) {
       },
       defaultSortOrder: 'ascend',
       render: (netId) => (
-        <Link to={`${resolveAppRoute(AppRoutes.NETWORKS_ROUTE)}/${encodeURIComponent(netId)}`}>{netId}</Link>
+        <Link
+          className="text-button-primary-fill-default"
+          to={`${resolveAppRoute(AppRoutes.NETWORKS_ROUTE)}/${encodeURIComponent(netId)}`}
+        >
+          {netId}
+        </Link>
       ),
     },
     {
@@ -276,12 +281,11 @@ export default function DashboardPage(props: PageProps) {
           <Space direction="vertical" size="middle" style={{ width: '100%' }}>
             <Card
               style={{
-                height: '259px',
                 background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
               }}
             >
-              <h3>Introducing Guided Setup</h3>
-              <p>
+              <h2 className="mb-2 text-xl font-bold">Introducing Guided Setup</h2>
+              <p className="mb-3">
                 Unveiling guided setup! This innovative functionality streamlines the setup process for your{' '}
                 {branding.productName} network. Now you can effortlessly configure it for a multitude of other use
                 cases.
@@ -302,8 +306,8 @@ export default function DashboardPage(props: PageProps) {
               <Carousel adaptiveHeight={false} autoplay autoplaySpeed={10000}>
                 <div>
                   <Card>
-                    <h3>Start using {branding.productName}</h3>
-                    <p>
+                    <h2 className="mb-2 text-xl font-bold">Start using {branding.productName}</h2>
+                    <p className="mb-3">
                       {branding.productName} automates a secure superhighway between devices, clouds, virtual machines,
                       and servers using WireGuard®. It blows past any NAT’s, firewalls, or subnets that stand between
                       them to create a flat, simple network. The result is a secure overlay network that spans all your
@@ -320,8 +324,8 @@ export default function DashboardPage(props: PageProps) {
                 </div>
                 <div>
                   <Card>
-                    <h3>Remote Access</h3>
-                    <p>
+                    <h2 className="mb-2 text-xl font-bold">Remote Access</h2>
+                    <p className="mb-3">
                       Remote Access Gateways enable secure access to your network via Clients. The Gateway forwards
                       traffic from the clients into the network, and from the network back to the clients. Clients are
                       simple WireGuard config files, supported on most devices. To use Clients, you must configure a
@@ -347,8 +351,8 @@ export default function DashboardPage(props: PageProps) {
                 </div>
                 <div>
                   <Card>
-                    <h3>Egress</h3>
-                    <p>
+                    <h2 className="mb-2 text-xl font-bold">Egress</h2>
+                    <p className="mb-3">
                       Enable devices in your network to communicate with other devices outside the network via egress
                       gateways. An office network, home network, data center, or cloud region all become easily
                       accessible via the Egress Gateway. You can even set a machine as an Internet Gateway to create a
@@ -372,8 +376,8 @@ export default function DashboardPage(props: PageProps) {
                 </div>
                 <div>
                   <Card>
-                    <h3>Relays</h3>
-                    <p>
+                    <h2 className="mb-2 text-xl font-bold">Relays</h2>
+                    <p className="mb-3">
                       Enable devices in your network to communicate with otherwise unreachable devices with relays.{' '}
                       {branding.productName} uses Turn servers to automatically route traffic in these scenarios, but
                       sometimes, you’d rather specify which device should be routing the traffic

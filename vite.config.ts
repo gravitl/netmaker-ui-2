@@ -19,6 +19,9 @@ export default defineConfig({
       '@': `${__dirname}/src`,
     },
   },
+  optimizeDeps: {
+    exclude: ['tailwindcss', 'autoprefixer'],
+  },
   test: {
     name: 'NMUI',
     globals: true,
