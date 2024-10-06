@@ -77,6 +77,7 @@ export default function ContinueInvitePage(props: ContinueInvitePageProps) {
       const payload: any = { ...formData };
       delete payload['login-method'];
       delete payload['confirm-password'];
+      payload.username = encodeURIComponent(payload.username || '');
       await UsersService.userInviteSignup(inviteCode, payload);
       login(formData);
     } catch (err) {
