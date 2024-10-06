@@ -553,6 +553,16 @@ export default function MainLayout() {
                 <Typography.Text style={{ fontSize: 'inherit' }}>
                   Server: {store.serverConfig?.Version ?? 'n/a'}
                 </Typography.Text>
+
+                {isSaasBuild && (
+                  <>
+                    <br />
+                    <Typography.Text style={{ fontSize: 'inherit' }} type="secondary">
+                      Tenant ID: {store.serverConfig?.NetmakerTenantID ?? 'n/a'}
+                    </Typography.Text>
+                  </>
+                )}
+                <br />
               </div>
             </div>
           )}
