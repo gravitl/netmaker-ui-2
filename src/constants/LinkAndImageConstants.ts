@@ -23,6 +23,7 @@ const RAG_IMG = '/rag.webp';
 const NET_IMG = '/network.webp';
 const WELCOME_IMG = '/welcome-image.webp';
 
+
 const RAC_DOWNLOAD_LINK = 'https://www.netmaker.io/download';
 
 export const ExternalLinks = {
