@@ -21,6 +21,7 @@ const USER_MGMT_DOCS_INVITES_URL =
 const EGRESS_IMG = '/egress.webp';
 const RAG_IMG = '/rag.webp';
 const NET_IMG = '/network.webp';
+const WELCOME_IMG = '/welcome-image.webp';
 
 const RAC_DOWNLOAD_LINK = 'https://www.netmaker.io/download';
 
@@ -47,4 +48,5 @@ export const AppImages = {
   EGRESS_IMG,
   RAG_IMG,
   NET_IMG,
+  WELCOME_IMG,
 };
