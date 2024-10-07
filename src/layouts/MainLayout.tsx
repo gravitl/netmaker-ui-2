@@ -35,7 +35,6 @@ import { lt } from 'semver';
 import { isAdminUserOrRole } from '@/utils/UserMgmtUtils';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 import WelcomeModal from '@/components/modals/welcome-modal/WelcomeModal';
-import DownloadRemotesAccessClientModal from '@/components/modals/remote-access-client-modal/DownloadRemoteAccessClientModal';
 
 const { Content, Sider } = Layout;
 
