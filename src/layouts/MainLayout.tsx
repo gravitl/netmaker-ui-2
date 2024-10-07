@@ -11,7 +11,7 @@ import {
   UserOutlined,
   BookOutlined,
 } from '@ant-design/icons';
-import { Alert, Col, MenuProps, Row, Select, Switch, Typography } from 'antd';
+import { Alert, Button, Col, MenuProps, Row, Select, Switch, Typography } from 'antd';
 import { Layout, Menu, theme } from 'antd';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
@@ -33,6 +33,7 @@ import VersionUpgradeModal from '@/components/modals/version-upgrade-modal/Versi
 import { lt } from 'semver';
 import { isAdminUserOrRole } from '@/utils/UserMgmtUtils';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
+import WelcomeModal from '@/components/modals/welcome-modal/WelcomeModal';
 
 const { Content, Sider } = Layout;
 
@@ -61,6 +62,7 @@ export default function MainLayout() {
   const [isVersionUpgradeModalOpen, setIsVersionUpgradeModalOpen] = useState(false);
   const [latestNetmakerVersion, setLatestNetmakerVersion] = useState('');
   const [canUpgrade, setCanUpgrade] = useState(false);
+  const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false);
 
   const recentNetworks = useMemo(
     // TODO: implement most recent ranking
@@ -437,8 +439,15 @@ export default function MainLayout() {
     checkLatestVersion();
   }, [storeFetchNetworks]);
 
+  useEffect(() => {
+    if (store.isNewTenant && isSaasBuild) {
+      setIsWelcomeModalOpen(true);
+    }
+  }, [store.isNewTenant]);
+
   return (
     <AppErrorBoundary key={location.pathname}>
+      <WelcomeModal isOpen={isWelcomeModalOpen} onClose={() => setIsWelcomeModalOpen(false)} />
       <Layout hasSider>
         <Sider
           collapsible
