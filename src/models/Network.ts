@@ -32,7 +32,3 @@ export type NetworkPayload = Modify<
     defaultudpholepunch: 'no' | 'yes';
   }
 >;
-
-export type NetworkStat = Network & { hosts: number };
-
-export type NetworkStatPayload = NetworkPayload & { hosts: number };

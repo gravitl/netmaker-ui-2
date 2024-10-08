@@ -157,15 +157,14 @@ export default function DashboardPage(props: PageProps) {
     },
     {
       title: 'Hosts Count',
-      dataIndex: 'hosts',
-      // render(_, network) {
-      //   const nodeCount = store.nodes?.filter((node) => node.network === network.netid).length ?? 0;
-      //   return (
-      //     <div onClick={(ev) => ev.stopPropagation()}>
-      //       <Typography.Text>{nodeCount}</Typography.Text>
-      //     </div>
-      //   );
-      // },
+      render(_, network) {
+        const nodeCount = store.nodes?.filter((node) => node.network === network.netid).length ?? 0;
+        return (
+          <div onClick={(ev) => ev.stopPropagation()}>
+            <Typography.Text>{nodeCount}</Typography.Text>
+          </div>
+        );
+      },
     },
     {
       title: 'Network Last Modified',

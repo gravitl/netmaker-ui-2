@@ -2,20 +2,15 @@ import { NodeAclContainer } from '@/models/Acl';
 import { ApiRoutes } from '../constants/ApiRoutes';
 import { AccessKey } from '../models/AccessKey';
 import { DNS } from '../models/Dns';
-import { Network, NetworkPayload, NetworkStatPayload } from '../models/Network';
+import { Network, NetworkPayload } from '../models/Network';
 import { axiosService } from './BaseService';
 import { CreateAccessKeyDto } from './dtos/CreateAccessKeyDto';
 import { CreateNetworkDto } from './dtos/CreateNetworkDto';
 import { NetworkMetrics, NodeOrClientMetric } from '@/models/Metrics';
 import { ExternalClient } from '@/models/ExternalClient';
-import { GenericResponseDto } from './dtos/GenericDto';
 
 function getNetworks() {
   return axiosService.get<NetworkPayload[]>(`${ApiRoutes.NETWORKS}`);
-}
-
-function getNetworksWithStats() {
-  return axiosService.get<GenericResponseDto<NetworkStatPayload[]>>(`${ApiRoutes.NETWORKS_STATS}`);
 }
 
 function createNetwork(payload: CreateNetworkDto) {
@@ -84,7 +79,6 @@ function getClientMetrics(networkId: Network['netid']) {
 
 export const NetworksService = {
   getNetworks,
-  getNetworksWithStats,
   createNetwork,
   updateNetwork,
   deleteNetwork,

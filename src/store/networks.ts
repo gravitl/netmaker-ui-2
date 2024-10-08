@@ -1,19 +1,19 @@
 import { NetworksService } from '@/services/NetworksService';
 import { convertNetworkPayloadToUiNetwork } from '@/utils/NetworkUtils';
 import { StateCreator } from 'zustand';
-import { Network, NetworkStat } from '../models/Network';
+import { Network } from '../models/Network';
 
 export interface INetworkSlice {
   // state
-  networks: NetworkStat[];
+  networks: Network[];
   isFetchingNetworks: boolean;
 
   // actions
   fetchNetworks: () => Promise<void>;
-  // setNetworks: (networks: Network[]) => void;
+  setNetworks: (networks: Network[]) => void;
   addNetwork: (network: Network) => void;
   removeNetwork: (networkId: Network['netid']) => void;
-  // updateNetwork: (networkId: Network['netid'], newNetwork: Network) => void;
+  updateNetwork: (networkId: Network['netid'], newNetwork: Network) => void;
   deleteNetwork: (networkId: Network['netid']) => void;
 }
 
@@ -24,9 +24,9 @@ const createNetworkSlice: StateCreator<INetworkSlice, [], [], INetworkSlice> = (
   async fetchNetworks() {
     try {
       set(() => ({ isFetchingNetworks: true }));
-      const nets = (await NetworksService.getNetworksWithStats()).data.Response ?? [];
+      const networks = (await NetworksService.getNetworks()).data ?? [];
       set(() => ({
-        networks: nets.map((ns) => ({ ...convertNetworkPayloadToUiNetwork(ns), hosts: ns.hosts })),
+        networks: networks.map((network) => convertNetworkPayloadToUiNetwork(network)),
         isFetchingNetworks: false,
       }));
     } catch (err) {
@@ -34,23 +34,23 @@ const createNetworkSlice: StateCreator<INetworkSlice, [], [], INetworkSlice> = (
       set(() => ({ isFetchingNetworks: false }));
     }
   },
-  // setNetworks: (networks: Network[]) => set(() => ({ networks: networks })),
+  setNetworks: (networks: Network[]) => set(() => ({ networks: networks })),
   addNetwork(network) {
-    set((state) => ({ networks: [...state.networks, { ...network, hosts: 0 }] }));
+    set((state) => ({ networks: [...state.networks, network] }));
   },
   removeNetwork(networkId) {
     set((state) => ({ networks: state.networks.filter((network) => network.netid !== networkId) }));
   },
-  // updateNetwork(networkId, newNetwork) {
-  //   set((state) => ({
-  //     networks: state.networks.map((network) => {
-  //       if (network.netid === networkId) {
-  //         return newNetwork;
-  //       }
-  //       return network;
-  //     }),
-  //   }));
-  // },
+  updateNetwork(networkId, newNetwork) {
+    set((state) => ({
+      networks: state.networks.map((network) => {
+        if (network.netid === networkId) {
+          return newNetwork;
+        }
+        return network;
+      }),
+    }));
+  },
   deleteNetwork(networkId) {
     set((state) => ({ networks: state.networks.filter((network) => network.netid !== networkId) }));
   },

@@ -3692,32 +3692,32 @@ export default function NetworkDetailsPage(props: PageProps) {
     loadMetrics,
   ]);
 
-  // const onNetworkFormEdit = useCallback(async () => {
-  //   try {
-  //     const formData = await form.validateFields();
-  //     const network = store.networks.find((network) => network.netid === networkId);
-  //     if (!networkId || !network) {
-  //       throw new Error('Network not found');
-  //     }
-  //     const newNetwork = (
-  //       await NetworksService.updateNetwork(networkId, convertUiNetworkToNetworkPayload({ ...network, ...formData }))
-  //     ).data;
-  //     store.updateNetwork(networkId, convertNetworkPayloadToUiNetwork(newNetwork));
-  //     notify.success({ message: `Network ${networkId} updated` });
-  //     setIsEditingNetwork(false);
-  //   } catch (err) {
-  //     if (err instanceof AxiosError) {
-  //       notify.error({
-  //         message: 'Failed to save changes',
-  //         description: extractErrorMsg(err),
-  //       });
-  //     } else {
-  //       notify.error({
-  //         message: err instanceof Error ? err.message : 'Failed to save changes',
-  //       });
-  //     }
-  //   }
-  // }, [form, networkId, notify, store]);
+  const onNetworkFormEdit = useCallback(async () => {
+    try {
+      const formData = await form.validateFields();
+      const network = store.networks.find((network) => network.netid === networkId);
+      if (!networkId || !network) {
+        throw new Error('Network not found');
+      }
+      const newNetwork = (
+        await NetworksService.updateNetwork(networkId, convertUiNetworkToNetworkPayload({ ...network, ...formData }))
+      ).data;
+      store.updateNetwork(networkId, convertNetworkPayloadToUiNetwork(newNetwork));
+      notify.success({ message: `Network ${networkId} updated` });
+      setIsEditingNetwork(false);
+    } catch (err) {
+      if (err instanceof AxiosError) {
+        notify.error({
+          message: 'Failed to save changes',
+          description: extractErrorMsg(err),
+        });
+      } else {
+        notify.error({
+          message: err instanceof Error ? err.message : 'Failed to save changes',
+        });
+      }
+    }
+  }, [form, networkId, notify, store]);
 
   const onNetworkDelete = useCallback(async () => {
     try {
