@@ -20,8 +20,10 @@ import { getNetworkHostRoute, resolveAppRoute } from '@/utils/RouteUtils';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import {
   CheckOutlined,
+  CloseCircleFilled,
   DashOutlined,
   DeleteOutlined,
+  DownloadOutlined,
   DownOutlined,
   EditOutlined,
   ExclamationCircleFilled,
@@ -117,6 +119,7 @@ import { TourType } from '../DashboardPage';
 import { Waypoints } from 'lucide-react';
 import { isAdminUserOrRole } from '@/utils/UserMgmtUtils';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
+import RacDownloadBanner from '@/components/RacDownloadBanner';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -2118,6 +2121,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     return (
       <div className="network-hosts-tab-content" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
         <Row justify="space-between" style={{ marginBottom: '1rem', width: '100%' }}>
+          {isServerEE && <RacDownloadBanner />}
           <Col xs={24} md={8}>
             <Input
               size="large"
@@ -2581,7 +2585,7 @@ export default function NetworkDetailsPage(props: PageProps) {
             <Row>
               {isServerEE && (
                 <Row style={{ width: '100%' }}>
-                  <Col
+                  {/* <Col
                     style={{
                       marginBottom: '1rem',
                       background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
@@ -2611,7 +2615,8 @@ export default function NetworkDetailsPage(props: PageProps) {
                       {' '}
                       Download RAC
                     </Button>
-                  </Col>
+                  </Col> */}
+                  <RacDownloadBanner />
                 </Row>
               )}
 

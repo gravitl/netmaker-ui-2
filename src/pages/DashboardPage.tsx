@@ -17,6 +17,7 @@ import {
 } from 'antd';
 import {
   ArrowRightOutlined,
+  DesktopOutlined,
   DownOutlined,
   GlobalOutlined,
   LaptopOutlined,
@@ -38,6 +39,7 @@ import { isSaasBuild } from '@/services/BaseService';
 import { useBranding, useServerLicense } from '@/utils/Utils';
 import QuickSetupModal from '@/components/modals/quick-setup-modal/QuickSetupModal';
 import { Network } from '@/models/Network';
+import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 
 export type TourType =
   | 'relays'
@@ -223,38 +225,30 @@ export default function DashboardPage(props: PageProps) {
               )}
             </Col>
             {/* <Col xs={6}></Col> */}
-            <Col xs={24} lg={15} xl={12} style={{ textAlign: 'right' }}>
-              <Space direction="horizontal" size="large" align="end" wrap className="dashboard-page-row-space">
-                <Input
+            <Col xs={24} style={{ textAlign: 'right', width: '100%' }}>
+              <Space
+                direction="horizontal"
+                size="large"
+                align="end"
+                wrap
+                className="dashboard-page-row-space"
+                style={{ width: '100%', justifyContent: 'flex-end' }}
+              >
+                {/* <Input
                   placeholder="Search..."
                   prefix={<SearchOutlined />}
                   style={{ borderRadius: '24px', width: '20rem' }}
-                />
-                <Dropdown.Button
-                  style={{ marginTop: '-3rem', height: '100%' }}
-                  type="primary"
-                  menu={{
-                    items: [
-                      {
-                        key: 'host',
-                        label: (
-                          <>
-                            <LaptopOutlined /> <Typography.Text>Connect new Host</Typography.Text>
-                          </>
-                        ),
-                        onClick: () => {
-                          // navigate(getNewHostRoute(AppRoutes.HOSTS_ROUTE));
-                          setIsNewHostModalOpen(true);
-                        },
-                      },
-                    ],
-                  }}
-                  placement="bottomRight"
-                  icon={<DownOutlined />}
-                  onClick={() => setIsAddNetworkModalOpen(true)}
-                >
-                  <GlobalOutlined /> Create
-                </Dropdown.Button>
+                /> */}
+                <Button type="primary" onClick={() => setIsAddNetworkModalOpen(true)}>
+                  <GlobalOutlined /> Create Network
+                </Button>
+                <Button onClick={() => setIsNewHostModalOpen(true)}>
+                  <PlusOutlined /> Add endpoint
+                </Button>
+                <span style={{ borderLeft: '1px solid #303030', height: '24px', margin: '0 4px' }} />
+                <Button onClick={() => window.open(ExternalLinks.RAC_DOWNLOAD_LINK, '_blank')}>
+                  <DesktopOutlined /> Desktop Client
+                </Button>
                 <Tooltip title="Docs">
                   <QuestionCircleOutlined
                     style={{ cursor: 'pointer', fontSize: '1.2rem' }}
@@ -263,14 +257,6 @@ export default function DashboardPage(props: PageProps) {
                     }}
                   />
                 </Tooltip>
-                {/* <Tooltip title="Notifications">
-                  <BellOutlined
-                    style={{ cursor: 'pointer', fontSize: '1.2rem' }}
-                    onClick={() => {
-                      // TODO: notifications
-                    }}
-                  />
-                </Tooltip> */}
               </Space>
             </Col>
           </Row>

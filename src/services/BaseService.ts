@@ -21,6 +21,7 @@ export const NMUI_TENANT_NAME_LOCALSTORAGE_KEY = 'nmui-tn-lsk';
 export const NMUI_AMUI_USER_ID_LOCALSTORAGE_KEY = 'nmui-amuiuid-lsk';
 export const NMUI_USER_LOCALSTORAGE_KEY = 'nmui-u-lsk';
 export const NMUI_USER_PLATFORM_ROLE_LOCALSTORAGE_KEY = 'nmui-upr-lsk';
+export const NMUI_SHOW_RAC_BANNER_LOCALSTORAGE_KEY = 'nmui-show-rac-banner';
 
 // function to resolve the particular SaaS tenant's backend URL, ...
 export async function setupTenantConfig(): Promise<void> {
