@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 import { CloseCircleFilled, DownloadOutlined } from '@ant-design/icons';
 import { Button } from 'antd';
