@@ -9,6 +9,8 @@ import {
   LoadingOutlined,
   LogoutOutlined,
   UserOutlined,
+  BookOutlined,
+  DownloadOutlined,
 } from '@ant-design/icons';
 import { Alert, Button, Col, MenuProps, Row, Select, Switch, Typography } from 'antd';
 import { Layout, Menu, theme } from 'antd';
@@ -124,7 +126,7 @@ export default function MainLayout() {
           ? {
               key: 'hosts',
               icon: LaptopOutlined,
-              label: 'Hosts',
+              label: 'Global Hosts',
             }
           : undefined!,
         userHasFullAccess
@@ -158,6 +160,13 @@ export default function MainLayout() {
               ]
             : [],
         )
+        .concat([
+          {
+            key: 'documentation',
+            icon: BookOutlined,
+            label: 'Documentation',
+          },
+        ])
         .map(
           (item) =>
             item && {
@@ -179,17 +188,26 @@ export default function MainLayout() {
     [recentNetworks, userHasFullAccess],
   );
 
-  const sideNavBottomItems: MenuProps['items'] = useMemo(
-    () =>
-      [
-        {
-          icon: UserOutlined,
-          label: store.username,
+  const bottomMenuItems: MenuProps['items'] = useMemo(
+    () => [
+      {
+        type: 'divider',
+      },
+      {
+        key: 'download-rac',
+        icon: React.createElement(DownloadOutlined),
+        label: 'Download RAC',
+        onClick: () => {
+          window.open(ExternalLinks.RAC_DOWNLOAD_LINK, '_blank');
         },
-      ].map((item, index) => ({
-        key: String(index + 1),
-        icon: React.createElement(item.icon),
-        label: item.label,
+      },
+      {
+        type: 'divider',
+      },
+      {
+        key: 'user-menu',
+        icon: React.createElement(UserOutlined),
+        label: store.username,
         children: [
           {
             style: {
@@ -238,12 +256,12 @@ export default function MainLayout() {
               >
                 <GlobalOutlined />
                 <Select
-                  style={{ width: '100%' }}
                   value={i18n.language}
+                  className="w-full "
                   options={[
                     {
                       label: (
-                        <>
+                        <span className="flex items-center gap-2">
                           <img
                             style={{ width: '20px', height: '12px' }}
                             src="https://img.freepik.com/free-vector/illustration-uk-flag_53876-18166.jpg?w=1800&t=st=1679225900~exp=1679226500~hmac=0cc9ee0d4d5196bb3c610ca92d669f3c0ebf95431423a2c4ff7196f81c10891e"
@@ -252,7 +270,7 @@ export default function MainLayout() {
                             referrerPolicy="no-referrer"
                           />{' '}
                           English
-                        </>
+                        </span>
                       ),
                       value: 'en',
                     },
@@ -317,9 +335,9 @@ export default function MainLayout() {
             ),
           },
         ],
-      })),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isSidebarCollapsed, currentTheme, i18n.language, navigate, setCurrentTheme, store.username, storeLogout],
+      },
+    ],
+    [store.username, isSidebarCollapsed, currentTheme, i18n.language, navigate, setCurrentTheme, storeLogout],
   );
 
   const getActiveSideNavKeys = useCallback(() => {
@@ -461,10 +479,10 @@ export default function MainLayout() {
             zIndex: 1000,
           }}
           zeroWidthTriggerStyle={{
-            border: `2px solid ${branding.primaryColor}`,
+            border: `2px solid ${store.currentTheme === 'dark' ? branding.primaryColorDark : branding.primaryColorLight}`,
             background: 'transparent',
             borderLeft: 'none',
-            color: branding.primaryColor,
+            color: store.currentTheme === 'dark' ? branding.primaryColorDark : branding.primaryColorLight,
             top: 0,
           }}
           breakpoint="lg"
@@ -520,6 +538,9 @@ export default function MainLayout() {
                 case 'users':
                   navigate(resolveAppRoute(AppRoutes.USERS_ROUTE));
                   break;
+                case 'documentation':
+                  window.open(ExternalLinks.UI_DOCS_URL, '_blank');
+                  break;
                 default:
                   if (menu.key.startsWith('networks/')) {
                     navigate(getNetworkRoute(menu.key.replace('networks/', '')));
@@ -548,7 +569,7 @@ export default function MainLayout() {
                   {canUpgrade && <CloudSyncOutlined style={{ marginLeft: '.5rem' }} className="update-btn" />}
                 </Typography.Text>
                 <br />
-                <Typography.Text style={{ fontSize: 'inherit' }} type="secondary">
+                <Typography.Text style={{ fontSize: 'inherit' }}>
                   Server: {store.serverConfig?.Version ?? 'n/a'}
                 </Typography.Text>
 
@@ -565,13 +586,18 @@ export default function MainLayout() {
             </div>
           )}
 
-          {/* bottom items */}
+          {/* bottom items including Download RAC and user menu */}
           <Menu
             theme="light"
             mode="inline"
             selectable={false}
-            items={sideNavBottomItems}
-            className={isSidebarCollapsed ? 'bottom-sidebar-menu-close' : 'bottom-sidebar-menu-open'}
+            items={bottomMenuItems}
+            style={{
+              borderRight: 'none',
+              position: 'absolute',
+              bottom: '0',
+              width: '100%',
+            }}
           />
         </Sider>
 

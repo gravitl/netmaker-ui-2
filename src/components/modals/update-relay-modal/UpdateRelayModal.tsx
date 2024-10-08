@@ -60,6 +60,7 @@ export default function UpdateRelayModal({
   const [selectedRelayedIds, setSelectedRelayedIds] = useState<Host['id'][]>(relay.relaynodes ?? []);
   const [relayedSearch, setRelayedSearch] = useState('');
   const [isDropDownOpen, setIsDropDownOpen] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
 
   const getNodeConnectivity = useCallback((node: Node) => {
     if (getNodeConnectivityStatus(node) === 'error') return <Badge status="error" text="Error" />;
@@ -128,13 +129,8 @@ export default function UpdateRelayModal({
       await form.validateFields();
       setIsSubmitting(true);
       const uniqueRelayedIds = [...new Set(selectedRelayedIds)];
-      let newRelay: Node;
-      if (uniqueRelayedIds.length > 0) {
-        newRelay = (await NodesService.updateNode(relay.id, networkId, { ...relay, relaynodes: selectedRelayedIds }))
-          .data;
-      } else {
-        newRelay = (await NodesService.deleteRelay(relay.id, networkId)).data;
-      }
+      const newRelay = (await NodesService.updateNode(relay.id, networkId, { ...relay, relaynodes: uniqueRelayedIds }))
+        .data;
       store.updateNode(relay.id, newRelay);
       onUpdateRelay(newRelay);
       notify.success({ message: 'Relay updated' });
@@ -151,8 +147,20 @@ export default function UpdateRelayModal({
   useEffect(() => {
     if (isOpen) {
       setSelectedRelayedIds(relay.relaynodes ?? []);
+      setHasChanges(false);
     }
-  }, [isOpen]);
+  }, [isOpen, relay.relaynodes]);
+
+  useEffect(() => {
+    const initialRelayedIds = new Set(relay.relaynodes ?? []);
+    const currentRelayedIds = new Set(selectedRelayedIds);
+
+    const hasAddedOrRemoved =
+      selectedRelayedIds.length !== initialRelayedIds.size ||
+      selectedRelayedIds.some((id) => !initialRelayedIds.has(id));
+
+    setHasChanges(hasAddedOrRemoved);
+  }, [selectedRelayedIds, relay.relaynodes]);
 
   return (
     <Modal
@@ -316,23 +324,22 @@ export default function UpdateRelayModal({
             </Row>
           ))}
         </div>
-
         <Divider style={{ margin: '0px 0px 2rem 0px' }} />
         <div className="CustomModalBody">
           <Row>
             <Col xs={24} style={{ textAlign: 'left' }}>
               <Button
                 type="primary"
+                disabled={!hasChanges}
                 onClick={updateRelay}
                 loading={isSubmitting}
-                danger={selectedRelayedIds.length === 0}
                 data-nmui-intercom="update-relay-form_submitbtn"
               >
-                {selectedRelayedIds.length === 0 ? 'Delete Relay' : 'Update Relay'}
+                Update Relay
               </Button>
             </Col>
           </Row>
-        </div>
+        </div>{' '}
       </Form>
 
       {/* misc */}
