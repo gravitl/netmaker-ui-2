@@ -1,6 +1,7 @@
 import { NodesService } from '@/services/NodesService';
 import { StateCreator } from 'zustand';
 import { Node } from '../models/Node';
+import { useStore } from './store';
 
 export interface INodeSlice {
   nodes: Node[];
@@ -11,7 +12,7 @@ export interface INodeSlice {
   fetchNodes: () => Promise<void>;
 }
 
-const createNodeSlice: StateCreator<INodeSlice, [], [], INodeSlice> = (set) => ({
+const createNodeSlice: StateCreator<INodeSlice, [], [], INodeSlice> = (set, get) => ({
   nodes: [],
   isFetchingNodes: false,
   setNodes: (nodes: Node[]) => set(() => ({ nodes })),
@@ -31,7 +32,17 @@ const createNodeSlice: StateCreator<INodeSlice, [], [], INodeSlice> = (set) => (
   async fetchNodes() {
     try {
       set(() => ({ isFetchingNodes: true }));
-      const nodes = (await NodesService.getNodes()).data ?? [];
+      // const nodes = (await NodesService.getNodes()).data ?? [];
+
+      const networks = useStore.getState().networks;
+      const res = await Promise.allSettled(networks.map((network) => NodesService.getNetworkNodes(network.netid)));
+      const nodes: Node[] = [];
+      res.forEach((result) => {
+        if (result.status === 'fulfilled') {
+          nodes.push(...result.value.data);
+        }
+      });
+
       set(() => ({ nodes, isFetchingNodes: false }));
     } catch (err) {
       console.error(err);

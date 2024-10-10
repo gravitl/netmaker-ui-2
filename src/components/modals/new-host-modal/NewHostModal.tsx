@@ -254,8 +254,8 @@ export default function NewHostModal({
             <Col xs={24} ref={connectHostModalEnrollmentKeysTabRef}>
               <Card>
                 <p style={{ marginTop: '0' }}>Select an enrollment key to register with</p>
-                <div className="" style={{ textAlign: 'right' }}>
-                  <Button size="small" type="link" onClick={() => setIsAddEnrollmentKeyModalOpen(true)}>
+                <div className="" style={{ textAlign: 'right', marginBottom: '1rem' }}>
+                  <Button size="small" type="primary" onClick={() => setIsAddEnrollmentKeyModalOpen(true)}>
                     Create new Key
                   </Button>
                 </div>

@@ -10,6 +10,7 @@ interface AppErrorPageProps {
 
 export function AppErrorPage(props: AppErrorPageProps) {
   const navigate = useNavigate();
+  const currentPage = window.location.pathname;
 
   return (
     <Layout style={{ position: 'relative', minHeight: '100dvh', justifyContent: 'center', alignItems: 'center' }}>
@@ -38,7 +39,7 @@ export function AppErrorPage(props: AppErrorPageProps) {
                   type="text"
                   size="large"
                   onClick={() => {
-                    fileBugReport(`${props.error}\n${JSON.stringify(props.info, null, 4)}`);
+                    fileBugReport(`${props.error}\n${JSON.stringify(props.info, null, 4)}`, currentPage);
                     navigate(resolveAppRoute(AppRoutes.DASHBOARD_ROUTE));
                   }}
                 >

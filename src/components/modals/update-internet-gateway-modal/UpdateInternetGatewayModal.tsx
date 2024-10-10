@@ -26,6 +26,7 @@ import { CloseOutlined, DownOutlined, UpOutlined } from '@ant-design/icons';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { NodesService } from '@/services/NodesService';
 import { useServerLicense } from '@/utils/Utils';
+import { isEqual } from 'lodash';
 
 interface UpdateInternetGatewayModalProps {
   isOpen: boolean;
@@ -62,6 +63,7 @@ export default function UpdateInternetGatewayModal({
   const [selectedConnectedHostsIds, setSelectedConnectedHostsIds] = useState<Node['id'][]>([]);
   const [connectedHostsSearch, setConnectedHostsSearch] = useState('');
   const [isSelectOpen, setIsSelectOpen] = useState(false);
+  const [initialConnectedHostsIds, setInitialConnectedHostsIds] = useState<Node['id'][]>([]);
 
   const getNodeConnectivity = useCallback((node: Node) => {
     if (getNodeConnectivityStatus(node) === 'error') return <Badge status="error" text="Error" />;
@@ -111,7 +113,9 @@ export default function UpdateInternetGatewayModal({
   const resetModal = () => {
     form.resetFields();
     setConnectedHostsSearch('');
-    setSelectedConnectedHostsIds(internetGateway.inet_node_req.inet_node_client_ids ?? []);
+    const initialIds = internetGateway.inet_node_req.inet_node_client_ids ?? [];
+    setSelectedConnectedHostsIds(initialIds);
+    setInitialConnectedHostsIds(initialIds);
   };
 
   const updateInternetGateway = async () => {
@@ -135,6 +139,10 @@ export default function UpdateInternetGatewayModal({
       setIsSubmitting(false);
     }
   };
+
+  const hasChanges = useMemo(() => {
+    return !isEqual(selectedConnectedHostsIds.sort(), initialConnectedHostsIds.sort());
+  }, [selectedConnectedHostsIds, initialConnectedHostsIds]);
 
   useEffect(() => {
     if (isOpen) {
@@ -273,7 +281,6 @@ export default function UpdateInternetGatewayModal({
             </Row>
           ))}
         </div>
-
         <Divider style={{ margin: '0px 0px 2rem 0px' }} />
         <div className="CustomModalBody">
           <Row>
@@ -282,13 +289,14 @@ export default function UpdateInternetGatewayModal({
                 type="primary"
                 onClick={updateInternetGateway}
                 loading={isSubmitting}
+                disabled={!hasChanges}
                 data-nmui-intercom="update-internet-gateway-form_submitbtn"
               >
                 Update Internet Gateway
               </Button>
             </Col>
           </Row>
-        </div>
+        </div>{' '}
       </Form>
 
       {/* misc */}

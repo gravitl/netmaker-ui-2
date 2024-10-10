@@ -123,7 +123,7 @@ export default function LoginPage(props: LoginPageProps) {
     store.setStore({ jwt: token, baseUrl: backend });
     truncateQueryParamsFromCurrentUrl();
     // TODO: load username
-    navigate(resolveAppRoute(AppRoutes.DASHBOARD_ROUTE));
+    navigate(resolveAppRoute(AppRoutes.INDEX_ROUTE));
     return null;
   } else {
     if (oauthToken) {
@@ -132,13 +132,13 @@ export default function LoginPage(props: LoginPageProps) {
         getUserAndUpdateInStore(oauthUser);
       }
       truncateQueryParamsFromCurrentUrl();
-      navigate(resolveAppRoute(AppRoutes.DASHBOARD_ROUTE));
+      navigate(resolveAppRoute(AppRoutes.INDEX_ROUTE));
       return null;
     }
   }
 
   if (store.isLoggedIn()) {
-    navigate(resolveAppRoute(AppRoutes.DASHBOARD_ROUTE));
+    navigate(resolveAppRoute(AppRoutes.INDEX_ROUTE));
   }
 
   return (

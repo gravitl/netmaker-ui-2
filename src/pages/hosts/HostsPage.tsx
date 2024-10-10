@@ -313,7 +313,11 @@ export default function HostsPage(props: PageProps) {
       {
         title: 'Name',
         dataIndex: 'name',
-        render: (_, host) => <Link to={getHostRoute(host)}>{host.name}</Link>,
+        render: (_, host) => (
+          <Link className="text-button-primary-fill-default" to={getHostRoute(host)}>
+            {host.name}
+          </Link>
+        ),
         sorter(a, b) {
           return a.name.localeCompare(b.name);
         },
@@ -1021,7 +1025,7 @@ export default function HostsPage(props: PageProps) {
           <>
             <Row className="page-row-padding">
               <Col xs={24}>
-                <Typography.Title level={3}>Hosts</Typography.Title>
+                <Typography.Title level={3}>Global Hosts</Typography.Title>
               </Col>
             </Row>
 
