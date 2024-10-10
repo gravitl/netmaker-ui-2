@@ -568,13 +568,16 @@ export default function MainLayout() {
                 {isSaasBuild && (
                   <>
                     <br />
+                    <Typography.Text style={{ fontSize: 'inherit', textOverflow: 'ellipsis' }} type="secondary">
+                      Tenant ID:{' '}
+                    </Typography.Text>
                     <Typography.Text
                       style={{ fontSize: 'inherit', textOverflow: 'ellipsis' }}
                       type="secondary"
                       title={store.tenantId || store.serverConfig?.NetmakerTenantID || ''}
                       copyable
                     >
-                      Tenant ID: {store.tenantId || store.serverConfig?.NetmakerTenantID || 'n/a'}
+                      {store.tenantId || store.serverConfig?.NetmakerTenantID || 'n/a'}
                     </Typography.Text>
                   </>
                 )}
