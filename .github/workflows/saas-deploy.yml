@@ -78,15 +78,15 @@ jobs:
       - name: Set Intercom vars
         run: |
           if [ "${{ github.event.inputs.environment }}" == "dev" ]; then
-            kubectl set env deployment ${{ env.VERSION_WITH_DASHES }} PUBLIC_POSTHOG_HOST=${{ secrets.REACT_APP_PUBLIC_POSTHOG_DEV_KEY }} -n accounts
+            kubectl set env deployment ${{ env.VERSION_WITH_DASHES }} PUBLIC_POSTHOG_KEY=${{ secrets.REACT_APP_PUBLIC_POSTHOG_DEV_KEY }} -n accounts
           elif [ "${{ github.event.inputs.environment }}" == "staging" ]; then
-            kubectl set env deployment ${{ env.VERSION_WITH_DASHES }} PUBLIC_POSTHOG_HOST=${{ secrets.REACT_APP_PUBLIC_POSTHOG_DEV_KEY }} -n accounts
+            kubectl set env deployment ${{ env.VERSION_WITH_DASHES }} PUBLIC_POSTHOG_KEY=${{ secrets.REACT_APP_PUBLIC_POSTHOG_DEV_KEY }} -n accounts
           elif [ "${{ github.event.inputs.environment }}" == "prod" ]; then
-            kubectl set env deployment ${{ env.VERSION_WITH_DASHES }} PUBLIC_POSTHOG_HOST=${{ secrets.REACT_APP_PUBLIC_POSTHOG_KEY }} -n accounts
+            kubectl set env deployment ${{ env.VERSION_WITH_DASHES }} PUBLIC_POSTHOG_KEY=${{ secrets.REACT_APP_PUBLIC_POSTHOG_KEY }} -n accounts
           fi
             
           kubectl set env deployment ${{ env.VERSION_WITH_DASHES }} INTERCOM_APP_ID=al371us8 -n accounts
-          kubectl set env deployment ${{ env.VERSION_WITH_DASHES }} PUBLIC_POSTHOG_KEY=${{ secrets.REACT_APP_PUBLIC_POSTHOG_HOST }} -n accounts
+          kubectl set env deployment ${{ env.VERSION_WITH_DASHES }} PUBLIC_POSTHOG_HOST=${{ secrets.REACT_APP_PUBLIC_POSTHOG_HOST }} -n accounts
 
       - name: Deploy to k8s cluster
         run: kubectl rollout restart deploy ${{ env.VERSION_WITH_DASHES }} -n accounts
