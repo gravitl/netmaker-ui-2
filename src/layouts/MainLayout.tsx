@@ -12,7 +12,7 @@ import {
   BookOutlined,
   DownloadOutlined,
 } from '@ant-design/icons';
-import { Alert, Button, Col, MenuProps, Row, Select, Switch, Typography } from 'antd';
+import { Alert, Button, Col, Divider, MenuProps, Row, Select, Switch, Typography } from 'antd';
 import { Layout, Menu, theme } from 'antd';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
@@ -544,61 +544,75 @@ export default function MainLayout() {
             }}
           />
 
-          {/* server version */}
-          {!isSidebarCollapsed && (
-            <div className="version-box" style={{ marginTop: '1rem', padding: '0rem 1.5rem', fontSize: '.8rem' }}>
-              <div
-                style={{
-                  fontSize: '.8rem',
-                  cursor: canUpgrade ? 'pointer' : '',
-                }}
-                title={canUpgrade ? 'A new version is available. Click to show version upgrade steps' : ''}
-                onClick={() => openVersionUpgradeModal()}
-              >
-                <Typography.Text style={{ fontSize: 'inherit' }}>
-                  UI: {ServerConfigService.getUiVersion()}{' '}
-                  {isSaasBuild && !BrowserStore.hasNmuiVersionSynced() && <LoadingOutlined />}
-                  {canUpgrade && <CloudSyncOutlined style={{ marginLeft: '.5rem' }} className="update-btn" />}
-                </Typography.Text>
-                <br />
-                <Typography.Text style={{ fontSize: 'inherit' }}>
-                  Server: {store.serverConfig?.Version ?? 'n/a'}
-                </Typography.Text>
-
-                {isSaasBuild && (
-                  <>
-                    <br />
-                    <Typography.Text style={{ fontSize: 'inherit', textOverflow: 'ellipsis' }} type="secondary">
-                      Tenant ID:{' '}
-                    </Typography.Text>
-                    <Typography.Text
-                      style={{ fontSize: 'inherit', textOverflow: 'ellipsis' }}
-                      type="secondary"
-                      title={store.tenantId || store.serverConfig?.NetmakerTenantID || ''}
-                      copyable
-                    >
-                      {store.tenantId || store.serverConfig?.NetmakerTenantID || 'n/a'}
-                    </Typography.Text>
-                  </>
-                )}
-                <br />
-              </div>
-            </div>
-          )}
-
-          {/* bottom items including Download RAC and user menu */}
-          <Menu
-            theme="light"
-            mode="inline"
-            selectable={false}
-            items={bottomMenuItems}
+          {/* Bottom menu items */}
+          <div
             style={{
-              borderRight: 'none',
               position: 'absolute',
               bottom: '0',
+              backgroundColor: store.currentTheme === 'dark' ? 'rgb(20, 20, 20)' : '#fff',
               width: '100%',
             }}
-          />
+          >
+            <Divider style={{ width: '100%', marginBottom: '1rem' }} />
+
+            {/* server version */}
+            {!isSidebarCollapsed && (
+              <div
+                className="version-box"
+                style={{
+                  padding: '0rem 1.5rem',
+                  fontSize: '.8rem',
+                  marginBottom: '1rem',
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: '.8rem',
+                    cursor: canUpgrade ? 'pointer' : '',
+                  }}
+                  title={canUpgrade ? 'A new version is available. Click to show version upgrade steps' : ''}
+                  onClick={() => openVersionUpgradeModal()}
+                >
+                  <Typography.Text style={{ fontSize: 'inherit' }}>
+                    UI: {ServerConfigService.getUiVersion()}{' '}
+                    {isSaasBuild && !BrowserStore.hasNmuiVersionSynced() && <LoadingOutlined />}
+                    {canUpgrade && <CloudSyncOutlined style={{ marginLeft: '.5rem' }} className="update-btn" />}
+                  </Typography.Text>
+                  <br />
+                  <Typography.Text style={{ fontSize: 'inherit' }}>
+                    Server: {store.serverConfig?.Version ?? 'n/a'}
+                  </Typography.Text>
+
+                  {isSaasBuild && ( 
+                    <>
+                      <br />
+                      <Typography.Text
+                        style={{ fontSize: 'inherit', width: '100%' }}
+                        ellipsis={true}
+                        copyable={{ text: store.tenantId || store.serverConfig?.NetmakerTenantID || 'n/a' }}
+                        title={store.tenantId || store.serverConfig?.NetmakerTenantID || 'n/a'}
+                      >
+                        Tenant ID: {` ${store.tenantId} || ${store.serverConfig?.NetmakerTenantID || 'n/a'}`}
+                      </Typography.Text>
+                    </>
+                   )}
+                  <br />
+                </div>
+              </div>
+            )}
+
+            {/* bottom items including Download RAC and user menu */}
+            <Menu
+              theme="light"
+              mode="inline"
+              selectable={false}
+              items={bottomMenuItems}
+              style={{
+                borderRight: 'none',
+                width: '100%',
+              }}
+            />
+          </div>
         </Sider>
 
         {/* main content */}
