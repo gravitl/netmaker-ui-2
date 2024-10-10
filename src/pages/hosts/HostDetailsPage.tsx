@@ -266,7 +266,9 @@ export default function HostDetailsPage(props: PageProps) {
             data-nmui-intercom="host-details_id"
           >
             <Col xs={12}>
-              <Typography.Text disabled>ID</Typography.Text>
+              <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                ID
+              </Typography.Text>
             </Col>
             <Col xs={12}>
               <Typography.Text>{host.id}</Typography.Text>
@@ -277,7 +279,9 @@ export default function HostDetailsPage(props: PageProps) {
             data-nmui-intercom="host-details_endpoint"
           >
             <Col xs={12}>
-              <Typography.Text disabled>Endpoint (IPv4)</Typography.Text>
+              <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                Endpoint (IPv4)
+              </Typography.Text>
             </Col>
             <Col xs={12}>
               <Typography.Text>{host.endpointip}</Typography.Text>
@@ -288,7 +292,9 @@ export default function HostDetailsPage(props: PageProps) {
             data-nmui-intercom="host-details_endpointv6"
           >
             <Col xs={12}>
-              <Typography.Text disabled>Endpoint (IPv6)</Typography.Text>
+              <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                Endpoint (IPv6)
+              </Typography.Text>
             </Col>
             <Col xs={12}>
               <Typography.Text>{host.endpointipv6}</Typography.Text>
@@ -299,7 +305,9 @@ export default function HostDetailsPage(props: PageProps) {
             data-nmui-intercom="host-details_isstaticendpoint"
           >
             <Col xs={12}>
-              <Typography.Text disabled>Static Endpoint</Typography.Text>
+              <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                Static Endpoint
+              </Typography.Text>
             </Col>
             <Col xs={12}>
               <Typography.Text>{host.isstatic ? 'Yes' : 'No'}</Typography.Text>
@@ -310,7 +318,9 @@ export default function HostDetailsPage(props: PageProps) {
             data-nmui-intercom="host-details_listenport"
           >
             <Col xs={12}>
-              <Typography.Text disabled>Listen Port</Typography.Text>
+              <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                Listen Port
+              </Typography.Text>
             </Col>
             <Col xs={12}>
               <Typography.Text>{host.listenport}</Typography.Text>
@@ -321,7 +331,9 @@ export default function HostDetailsPage(props: PageProps) {
             data-nmui-intercom="host-details_isstaticport"
           >
             <Col xs={12}>
-              <Typography.Text disabled>Static Port</Typography.Text>
+              <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                Static Port
+              </Typography.Text>
             </Col>
             <Col xs={12}>
               <Typography.Text>{host.isstaticport ? 'Yes' : 'No'}</Typography.Text>
@@ -332,7 +344,9 @@ export default function HostDetailsPage(props: PageProps) {
             data-nmui-intercom="host-details_macaddress"
           >
             <Col xs={12}>
-              <Typography.Text disabled>MAC Address</Typography.Text>
+              <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                MAC Address
+              </Typography.Text>
             </Col>
             <Col xs={12}>
               <Typography.Text>{host.macaddress}</Typography.Text>
@@ -343,7 +357,9 @@ export default function HostDetailsPage(props: PageProps) {
             data-nmui-intercom="host-details_mtu"
           >
             <Col xs={12}>
-              <Typography.Text disabled>MTU</Typography.Text>
+              <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                MTU
+              </Typography.Text>
             </Col>
             <Col xs={12}>
               <Typography.Text>{host.mtu}</Typography.Text>
@@ -354,7 +370,9 @@ export default function HostDetailsPage(props: PageProps) {
             data-nmui-intercom="host-details_persistentkeepalive"
           >
             <Col xs={12}>
-              <Typography.Text disabled>Persistent Keepalive</Typography.Text>
+              <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                Persistent Keepalive
+              </Typography.Text>
             </Col>
             <Col xs={12}>
               <Typography.Text>{host?.persistentkeepalive ?? ''}</Typography.Text>
@@ -365,7 +383,9 @@ export default function HostDetailsPage(props: PageProps) {
             data-nmui-intercom="host-details_publickey"
           >
             <Col xs={12}>
-              <Typography.Text disabled>Public Key</Typography.Text>
+              <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                Public Key
+              </Typography.Text>
             </Col>
             <Col xs={12}>
               <Typography.Text>{host.publickey}</Typography.Text>
@@ -376,7 +396,9 @@ export default function HostDetailsPage(props: PageProps) {
             data-nmui-intercom="host-details_os"
           >
             <Col xs={12}>
-              <Typography.Text disabled>Operating System</Typography.Text>
+              <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                Operating System
+              </Typography.Text>
             </Col>
             <Col xs={12}>
               <Typography.Text>{host.os}</Typography.Text>
@@ -387,7 +409,9 @@ export default function HostDetailsPage(props: PageProps) {
             data-nmui-intercom="host-details_version"
           >
             <Col xs={12}>
-              <Typography.Text disabled>Version</Typography.Text>
+              <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                Version
+              </Typography.Text>
             </Col>
             <Col xs={12}>
               <Typography.Text>{host.version}</Typography.Text>
@@ -398,7 +422,9 @@ export default function HostDetailsPage(props: PageProps) {
             data-nmui-intercom="host-details_verbosity"
           >
             <Col xs={12}>
-              <Typography.Text disabled>Verbosity</Typography.Text>
+              <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                Verbosity
+              </Typography.Text>
             </Col>
             <Col xs={12}>
               <Typography.Text>{host.verbosity}</Typography.Text>
@@ -409,7 +435,9 @@ export default function HostDetailsPage(props: PageProps) {
             data-nmui-intercom="host-details_defaultinterface"
           >
             <Col xs={12}>
-              <Typography.Text disabled>Default Interface</Typography.Text>
+              <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                Default Interface
+              </Typography.Text>
             </Col>
             <Col xs={12}>
               <Typography.Text>{host.defaultinterface}</Typography.Text>
@@ -420,7 +448,9 @@ export default function HostDetailsPage(props: PageProps) {
             data-nmui-intercom="host-details_isdefault"
           >
             <Col xs={12}>
-              <Typography.Text disabled>Default Host</Typography.Text>
+              <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                Default Host
+              </Typography.Text>
             </Col>
             <Col xs={12}>
               <Typography.Text>{host.isdefault ? 'Yes' : 'No'}</Typography.Text>
@@ -431,7 +461,9 @@ export default function HostDetailsPage(props: PageProps) {
             data-nmui-intercom="host-details_debug"
           >
             <Col xs={12}>
-              <Typography.Text disabled>Debug</Typography.Text>
+              <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                Debug
+              </Typography.Text>
             </Col>
             <Col xs={12}>
               <Typography.Text>{host.debug ? 'Yes' : 'No'}</Typography.Text>
@@ -442,7 +474,9 @@ export default function HostDetailsPage(props: PageProps) {
             data-nmui-intercom="host-details_autoupdate"
           >
             <Col xs={12}>
-              <Typography.Text disabled>Auto Update</Typography.Text>
+              <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                Auto Update
+              </Typography.Text>
             </Col>
             <Col xs={12}>
               <Typography.Text>{host.autoupdate ? 'Yes' : 'No'}</Typography.Text>

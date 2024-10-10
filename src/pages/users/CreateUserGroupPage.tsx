@@ -1,5 +1,5 @@
 import { useStore } from '@/store/store';
-import { PlusOutlined } from '@ant-design/icons';
+import { InfoCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import {
   Button,
   Card,
@@ -14,9 +14,11 @@ import {
   Table,
   TableColumnProps,
   theme,
+  Tour,
+  TourProps,
   Typography,
 } from 'antd';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PageProps } from '../../models/Page';
 import './UsersPage.scss';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
@@ -65,6 +67,13 @@ export default function CreateUserGroupPage(props: PageProps) {
   const [groupMembers, setGroupMembers] = useState<User[]>([]);
   const [isCreateNetworkRoleModalOpen, setIsCreateNetworkRoleModalOpen] = useState(false);
   const [currentNetworkId, setCurrentNetworkId] = useState<Network['netid']>('');
+  const [isTourOpen, setIsTourOpen] = useState(false);
+
+  const groupNameRef = useRef(null);
+  const groupDescRef = useRef(null);
+  const groupNetworkAccessRef = useRef(null);
+  const groupMembersRef = useRef(null);
+  const createGroupButtonRef = useRef(null);
 
   const filteredMembers = useMemo(() => {
     return groupMembers.filter((m) => m.username?.toLowerCase().includes(membersSearch.trim().toLowerCase()));
@@ -199,6 +208,39 @@ export default function CreateUserGroupPage(props: PageProps) {
 
   const platformRoleVal = Form.useWatch('platformRole', metadataForm);
 
+  const createUserGroupTourSteps: TourProps['steps'] = [
+    {
+      title: 'Group Name',
+      description: 'Set group name',
+      target: () => groupNameRef.current,
+      placement: 'bottom',
+    },
+    {
+      title: 'Group Description',
+      description: 'Set group description',
+      target: () => groupDescRef.current,
+      placement: 'bottom',
+    },
+    {
+      title: 'Associated Network Roles',
+      description: 'Set the network roles for this group',
+      target: () => groupNetworkAccessRef.current,
+      placement: 'bottom',
+    },
+    {
+      title: 'Group Members',
+      description: 'Add group members',
+      target: () => groupMembersRef.current,
+      placement: 'bottom',
+    },
+    {
+      title: 'Create Group',
+      description: 'Click to create group',
+      target: () => createGroupButtonRef.current,
+      placement: 'bottom',
+    },
+  ];
+
   useEffect(() => {
     setGroupMembers([]);
   }, [platformRoleVal]);
@@ -216,7 +258,7 @@ export default function CreateUserGroupPage(props: PageProps) {
       <Skeleton loading={isLoadingNetworks} active title className="page-padding">
         {/* top bar */}
         <Row className="tabbed-page-row-padding" style={{ borderBottom: `1px solid ${themeToken.colorBorder}` }}>
-          <Col xs={24}>
+          <Col xs={24} lg={12}>
             <Link to={resolveAppRoute(AppRoutes.USERS_ROUTE, { tab: UsersPageTabs.groupsTabKey })}>
               View All Groups
             </Link>
@@ -228,6 +270,16 @@ export default function CreateUserGroupPage(props: PageProps) {
               </Col>
             </Row>
           </Col>
+          <Col xs={24} lg={12} style={{ textAlign: 'end' }}>
+            <Button
+              size="large"
+              onClick={() => {
+                setIsTourOpen(true);
+              }}
+            >
+              <InfoCircleOutlined /> Start Tour
+            </Button>
+          </Col>
         </Row>
 
         <Row className="tabbed-page-row-padding" style={{ paddingBottom: '0px' }}>
@@ -236,7 +288,7 @@ export default function CreateUserGroupPage(props: PageProps) {
           </Col>
           <Form form={metadataForm} layout="vertical" style={{ width: '100%' }}>
             <Row gutter={[24, 0]}>
-              <Col xs={24} md={12}>
+              <Col xs={24} md={12} ref={groupNameRef}>
                 <Form.Item
                   name="name"
                   label="Group Name"
@@ -251,7 +303,7 @@ export default function CreateUserGroupPage(props: PageProps) {
                   <Switch />
                 </Form.Item>
               </Col> */}
-              <Col xs={24}>
+              <Col xs={24} ref={groupDescRef}>
                 <Form.Item name="metadata" label="Group Description" style={{ width: '80%' }}>
                   <Input.TextArea placeholder="Enter a description for this new group" style={{ width: '100%' }} />
                 </Form.Item>
@@ -277,7 +329,7 @@ export default function CreateUserGroupPage(props: PageProps) {
           </Form>
         </Row>
 
-        <Row className="tabbed-page-row-padding" style={{ paddingBottom: '0px' }}>
+        <Row className="tabbed-page-row-padding" style={{ paddingBottom: '0px' }} ref={groupNetworkAccessRef}>
           <Col xs={24}>
             <Card size="small" title="Associated Network Roles" style={{ width: '100%', marginBottom: '2rem' }}>
               <Form form={networkRolesForm}>
@@ -297,7 +349,11 @@ export default function CreateUserGroupPage(props: PageProps) {
           </Col>
         </Row>
 
-        <Row className="tabbed-page-row-padding" style={{ paddingBottom: '5rem', paddingTop: '0px' }}>
+        <Row
+          className="tabbed-page-row-padding"
+          style={{ paddingBottom: '5rem', paddingTop: '0px' }}
+          ref={groupMembersRef}
+        >
           <Col xs={24}>
             <Card
               size="small"
@@ -343,7 +399,7 @@ export default function CreateUserGroupPage(props: PageProps) {
           }}
         >
           <Col xs={24} style={{ textAlign: 'end' }}>
-            <Button type="primary" size="large" loading={isSubmitting} onClick={createGroup}>
+            <Button type="primary" size="large" loading={isSubmitting} onClick={createGroup} ref={createGroupButtonRef}>
               <PlusOutlined /> Create Group
             </Button>
           </Col>
@@ -351,6 +407,7 @@ export default function CreateUserGroupPage(props: PageProps) {
       </Skeleton>
 
       {/* misc */}
+      <Tour steps={createUserGroupTourSteps} open={isTourOpen} onClose={() => setIsTourOpen(false)} />
       {notifyCtx}
 
       {/* modals */}

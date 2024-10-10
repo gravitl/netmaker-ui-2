@@ -3,6 +3,7 @@ import {
   CheckOutlined,
   CopyOutlined,
   DeleteOutlined,
+  InfoCircleOutlined,
   MoreOutlined,
   PlusOutlined,
   QuestionCircleOutlined,
@@ -26,6 +27,8 @@ import {
   TableColumnsType,
   Tabs,
   TabsProps,
+  Tour,
+  TourProps,
   Typography,
 } from 'antd';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -46,6 +49,8 @@ import UserDetailsModal from '@/components/modals/user-details-modal/UserDetails
 import InviteUserModal from '@/components/modals/invite-user-modal/InviteUserModal';
 import { useNavigate } from 'react-router-dom';
 import { AppRoutes } from '@/routes';
+import { set } from 'lodash';
+import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 
 const USERS_DOCS_URL = 'https://docs.netmaker.io/pro/pro-users.html';
 
@@ -74,8 +79,7 @@ export default function UsersPage(props: PageProps) {
   const [isUpdateUserModalOpen, setIsUpdateUserModalOpen] = useState(false);
   const [isTransferSuperAdminRightsModalOpen, setIsTransferSuperAdminRightsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  // const [isTourOpen, setIsTourOpen] = useState(false);
-  // const [tourStep, setTourStep] = useState(0);
+  const [isTourOpen, setIsTourOpen] = useState(false);
   const [invites, setInvites] = useState<UserInvite[]>([]);
   const [isLoadingInvites, setIsLoadingInvites] = useState(true);
   const [userInvitesSearch, setUserInvitesSearch] = useState('');
@@ -84,6 +88,7 @@ export default function UsersPage(props: PageProps) {
   const [pendingUsers, setPendingUsers] = useState<User[]>([]);
   const [isLoadingPendingUsers, setIsLoadingPendingUsers] = useState(true);
   const [pendingUsersSearch, setPendingUsersSearch] = useState('');
+  const [currentTourStep, setCurrentTourStep] = useState(0);
 
   const usersTableRef = useRef(null);
   const addUserButtonRef = useRef(null);
@@ -91,7 +96,32 @@ export default function UsersPage(props: PageProps) {
   const addUserPasswordInputRef = useRef(null);
   const addUserSetAsAdminCheckboxRef = useRef(null);
   const denyAllUsersButtonRef = useRef(null);
+  const reloadUsersButtonRef = useRef(null);
+  const usersHelpButtonRef = useRef(null);
+  const searchUsersInputRef = useRef(null);
+  const inviteUserModalEmailAddressesInputRef = useRef(null);
+  const inviteUserModalPlatformAccessLevelRef = useRef(null);
+  const createUserModalPlatformAccessLevelRef = useRef(null);
+  const createUserModalCreateUserButtonRef = useRef(null);
+  const networkRolesHelpButtonRef = useRef(null);
+  const networkRolesTableRef = useRef(null);
+  const networkRolesSearchInputRef = useRef(null);
+  const networkRolesCreateRoleButtonRef = useRef(null);
+  const groupsHelpButtonRef = useRef(null);
+  const groupsTableRef = useRef(null);
+  const groupsSearchInputRef = useRef(null);
+  const groupsCreateGroupButtonRef = useRef(null);
+  const invitesHelpButtonRef = useRef(null);
+  const invitesReloadButtonRef = useRef(null);
+  const invitesTableRef = useRef(null);
+  const invitesSearchInputRef = useRef(null);
+  const invitesCreateInviteButtonRef = useRef(null);
+  const invitesClearAllInvitesButtonRef = useRef(null);
+  const pendingUsersHelpButtonRef = useRef(null);
   const pendingUsersTableRef = useRef(null);
+  const pendingUsersDenyAllUsersButtonRef = useRef(null);
+  const pendingUsersSearchInputRef = useRef(null);
+  const reloadPendingUsersButtonRef = useRef(null);
 
   const loadUsers = useCallback(
     async (showLoading = true) => {
@@ -377,6 +407,7 @@ export default function UsersPage(props: PageProps) {
                   const items = [
                     {
                       key: 'delete',
+                      danger: true,
                       disabled: !canDeleteUser(user)[0],
                       title: canDeleteUser(user)[0] ? canDeleteUser(user)[1] : '',
                       label: 'Delete',
@@ -390,6 +421,7 @@ export default function UsersPage(props: PageProps) {
                       ? [
                           {
                             key: 'transfer',
+                            danger: false,
                             label: 'Transfer Super Admin Rights',
                             disabled: false,
                             title: '',
@@ -405,6 +437,7 @@ export default function UsersPage(props: PageProps) {
                   if (!isSaasBuild) {
                     items?.unshift({
                       key: 'edit',
+                      danger: false,
                       label: 'Change Password',
                       disabled: !canChangePassword(user)[0],
                       title: canChangePassword(user)[0] ? canChangePassword(user)[1] : '',
@@ -501,7 +534,7 @@ export default function UsersPage(props: PageProps) {
                 </Tooltip>
               </Col> */}
               <Col>
-                <Button onClick={() => confirmDeleteInvite(invite)}>
+                <Button danger onClick={() => confirmDeleteInvite(invite)}>
                   <DeleteOutlined /> Delete
                 </Button>
               </Col>
@@ -534,7 +567,7 @@ export default function UsersPage(props: PageProps) {
                 </Button>
               </Col>
               <Col>
-                <Button onClick={() => confirmDenyUser(user)}>
+                <Button danger onClick={() => confirmDenyUser(user)}>
                   <StopOutlined /> Deny
                 </Button>
               </Col>
@@ -578,12 +611,244 @@ export default function UsersPage(props: PageProps) {
     }
   };
 
+  // tours
+  const nextTourStep = useCallback(() => {
+    setCurrentTourStep(currentTourStep + 1);
+  }, [currentTourStep]);
+
+  const prevTourStep = useCallback(() => {
+    setCurrentTourStep(currentTourStep - 1);
+  }, [currentTourStep]);
+
+  const handleTourOnChange = useCallback(
+    (current: number) => {
+      setCurrentTourStep(current);
+    },
+    [setCurrentTourStep],
+  );
+
+  const usersTabTourSteps: TourProps['steps'] = useMemo(
+    () => [
+      {
+        title: 'Users',
+        description: 'View users and their roles, you can also edit or delete users and transfer super admin rights',
+        target: () => usersTableRef.current,
+        placement: 'bottom',
+      },
+      {
+        title: 'Search Users',
+        description: 'Search for users by username',
+        target: () => searchUsersInputRef.current,
+        placement: 'bottom',
+      },
+      {
+        title: 'Get Help',
+        description: 'Click here to view the documentation for users',
+        target: () => usersHelpButtonRef.current,
+        placement: 'bottom',
+      },
+      {
+        title: 'Reload Users',
+        description: 'Click here to reload users',
+        target: () => reloadUsersButtonRef.current,
+        placement: 'bottom',
+      },
+      {
+        title: 'Add a User',
+        description: 'Click here to add a user either by creating a new user or inviting a user',
+        target: () => addUserButtonRef.current,
+        placement: 'bottom',
+        onNext: () => {
+          setIsAddUserModalOpen(true);
+          nextTourStep();
+        },
+      },
+      {
+        title: 'Username',
+        description: 'Enter a username for the user',
+        target: () => addUserNameInputRef.current,
+        placement: 'bottom',
+        onPrev: () => {
+          setIsAddUserModalOpen(false);
+          prevTourStep();
+        },
+      },
+      {
+        title: 'Password',
+        description: 'Enter a password for the user',
+        target: () => addUserPasswordInputRef.current,
+        placement: 'bottom',
+      },
+      {
+        title: 'Set user user platform access level',
+        description: 'Set the platform access level for the user',
+        target: () => createUserModalPlatformAccessLevelRef.current,
+        placement: 'bottom',
+        onNext: () => {
+          setIsAddUserModalOpen(false);
+          setIsInviteModalOpen(true);
+          nextTourStep();
+        },
+      },
+      {
+        title: 'Invite a User',
+        description: 'Enter email addresses to invite users',
+        target: () => inviteUserModalEmailAddressesInputRef.current,
+        placement: 'bottom',
+        onPrev: () => {
+          setIsAddUserModalOpen(true);
+          setIsInviteModalOpen(false);
+          prevTourStep();
+        },
+      },
+      {
+        title: 'Set user platform access level',
+        description: 'Set the platform access level for the users',
+        target: () => inviteUserModalPlatformAccessLevelRef.current,
+        placement: 'bottom',
+      },
+    ],
+    [nextTourStep, prevTourStep],
+  );
+
+  const networkRolesTabTourSteps: TourProps['steps'] = [
+    {
+      title: 'Network Roles',
+      description: 'View and manage network roles',
+      target: () => networkRolesTableRef.current,
+      placement: 'bottom',
+    },
+    {
+      title: 'Search Network Roles',
+      description: 'Search for network roles by name',
+      target: () => networkRolesSearchInputRef.current,
+      placement: 'bottom',
+    },
+    {
+      title: 'Get Help',
+      description: 'Click here to view the documentation for network roles',
+      target: () => networkRolesHelpButtonRef.current,
+      placement: 'bottom',
+    },
+    // {
+    //   title: 'Reload Network Roles',
+    //   description: 'Click here to reload network roles',
+    //   target: () => reloadUsersButtonRef.current,
+    //   placement: 'bottom',
+    // },
+    {
+      title: 'Create a Network Role',
+      description: 'Click here to create a new network role',
+      target: () => networkRolesCreateRoleButtonRef.current,
+      placement: 'bottom',
+    },
+  ];
+
+  const groupsTabTourSteps: TourProps['steps'] = [
+    {
+      title: 'Groups',
+      description: 'View and manage groups',
+      target: () => groupsTableRef.current,
+      placement: 'bottom',
+    },
+    {
+      title: 'Search Groups',
+      description: 'Search for groups by name',
+      target: () => groupsSearchInputRef.current,
+      placement: 'bottom',
+    },
+    {
+      title: 'Get Help',
+      description: 'Click here to view the documentation for groups',
+      target: () => groupsHelpButtonRef.current,
+      placement: 'bottom',
+    },
+    {
+      title: 'Create a Group',
+      description: 'Click here to create a new group',
+      target: () => groupsCreateGroupButtonRef.current,
+      placement: 'bottom',
+    },
+  ];
+
+  const invitesTabTourSteps: TourProps['steps'] = [
+    {
+      title: 'Invites',
+      description: 'View and manage user invites',
+      target: () => invitesTableRef.current,
+      placement: 'bottom',
+    },
+    {
+      title: 'Search Invites',
+      description: 'Search for invites by email',
+      target: () => invitesSearchInputRef.current,
+      placement: 'bottom',
+    },
+    {
+      title: 'Get Help',
+      description: 'Click here to view the documentation for invites',
+      target: () => invitesHelpButtonRef.current,
+      placement: 'bottom',
+    },
+    {
+      title: 'Reload Invites',
+      description: 'Click here to reload invites',
+      target: () => invitesReloadButtonRef.current,
+      placement: 'bottom',
+    },
+    {
+      title: 'Create an Invite',
+      description: 'Click here to create a new invite',
+      target: () => invitesCreateInviteButtonRef.current,
+      placement: 'bottom',
+    },
+    {
+      title: 'Clear All Invites',
+      description: 'Click here to clear all invites',
+      target: () => invitesClearAllInvitesButtonRef.current,
+      placement: 'bottom',
+    },
+  ];
+
+  const pendingUsersTabTourSteps: TourProps['steps'] = [
+    {
+      title: 'Pending Users',
+      description: 'View and manage pending users',
+      target: () => pendingUsersTableRef.current,
+      placement: 'bottom',
+    },
+    {
+      title: 'Search Pending Users',
+      description: 'Search for pending users by username',
+      target: () => pendingUsersSearchInputRef.current,
+      placement: 'bottom',
+    },
+    {
+      title: 'Get Help',
+      description: 'Click here to view the documentation for pending users',
+      target: () => pendingUsersHelpButtonRef.current,
+      placement: 'bottom',
+    },
+    {
+      title: 'Reload Pending Users',
+      description: 'Click here to reload pending users',
+      target: () => reloadPendingUsersButtonRef.current,
+      placement: 'bottom',
+    },
+    {
+      title: 'Deny All Users',
+      description: 'Click here to deny all pending users',
+      target: () => pendingUsersDenyAllUsersButtonRef.current,
+      placement: 'bottom',
+    },
+  ];
+
   // ui components
   const getUsersContent = useCallback(() => {
     return (
       <>
         <Row>
-          <Col xs={24} md={8}>
+          <Col xs={24} md={8} ref={searchUsersInputRef}>
             <Input
               size="large"
               placeholder="Search users"
@@ -601,18 +866,23 @@ export default function UsersPage(props: PageProps) {
               target="_blank"
               icon={<QuestionCircleOutlined />}
               style={{ marginRight: '0.5rem' }}
+              ref={usersHelpButtonRef}
             />
-            {/* <Button
+            <Button
               size="large"
               onClick={() => {
                 setIsTourOpen(true);
-                setTourStep(0);
               }}
               style={{ marginRight: '0.5rem' }}
             >
               <InfoCircleOutlined /> Start Tour
-            </Button> */}
-            <Button size="large" onClick={() => loadUsers()} style={{ marginRight: '0.5rem' }}>
+            </Button>
+            <Button
+              size="large"
+              onClick={() => loadUsers()}
+              style={{ marginRight: '0.5rem' }}
+              ref={reloadUsersButtonRef}
+            >
               <ReloadOutlined /> Reload users
             </Button>
             {isSaasBuild && (
@@ -677,6 +947,7 @@ export default function UsersPage(props: PageProps) {
                 }}
                 ref={usersTableRef}
                 loading={isLoadingUsers}
+                pagination={{ size: 'small', hideOnSinglePage: true, pageSize: 50 }}
               />
             </div>
           </Col>
@@ -689,7 +960,7 @@ export default function UsersPage(props: PageProps) {
     return (
       <>
         <Row>
-          <Col xs={24} md={8}>
+          <Col xs={24} md={8} ref={invitesSearchInputRef}>
             <Input
               size="large"
               placeholder="Search user invites"
@@ -703,32 +974,44 @@ export default function UsersPage(props: PageProps) {
             <Button
               title="Go to Users documentation"
               size="large"
-              href={USERS_DOCS_URL}
+              href={ExternalLinks.USER_MGMT_DOCS_INVITES_URL}
               target="_blank"
               icon={<QuestionCircleOutlined />}
+              style={{ marginRight: '0.5em' }}
+              ref={invitesHelpButtonRef}
             />
-            {/* <Button
+            <Button
               size="large"
               onClick={() => {
                 setIsTourOpen(true);
-                setTourStep(5);
               }}
               style={{ marginRight: '0.5em' }}
             >
               <InfoCircleOutlined /> Start Tour
-            </Button> */}
-            <Button size="large" onClick={() => loadInvites()} style={{ marginRight: '0.5em' }}>
+            </Button>
+            <Button
+              size="large"
+              onClick={() => loadInvites()}
+              style={{ marginRight: '0.5em' }}
+              ref={invitesReloadButtonRef}
+            >
               <ReloadOutlined /> Reload invites
             </Button>
             <Button
               size="large"
               onClick={confirmDeleteAllInvitesUsers}
-              ref={denyAllUsersButtonRef}
               style={{ marginRight: '0.5em' }}
+              ref={invitesClearAllInvitesButtonRef}
             >
               <DeleteOutlined /> Clear All Invites
             </Button>
-            <Button type="primary" size="large" onClick={onInviteUser} style={{ marginRight: '0.5em' }}>
+            <Button
+              type="primary"
+              size="large"
+              onClick={onInviteUser}
+              style={{ marginRight: '0.5em' }}
+              ref={invitesCreateInviteButtonRef}
+            >
               <PlusOutlined /> Invite User(s)
             </Button>
           </Col>
@@ -745,6 +1028,7 @@ export default function UsersPage(props: PageProps) {
                 scroll={{
                   x: true,
                 }}
+                pagination={{ size: 'small', hideOnSinglePage: true, pageSize: 50 }}
               />
             </div>
           </Col>
@@ -765,7 +1049,7 @@ export default function UsersPage(props: PageProps) {
     return (
       <>
         <Row>
-          <Col xs={24} md={8}>
+          <Col xs={24} md={8} ref={pendingUsersSearchInputRef}>
             <Input
               size="large"
               placeholder="Search pending users"
@@ -776,20 +1060,29 @@ export default function UsersPage(props: PageProps) {
             />
           </Col>
           <Col xs={24} md={16} style={{ textAlign: 'right' }} className="pending-user-table-button">
-            {/* <Button
+            <Button
               size="large"
               onClick={() => {
                 setIsTourOpen(true);
-                setTourStep(5);
               }}
               style={{ marginRight: '0.5em' }}
             >
               <InfoCircleOutlined /> Start Tour
-            </Button> */}
-            <Button size="large" onClick={() => loadPendingUsers()} style={{ marginRight: '0.5em' }}>
+            </Button>
+            <Button
+              size="large"
+              onClick={() => loadPendingUsers()}
+              style={{ marginRight: '0.5em' }}
+              ref={reloadPendingUsersButtonRef}
+            >
               <ReloadOutlined /> Reload users
             </Button>
-            <Button type="primary" size="large" onClick={confirmDenyAllPendingUsers} ref={denyAllUsersButtonRef}>
+            <Button
+              type="primary"
+              size="large"
+              onClick={confirmDenyAllPendingUsers}
+              ref={pendingUsersDenyAllUsersButtonRef}
+            >
               <StopOutlined /> Deny all users
             </Button>
             <Button
@@ -798,6 +1091,7 @@ export default function UsersPage(props: PageProps) {
               href={USERS_DOCS_URL}
               target="_blank"
               icon={<QuestionCircleOutlined />}
+              ref={pendingUsersHelpButtonRef}
             />
           </Col>
         </Row>
@@ -809,10 +1103,12 @@ export default function UsersPage(props: PageProps) {
                 columns={pendingUsersTableColumns}
                 dataSource={filteredPendingUsers}
                 rowKey="username"
+                size="small"
                 scroll={{
                   x: true,
                 }}
                 ref={pendingUsersTableRef}
+                pagination={{ size: 'small', hideOnSinglePage: true, pageSize: 50 }}
               />
             </div>
           </Col>
@@ -843,12 +1139,31 @@ export default function UsersPage(props: PageProps) {
         {
           key: UsersPageTabs.rolesTabKey,
           label: 'Network Roles',
-          children: <RolesPage triggerDataRefresh={triggerDataRefresh} />,
+          children: (
+            <RolesPage
+              triggerDataRefresh={triggerDataRefresh}
+              setIsTourOpen={setIsTourOpen}
+              networkRolesHelpButtonRef={networkRolesHelpButtonRef}
+              networkRolesTableRef={networkRolesTableRef}
+              networkRolesSearchInputRef={networkRolesSearchInputRef}
+              networkRolesCreateRoleButtonRef={networkRolesCreateRoleButtonRef}
+            />
+          ),
         },
         {
           key: UsersPageTabs.groupsTabKey,
           label: 'Groups',
-          children: <GroupsPage users={users} triggerDataRefresh={triggerDataRefresh} />,
+          children: (
+            <GroupsPage
+              users={users}
+              triggerDataRefresh={triggerDataRefresh}
+              setIsTourOpen={setIsTourOpen}
+              groupsHelpButtonRef={groupsHelpButtonRef}
+              groupsTableRef={groupsTableRef}
+              groupsSearchInputRef={groupsSearchInputRef}
+              groupsCreateGroupButtonRef={groupsCreateGroupButtonRef}
+            />
+          ),
         },
         {
           key: UsersPageTabs.invitesTabKey,
@@ -876,75 +1191,22 @@ export default function UsersPage(props: PageProps) {
     users,
   ]);
 
-  // const userTourSteps: TourProps['steps'] = [
-  //   {
-  //     title: 'Users',
-  //     description: 'View users and their roles, you can also edit or delete users and transfer super admin rights',
-  //     target: () => usersTableRef.current,
-  //     placement: 'bottom',
-  //   },
-  //   {
-  //     title: 'Add a User',
-  //     description: 'Click here to add a user',
-  //     target: () => addUserButtonRef.current,
-  //     placement: 'bottom',
-  //   },
-  //   {
-  //     title: 'Username',
-  //     description: 'Enter a username for the user',
-  //     target: () => addUserNameInputRef.current,
-  //     placement: 'bottom',
-  //   },
-  //   {
-  //     title: 'Password',
-  //     description: 'Enter a password for the user',
-  //     target: () => addUserPasswordInputRef.current,
-  //     placement: 'bottom',
-  //   },
-  //   {
-  //     title: 'Set as Admin',
-  //     description: 'Check this box to set the user as admin',
-  //     target: () => addUserSetAsAdminCheckboxRef.current,
-  //     placement: 'bottom',
-  //   },
-  //   {
-  //     title: 'Review pending users',
-  //     description:
-  //       'An admin can allow or deny access to accounts that try accessing the server via SSO from this table.',
-  //     target: () => pendingUsersTableRef.current,
-  //     placement: 'bottom',
-  //   },
-  //   {
-  //     title: 'Deny all pending users',
-  //     description: 'A quick way to deny access to all pending users.',
-  //     target: () => denyAllUsersButtonRef.current,
-  //     placement: 'bottom',
-  //   },
-  // ];
-
-  // const handleTourOnChange = (current: number) => {
-  //   switch (current) {
-  //     case 1:
-  //       setIsAddUserModalOpen(false);
-  //       break;
-  //     case 2:
-  //       setIsAddUserModalOpen(true);
-  //       break;
-  //     case 4:
-  //       setIsAddUserModalOpen(true);
-  //       setActiveTab(UsersPageTabs.usersTabKey);
-  //       break;
-  //     case 5:
-  //       setIsAddUserModalOpen(false);
-  //       setActiveTab(UsersPageTabs.invitesTabKey);
-  //       break;
-  //     default:
-  //       break;
-  //   }
-  //   setTimeout(() => {
-  //     setTourStep(current);
-  //   }, 200);
-  // };
+  const tourSteps2 = useMemo(() => {
+    switch (activeTab) {
+      case UsersPageTabs.usersTabKey:
+        return usersTabTourSteps;
+      case UsersPageTabs.rolesTabKey:
+        return networkRolesTabTourSteps;
+      case UsersPageTabs.groupsTabKey:
+        return groupsTabTourSteps;
+      case UsersPageTabs.invitesTabKey:
+        return invitesTabTourSteps;
+      case UsersPageTabs.pendingUsers:
+        return pendingUsersTabTourSteps;
+      default:
+        return usersTabTourSteps;
+    }
+  }, [activeTab, currentTourStep]);
 
   useEffect(() => {
     loadUsers();
@@ -1056,7 +1318,32 @@ export default function UsersPage(props: PageProps) {
                   items={usersTabs}
                   activeKey={activeTab}
                   onChange={(tabKey: string) => {
-                    setActiveTab(tabKey);
+                    switch (tabKey) {
+                      case UsersPageTabs.usersTabKey:
+                        setActiveTab(tabKey);
+                        setCurrentTourStep(0);
+                        break;
+                      case UsersPageTabs.rolesTabKey:
+                        setActiveTab(tabKey);
+                        setCurrentTourStep(0);
+                        break;
+                      case UsersPageTabs.groupsTabKey:
+                        setActiveTab(tabKey);
+                        setCurrentTourStep(0);
+                        break;
+                      case UsersPageTabs.invitesTabKey:
+                        setActiveTab(tabKey);
+                        setCurrentTourStep(0);
+                        break;
+                      case UsersPageTabs.pendingUsers:
+                        setActiveTab(tabKey);
+                        setCurrentTourStep(0);
+                        break;
+                      default:
+                        setActiveTab(tabKey);
+                        setCurrentTourStep(0);
+                        break;
+                    }
                   }}
                 />
               </Col>
@@ -1065,13 +1352,13 @@ export default function UsersPage(props: PageProps) {
         )}
       </Skeleton>
 
-      {/* <Tour
-        steps={userTourSteps}
+      <Tour
+        steps={tourSteps2}
         open={isTourOpen}
         onClose={() => setIsTourOpen(false)}
+        current={currentTourStep}
         onChange={handleTourOnChange}
-        current={tourStep}
-      /> */}
+      />
 
       {/* misc */}
       {notifyCtx}
@@ -1087,7 +1374,7 @@ export default function UsersPage(props: PageProps) {
         addUserButtonRef={addUserButtonRef}
         addUserNameInputRef={addUserNameInputRef}
         addUserPasswordInputRef={addUserPasswordInputRef}
-        addUserSetAsAdminCheckboxRef={addUserSetAsAdminCheckboxRef}
+        createUserModalPlatformAccessLevelRef={createUserModalPlatformAccessLevelRef}
       />
       {selectedUser && (
         <UserDetailsModal
@@ -1141,6 +1428,8 @@ export default function UsersPage(props: PageProps) {
             loadInvites();
             setIsInviteModalOpen(false);
           }}
+          inviteUserModalEmailAddressesInputRef={inviteUserModalEmailAddressesInputRef}
+          inviteUserModalPlatformAccessLevelRef={inviteUserModalPlatformAccessLevelRef}
         />
       )}
     </Layout.Content>

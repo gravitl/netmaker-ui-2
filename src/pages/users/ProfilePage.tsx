@@ -53,7 +53,9 @@ export default function ProfilePage(props: PageProps) {
       {/* top bar */}
       <Row className="tabbed-page-row-padding" style={{ borderBottom: `1px solid ${themeToken.colorBorder}` }}>
         <Col xs={24}>
-          <Link to={resolveAppRoute(AppRoutes.USERS_ROUTE)}>Go to Users</Link>
+          <Link className="text-button-primary-fill-default" to={resolveAppRoute(AppRoutes.USERS_ROUTE)}>
+            Go to Users
+          </Link>
           <Row>
             <Col xs={18} lg={12}>
               <Typography.Title level={2} style={{ marginTop: '.5rem', marginBottom: '2rem' }}>

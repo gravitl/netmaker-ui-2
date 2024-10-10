@@ -21,6 +21,7 @@ export const NMUI_TENANT_NAME_LOCALSTORAGE_KEY = 'nmui-tn-lsk';
 export const NMUI_AMUI_USER_ID_LOCALSTORAGE_KEY = 'nmui-amuiuid-lsk';
 export const NMUI_USER_LOCALSTORAGE_KEY = 'nmui-u-lsk';
 export const NMUI_USER_PLATFORM_ROLE_LOCALSTORAGE_KEY = 'nmui-upr-lsk';
+export const NMUI_SHOW_RAC_BANNER_LOCALSTORAGE_KEY = 'nmui-show-rac-banner';
 
 // function to resolve the particular SaaS tenant's backend URL, ...
 export async function setupTenantConfig(): Promise<void> {
@@ -44,7 +45,7 @@ export async function setupTenantConfig(): Promise<void> {
   const amuiAuthToken = url.searchParams.get('sToken') ?? '';
   const tenantId = url.searchParams.get('tenantId') ?? '';
   const tenantName = url.searchParams.get('tenantName') ?? '';
-  const username = url.searchParams.get('username') ?? '';
+  const username = decodeURIComponent(url.searchParams.get('username') ?? '');
   const amuiUserId = url.searchParams.get('userId') ?? '';
   const isNewTenant = url.searchParams.get('isNewTenant') === 'true';
 
