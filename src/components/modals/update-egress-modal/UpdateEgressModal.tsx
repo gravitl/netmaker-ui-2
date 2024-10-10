@@ -26,6 +26,7 @@ import { NodesService } from '@/services/NodesService';
 import { isValidIpCidr } from '@/utils/NetworkUtils';
 import { CreateEgressNodeDto } from '@/services/dtos/CreateEgressNodeDto';
 import { INTERNET_RANGE_IPV4, INTERNET_RANGE_IPV6 } from '@/constants/AppConstants';
+import { isEqual } from 'lodash';
 
 interface UpdateEgressModalProps {
   isOpen: boolean;
@@ -49,9 +50,23 @@ export default function UpdateEgressModal({
   networkId,
 }: UpdateEgressModalProps) {
   const [form] = Form.useForm<UpdateEgressFormFields>();
+  const formValues = Form.useWatch([], form);
+
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
   const { token: themeToken } = theme.useToken();
+
+  const initialValues = useMemo(
+    () => ({
+      ranges: egress.egressgatewayranges,
+      natEnabled: egress.egressgatewaynatenabled,
+    }),
+    [egress],
+  );
+
+  const isFormChanged = useMemo(() => {
+    return !isEqual(formValues, initialValues);
+  }, [formValues, initialValues]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const ranges = Form.useWatch('ranges', form);
@@ -79,20 +94,17 @@ export default function UpdateEgressModal({
 
   const updateEgress = async () => {
     try {
-      let egressNode: Node;
       const formData = await form.validateFields();
       setIsSubmitting(true);
-      const newRanges = new Set(formData.ranges);
-      egressNode = (await NodesService.deleteEgressNode(egress.id, networkId)).data;
-      if (newRanges.size > 0) {
-        egressNode = (
-          await NodesService.createEgressNode(egress.id, networkId, {
-            ranges: [...newRanges],
-            natEnabled: formData.natEnabled ? 'yes' : 'no',
-          })
-        ).data;
-      }
-      onUpdateEgress(egressNode);
+
+      await NodesService.deleteEgressNode(egress.id, networkId);
+
+      const updatedEgress = await NodesService.createEgressNode(egress.id, networkId, {
+        ranges: formData.ranges,
+        natEnabled: formData.natEnabled ? 'yes' : 'no',
+      });
+
+      onUpdateEgress(updatedEgress.data);
       notify.success({ message: `Egress gateway updated` });
     } catch (err) {
       notify.error({
@@ -103,7 +115,6 @@ export default function UpdateEgressModal({
       setIsSubmitting(false);
     }
   };
-
   return (
     <Modal
       title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Update Egress</span>}
@@ -235,12 +246,12 @@ export default function UpdateEgressModal({
             <Col xs={24} style={{ textAlign: 'right' }}>
               <Button
                 type="primary"
-                danger={ranges?.length === 0}
                 onClick={updateEgress}
                 loading={isSubmitting}
+                disabled={!isFormChanged}
                 data-nmui-intercom="update-egress-form_submitbtn"
               >
-                {ranges?.length === 0 ? 'Delete Egress' : 'Update Egress'}
+                Update Egress
               </Button>
             </Col>
           </Row>
