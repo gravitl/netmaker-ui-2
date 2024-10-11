@@ -483,136 +483,166 @@ export default function MainLayout() {
             setIsSmallScreen(broken);
           }}
         >
-          {/* logo */}
-          <Link to={resolveAppRoute(AppRoutes.DASHBOARD_ROUTE)}>
-            <img
-              loading="eager"
-              referrerPolicy="no-referrer"
-              src={sidebarLogo}
-              alt={branding.logoAltText}
-              style={{ width: '100%', padding: '1rem 2rem 1rem 2rem' }}
-            />
-          </Link>
-
-          <Menu
-            theme="light"
-            mode="inline"
-            selectedKeys={getActiveSideNavKeys()}
-            items={sideNavItems}
-            openKeys={openSidebarMenus}
-            style={{ borderRight: 'none' }}
-            id="side-nav"
-            onOpenChange={(keys: string[]) => {
-              setOpenSidebarMenus(keys);
-            }}
-            onClick={(menu) => {
-              switch (menu.key) {
-                case 'dashboard':
-                  navigate(resolveAppRoute(AppRoutes.DASHBOARD_ROUTE));
-                  break;
-                case 'all-networks':
-                  navigate(resolveAppRoute(AppRoutes.NETWORKS_ROUTE));
-                  break;
-                case 'hosts':
-                  navigate(resolveAppRoute(AppRoutes.HOSTS_ROUTE));
-                  break;
-                case 'clients':
-                  navigate(resolveAppRoute(AppRoutes.CLIENTS_ROUTE));
-                  break;
-                case 'enrollment-keys':
-                  navigate(resolveAppRoute(AppRoutes.ENROLLMENT_KEYS_ROUTE));
-                  break;
-                case 'amui':
-                  window.location = getAmuiUrl() as any;
-                  break;
-                case 'amuitenants':
-                  window.location = getAmuiTenantsUrl() as any;
-                  break;
-                case 'users':
-                  navigate(resolveAppRoute(AppRoutes.USERS_ROUTE));
-                  break;
-                case 'documentation':
-                  window.open(ExternalLinks.UI_DOCS_URL, '_blank');
-                  break;
-                default:
-                  if (menu.key.startsWith('networks/')) {
-                    navigate(getNetworkRoute(menu.key.replace('networks/', '')));
-                  } else if (menu.key.startsWith('hosts/')) {
-                    navigate(getHostRoute(menu.key.replace('hosts/', '')));
-                  }
-                  break;
-              }
-            }}
-          />
-
-          {/* Bottom menu items */}
           <div
             style={{
-              position: 'absolute',
-              bottom: '0',
-              backgroundColor: store.currentTheme === 'dark' ? 'rgb(20, 20, 20)' : '#fff',
-              width: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              height: '100%',
             }}
           >
-            <Divider style={{ width: '100%', marginBottom: '1rem' }} />
-
-            {/* server version */}
-            {!isSidebarCollapsed && (
-              <div
-                className="version-box"
+            <div
+              style={{
+                flex: '1',
+                overflowY: 'auto',
+                msOverflowStyle: 'none', // Hide scrollbar in IE and Edge
+                scrollbarWidth: 'none', // Hide scrollbar in Firefox
+              }}
+            >
+              {/* logo */}
+              <Link
+                to={resolveAppRoute(AppRoutes.DASHBOARD_ROUTE)}
                 style={{
-                  padding: '0rem 1.5rem',
-                  fontSize: '.8rem',
-                  marginBottom: '1rem',
+                  position: 'sticky',
+                  top: '0',
+                  backgroundColor: store.currentTheme === 'dark' ? 'rgb(20, 20, 20)' : '#fff',
+                  zIndex: 1010,
                 }}
               >
-                <div
+                <img
+                  loading="eager"
+                  referrerPolicy="no-referrer"
+                  src={sidebarLogo}
+                  alt={branding.logoAltText}
                   style={{
-                    fontSize: '.8rem',
-                    cursor: canUpgrade ? 'pointer' : '',
+                    width: '100%',
+                    padding: '1rem 2rem 1rem 2rem',
+                    backgroundColor: store.currentTheme === 'dark' ? 'rgb(20, 20, 20)' : '#fff',
                   }}
-                  title={canUpgrade ? 'A new version is available. Click to show version upgrade steps' : ''}
-                  onClick={() => openVersionUpgradeModal()}
-                >
-                  <Typography.Text style={{ fontSize: 'inherit' }}>
-                    UI: {ServerConfigService.getUiVersion()}{' '}
-                    {isSaasBuild && !BrowserStore.hasNmuiVersionSynced() && <LoadingOutlined />}
-                    {canUpgrade && <CloudSyncOutlined style={{ marginLeft: '.5rem' }} className="update-btn" />}
-                  </Typography.Text>
-                  <br />
-                  <Typography.Text style={{ fontSize: 'inherit' }}>
-                    Server: {store.serverConfig?.Version ?? 'n/a'}
-                  </Typography.Text>
+                />
+              </Link>
 
-                  {/* {isSaasBuild && ( */}
-                  <>
-                    <br />
-                    <Typography.Text
-                      style={{ fontSize: 'inherit', width: '100%' }}
-                      ellipsis={true}
-                      copyable={{ text: store.tenantId || store.serverConfig?.NetmakerTenantID || 'n/a' }}
-                      title={store.tenantId || store.serverConfig?.NetmakerTenantID || 'n/a'}
-                    >
-                      Tenant ID: {`${store.tenantId} || ${store.serverConfig?.NetmakerTenantID || 'n/a'}`}
-                    </Typography.Text>
-                  </>
-                  {/* )} */}
-                  <br />
-                </div>
-              </div>
-            )}
+              <Menu
+                theme="light"
+                mode="inline"
+                selectedKeys={getActiveSideNavKeys()}
+                items={sideNavItems}
+                openKeys={openSidebarMenus}
+                style={{ borderRight: 'none' }}
+                id="side-nav"
+                onOpenChange={(keys: string[]) => {
+                  setOpenSidebarMenus(keys);
+                }}
+                onClick={(menu) => {
+                  switch (menu.key) {
+                    case 'dashboard':
+                      navigate(resolveAppRoute(AppRoutes.DASHBOARD_ROUTE));
+                      break;
+                    case 'all-networks':
+                      navigate(resolveAppRoute(AppRoutes.NETWORKS_ROUTE));
+                      break;
+                    case 'hosts':
+                      navigate(resolveAppRoute(AppRoutes.HOSTS_ROUTE));
+                      break;
+                    case 'clients':
+                      navigate(resolveAppRoute(AppRoutes.CLIENTS_ROUTE));
+                      break;
+                    case 'enrollment-keys':
+                      navigate(resolveAppRoute(AppRoutes.ENROLLMENT_KEYS_ROUTE));
+                      break;
+                    case 'amui':
+                      window.location = getAmuiUrl() as any;
+                      break;
+                    case 'amuitenants':
+                      window.location = getAmuiTenantsUrl() as any;
+                      break;
+                    case 'users':
+                      navigate(resolveAppRoute(AppRoutes.USERS_ROUTE));
+                      break;
+                    case 'documentation':
+                      window.open(ExternalLinks.UI_DOCS_URL, '_blank');
+                      break;
+                    default:
+                      if (menu.key.startsWith('networks/')) {
+                        navigate(getNetworkRoute(menu.key.replace('networks/', '')));
+                      } else if (menu.key.startsWith('hosts/')) {
+                        navigate(getHostRoute(menu.key.replace('hosts/', '')));
+                      }
+                      break;
+                  }
+                }}
+              />
+            </div>
 
-            {/* bottom items including Download RAC and user menu */}
-            <Menu
-              theme="light"
-              mode="inline"
-              selectable={false}
-              items={bottomMenuItems}
+            {/* Bottom menu items */}
+            <div
               style={{
-                borderRight: 'none',
+                position: 'sticky',
+                bottom: '0',
+                backgroundColor: store.currentTheme === 'dark' ? 'rgb(20, 20, 20)' : '#fff',
                 width: '100%',
               }}
-            />
+            >
+              <Divider style={{ width: '100%', marginBottom: '1rem' }} />
+
+              {/* server version */}
+              {!isSidebarCollapsed && (
+                <div
+                  className="version-box"
+                  style={{
+                    padding: '0rem 1.5rem',
+                    fontSize: '.8rem',
+                    marginBottom: '1rem',
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: '.8rem',
+                      cursor: canUpgrade ? 'pointer' : '',
+                    }}
+                    title={canUpgrade ? 'A new version is available. Click to show version upgrade steps' : ''}
+                    onClick={() => openVersionUpgradeModal()}
+                  >
+                    <Typography.Text style={{ fontSize: 'inherit' }}>
+                      UI: {ServerConfigService.getUiVersion()}{' '}
+                      {isSaasBuild && !BrowserStore.hasNmuiVersionSynced() && <LoadingOutlined />}
+                      {canUpgrade && <CloudSyncOutlined style={{ marginLeft: '.5rem' }} className="update-btn" />}
+                    </Typography.Text>
+                    <br />
+                    <Typography.Text style={{ fontSize: 'inherit' }}>
+                      Server: {store.serverConfig?.Version ?? 'n/a'}
+                    </Typography.Text>
+
+                    {isSaasBuild && (
+                      <>
+                        <br />
+                        <Typography.Text
+                          style={{ fontSize: 'inherit', width: '100%' }}
+                          ellipsis={true}
+                          copyable={{ text: store.tenantId || store.serverConfig?.NetmakerTenantID || 'n/a' }}
+                          title={store.tenantId || store.serverConfig?.NetmakerTenantID || 'n/a'}
+                        >
+                          Tenant ID: {`${store.tenantId || store.serverConfig?.NetmakerTenantID || 'n/a'}`}
+                        </Typography.Text>
+                      </>
+                    )}
+                    <br />
+                  </div>
+                </div>
+              )}
+
+              {/* bottom items including Download RAC and user menu */}
+              <Menu
+                theme="light"
+                mode="inline"
+                selectable={false}
+                items={bottomMenuItems}
+                style={{
+                  borderRight: 'none',
+                  width: '100%',
+                }}
+              />
+            </div>
           </div>
         </Sider>
 
