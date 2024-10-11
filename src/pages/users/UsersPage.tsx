@@ -49,10 +49,9 @@ import UserDetailsModal from '@/components/modals/user-details-modal/UserDetails
 import InviteUserModal from '@/components/modals/invite-user-modal/InviteUserModal';
 import { useNavigate } from 'react-router-dom';
 import { AppRoutes } from '@/routes';
-import { set } from 'lodash';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 
-const USERS_DOCS_URL = 'https://docs.netmaker.io/pro/pro-users.html';
+const USERS_DOCS_URL = 'https://docs.netmaker.io/docs/features/users-management-pro';
 
 export const UsersPageTabs = {
   usersTabKey: 'users',

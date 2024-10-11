@@ -167,7 +167,11 @@ export default function LoginPage(props: LoginPageProps) {
                   <>
                     User not authorized for dashboard access. Only admins can access the dashboard. Users should use the
                     remote access client.{' '}
-                    <a href="https://docs.netmaker.io/pro/rac.html" target="_blank" rel="noopener noreferrer">
+                    <a
+                      href="https://docs.netmaker.io/docs/remote-access-client-rac"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       Click here for more details.
                     </a>
                   </>
