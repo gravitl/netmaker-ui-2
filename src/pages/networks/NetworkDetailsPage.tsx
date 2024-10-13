@@ -161,12 +161,12 @@ type ItemStepMap = {
   [key in keyof NetworkUsage]: NetworkDetailTourStep;
 };
 
-const HOSTS_DOCS_URL = 'https://docs.netmaker.io/ui-reference.html#hosts';
-const ACLS_DOCS_URL = 'https://docs.netmaker.io/acls.html';
-const RELAYS_DOCS_URL = 'https://docs.netmaker.io/pro/pro-relay-server.html';
-const EGRESS_DOCS_URL = 'https://docs.netmaker.io/egress-gateway.html';
-const GATEWAYS_DOCS_URL = 'https://docs.netmaker.io/external-clients.html';
-const CLIENTS_DOCS_URL = 'https://docs.netmaker.io/external-clients.html#adding-clients-to-a-gateway';
+const HOSTS_DOCS_URL = 'https://docs.netmaker.io/docs/references/user-interface#hosts';
+const ACLS_DOCS_URL = 'https://docs.netmaker.io/docs/features/acls';
+const RELAYS_DOCS_URL = 'https://docs.netmaker.io/docs/features/relay-servers-pro';
+const EGRESS_DOCS_URL = 'https://docs.netmaker.io/docs/features/egress';
+const GATEWAYS_DOCS_URL = 'https://docs.netmaker.io/docs/remote-access-client-rac';
+const CLIENTS_DOCS_URL = 'https://docs.netmaker.io/docs/remote-access-client-rac#adding-clients-to-a-gateway';
 
 export default function NetworkDetailsPage(props: PageProps) {
   const { networkId } = useParams<{ networkId: string }>();
@@ -3150,7 +3150,11 @@ export default function NetworkDetailsPage(props: PageProps) {
                   description={
                     <>
                       Please use{' '}
-                      <a rel="no-referrer noreferrer" href="https://docs.netmaker.io/nmctl.html#acls" target="_blank">
+                      <a
+                        rel="no-referrer noreferrer"
+                        href="https://docs.netmaker.io/docs/guide/references/nmctl#acls"
+                        target="_blank"
+                      >
                         NMCTL
                       </a>{' '}
                       our commandline tool to manage ACLs.

@@ -6,7 +6,7 @@ import { CloudSyncOutlined } from '@ant-design/icons';
 import { useStore } from '@/store/store';
 import { isSaasBuild } from '@/services/BaseService';
 
-const UPGRADE_DOCS_LINK = 'https://docs.netmaker.io/upgrades.html';
+const UPGRADE_DOCS_LINK = 'https://docs.netmaker.io/docs/upgrades';
 
 interface VersionUpgradeModalProps {
   isOpen: boolean;
