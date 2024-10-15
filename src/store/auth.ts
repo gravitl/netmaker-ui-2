@@ -5,6 +5,7 @@ import {
   NMUI_ACCESS_TOKEN_LOCALSTORAGE_KEY,
   NMUI_AMUI_USER_ID_LOCALSTORAGE_KEY,
   NMUI_BASE_URL_LOCALSTORAGE_KEY,
+  NMUI_INTERCOM_USER_ID_LOCALSTORAGE_KEY,
   NMUI_TENANT_ID_LOCALSTORAGE_KEY,
   NMUI_TENANT_NAME_LOCALSTORAGE_KEY,
   NMUI_USERNAME_LOCALSTORAGE_KEY,
@@ -25,6 +26,7 @@ export interface IAuthSlice {
   user: User | null;
   userPlatformRole: UserRole | null;
   isNewTenant: TenantConfig['isNewTenant'];
+  intercomId?: TenantConfig['intercomId'];
 
   // methods
   isLoggedIn: () => boolean;
@@ -44,6 +46,7 @@ const createAuthSlice: StateCreator<IAuthSlice, [], [], IAuthSlice> = (set, get)
   user: null,
   isNewTenant: false,
   userPlatformRole: null,
+  intercomId: '',
 
   isLoggedIn() {
     // TODO: fix username retrieval for SaaS
@@ -63,6 +66,7 @@ const createAuthSlice: StateCreator<IAuthSlice, [], [], IAuthSlice> = (set, get)
       amuiUserId: '',
       user: null,
       userPlatformRole: null,
+      intercomId: '',
     });
     window?.localStorage?.removeItem(NMUI_ACCESS_TOKEN_LOCALSTORAGE_KEY);
     window?.localStorage?.removeItem(NMUI_USERNAME_LOCALSTORAGE_KEY);
@@ -72,6 +76,7 @@ const createAuthSlice: StateCreator<IAuthSlice, [], [], IAuthSlice> = (set, get)
     window?.localStorage?.removeItem(NMUI_AMUI_USER_ID_LOCALSTORAGE_KEY);
     window?.localStorage?.removeItem(NMUI_USER_LOCALSTORAGE_KEY);
     window?.localStorage?.removeItem(NMUI_USER_PLATFORM_ROLE_LOCALSTORAGE_KEY);
+    window?.localStorage?.removeItem(NMUI_INTERCOM_USER_ID_LOCALSTORAGE_KEY);
     // TODO: consider using localStorage.clear()
     // window?.localStorage?.clear();
   },

@@ -144,7 +144,7 @@ function App() {
   useEffect(() => {
     if (isIntercomReady) {
       intercomBoot({
-        userId: `${store.amuiUserId}`,
+        userId: `${store.intercomId}`,
       });
     }
     return () => {
