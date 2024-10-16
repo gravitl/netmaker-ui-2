@@ -166,6 +166,8 @@ export default function AddClientModal({
           extclientdns: formData.extclientdns,
           is_internet_gw: isServerEE ? formData.is_internet_gw : false,
           metadata: '',
+          mtu: 1500,
+          persistentkeepalive: 20,
         });
       }
 

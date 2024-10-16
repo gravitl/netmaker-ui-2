@@ -19,6 +19,8 @@ export interface Node {
   isegressgateway: boolean;
   isingressgateway: boolean;
   ingressdns: string;
+  ingresspersistentkeepalive: number;
+  ingressmtu: number;
   egressgatewayranges: string[];
   egressgatewaynatenabled: boolean;
   failovernode: string;

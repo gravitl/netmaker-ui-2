@@ -86,7 +86,12 @@ export default function NetworksPage(props: PageProps) {
       },
       defaultSortOrder: 'ascend',
       render: (netId) => (
-        <Link to={`${resolveAppRoute(AppRoutes.NETWORKS_ROUTE)}/${encodeURIComponent(netId)}`}>{netId}</Link>
+        <Link
+          className="text-button-primary-fill-default"
+          to={`${resolveAppRoute(AppRoutes.NETWORKS_ROUTE)}/${encodeURIComponent(netId)}`}
+        >
+          {netId}
+        </Link>
       ),
     },
     {
@@ -409,6 +414,7 @@ export default function NetworksPage(props: PageProps) {
                       };
                     }}
                     ref={tableColumnsNameRow}
+                    pagination={{ size: 'small', hideOnSinglePage: true, pageSize: 50 }}
                   />
                 </div>
               </Col>

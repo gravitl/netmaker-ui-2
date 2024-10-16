@@ -2112,7 +2112,7 @@ export default function TourComponent(props: TourUtilsProps) {
     location.state = undefined;
   }, [location.state, setIsTourOpen]);
 
-  const generateJumpToTourStepObj = useCallback(() => {
+  const generateJumpToTourStepObj = useCallback((): void => {
     // find the current step by index and then set the jump to tour step object
     const Texts = [
       'Overview',
@@ -2146,7 +2146,7 @@ export default function TourComponent(props: TourUtilsProps) {
       'Select Host for Egress Gateway': 'addEgressModal',
     };
 
-    const jumpToTourStepObj: JumpToTourStepObj = {
+    const newJumpToTourStepObj: JumpToTourStepObj = {
       overview: 0,
       hosts: 1,
       remoteAccess: 6,
@@ -2165,12 +2165,12 @@ export default function TourComponent(props: TourUtilsProps) {
     Texts.forEach((tab, index) => {
       const tourStepIndex = tourSteps?.findIndex((step) => step.title === tab);
       if (tourStepIndex !== -1) {
-        jumpToTourStepObj[TextToStepMap[tab] as keyof JumpToTourStepObj] = tourStepIndex as number;
+        newJumpToTourStepObj[TextToStepMap[tab] as keyof JumpToTourStepObj] = tourStepIndex as number;
       }
     });
 
-    props.setJumpToTourStepObj(jumpToTourStepObj);
-  }, [props, tourSteps]);
+    setJumpToTourStepObj(newJumpToTourStepObj);
+  }, [tourSteps]);
 
   useEffect(() => {
     generateJumpToTourStepObj();
