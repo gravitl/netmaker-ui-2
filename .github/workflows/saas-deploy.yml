@@ -21,6 +21,8 @@ on:
           - 'staging'
           - 'prod'
 
+run-name: NMUI SaaS Deployment - ${{ inputs.environment }} - ${{ inputs.version }}
+
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
