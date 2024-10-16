@@ -57,7 +57,6 @@ export interface TenantConfig {
   amuiAuthToken?: string;
   amuiUserId?: string;
   isNewTenant?: boolean;
-  intercomId?: string;
 }
 
 export interface ServerStatus {
