@@ -22,7 +22,6 @@ export const NMUI_AMUI_USER_ID_LOCALSTORAGE_KEY = 'nmui-amuiuid-lsk';
 export const NMUI_USER_LOCALSTORAGE_KEY = 'nmui-u-lsk';
 export const NMUI_USER_PLATFORM_ROLE_LOCALSTORAGE_KEY = 'nmui-upr-lsk';
 export const NMUI_SHOW_RAC_BANNER_LOCALSTORAGE_KEY = 'nmui-show-rac-banner';
-export const NMUI_INTERCOM_USER_ID_LOCALSTORAGE_KEY = 'nmui-intercom-user-id';
 
 // function to resolve the particular SaaS tenant's backend URL, ...
 export async function setupTenantConfig(): Promise<void> {
@@ -49,7 +48,6 @@ export async function setupTenantConfig(): Promise<void> {
   const username = url.searchParams.get('username') ?? '';
   const amuiUserId = url.searchParams.get('userId') ?? '';
   const isNewTenant = url.searchParams.get('isNewTenant') === 'true';
-  const intercomId = url.searchParams.get('intercomId') ?? '';
 
   truncateQueryParamsFromCurrentUrl();
 
@@ -96,9 +94,6 @@ export async function setupTenantConfig(): Promise<void> {
   if (amuiUserId) {
     window?.localStorage?.setItem(NMUI_AMUI_USER_ID_LOCALSTORAGE_KEY, amuiUserId);
   }
-  if (intercomId) {
-    window?.localStorage?.setItem(NMUI_INTERCOM_USER_ID_LOCALSTORAGE_KEY, intercomId);
-  }
   if (user) {
     window?.localStorage?.setItem(NMUI_USER_LOCALSTORAGE_KEY, JSON.stringify(user));
   }
@@ -115,7 +110,6 @@ export async function setupTenantConfig(): Promise<void> {
     username: username || (window?.localStorage?.getItem(NMUI_USERNAME_LOCALSTORAGE_KEY) ?? ''),
     amuiUserId: amuiUserId || (window?.localStorage?.getItem(NMUI_AMUI_USER_ID_LOCALSTORAGE_KEY) ?? ''),
     isNewTenant: isNewTenant,
-    intercomId: intercomId || (window?.localStorage?.getItem(NMUI_INTERCOM_USER_ID_LOCALSTORAGE_KEY) ?? ''),
     user: user || JSON.parse(window?.localStorage?.getItem(NMUI_USER_LOCALSTORAGE_KEY) ?? '{}'),
     userPlatformRole:
       userPlatformRole || JSON.parse(window?.localStorage?.getItem(NMUI_USER_PLATFORM_ROLE_LOCALSTORAGE_KEY) ?? '{}'),
