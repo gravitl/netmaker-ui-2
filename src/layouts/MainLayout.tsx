@@ -110,7 +110,7 @@ export default function MainLayout() {
           children: [
             ...recentNetworks.map((net) => ({
               key: `networks/${net.netid}`,
-              label: net.netid,
+              label: net.displayName,
             })),
             {
               type: 'divider',

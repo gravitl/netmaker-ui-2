@@ -5,6 +5,7 @@ export interface Network {
   addressrange: string;
   addressrange6: string;
   netid: string;
+  displayName: string;
   nodeslastmodified: number;
   networklastmodified: number;
   defaultinterface: string;
