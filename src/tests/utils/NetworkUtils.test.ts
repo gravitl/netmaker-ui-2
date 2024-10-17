@@ -12,6 +12,7 @@ import {
 
 const network: Network = {
   netid: 'test',
+  displayName: 'test',
   addressrange: '1.2.3.4/24',
   addressrange6: 'a123:09ef::/8',
   defaultacl: 'no',
