@@ -123,7 +123,7 @@ export default function LoginPage(props: LoginPageProps) {
     store.setStore({ jwt: token, baseUrl: backend });
     truncateQueryParamsFromCurrentUrl();
     // TODO: load username
-    navigate(resolveAppRoute(AppRoutes.DASHBOARD_ROUTE));
+    navigate(resolveAppRoute(AppRoutes.INDEX_ROUTE));
     return null;
   } else {
     if (oauthToken) {
@@ -132,13 +132,13 @@ export default function LoginPage(props: LoginPageProps) {
         getUserAndUpdateInStore(oauthUser);
       }
       truncateQueryParamsFromCurrentUrl();
-      navigate(resolveAppRoute(AppRoutes.DASHBOARD_ROUTE));
+      navigate(resolveAppRoute(AppRoutes.INDEX_ROUTE));
       return null;
     }
   }
 
   if (store.isLoggedIn()) {
-    navigate(resolveAppRoute(AppRoutes.DASHBOARD_ROUTE));
+    navigate(resolveAppRoute(AppRoutes.INDEX_ROUTE));
   }
 
   return (
@@ -167,7 +167,11 @@ export default function LoginPage(props: LoginPageProps) {
                   <>
                     User not authorized for dashboard access. Only admins can access the dashboard. Users should use the
                     remote access client.{' '}
-                    <a href="https://docs.netmaker.io/pro/rac.html" target="_blank" rel="noopener noreferrer">
+                    <a
+                      href="https://docs.netmaker.io/docs/remote-access-client-rac"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       Click here for more details.
                     </a>
                   </>

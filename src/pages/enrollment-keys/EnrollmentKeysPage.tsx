@@ -153,7 +153,7 @@ export default function EnrollmentKeysPage(props: PageProps) {
                 {
                   key: 'delete',
                   label: (
-                    <Typography.Text>
+                    <Typography.Text type="danger">
                       <DeleteOutlined /> Delete Key
                     </Typography.Text>
                   ),
@@ -416,6 +416,7 @@ export default function EnrollmentKeysPage(props: PageProps) {
                       };
                     }}
                     ref={enrollmentKeysTableRef}
+                    pagination={{ size: 'small', hideOnSinglePage: true, pageSize: 50 }}
                   />
                 </div>
               </Col>

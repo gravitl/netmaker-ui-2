@@ -257,7 +257,9 @@ export default function NetworkHostDetailsPage(props: PageProps) {
             data-nmui-intercom="network-host-details_nodeid"
           >
             <Col xs={12}>
-              <Typography.Text disabled>Host Network ID</Typography.Text>
+              <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                Host Network ID
+              </Typography.Text>
             </Col>
             <Col xs={12}>
               <Typography.Text>{node?.id ?? ''}</Typography.Text>
@@ -269,7 +271,9 @@ export default function NetworkHostDetailsPage(props: PageProps) {
             data-nmui-intercom="network-host-details_network"
           >
             <Col xs={12}>
-              <Typography.Text disabled>Network</Typography.Text>
+              <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                Network
+              </Typography.Text>
             </Col>
             <Col xs={12}>
               <Typography.Text>{node?.network ?? ''}</Typography.Text>
@@ -281,7 +285,9 @@ export default function NetworkHostDetailsPage(props: PageProps) {
             data-nmui-intercom="network-host-details_address"
           >
             <Col xs={12}>
-              <Typography.Text disabled>IP Address (IPv4)</Typography.Text>
+              <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                IP Address (IPv4)
+              </Typography.Text>
             </Col>
             <Col xs={12}>
               <Typography.Text>{node?.address ?? ''}</Typography.Text>
@@ -294,7 +300,9 @@ export default function NetworkHostDetailsPage(props: PageProps) {
               data-nmui-intercom="network-host-details_address6"
             >
               <Col xs={12}>
-                <Typography.Text disabled>IP Address (IPv6)</Typography.Text>
+                <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                  IP Address (IPv6)
+                </Typography.Text>
               </Col>
               <Col xs={12}>
                 <Typography.Text>{node?.address6 ?? ''}</Typography.Text>
@@ -307,7 +315,9 @@ export default function NetworkHostDetailsPage(props: PageProps) {
             data-nmui-intercom="network-host-details_localaddress"
           >
             <Col xs={12}>
-              <Typography.Text disabled>Local Address</Typography.Text>
+              <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                Local Address
+              </Typography.Text>
             </Col>
             <Col xs={12}>
               <Typography.Text>{node?.localaddress ?? ''}</Typography.Text>
@@ -320,7 +330,9 @@ export default function NetworkHostDetailsPage(props: PageProps) {
               data-nmui-intercom="network-host-details_egressgatewayranges"
             >
               <Col xs={12}>
-                <Typography.Text disabled>Egress Gateway Ranges</Typography.Text>
+                <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                  Egress Gateway Ranges
+                </Typography.Text>
               </Col>
               <Col xs={12}>
                 <Typography.Text>{node?.egressgatewayranges?.join(', ') ?? ''}</Typography.Text>
@@ -333,7 +345,9 @@ export default function NetworkHostDetailsPage(props: PageProps) {
             data-nmui-intercom="network-host-details_connected"
           >
             <Col xs={12}>
-              <Typography.Text disabled>Is Connected</Typography.Text>
+              <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                Is Connected
+              </Typography.Text>
             </Col>
             <Col xs={12}>
               <Typography.Text>{node?.connected ? 'Yes' : 'No'}</Typography.Text>
@@ -345,7 +359,9 @@ export default function NetworkHostDetailsPage(props: PageProps) {
             data-nmui-intercom="network-host-details_defaultacl"
           >
             <Col xs={12}>
-              <Typography.Text disabled>Default ACL</Typography.Text>
+              <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                Default ACL
+              </Typography.Text>
             </Col>
             <Col xs={12}>
               <Typography.Text>{node?.defaultacl ?? ''}</Typography.Text>
@@ -357,7 +373,9 @@ export default function NetworkHostDetailsPage(props: PageProps) {
             data-nmui-intercom="network-host-details_dnson"
           >
             <Col xs={12}>
-              <Typography.Text disabled>DNS On</Typography.Text>
+              <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                DNS On
+              </Typography.Text>
             </Col>
             <Col xs={12}>
               <Typography.Text>{node?.dnson ? 'Yes' : 'No'}</Typography.Text>
@@ -369,7 +387,9 @@ export default function NetworkHostDetailsPage(props: PageProps) {
             data-nmui-intercom="network-host-details_metadata"
           >
             <Col xs={12}>
-              <Typography.Text disabled>Metadata</Typography.Text>
+              <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                Metadata
+              </Typography.Text>
             </Col>
             <Col xs={12}>
               <Typography.Text>{node?.metadata}</Typography.Text>
@@ -381,7 +401,9 @@ export default function NetworkHostDetailsPage(props: PageProps) {
             data-nmui-intercom="network-host-details_lastcheckin"
           >
             <Col xs={12}>
-              <Typography.Text disabled>Last Check-in Time</Typography.Text>
+              <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                Last Check-in Time
+              </Typography.Text>
             </Col>
             <Col xs={12}>
               <Typography.Text>{dayjs((node?.lastcheckin ?? 0) * 1000).format(DATE_TIME_FORMAT) ?? ''}</Typography.Text>
@@ -393,7 +415,9 @@ export default function NetworkHostDetailsPage(props: PageProps) {
             data-nmui-intercom="network-host-details_expdatetime"
           >
             <Col xs={12}>
-              <Typography.Text disabled>Expiration Date</Typography.Text>
+              <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                Expiration Date
+              </Typography.Text>
             </Col>
             <Col xs={12}>
               <Typography.Text>{dayjs((node?.expdatetime ?? 0) * 1000).format(DATE_TIME_FORMAT) ?? ''}</Typography.Text>
@@ -405,7 +429,9 @@ export default function NetworkHostDetailsPage(props: PageProps) {
             data-nmui-intercom="network-host-details_lastmodified"
           >
             <Col xs={12}>
-              <Typography.Text disabled>Last Modified Time</Typography.Text>
+              <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                Last Modified Time
+              </Typography.Text>
             </Col>
             <Col xs={12}>
               <Typography.Text>
@@ -430,7 +456,9 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                 data-nmui-intercom="network-host-details_hostid"
               >
                 <Col xs={12}>
-                  <Typography.Text disabled>ID</Typography.Text>
+                  <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                    ID
+                  </Typography.Text>
                 </Col>
                 <Col xs={12}>
                   <Typography.Text>{host.id}</Typography.Text>
@@ -441,7 +469,9 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                 data-nmui-intercom="network-host-details_hostendpoint"
               >
                 <Col xs={12}>
-                  <Typography.Text disabled>Endpoint (IPv4)</Typography.Text>
+                  <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                    Endpoint (IPv4)
+                  </Typography.Text>
                 </Col>
                 <Col xs={12}>
                   <Typography.Text>{host.endpointip}</Typography.Text>
@@ -452,7 +482,9 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                 data-nmui-intercom="network-host-details_hostendpointv6"
               >
                 <Col xs={12}>
-                  <Typography.Text disabled>Endpoint (IPv6)</Typography.Text>
+                  <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                    Endpoint (IPv6)
+                  </Typography.Text>
                 </Col>
                 <Col xs={12}>
                   <Typography.Text>{host.endpointipv6}</Typography.Text>
@@ -463,7 +495,9 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                 data-nmui-intercom="network-host-details_hostisstaticendpoint"
               >
                 <Col xs={12}>
-                  <Typography.Text disabled>Static Endpoint</Typography.Text>
+                  <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                    Static Endpoint
+                  </Typography.Text>
                 </Col>
                 <Col xs={12}>
                   <Typography.Text>{host.isstatic ? 'Yes' : 'No'}</Typography.Text>
@@ -474,7 +508,9 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                 data-nmui-intercom="network-host-details_hostlistenport"
               >
                 <Col xs={12}>
-                  <Typography.Text disabled>Listen Port</Typography.Text>
+                  <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                    Listen Port
+                  </Typography.Text>
                 </Col>
                 <Col xs={12}>
                   <Typography.Text>{host.listenport}</Typography.Text>
@@ -485,7 +521,9 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                 data-nmui-intercom="network-host-details_hostisstaticport"
               >
                 <Col xs={12}>
-                  <Typography.Text disabled>Static Port</Typography.Text>
+                  <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                    Static Port
+                  </Typography.Text>
                 </Col>
                 <Col xs={12}>
                   <Typography.Text>{host.isstaticport ? 'Yes' : 'No'}</Typography.Text>
@@ -496,7 +534,9 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                 data-nmui-intercom="network-host-details_hostmacaddress"
               >
                 <Col xs={12}>
-                  <Typography.Text disabled>MAC Address</Typography.Text>
+                  <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                    MAC Address
+                  </Typography.Text>
                 </Col>
                 <Col xs={12}>
                   <Typography.Text>{host.macaddress}</Typography.Text>
@@ -507,7 +547,9 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                 data-nmui-intercom="network-host-details_hostmtu"
               >
                 <Col xs={12}>
-                  <Typography.Text disabled>MTU</Typography.Text>
+                  <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                    MTU
+                  </Typography.Text>
                 </Col>
                 <Col xs={12}>
                   <Typography.Text>{host.mtu}</Typography.Text>
@@ -518,7 +560,9 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                 data-nmui-intercom="network-host-details_hostpersistentkeepalive"
               >
                 <Col xs={12}>
-                  <Typography.Text disabled>Persistent Keepalive</Typography.Text>
+                  <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                    Persistent Keepalive
+                  </Typography.Text>
                 </Col>
                 <Col xs={12}>
                   <Typography.Text>{host.persistentkeepalive}</Typography.Text>
@@ -529,7 +573,9 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                 data-nmui-intercom="network-host-details_hostpublickey"
               >
                 <Col xs={12}>
-                  <Typography.Text disabled>Public Key</Typography.Text>
+                  <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                    Public Key
+                  </Typography.Text>
                 </Col>
                 <Col xs={12}>
                   <Typography.Text>{host.publickey}</Typography.Text>
@@ -540,7 +586,9 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                 data-nmui-intercom="network-host-details_hostos"
               >
                 <Col xs={12}>
-                  <Typography.Text disabled>Operating System</Typography.Text>
+                  <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                    Operating System
+                  </Typography.Text>
                 </Col>
                 <Col xs={12}>
                   <Typography.Text>{host.os}</Typography.Text>
@@ -551,7 +599,9 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                 data-nmui-intercom="network-host-details_hostversion"
               >
                 <Col xs={12}>
-                  <Typography.Text disabled>Version</Typography.Text>
+                  <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                    Version
+                  </Typography.Text>
                 </Col>
                 <Col xs={12}>
                   <Typography.Text>{host.version}</Typography.Text>
@@ -562,7 +612,9 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                 data-nmui-intercom="network-host-details_hostverbosity"
               >
                 <Col xs={12}>
-                  <Typography.Text disabled>Verbosity</Typography.Text>
+                  <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                    Verbosity
+                  </Typography.Text>
                 </Col>
                 <Col xs={12}>
                   <Typography.Text>{host.verbosity}</Typography.Text>
@@ -573,7 +625,9 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                 data-nmui-intercom="network-host-details_hostdefaultinterface"
               >
                 <Col xs={12}>
-                  <Typography.Text disabled>Default Interface</Typography.Text>
+                  <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                    Default Interface
+                  </Typography.Text>
                 </Col>
                 <Col xs={12}>
                   <Typography.Text>{host.defaultinterface}</Typography.Text>
@@ -584,7 +638,9 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                 data-nmui-intercom="network-host-details_hostisdefault"
               >
                 <Col xs={12}>
-                  <Typography.Text disabled>Default Host</Typography.Text>
+                  <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                    Default Host
+                  </Typography.Text>
                 </Col>
                 <Col xs={12}>
                   <Typography.Text>{host.isdefault ? 'Yes' : 'No'}</Typography.Text>
@@ -595,7 +651,9 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                 data-nmui-intercom="network-host-details_hostdebug"
               >
                 <Col xs={12}>
-                  <Typography.Text disabled>Debug</Typography.Text>
+                  <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                    Debug
+                  </Typography.Text>
                 </Col>
                 <Col xs={12}>
                   <Typography.Text>{host.debug ? 'Yes' : 'No'}</Typography.Text>
@@ -606,7 +664,9 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                 data-nmui-intercom="network-host-details_autoupdate"
               >
                 <Col xs={12}>
-                  <Typography.Text disabled>Auto Update</Typography.Text>
+                  <Typography.Text disabled style={{ color: '#A6A6A6' }}>
+                    Auto Update
+                  </Typography.Text>
                 </Col>
                 <Col xs={12}>
                   <Typography.Text>{host.autoupdate ? 'Yes' : 'No'}</Typography.Text>

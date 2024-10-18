@@ -9,8 +9,10 @@ import {
   LoadingOutlined,
   LogoutOutlined,
   UserOutlined,
+  BookOutlined,
+  DownloadOutlined,
 } from '@ant-design/icons';
-import { Alert, Col, MenuProps, Row, Select, Switch, Typography } from 'antd';
+import { Alert, Col, Divider, MenuProps, Row, Select, Switch, Typography } from 'antd';
 import { Layout, Menu, theme } from 'antd';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
@@ -31,6 +33,7 @@ import { isManagedHost, useBranding, useServerLicense } from '@/utils/Utils';
 import VersionUpgradeModal from '@/components/modals/version-upgrade-modal/VersionUpgradeModal';
 import { lt } from 'semver';
 import { isAdminUserOrRole } from '@/utils/UserMgmtUtils';
+import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 
 const { Content, Sider } = Layout;
 
@@ -121,7 +124,7 @@ export default function MainLayout() {
           ? {
               key: 'hosts',
               icon: LaptopOutlined,
-              label: 'Hosts',
+              label: 'Global Hosts',
             }
           : undefined!,
         userHasFullAccess
@@ -155,6 +158,13 @@ export default function MainLayout() {
               ]
             : [],
         )
+        .concat([
+          {
+            key: 'documentation',
+            icon: BookOutlined,
+            label: 'Documentation',
+          },
+        ])
         .map(
           (item) =>
             item && {
@@ -176,17 +186,26 @@ export default function MainLayout() {
     [recentNetworks, userHasFullAccess],
   );
 
-  const sideNavBottomItems: MenuProps['items'] = useMemo(
-    () =>
-      [
-        {
-          icon: UserOutlined,
-          label: store.username,
+  const bottomMenuItems: MenuProps['items'] = useMemo(
+    () => [
+      {
+        type: 'divider',
+      },
+      {
+        key: 'download-rac',
+        icon: React.createElement(DownloadOutlined),
+        label: 'Download RAC',
+        onClick: () => {
+          window.open(ExternalLinks.RAC_DOWNLOAD_LINK, '_blank');
         },
-      ].map((item, index) => ({
-        key: String(index + 1),
-        icon: React.createElement(item.icon),
-        label: item.label,
+      },
+      {
+        type: 'divider',
+      },
+      {
+        key: 'user-menu',
+        icon: React.createElement(UserOutlined),
+        label: store.username,
         children: [
           {
             style: {
@@ -235,12 +254,12 @@ export default function MainLayout() {
               >
                 <GlobalOutlined />
                 <Select
-                  style={{ width: '100%' }}
                   value={i18n.language}
+                  className="w-full "
                   options={[
                     {
                       label: (
-                        <>
+                        <span className="flex items-center gap-2">
                           <img
                             style={{ width: '20px', height: '12px' }}
                             src="https://img.freepik.com/free-vector/illustration-uk-flag_53876-18166.jpg?w=1800&t=st=1679225900~exp=1679226500~hmac=0cc9ee0d4d5196bb3c610ca92d669f3c0ebf95431423a2c4ff7196f81c10891e"
@@ -249,7 +268,7 @@ export default function MainLayout() {
                             referrerPolicy="no-referrer"
                           />{' '}
                           English
-                        </>
+                        </span>
                       ),
                       value: 'en',
                     },
@@ -314,9 +333,9 @@ export default function MainLayout() {
             ),
           },
         ],
-      })),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isSidebarCollapsed, currentTheme, i18n.language, navigate, setCurrentTheme, store.username, storeLogout],
+      },
+    ],
+    [store.username, isSidebarCollapsed, currentTheme, i18n.language, navigate, setCurrentTheme, storeLogout],
   );
 
   const getActiveSideNavKeys = useCallback(() => {
@@ -451,10 +470,10 @@ export default function MainLayout() {
             zIndex: 1000,
           }}
           zeroWidthTriggerStyle={{
-            border: `2px solid ${branding.primaryColor}`,
+            border: `2px solid ${store.currentTheme === 'dark' ? branding.primaryColorDark : branding.primaryColorLight}`,
             background: 'transparent',
             borderLeft: 'none',
-            color: branding.primaryColor,
+            color: store.currentTheme === 'dark' ? branding.primaryColorDark : branding.primaryColorLight,
             top: 0,
           }}
           breakpoint="lg"
@@ -462,97 +481,167 @@ export default function MainLayout() {
             setIsSmallScreen(broken);
           }}
         >
-          {/* logo */}
-          <Link to={resolveAppRoute(AppRoutes.DASHBOARD_ROUTE)}>
-            <img
-              loading="eager"
-              referrerPolicy="no-referrer"
-              src={sidebarLogo}
-              alt={branding.logoAltText}
-              style={{ width: '100%', padding: '1rem 2rem 1rem 2rem' }}
-            />
-          </Link>
-
-          <Menu
-            theme="light"
-            mode="inline"
-            selectedKeys={getActiveSideNavKeys()}
-            items={sideNavItems}
-            openKeys={openSidebarMenus}
-            style={{ borderRight: 'none' }}
-            id="side-nav"
-            onOpenChange={(keys: string[]) => {
-              setOpenSidebarMenus(keys);
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              height: '100%',
             }}
-            onClick={(menu) => {
-              switch (menu.key) {
-                case 'dashboard':
-                  navigate(resolveAppRoute(AppRoutes.DASHBOARD_ROUTE));
-                  break;
-                case 'all-networks':
-                  navigate(resolveAppRoute(AppRoutes.NETWORKS_ROUTE));
-                  break;
-                case 'hosts':
-                  navigate(resolveAppRoute(AppRoutes.HOSTS_ROUTE));
-                  break;
-                case 'clients':
-                  navigate(resolveAppRoute(AppRoutes.CLIENTS_ROUTE));
-                  break;
-                case 'enrollment-keys':
-                  navigate(resolveAppRoute(AppRoutes.ENROLLMENT_KEYS_ROUTE));
-                  break;
-                case 'amui':
-                  window.location = getAmuiUrl() as any;
-                  break;
-                case 'amuitenants':
-                  window.location = getAmuiTenantsUrl() as any;
-                  break;
-                case 'users':
-                  navigate(resolveAppRoute(AppRoutes.USERS_ROUTE));
-                  break;
-                default:
-                  if (menu.key.startsWith('networks/')) {
-                    navigate(getNetworkRoute(menu.key.replace('networks/', '')));
-                  } else if (menu.key.startsWith('hosts/')) {
-                    navigate(getHostRoute(menu.key.replace('hosts/', '')));
-                  }
-                  break;
-              }
-            }}
-          />
-
-          {/* server version */}
-          {!isSidebarCollapsed && (
-            <div className="version-box" style={{ marginTop: '1rem', padding: '0rem 1.5rem', fontSize: '.8rem' }}>
-              <div
+          >
+            <div
+              style={{
+                flex: '1',
+                overflowY: 'auto',
+                msOverflowStyle: 'none', // Hide scrollbar in IE and Edge
+                scrollbarWidth: 'none', // Hide scrollbar in Firefox
+              }}
+            >
+              {/* logo */}
+              <Link
+                to={resolveAppRoute(AppRoutes.DASHBOARD_ROUTE)}
                 style={{
-                  fontSize: '.8rem',
-                  cursor: canUpgrade ? 'pointer' : '',
+                  position: 'sticky',
+                  top: '0',
+                  backgroundColor: store.currentTheme === 'dark' ? 'rgb(20, 20, 20)' : '#fff',
+                  zIndex: 1010,
                 }}
-                title={canUpgrade ? 'A new version is available. Click to show version upgrade steps' : ''}
-                onClick={() => openVersionUpgradeModal()}
               >
-                <Typography.Text style={{ fontSize: 'inherit' }}>
-                  UI: {ServerConfigService.getUiVersion()}{' '}
-                  {isSaasBuild && !BrowserStore.hasNmuiVersionSynced() && <LoadingOutlined />}
-                  {canUpgrade && <CloudSyncOutlined style={{ marginLeft: '.5rem' }} className="update-btn" />}
-                </Typography.Text>
-                <br />
-                <Typography.Text style={{ fontSize: 'inherit' }} type="secondary">
-                  Server: {store.serverConfig?.Version ?? 'n/a'}
-                </Typography.Text>
-              </div>
-            </div>
-          )}
+                <img
+                  loading="eager"
+                  referrerPolicy="no-referrer"
+                  src={sidebarLogo}
+                  alt={branding.logoAltText}
+                  style={{
+                    width: '100%',
+                    padding: '1rem 2rem 1rem 2rem',
+                    backgroundColor: store.currentTheme === 'dark' ? 'rgb(20, 20, 20)' : '#fff',
+                  }}
+                />
+              </Link>
 
-          {/* bottom items */}
-          <Menu
-            theme="light"
-            mode="inline"
-            selectable={false}
-            items={sideNavBottomItems}
-            className={isSidebarCollapsed ? 'bottom-sidebar-menu-close' : 'bottom-sidebar-menu-open'}
-          />
+              <Menu
+                theme="light"
+                mode="inline"
+                selectedKeys={getActiveSideNavKeys()}
+                items={sideNavItems}
+                openKeys={openSidebarMenus}
+                style={{ borderRight: 'none' }}
+                id="side-nav"
+                onOpenChange={(keys: string[]) => {
+                  setOpenSidebarMenus(keys);
+                }}
+                onClick={(menu) => {
+                  switch (menu.key) {
+                    case 'dashboard':
+                      navigate(resolveAppRoute(AppRoutes.DASHBOARD_ROUTE));
+                      break;
+                    case 'all-networks':
+                      navigate(resolveAppRoute(AppRoutes.NETWORKS_ROUTE));
+                      break;
+                    case 'hosts':
+                      navigate(resolveAppRoute(AppRoutes.HOSTS_ROUTE));
+                      break;
+                    case 'clients':
+                      navigate(resolveAppRoute(AppRoutes.CLIENTS_ROUTE));
+                      break;
+                    case 'enrollment-keys':
+                      navigate(resolveAppRoute(AppRoutes.ENROLLMENT_KEYS_ROUTE));
+                      break;
+                    case 'amui':
+                      window.location = getAmuiUrl() as any;
+                      break;
+                    case 'amuitenants':
+                      window.location = getAmuiTenantsUrl() as any;
+                      break;
+                    case 'users':
+                      navigate(resolveAppRoute(AppRoutes.USERS_ROUTE));
+                      break;
+                    case 'documentation':
+                      window.open(ExternalLinks.UI_DOCS_URL, '_blank');
+                      break;
+                    default:
+                      if (menu.key.startsWith('networks/')) {
+                        navigate(getNetworkRoute(menu.key.replace('networks/', '')));
+                      } else if (menu.key.startsWith('hosts/')) {
+                        navigate(getHostRoute(menu.key.replace('hosts/', '')));
+                      }
+                      break;
+                  }
+                }}
+              />
+            </div>
+
+            {/* Bottom menu items */}
+            <div
+              style={{
+                position: 'sticky',
+                bottom: '0',
+                backgroundColor: store.currentTheme === 'dark' ? 'rgb(20, 20, 20)' : '#fff',
+                width: '100%',
+              }}
+            >
+              <Divider style={{ width: '100%', marginBottom: '1rem' }} />
+
+              {/* server version */}
+              {!isSidebarCollapsed && (
+                <div
+                  className="version-box"
+                  style={{
+                    padding: '0rem 1.5rem',
+                    fontSize: '.8rem',
+                    marginBottom: '1rem',
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: '.8rem',
+                      cursor: canUpgrade ? 'pointer' : '',
+                    }}
+                    title={canUpgrade ? 'A new version is available. Click to show version upgrade steps' : ''}
+                    onClick={() => openVersionUpgradeModal()}
+                  >
+                    <Typography.Text style={{ fontSize: 'inherit' }}>
+                      UI: {ServerConfigService.getUiVersion()}{' '}
+                      {isSaasBuild && !BrowserStore.hasNmuiVersionSynced() && <LoadingOutlined />}
+                      {canUpgrade && <CloudSyncOutlined style={{ marginLeft: '.5rem' }} className="update-btn" />}
+                    </Typography.Text>
+                    <br />
+                    <Typography.Text style={{ fontSize: 'inherit' }}>
+                      Server: {store.serverConfig?.Version ?? 'n/a'}
+                    </Typography.Text>
+
+                    {isSaasBuild && (
+                      <>
+                        <br />
+                        <Typography.Text
+                          style={{ fontSize: 'inherit', width: '100%' }}
+                          ellipsis={true}
+                          copyable={{ text: store.tenantId || store.serverConfig?.NetmakerTenantID || 'n/a' }}
+                          title={store.tenantId || store.serverConfig?.NetmakerTenantID || 'n/a'}
+                        >
+                          Tenant ID: {`${store.tenantId || store.serverConfig?.NetmakerTenantID || 'n/a'}`}
+                        </Typography.Text>
+                      </>
+                    )}
+                    <br />
+                  </div>
+                </div>
+              )}
+
+              {/* bottom items including Download RAC and user menu */}
+              <Menu
+                theme="light"
+                mode="inline"
+                selectable={false}
+                items={bottomMenuItems}
+                style={{
+                  borderRight: 'none',
+                  width: '100%',
+                }}
+              />
+            </div>
+          </div>
         </Sider>
 
         {/* main content */}

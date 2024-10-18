@@ -20,8 +20,10 @@ import { getNetworkHostRoute, resolveAppRoute } from '@/utils/RouteUtils';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import {
   CheckOutlined,
+  CloseCircleFilled,
   DashOutlined,
   DeleteOutlined,
+  DownloadOutlined,
   DownOutlined,
   EditOutlined,
   ExclamationCircleFilled,
@@ -96,7 +98,7 @@ import UpdateClientModal from '@/components/modals/update-client-modal/UpdateCli
 import { NULL_HOST, NULL_NODE } from '@/constants/Types';
 import UpdateNodeModal from '@/components/modals/update-node-modal/UpdateNodeModal';
 import VirtualisedTable from '@/components/VirtualisedTable';
-import { NETWORK_GRAPH_SIGMA_CONTAINER_ID } from '@/constants/AppConstants';
+import { APP_UPDATE_POLL_INTERVAL, NETWORK_GRAPH_SIGMA_CONTAINER_ID } from '@/constants/AppConstants';
 import UpdateIngressUsersModal from '@/components/modals/update-ingress-users-modal/UpdateIngressUsersModal';
 import getNodeImageProgram from 'sigma/rendering/webgl/programs/node.image';
 import { HOST_HEALTH_STATUS } from '@/models/NodeConnectivityStatus';
@@ -117,6 +119,7 @@ import { TourType } from '../DashboardPage';
 import { Waypoints } from 'lucide-react';
 import { isAdminUserOrRole } from '@/utils/UserMgmtUtils';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
+import RacDownloadBanner from '@/components/RacDownloadBanner';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -158,12 +161,12 @@ type ItemStepMap = {
   [key in keyof NetworkUsage]: NetworkDetailTourStep;
 };
 
-const HOSTS_DOCS_URL = 'https://docs.netmaker.io/ui-reference.html#hosts';
-const ACLS_DOCS_URL = 'https://docs.netmaker.io/acls.html';
-const RELAYS_DOCS_URL = 'https://docs.netmaker.io/pro/pro-relay-server.html';
-const EGRESS_DOCS_URL = 'https://docs.netmaker.io/egress-gateway.html';
-const GATEWAYS_DOCS_URL = 'https://docs.netmaker.io/external-clients.html';
-const CLIENTS_DOCS_URL = 'https://docs.netmaker.io/external-clients.html#adding-clients-to-a-gateway';
+const HOSTS_DOCS_URL = 'https://docs.netmaker.io/docs/references/user-interface#hosts';
+const ACLS_DOCS_URL = 'https://docs.netmaker.io/docs/features/acls';
+const RELAYS_DOCS_URL = 'https://docs.netmaker.io/docs/features/relay-servers-pro';
+const EGRESS_DOCS_URL = 'https://docs.netmaker.io/docs/features/egress';
+const GATEWAYS_DOCS_URL = 'https://docs.netmaker.io/docs/remote-access-client-rac';
+const CLIENTS_DOCS_URL = 'https://docs.netmaker.io/docs/remote-access-client-rac#adding-clients-to-a-gateway';
 
 export default function NetworkDetailsPage(props: PageProps) {
   const { networkId } = useParams<{ networkId: string }>();
@@ -172,11 +175,12 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
   const { token: themeToken } = theme.useToken();
   const branding = useBranding();
-
   const storeFetchNodes = store.fetchNodes;
   const storeDeleteNode = store.deleteNode;
   const { isServerEE } = useServerLicense();
+
   const [form] = Form.useForm<Network>();
+  // const [networkNodes, setNetworkNodes] = useState<ExtendedNode[]>([]);
   const isIpv4Watch = Form.useWatch('isipv4', form);
   const isIpv6Watch = Form.useWatch('isipv6', form);
   const [network, setNetwork] = useState<Network | null>(null);
@@ -246,7 +250,6 @@ export default function NetworkDetailsPage(props: PageProps) {
   });
   const [isSetNetworkFailoverModalOpen, setIsSetNetworkFailoverModalOpen] = useState(false);
   const [isAddInternetGatewayModalOpen, setIsAddInternetGatewayModalOpen] = useState(false);
-  // const [networkNodes, setNetworkNodes] = useState<ExtendedNode[]>([]);
 
   const overviewTabContainerRef = useRef(null);
   const hostsTabContainerTableRef = useRef(null);
@@ -319,6 +322,33 @@ export default function NetworkDetailsPage(props: PageProps) {
         .filter((node) => node.network === networkId),
     [store.nodes, store.hostsCommonDetails, networkId],
   );
+
+  // const loadNetworkNodes = useCallback(async () => {
+  //   try {
+  //     if (!networkId) return;
+  //     const nodes = (await NodesService.getNetworkNodes(networkId)).data;
+  //     setNetworkNodes(nodes.map((n) => getExtendedNode(n, store.hostsCommonDetails)));
+  //   } catch (err) {
+  //     if (err instanceof AxiosError && err.response?.status === 403) return;
+  //     notify.error({
+  //       message: 'Error loading network nodes',
+  //       description: extractErrorMsg(err as any),
+  //     });
+  //   }
+  // }, [networkId, notify, store.hostsCommonDetails]);
+
+  // const updateNode = useCallback(
+  //   (nodeId: Node['id'], newNode: Node) => {
+  //     setNetworkNodes((prev) =>
+  //       prev.map((n) => (n.id === nodeId ? getExtendedNode(newNode, store.hostsCommonDetails) : n)),
+  //     );
+  //   },
+  //   [store.hostsCommonDetails],
+  // );
+
+  // const deleteNode = useCallback((nodeId: Node['id']) => {
+  //   setNetworkNodes((prev) => prev.filter((n) => n.id !== nodeId));
+  // }, []);
 
   const filteredNetworkNodes = useMemo<ExtendedNode[]>(
     () =>
@@ -901,7 +931,9 @@ export default function NetworkDetailsPage(props: PageProps) {
               {node.isinternetgateway && (
                 <GlobalOutlined
                   title="This host serves as an internet gateway: all traffic of connected clients would be routed through this host just like a traditional VPN"
-                  style={{ color: branding.primaryColor }}
+                  style={{
+                    color: store.currentTheme === 'dark' ? branding.primaryColorDark : branding.primaryColorLight,
+                  }}
                   className="internet-gw-icon"
                 />
               )}
@@ -971,7 +1003,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         },
       },
     ],
-    [branding.primaryColor, getGatewayDropdownOptions],
+    [store.currentTheme === 'dark' ? branding.primaryColorDark : branding.primaryColorLight, getGatewayDropdownOptions],
   );
 
   const egressTableCols = useMemo<TableColumnProps<ExtendedNode>[]>(
@@ -1322,10 +1354,11 @@ export default function NetworkDetailsPage(props: PageProps) {
                 items: [
                   {
                     key: 'delete',
+                    danger: true,
                     label: (
-                      <Typography.Text>
+                      <>
                         <DeleteOutlined /> Stop being relayed
-                      </Typography.Text>
+                      </>
                     ),
                     onClick: (info) => {
                       confirmRemoveRelayed(
@@ -2088,6 +2121,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     return (
       <div className="network-hosts-tab-content" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
         <Row justify="space-between" style={{ marginBottom: '1rem', width: '100%' }}>
+          {isServerEE && <RacDownloadBanner />}
           <Col xs={24} md={8}>
             <Input
               size="large"
@@ -2199,7 +2233,9 @@ export default function NetworkDetailsPage(props: PageProps) {
                             <Tooltip title="This host is acting as the network's failover host">
                               <Waypoints
                                 style={{ marginLeft: '.5rem' }}
-                                color={branding.primaryColor}
+                                color={
+                                  store.currentTheme === 'dark' ? branding.primaryColorDark : branding.primaryColorLight
+                                }
                                 size="1.2rem"
                                 strokeWidth={1.5}
                               />
@@ -2354,11 +2390,13 @@ export default function NetworkDetailsPage(props: PageProps) {
     filteredNetworkNodes,
     jumpToTourStep,
     store.hostsCommonDetails,
-    branding.primaryColor,
+    branding.primaryColorDark,
+    branding.primaryColorLight,
     editNode,
     confirmNodeFailoverStatusChange,
     disconnectNodeFromNetwork,
     removeNodeFromNetwork,
+    store.currentTheme,
   ]);
 
   const getDnsContent = useCallback(() => {
@@ -2380,7 +2418,7 @@ export default function NetworkDetailsPage(props: PageProps) {
               type="primary"
               size="large"
               onClick={() => setIsAddDnsModalOpen(true)}
-              className="full-width-button-xs mt-10"
+              className="mt-10 full-width-button-xs"
               ref={dnsTabAddDNSRef}
               style={{ marginBottom: '.5rem' }}
             >
@@ -2547,7 +2585,7 @@ export default function NetworkDetailsPage(props: PageProps) {
             <Row>
               {isServerEE && (
                 <Row style={{ width: '100%' }}>
-                  <Col
+                  {/* <Col
                     style={{
                       marginBottom: '1rem',
                       background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
@@ -2577,7 +2615,8 @@ export default function NetworkDetailsPage(props: PageProps) {
                       {' '}
                       Download RAC
                     </Button>
-                  </Col>
+                  </Col> */}
+                  <RacDownloadBanner />
                 </Row>
               )}
 
@@ -3111,7 +3150,11 @@ export default function NetworkDetailsPage(props: PageProps) {
                   description={
                     <>
                       Please use{' '}
-                      <a rel="no-referrer noreferrer" href="https://docs.netmaker.io/nmctl.html#acls" target="_blank">
+                      <a
+                        rel="no-referrer noreferrer"
+                        href="https://docs.netmaker.io/docs/guide/references/nmctl#acls"
+                        target="_blank"
+                      >
                         NMCTL
                       </a>{' '}
                       our commandline tool to manage ACLs.
@@ -3581,6 +3624,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     relays.length,
     getRelayContent,
     internetGatewaysCount,
+    isAddInternetGatewayModalOpen,
   ]);
 
   const loadMetrics = useCallback(async () => {
@@ -3598,20 +3642,6 @@ export default function NetworkDetailsPage(props: PageProps) {
       });
     }
   }, [networkId, notify]);
-
-  // const loadNetworkNodes = useCallback(async () => {
-  //   try {
-  //     if (!networkId) return;
-  //     const nodes = (await NodesService.getNetworkNodes(networkId)).data;
-  //     setNetworkNodes(nodes);
-  //   } catch (err) {
-  //     if (err instanceof AxiosError && err.response?.status === 403) return;
-  //     notify.error({
-  //       message: 'Error loading network nodes',
-  //       description: extractErrorMsg(err as any),
-  //     });
-  //   }
-  // }, [networkId, notify]);
 
   const loadNetworkDnses = useCallback(async () => {
     try {
@@ -3666,32 +3696,32 @@ export default function NetworkDetailsPage(props: PageProps) {
     loadMetrics,
   ]);
 
-  const onNetworkFormEdit = useCallback(async () => {
-    try {
-      const formData = await form.validateFields();
-      const network = store.networks.find((network) => network.netid === networkId);
-      if (!networkId || !network) {
-        throw new Error('Network not found');
-      }
-      const newNetwork = (
-        await NetworksService.updateNetwork(networkId, convertUiNetworkToNetworkPayload({ ...network, ...formData }))
-      ).data;
-      store.updateNetwork(networkId, convertNetworkPayloadToUiNetwork(newNetwork));
-      notify.success({ message: `Network ${networkId} updated` });
-      setIsEditingNetwork(false);
-    } catch (err) {
-      if (err instanceof AxiosError) {
-        notify.error({
-          message: 'Failed to save changes',
-          description: extractErrorMsg(err),
-        });
-      } else {
-        notify.error({
-          message: err instanceof Error ? err.message : 'Failed to save changes',
-        });
-      }
-    }
-  }, [form, networkId, notify, store]);
+  // const onNetworkFormEdit = useCallback(async () => {
+  //   try {
+  //     const formData = await form.validateFields();
+  //     const network = store.networks.find((network) => network.netid === networkId);
+  //     if (!networkId || !network) {
+  //       throw new Error('Network not found');
+  //     }
+  //     const newNetwork = (
+  //       await NetworksService.updateNetwork(networkId, convertUiNetworkToNetworkPayload({ ...network, ...formData }))
+  //     ).data;
+  //     store.updateNetwork(networkId, convertNetworkPayloadToUiNetwork(newNetwork));
+  //     notify.success({ message: `Network ${networkId} updated` });
+  //     setIsEditingNetwork(false);
+  //   } catch (err) {
+  //     if (err instanceof AxiosError) {
+  //       notify.error({
+  //         message: 'Failed to save changes',
+  //         description: extractErrorMsg(err),
+  //       });
+  //     } else {
+  //       notify.error({
+  //         message: err instanceof Error ? err.message : 'Failed to save changes',
+  //       });
+  //     }
+  //   }
+  // }, [form, networkId, notify, store]);
 
   const onNetworkDelete = useCallback(async () => {
     try {
@@ -3994,6 +4024,14 @@ export default function NetworkDetailsPage(props: PageProps) {
     // setIsTourOpen(true);
   }, [loadNetwork]);
 
+  // useEffect(() => {
+  //   const handle = setInterval(() => {
+  //     loadNetworkNodes();
+  //   }, APP_UPDATE_POLL_INTERVAL);
+
+  //   return () => clearInterval(handle);
+  // }, [loadNetworkNodes]);
+
   // refresh form to prevent stick network data across different network details pages
   useEffect(() => {
     if (!network) return;
@@ -4030,7 +4068,9 @@ export default function NetworkDetailsPage(props: PageProps) {
           {/* top bar */}
           <Row className="tabbed-page-row-padding">
             <Col xs={24}>
-              <Link to={resolveAppRoute(AppRoutes.NETWORKS_ROUTE)}>View All Networks</Link>
+              <Link className="text-button-primary-fill-default" to={resolveAppRoute(AppRoutes.NETWORKS_ROUTE)}>
+                View All Networks
+              </Link>
               <Row>
                 <Col xs={18} lg={12}>
                   <Typography.Title level={2} style={{ marginTop: '.5rem', marginBottom: '2rem' }}>

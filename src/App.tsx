@@ -15,7 +15,9 @@ import { reloadNmuiWithVersion } from './utils/RouteUtils';
 import { usePostHog } from 'posthog-js/react';
 
 function App() {
-  const store = useStore();
+  const store = useStore(); // Access the store
+  const isDarkMode = store.currentTheme === 'dark'; // Determine if dark mode is active
+
   const {
     boot: intercomBoot,
     shutdown: intercomShutdown,
@@ -142,7 +144,7 @@ function App() {
   useEffect(() => {
     if (isIntercomReady) {
       intercomBoot({
-        userId: `${store.amuiUserId}_${store.tenantId}`,
+        userId: `${store.amuiUserId}`,
       });
     }
     return () => {
@@ -212,22 +214,29 @@ function App() {
   }, [store.serverStatus.isHealthy]);
 
   return (
-    <div className="App">
+    <div className={`App ${isDarkMode ? 'dark' : ''}`}>
+      {' '}
+      {/* Conditionally add .dark class */}
       <ConfigProvider
         theme={{
-          algorithm: store.currentTheme === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm,
+          algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
           token: {
-            colorPrimary: branding.primaryColor,
-            colorLink: branding.primaryColor,
+            colorPrimary: store.currentTheme === 'dark' ? branding.primaryColorDark : branding.primaryColorLight,
+            colorLink: store.currentTheme === 'dark' ? branding.primaryColorDark : branding.primaryColorLight,
             fontFamily: 'Inter, SFPro, system-ui, Avenir, Helvetica, Arial, sans-serif',
             fontSize: 16,
             // colorBgContainer: 'black',
+          },
+          components: {
+            Button: {
+              colorPrimary: '#624AF4',
+              algorithm: true, // Enable algorithm
+            },
           },
         }}
       >
         <RouterProvider router={router} />
       </ConfigProvider>
-
       <ServerMalfunctionModal isOpen={showServerMalfunctionModal} />
     </div>
   );

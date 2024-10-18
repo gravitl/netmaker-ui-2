@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouteObject } from 'react-router-dom';
+import { createBrowserRouter, Navigate, RouteObject } from 'react-router-dom';
 import Error404Page from './pages/errors/Error404Page';
 import DashboardPage from './pages/DashboardPage';
 import StartupPage from './pages/StartupPage';
@@ -23,9 +23,13 @@ import ContinueInvitePage from './pages/auth/ContinueInvitePage';
 import UserGroupDetailsPage from './pages/users/UserGroupDetailsPage';
 import PlatformRoleDetailsPage from './pages/users/PlatformRoleDetailsPage';
 import ProfilePage from './pages/users/ProfilePage';
+import { useStore } from './store/store';
+import { useEffect, useState } from 'react';
+import { getNetworkRoute, resolveAppRoute } from './utils/RouteUtils';
 
 export const AppRoutes = {
-  DASHBOARD_ROUTE: '/',
+  INDEX_ROUTE: '/',
+  DASHBOARD_ROUTE: '/dashboard',
   LOGIN_ROUTE: '/login',
   STARTUP_ROUTE: '/startup',
   GETTING_STARTED_ROUTE: '/hello',
@@ -67,14 +71,43 @@ function generateRoutePair(path: string, element: JSX.Element): RouteObject[] {
   );
 }
 
+const RedirectToFirstNetwork = () => {
+  const store = useStore();
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchNetworks = async () => {
+      try {
+        await store.fetchNetworks();
+      } catch (error) {
+        console.error('Error fetching networks:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchNetworks();
+  }, []);
+
+  if (isLoading) {
+    return null;
+  }
+  if (store.networks.length > 0) {
+    return <Navigate to={getNetworkRoute(store.networks[0].netid)} replace />;
+  }
+
+  return <Navigate to={resolveAppRoute('/dashboard')} replace />;
+};
+
 const routes: RouteObject[] = [
   {
-    id: 'dashboard',
-    path: AppRoutes.DASHBOARD_ROUTE,
+    id: 'main',
+    path: AppRoutes.INDEX_ROUTE,
     element: <MainLayout />,
     children: [
+      ...generateRoutePair('', <RedirectToFirstNetwork />),
       ...generateRoutePair(
-        '',
+        AppRoutes.DASHBOARD_ROUTE.split('/').slice(1).join('/'),
         <ProtectedRoute>
           <DashboardPage isFullScreen={false} />
         </ProtectedRoute>,

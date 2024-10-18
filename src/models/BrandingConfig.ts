@@ -6,5 +6,6 @@ export interface BrandingConfig {
   logoLightSmallUrl: string;
   logoAltText: string;
   favicon: string;
-  primaryColor: string;
+  primaryColorDark: string;
+  primaryColorLight: string;
 }
