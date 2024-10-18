@@ -1,4 +1,4 @@
-import { Network } from '@/models/Network';
+import { Network, NetworkStat } from '@/models/Network';
 import { AppRoutes } from '@/routes';
 import { InfoCircleOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
 import {
@@ -76,7 +76,7 @@ export default function NetworksPage(props: PageProps) {
     [store.nodes],
   );
 
-  const tableColumns: TableColumnsType<Network> = [
+  const tableColumns: TableColumnsType<NetworkStat> = [
     {
       title: 'Name',
       dataIndex: 'netid',
@@ -116,14 +116,15 @@ export default function NetworksPage(props: PageProps) {
     },
     {
       title: 'Hosts Count',
-      render(_, network) {
-        const nodeCount = store.nodes?.filter((node) => node.network === network.netid).length ?? 0;
-        return (
-          <div onClick={(ev) => ev.stopPropagation()}>
-            <Typography.Text>{nodeCount}</Typography.Text>
-          </div>
-        );
-      },
+      dataIndex: 'hosts',
+      // render(_, network) {
+      //   const nodeCount = store.nodes?.filter((node) => node.network === network.netid).length ?? 0;
+      //   return (
+      //     <div onClick={(ev) => ev.stopPropagation()}>
+      //       <Typography.Text>{nodeCount}</Typography.Text>
+      //     </div>
+      //   );
+      // },
     },
     {
       title: 'Network Last Modified',

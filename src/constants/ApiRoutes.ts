@@ -4,6 +4,7 @@ export class ApiRoutes {
   static EXTERNAL_CLIENTS = '/extclients';
   static HOSTS = '/hosts';
   static NETWORKS = '/networks';
+  static NETWORKS_STATS = '/v1/networks/stats';
   static DNS = '/dns';
   static DNS_ADMIN = '/dns/adm';
   static LOGIN = '/users/adm/authenticate';
