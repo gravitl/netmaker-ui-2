@@ -258,7 +258,7 @@ export default function NewHostPage(props: PageProps) {
                       <Button
                         style={{ width: '100%' }}
                         type="primary"
-                        href="https://docs.netmaker.io/netclient.html#docker"
+                        href="https://docs.netmaker.io/docs/netclient#docker"
                         target="_blank"
                       >
                         Go to Docs
@@ -276,7 +276,7 @@ export default function NewHostPage(props: PageProps) {
                       <Button
                         style={{ width: '100%' }}
                         type="primary"
-                        href="https://docs.netmaker.io/netclient.html#linux"
+                        href="https://docs.netmaker.io/docs/netclient#linux"
                         target="_blank"
                       >
                         Go to Docs

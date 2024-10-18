@@ -48,7 +48,7 @@ import { lt } from 'semver';
 import { ExtendedNode } from '@/models/Node';
 import { HOST_HEALTH_STATUS } from '@/models/NodeConnectivityStatus';
 
-const HOST_DOCS_URL = 'https://docs.netmaker.io/ui-reference.html#hosts';
+const HOST_DOCS_URL = 'https://docs.netmaker.io/docs/references/user-interface#hosts';
 
 export default function HostsPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();

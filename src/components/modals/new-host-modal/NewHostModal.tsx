@@ -444,7 +444,11 @@ export default function NewHostModal({
                             <>
                               We recommend using the remote access client for Windows. Go to remote access tab and you
                               can follow the instructions for setup
-                              <a href="https://docs.netmaker.io/pro/rac.html" target="_blank" rel="noreferrer">
+                              <a
+                                href="https://docs.netmaker.io/docs/remote-access-client-rac"
+                                target="_blank"
+                                rel="noreferrer"
+                              >
                                 {' '}
                                 here.
                               </a>
@@ -482,7 +486,11 @@ export default function NewHostModal({
                             <>
                               We recommend using the remote access client for Mac. Go to remote access tab and you can
                               follow the instructions for setup
-                              <a href="https://docs.netmaker.io/pro/rac.html" target="_blank" rel="noreferrer">
+                              <a
+                                href="https://docs.netmaker.io/docs/remote-access-client-rac"
+                                target="_blank"
+                                rel="noreferrer"
+                              >
                                 {' '}
                                 here.
                               </a>
@@ -552,7 +560,7 @@ export default function NewHostModal({
                         <div className="" style={{ marginTop: '1rem', textAlign: 'center' }}>
                           <Button
                             type="link"
-                            href="https://docs.netmaker.io/netclient.html#linux"
+                            href="https://docs.netmaker.io/docs/netclient#linux"
                             target="_blank"
                             rel="noreferrer"
                           >
@@ -666,7 +674,7 @@ export default function NewHostModal({
                     <ul>
                       <li>
                         <a
-                          href="https://docs.netmaker.io/external-clients.html#remote-access"
+                          href="https://docs.netmaker.io/docs/remote-access-client-rac#remote-access"
                           target="_blank"
                           rel="noreferrer"
                         >
@@ -675,7 +683,7 @@ export default function NewHostModal({
                       </li>
                       <li>
                         <a
-                          href="https://docs.netmaker.io/integrating-non-native-devices.html"
+                          href="https://docs.netmaker.io/docs/how-to-guides/integrating-non-native-devices"
                           target="_blank"
                           rel="noreferrer"
                         >
@@ -701,14 +709,14 @@ export default function NewHostModal({
                     <Typography.Text>
                       Visit the docs on how to{' '}
                       <a
-                        href="https://docs.netmaker.io/pro/pro-users.html#attaching-or-removing-user-from-a-remote-access-gateway"
+                        href="https://docs.netmaker.io/docs/features/users-management-pro#attaching-or-removing-user-from-a-remote-access-gateway"
                         target="_blank"
                         rel="noreferrer"
                       >
                         attach a user to a remote access gateway
                       </a>{' '}
                       or how to connect your mobile device to the network with the{' '}
-                      <a href="https://docs.netmaker.io/pro/rac.html" target="_blank" rel="noreferrer">
+                      <a href="https://docs.netmaker.io/docs/remote-access-client-rac" target="_blank" rel="noreferrer">
                         Remote Access Client (RAC)
                       </a>
                       .
