@@ -47,6 +47,7 @@ interface NewHostModal {
   isTourOpen?: boolean;
   tourStep?: number;
   page?: PageType;
+  navigateToRemoteAccessTab?: () => void;
 }
 
 const steps = [
@@ -76,6 +77,7 @@ export default function NewHostModal({
   isTourOpen,
   tourStep,
   page,
+  navigateToRemoteAccessTab,
 }: NewHostModal) {
   const store = useStore();
   const [notify, notifyCtx] = notification.useNotification();
@@ -442,12 +444,19 @@ export default function NewHostModal({
                           type="info"
                           message={
                             <>
-                              We recommend using the remote access client for Windows. Go to remote access tab and you
-                              can follow the instructions for setup
+                              We recommend using the Remote Access Client (RAC) for Windows. Go to the{' '}
+                              <span
+                                style={{ textDecoration: 'underline', cursor: 'pointer' }}
+                                onClick={() => navigateToRemoteAccessTab?.()}
+                              >
+                                Remote Access tab
+                              </span>{' '}
+                              and you can follow the instructions for setup
                               <a
                                 href="https://docs.netmaker.io/docs/remote-access-client-rac"
                                 target="_blank"
                                 rel="noreferrer"
+                                style={{ textDecoration: 'underline' }}
                               >
                                 {' '}
                                 here.
@@ -456,21 +465,36 @@ export default function NewHostModal({
                           }
                           style={{ marginBottom: '0.5rem' }}
                         />
+                        <br />
+                        <br />
+                        <Typography.Text>
+                          If you prefer to continue adding the Windows host to the mesh network, you can download the
+                          installer below
+                        </Typography.Text>
+                        <br />
                         <Button
                           type="primary"
                           href={getNetclientDownloadLink('windows', 'amd64')[0]}
-                          block
                           target="_blank"
                           rel="noreferrer"
                         >
                           Download
                         </Button>
-                        <small>Requires Windows 7 SP1 or later</small>
+                        <br />
                         <div style={{ marginTop: '1rem' }}>
+                          <Typography.Text style={{ fontWeight: 'bold' }}>
+                            For silent install with PowerShell, run the following command:
+                            <Typography.Text code copyable>
+                              &lt;path to installer&gt;/netclientbundle.exe quiet
+                            </Typography.Text>
+                          </Typography.Text>
+                          <br />
+                          <br />
                           <Typography.Text style={{ fontWeight: 'bold' }}>
                             Note: Run the installer before proceeding
                           </Typography.Text>
                         </div>
+                        <small>Requires Windows 7 SP1 or later</small>
                       </Col>
                     </Row>
                   </>
