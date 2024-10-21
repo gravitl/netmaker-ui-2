@@ -2293,7 +2293,12 @@ export default function NetworkDetailsPage(props: PageProps) {
                     render(_, node) {
                       const extendedNode = getExtendedNode(node, store.hostsCommonDetails);
                       if (extendedNode.is_static && extendedNode.static_node) {
-                        return extendedNode.static_node.extraallowedips;
+                        const allowedIPs = extendedNode.static_node.extraallowedips;
+                        if (Array.isArray(allowedIPs) && allowedIPs.length > 0) {
+                          return allowedIPs.join(', ');
+                        } else {
+                          return '-';
+                        }
                       } else {
                         return '-';
                       }
