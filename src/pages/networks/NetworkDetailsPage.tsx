@@ -120,6 +120,16 @@ import { Waypoints } from 'lucide-react';
 import { isAdminUserOrRole } from '@/utils/UserMgmtUtils';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 import RacDownloadBanner from '@/components/RacDownloadBanner';
+import {
+  ComputerDesktopIcon,
+  DocumentIcon,
+  FolderIcon,
+  PlusIcon,
+  ServerIcon,
+  UserIcon,
+} from '@heroicons/react/24/solid';
+import AddNodeDialog from '@/components/modals/add-node-modal/AddNodeDialog';
+import { get } from 'lodash';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -180,7 +190,6 @@ export default function NetworkDetailsPage(props: PageProps) {
   const { isServerEE } = useServerLicense();
 
   const [form] = Form.useForm<Network>();
-  // const [networkNodes, setNetworkNodes] = useState<ExtendedNode[]>([]);
   const isIpv4Watch = Form.useWatch('isipv4', form);
   const isIpv6Watch = Form.useWatch('isipv6', form);
   const [network, setNetwork] = useState<Network | null>(null);
@@ -207,7 +216,6 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [searchRelay, setSearchRelay] = useState('');
   const [isUpdateRelayModalOpen, setIsUpdateRelayModalOpen] = useState(false);
   const [searchAclHost, setSearchAclHost] = useState('');
-  // const [isDownloadingMetrics, setIsDownloadingMetrics] = useState(false);
   const [currentMetric, setCurrentMetric] = useState<MetricCategories>('connectivity-status');
   const [networkNodeMetrics, setNetworkNodeMetrics] = useState<NetworkMetrics | null>(null);
   const [clientMetrics, setClientMetrics] = useState<Record<ExternalClient['clientid'], NodeOrClientMetric> | null>(
@@ -250,6 +258,26 @@ export default function NetworkDetailsPage(props: PageProps) {
   });
   const [isSetNetworkFailoverModalOpen, setIsSetNetworkFailoverModalOpen] = useState(false);
   const [isAddInternetGatewayModalOpen, setIsAddInternetGatewayModalOpen] = useState(false);
+  const [activeNodeFilter, setActiveNodeFilter] = useState('All');
+
+  const filters = [
+    { name: 'All', icon: null },
+    { name: 'Netclient', icon: ServerIcon },
+    { name: 'Config files', icon: DocumentIcon },
+    { name: 'Active Users', icon: UserIcon },
+  ];
+
+  // const getNodeIcon = (node) => {
+  //   const extendedNode = getExtendedNode(node, store.hostsCommonDetails);
+  //   if (extendedNode.isnetclient) {
+  //     return <ServerIcon className="w-5 h-5 mr-2" />;
+  //   } else if (extendedNode.isconfigfile) {
+  //     return <DocumentIcon className="w-5 h-5 mr-2" />;
+  //   } else if (extendedNode.isactiveuser) {
+  //     return <UserIcon className="w-5 h-5 mr-2" />;
+  //   }
+  //   return null;
+  // };
 
   const overviewTabContainerRef = useRef(null);
   const hostsTabContainerTableRef = useRef(null);
@@ -323,42 +351,25 @@ export default function NetworkDetailsPage(props: PageProps) {
     [store.nodes, store.hostsCommonDetails, networkId],
   );
 
-  // const loadNetworkNodes = useCallback(async () => {
-  //   try {
-  //     if (!networkId) return;
-  //     const nodes = (await NodesService.getNetworkNodes(networkId)).data;
-  //     setNetworkNodes(nodes.map((n) => getExtendedNode(n, store.hostsCommonDetails)));
-  //   } catch (err) {
-  //     if (err instanceof AxiosError && err.response?.status === 403) return;
-  //     notify.error({
-  //       message: 'Error loading network nodes',
-  //       description: extractErrorMsg(err as any),
-  //     });
-  //   }
-  // }, [networkId, notify, store.hostsCommonDetails]);
+  const filteredNetworkNodes = useMemo<ExtendedNode[]>(() => {
+    return networkNodes.filter((node) => {
+      const nodeString =
+        `${node?.name ?? ''}${node.address ?? ''}${node.address6 ?? ''}${node.id ?? ''}${node.endpointip ?? ''}${node.publickey ?? ''}`.toLowerCase();
+      const matchesSearch = nodeString.includes(searchHost.toLowerCase());
 
-  // const updateNode = useCallback(
-  //   (nodeId: Node['id'], newNode: Node) => {
-  //     setNetworkNodes((prev) =>
-  //       prev.map((n) => (n.id === nodeId ? getExtendedNode(newNode, store.hostsCommonDetails) : n)),
-  //     );
-  //   },
-  //   [store.hostsCommonDetails],
-  // );
-
-  // const deleteNode = useCallback((nodeId: Node['id']) => {
-  //   setNetworkNodes((prev) => prev.filter((n) => n.id !== nodeId));
-  // }, []);
-
-  const filteredNetworkNodes = useMemo<ExtendedNode[]>(
-    () =>
-      networkNodes.filter((node) =>
-        `${node?.name ?? ''}${node.address ?? ''}${node.address6 ?? ''}${node.id ?? ''}${node.endpointip ?? ''}${node.publickey ?? ''}`
-          .toLowerCase()
-          .includes(searchHost.toLowerCase()),
-      ),
-    [searchHost, networkNodes],
-  );
+      switch (activeNodeFilter) {
+        case 'Netclient':
+          return matchesSearch && !node.is_static && !node.is_user_node;
+        case 'Config files':
+          return matchesSearch && node.is_static;
+        case 'Active Users':
+          return matchesSearch && node.is_user_node;
+        case 'All':
+        default:
+          return matchesSearch;
+      }
+    });
+  }, [searchHost, networkNodes, activeNodeFilter]);
 
   const internetGatewaysCount = useMemo(() => {
     return networkNodes.filter((node) => node.isinternetgateway).length;
@@ -627,8 +638,6 @@ export default function NetworkDetailsPage(props: PageProps) {
     setTargetNode(node);
     setIsUpdateNodeModalOpen(true);
   }, []);
-
-  // const downloadMetrics = useCallback(() => {}, []);
 
   const loadClients = useCallback(async () => {
     try {
@@ -2120,67 +2129,54 @@ export default function NetworkDetailsPage(props: PageProps) {
   const getHostsContent = useCallback(() => {
     return (
       <div className="network-hosts-tab-content" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-        <Row justify="space-between" style={{ marginBottom: '1rem', width: '100%' }}>
+        <Row justify="space-between" align="middle" style={{ marginBottom: '1rem', width: '100%' }}>
           {isServerEE && <RacDownloadBanner />}
-          <Col xs={24} md={8}>
-            <Input
-              size="large"
-              placeholder="Search hosts"
-              value={searchHost}
-              onChange={(ev) => setSearchHost(ev.target.value)}
-              prefix={<SearchOutlined />}
-              allowClear
-              style={{ marginBottom: '.5rem' }}
-            />
-          </Col>
-          <Col xs={24} md={6} className="add-host-dropdown-button">
-            <Dropdown
-              menu={{
-                items: [
-                  {
-                    key: 'new-host',
-                    label: 'Add New Hosts',
-                    onClick() {
-                      setIsAddNewHostModalOpen(true);
-                    },
-                  },
-                  {
-                    key: 'existing-host',
-                    label: 'Add Existing Hosts',
-                    onClick() {
-                      setIsAddHostsToNetworkModalOpen(true);
-                    },
-                  },
-                ],
-              }}
-            >
+          <div className="flex flex-col w-full gap-4 sm:flex-row">
+            <div className="flex flex-col flex-grow gap-4 sm:flex-row">
+              <Input
+                size="large"
+                placeholder="Search nodes"
+                value={searchHost}
+                onChange={(ev) => setSearchHost(ev.target.value)}
+                prefix={<SearchOutlined />}
+                allowClear
+                style={{ maxWidth: '240px' }}
+              />
+              <div className="flex flex-wrap gap-2">
+                {filters.map((filter) => (
+                  <button
+                    key={filter.name}
+                    onClick={() => setActiveNodeFilter(filter.name)}
+                    className={`flex items-center gap-2 px-3 py-2 rounded text-sm transition-colors duration-200 ${
+                      activeNodeFilter === filter.name
+                        ? 'bg-button-secondary-fill-default text-text-primary'
+                        : 'bg-transparent text-text-secondary hover:bg-button-secondary-fill-hover'
+                    }`}
+                  >
+                    {filter.icon && <filter.icon className="flex-shrink-0 w-4 h-4" />}
+                    <span className="whitespace-nowrap">{filter.name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex gap-2">
               <Button
                 type="primary"
-                style={{ width: '170px', marginBottom: '.5rem' }}
+                className="flex items-center justify-center gap-1 px-4 py-2"
                 ref={hostsTabContainerAddHostsRef}
+                onClick={() => setIsAddNewHostModalOpen(true)}
               >
-                <Space>
-                  Add Hosts
-                  <DownOutlined />
-                </Space>
+                <PlusIcon className="w-5 h-5" /> <span>Add Node</span>
               </Button>
-            </Dropdown>
-            <Button
-              style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
-              onClick={() => jumpToTourStep('hosts')}
-              icon={<InfoCircleOutlined />}
-            >
-              Tour Hosts
-            </Button>
-            <Button
-              title="Go to HOSTS documentation"
-              style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
-              href={HOSTS_DOCS_URL}
-              target="_blank"
-              icon={<QuestionCircleOutlined />}
-            />
-          </Col>
-
+              <Button
+                title="Go to HOSTS documentation"
+                className="flex items-center justify-center"
+                href={HOSTS_DOCS_URL}
+                target="_blank"
+                icon={<QuestionCircleOutlined />}
+              />
+            </div>
+          </div>{' '}
           <Col xs={24} style={{ paddingTop: '1rem' }}>
             {checkIfManagedHostIsLoading && (
               <Alert
@@ -2215,7 +2211,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                 scroll={{ x: true }}
                 columns={[
                   {
-                    title: 'Host Name',
+                    title: 'Node name',
                     render: (_, node) => {
                       const hostName = getExtendedNode(node, store.hostsCommonDetails).name;
                       return (
@@ -2223,8 +2219,16 @@ export default function NetworkDetailsPage(props: PageProps) {
                           <Link
                             to={getNetworkHostRoute(node.hostid, node.network)}
                             title={`Network Host ID: ${node.id}`}
+                            className="flex items-center gap-2"
                           >
-                            {hostName}
+                            {getExtendedNode(node, store.hostsCommonDetails).is_static ? (
+                              <DocumentIcon className="w-4 h-4 text-text-primary" />
+                            ) : getExtendedNode(node, store.hostsCommonDetails).is_user_node ? (
+                              <UserIcon className="w-4 h-4 text-text-primary" />
+                            ) : (
+                              <ServerIcon className="w-4 h-4 text-text-primary" />
+                            )}
+                            <span>{hostName}</span>
                           </Link>
                           {node.pendingdelete && (
                             <Badge style={{ marginLeft: '1rem' }} status="processing" color="red" text="Removing..." />
@@ -2256,13 +2260,12 @@ export default function NetworkDetailsPage(props: PageProps) {
                         title: 'Private Address (IPv4)',
                         dataIndex: 'address',
                       }
-                    : {},
-                  network?.isipv6
-                    ? {
-                        title: 'Private Address (IPv6)',
-                        dataIndex: 'address6',
-                      }
-                    : {},
+                    : network?.isipv6
+                      ? {
+                          title: 'Private Address (IPv6)',
+                          dataIndex: 'address6',
+                        }
+                      : {},
                   {
                     title: 'Public Address (IPv4)',
                     render(_, node) {
@@ -2270,21 +2273,34 @@ export default function NetworkDetailsPage(props: PageProps) {
                     },
                   },
                   {
-                    title: 'Public Address (IPv6)',
+                    title: 'Gateway',
                     render(_, node) {
-                      return getExtendedNode(node, store.hostsCommonDetails)?.endpointipv6 ?? '';
+                      const extendedNode = getExtendedNode(node, store.hostsCommonDetails);
+                      if (extendedNode.is_static && extendedNode.static_node) {
+                        return (
+                          <span className="flex flex-col">
+                            <ServerIcon className="w-4 h-4 text-text-primary" />
+                            <span>extendedNode.static_node.ingressgatewayid</span>
+                          </span>
+                        );
+                      } else {
+                        return '-';
+                      }
                     },
                   },
                   {
-                    title: 'Connectivity',
-                    render: (_, node) => (
-                      <Tag color={node.connected ? 'green' : 'red'}>
-                        {node.connected ? 'Connected' : 'Disconnected'}
-                      </Tag>
-                    ),
+                    title: 'External Routes',
+                    render(_, node) {
+                      const extendedNode = getExtendedNode(node, store.hostsCommonDetails);
+                      if (extendedNode.is_static && extendedNode.static_node) {
+                        return extendedNode.static_node.extraallowedips;
+                      } else {
+                        return '-';
+                      }
+                    },
                   },
                   {
-                    title: 'Health Status',
+                    title: 'Status',
                     render(_, node) {
                       return getHostHealth(node.hostid, [node]);
                     },
@@ -3523,7 +3539,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     const tabs: TabsProps['items'] = [
       {
         key: 'hosts',
-        label: `Hosts (${networkHosts.length})`,
+        label: `Nodes (${networkHosts.length})`,
         children: network && !isRefreshingNetwork ? getHostsContent() : <Skeleton active />,
       },
       {
@@ -4349,7 +4365,7 @@ export default function NetworkDetailsPage(props: PageProps) {
           }}
           onCancel={() => setIsAddHostsToNetworkModalOpen(false)}
         />
-        <NewHostModal
+        {/* <NewHostModal
           isOpen={isAddNewHostModalOpen}
           onFinish={(selectedOs?: AvailableOses) => {
             setIsAddNewHostModalOpen(false);
@@ -4365,6 +4381,11 @@ export default function NetworkDetailsPage(props: PageProps) {
           isTourOpen={isTourOpen}
           tourStep={tourStep}
           page="network-details"
+        /> */}
+        <AddNodeDialog
+          networkId={networkId}
+          isOpen={isAddNewHostModalOpen}
+          onClose={() => setIsAddNewHostModalOpen(false)}
         />
         <AddRemoteAccessGatewayModal
           isOpen={isAddClientGatewayModalOpen}
