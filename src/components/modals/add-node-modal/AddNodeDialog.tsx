@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   ChevronDownIcon,
   CommandLineIcon,
@@ -26,8 +26,7 @@ import linuxIconSrc from '../../../../public/icons/linux.svg';
 import dockerIconSrc from '../../../../public/icons/docker.svg';
 import ConfigFileTab from './ConfigFileTab';
 import { EnrollmentKeysService } from '@/services/EnrollmentKeysService';
-
-const RAC_DOCS_URL = 'https://docs.netmaker.io/docs/remote-access-client-rac';
+import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 
 const ManageUsersSection = () => {
   return (
@@ -92,17 +91,18 @@ const NetclientSection: React.FC<{
   const [linuxInstallCode, setLinuxInstallCode] = useState<string>('');
 
   const antdTheme = useTheme();
-  const appleStoreLink = 'https://apps.apple.com/us/app/netmaker-rac/id6479694220?itsct=apps_box_badge&amp;itscg=30200';
-  const playStoreLink =
-    'https://play.google.com/store/apps/details?id=com.net.netmaker&pli=1&utm_source=nmui&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1';
+  const store = useStore();
 
-  const updateLinuxInstallCode = (version: string) => {
-    const baseUrl = 'https://fileserver.netmaker.io/releases/download/v0.25.0';
-    const newCode = `wget -O netclient ${baseUrl}/netclient-linux-${version} && chmod +x ./netclient && sudo ./netclient install`;
-    setLinuxInstallCode(newCode);
-  };
+  const updateLinuxInstallCode = useCallback(
+    (version: string) => {
+      const baseUrl = `https://fileserver.netmaker.io/releases/download/${store.serverConfig?.Version}`;
+      const newCode = `wget -O netclient ${baseUrl}/netclient-linux-${version} && chmod +x ./netclient && sudo ./netclient install`;
+      setLinuxInstallCode(newCode);
+    },
+    [store.serverConfig?.Version],
+  );
 
-  const getDownloadLink = (instruction: any, selectedVersion: string) => {
+  const getDownloadLink = useCallback((instruction: any, selectedVersion: string) => {
     if (instruction.versions) {
       const versionInfo = instruction.versions.find((v: any) => v.version === selectedVersion);
       if (versionInfo) {
@@ -110,7 +110,7 @@ const NetclientSection: React.FC<{
       }
     }
     return instruction.CTALink;
-  };
+  }, []);
 
   const handleVersionSelect = (os: string, version: string) => {
     setSelectedVersions((prev) => ({ ...prev, [os]: version }));
@@ -181,7 +181,7 @@ const NetclientSection: React.FC<{
                 {option.iconSrc ? (
                   <img src={option.iconSrc} alt={`${option.name} icon`} className="w-4 h-4" />
                 ) : option.iconSrc ? (
-                  <option className="flex-shrink-0 w-4 h-4" />
+                  <option className="flex-shrink-0 w-4 h-4 text-text-primary" />
                 ) : null}
                 <span className="whitespace-nowrap">{option.name}</span>
               </button>
@@ -207,19 +207,35 @@ const NetclientSection: React.FC<{
                         <select
                           onChange={(e) => handleVersionSelect('Linux', e.target.value)}
                           value={selectedVersions['Linux'] || 'amd64'}
-                          className="px-4 py-2 pr-8 text-sm leading-tight border rounded-lg appearance-none bg-bg-default border-stroke-default text-text-primary focus:outline-none focus:border-blue-500"
+                          className="px-4 py-2 pr-8 text-sm leading-tight border rounded-lg appearance-none text-text-primary bg-bg-default border-stroke-default focus:outline-none focus:border-blue-500"
                         >
                           <option className="text-text-primary" value="amd64">
                             AMD64
                           </option>
-                          <option value="arm64">ARM64</option>
-                          <option value="armv7">ARMv7</option>
-                          <option value="armv6">ARMv6</option>
-                          <option value="armv5">ARMv5</option>
-                          <option value="mips-hardfloat">MIPS-HARDFLOAT</option>
-                          <option value="mips-softfloat">MIPS-SOFTFLOAT</option>
-                          <option value="mipsle-hardfloat">MIPSLE-HARDFLOAT</option>
-                          <option value="mipsle-softfloat">MIPSLE-SOFTFLOAT</option>
+                          <option value="arm64" className="text-text-primary">
+                            ARM64
+                          </option>
+                          <option value="armv7" className="text-text-primary">
+                            ARMv7
+                          </option>
+                          <option value="armv6" className="text-text-primary">
+                            ARMv6
+                          </option>
+                          <option value="armv5" className="text-text-primary">
+                            ARMv5
+                          </option>
+                          <option value="mips-hardfloat" className="text-text-primary">
+                            MIPS-HARDFLOAT
+                          </option>
+                          <option value="mips-softfloat" className="text-text-primary">
+                            MIPS-SOFTFLOAT
+                          </option>
+                          <option value="mipsle-hardfloat" className="text-text-primary">
+                            MIPSLE-HARDFLOAT
+                          </option>
+                          <option value="mipsle-softfloat" className="text-text-primary">
+                            MIPSLE-SOFTFLOAT
+                          </option>
                         </select>
                         <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-text-secondary">
                           <ChevronDownIcon className="w-4 h-4" />
@@ -232,10 +248,10 @@ const NetclientSection: React.FC<{
                         <select
                           onChange={(e) => handleVersionSelect(netclientOS, e.target.value)}
                           value={selectedVersions[netclientOS] || instruction.versions[0].version}
-                          className="px-4 py-2 pr-8 text-sm leading-tight border rounded-lg appearance-none bg-bg-default border-stroke-default focus:outline-none focus:border-blue-500"
+                          className="px-4 py-2 pr-8 text-sm leading-tight border rounded-lg appearance-none text-text-primary bg-bg-default border-stroke-default focus:outline-none focus:border-blue-500"
                         >
                           {instruction.versions.map((version: any, idx: number) => (
-                            <option key={idx} value={version.version}>
+                            <option className="text-text-primary" key={idx} value={version.version}>
                               {version.version}
                             </option>
                           ))}
@@ -265,11 +281,11 @@ const NetclientSection: React.FC<{
                         <Row>
                           <Col xs={12} style={{ textAlign: 'start' }}>
                             <Typography.Paragraph style={{ marginTop: '1rem' }}>Android</Typography.Paragraph>
-                            <QRCode value={playStoreLink} />
+                            <QRCode value={ExternalLinks.PLAY_STORE_LINK} />
                             <Typography.Paragraph style={{ marginTop: '1rem' }}>
                               Or download from store
                             </Typography.Paragraph>
-                            <a href={playStoreLink} target="_blank" rel="noreferrer">
+                            <a href={ExternalLinks.PLAY_STORE_LINK} target="_blank" rel="noreferrer">
                               <img
                                 alt="Get Remote Access Client on Google Play"
                                 src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"
@@ -287,11 +303,11 @@ const NetclientSection: React.FC<{
                           >
                             <Typography.Paragraph style={{ marginTop: '1rem' }}>iOS</Typography.Paragraph>
 
-                            <QRCode value={appleStoreLink} />
+                            <QRCode value={ExternalLinks.APPLE_STORE_LINK} />
                             <Typography.Paragraph style={{ marginTop: '1rem' }}>
                               Or download from store
                             </Typography.Paragraph>
-                            <a href={appleStoreLink} target="_blank" rel="noreferrer">
+                            <a href={ExternalLinks.APPLE_STORE_LINK} target="_blank" rel="noreferrer">
                               <img
                                 src="https://tools.applemediaservices.com/api/badges/download-on-the-app-store/white/en-us?size=250x83&amp;releaseDate=1711670400"
                                 alt="Download Remote Access Client on the App Store"
@@ -392,12 +408,12 @@ const ActiveUsersSection: React.FC<{
         <div className="flex flex-col gap-7 mt-7">
           {RACOsSelected === 'Linux' ? (
             <div className="flex flex-col items-start gap-2">
-              <h4 className="text-base-semibold">Install on Linux</h4>
+              <h4 className="text-base-semibold text-text-primary">Install on Linux</h4>
               <p className="text-base-semibold text-text-secondary">
                 For Linux installations, please refer to our documentation for detailed instructions.
               </p>
               <a
-                href={RAC_DOCS_URL}
+                href={ExternalLinks.RAC_DOCS_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-block px-4 py-2 text-sm font-semibold text-white rounded-lg bg-button-primary-fill-default hover:bg-button-primary-fill-hover"
@@ -428,10 +444,10 @@ const ActiveUsersSection: React.FC<{
                         <select
                           onChange={(e) => handleVersionSelect(RACOsSelected, e.target.value)}
                           value={selectedVersions[RACOsSelected] || instruction.versions[0].version}
-                          className="px-4 py-2 pr-8 text-sm leading-tight border rounded-lg appearance-none bg-bg-default border-stroke-default focus:outline-none focus:border-blue-500"
+                          className="px-4 py-2 pr-8 text-sm leading-tight border rounded-lg appearance-none text-text-primary bg-bg-default border-stroke-default focus:outline-none focus:border-blue-500"
                         >
                           {instruction.versions.map((version: any, idx: number) => (
-                            <option key={idx} value={version.version}>
+                            <option key={idx} value={version.version} className="text-text-primary">
                               {version.version}
                             </option>
                           ))}
@@ -478,7 +494,7 @@ const AddNodeDialog: React.FC<{ isOpen: boolean; onClose: () => void; networkId:
   useEffect(() => {
     async function fetchEnrollmentKeys() {
       const keys = await EnrollmentKeysService.getEnrollmentKeys();
-      const filteredKeys = keys.data.filter((key) => key.networks.includes(networkId));
+      const filteredKeys = keys.data.filter((key) => key.tags.includes(networkId));
       setSelectedEnrollmentKey(filteredKeys.length > 0 ? filteredKeys[0].token : null);
     }
     fetchEnrollmentKeys();
@@ -605,7 +621,7 @@ const AddNodeDialog: React.FC<{ isOpen: boolean; onClose: () => void; networkId:
       Mac: [
         {
           title: 'Download and launch the Remote Access Client app.',
-          description: 'Choose your operating system.',
+          description: 'Choose your architecture.',
           CTA: 'RAC for Mac',
           versions: [
             {

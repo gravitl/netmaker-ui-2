@@ -24,7 +24,7 @@ const EgressForm: React.FC<{ form: FormInstance }> = ({ form }) => {
   };
 
   return (
-    <div className="flex flex-col gap-3 px-8 py-6 border-b border-stroke-default">
+    <div className="z-10 flex flex-col gap-3 px-8 py-6 border-b border-stroke-default">
       <button
         onClick={() => setIsEgressExpanded(!isEgressExpanded)}
         className="flex items-center gap-2 text-left text-text-primary"

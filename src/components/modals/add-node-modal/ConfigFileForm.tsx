@@ -144,7 +144,7 @@ const ConfigFileForm = ({ networkId, form }: ConfigFileFormProps) => {
   };
 
   return (
-    <div className="">
+    <div className="z-20">
       <div className="flex flex-col px-8 py-6 border-b gap-7 border-stroke-default">
         <button
           onClick={() => setIsConfigExpanded(!isConfigExpanded)}
@@ -230,7 +230,7 @@ const ConfigFileForm = ({ networkId, form }: ConfigFileFormProps) => {
                         {selectedHost.isingressgateway ? (
                           <span className="text-green-500">Gateway</span>
                         ) : (
-                          <span className="text-yellow-500">Not a Gateway</span>
+                          <span className="text-green-500">New Gateway</span>
                         )}
                       </span>
                       <span>{getNodeConnectivity(selectedHost)}</span>

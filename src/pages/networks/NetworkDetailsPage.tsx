@@ -2255,21 +2255,29 @@ export default function NetworkDetailsPage(props: PageProps) {
                     },
                     defaultSortOrder: 'ascend',
                   },
-                  network?.isipv4
-                    ? {
-                        title: 'Private Address (IPv4)',
-                        dataIndex: 'address',
-                      }
-                    : network?.isipv6
-                      ? {
-                          title: 'Private Address (IPv6)',
-                          dataIndex: 'address6',
-                        }
-                      : {},
                   {
-                    title: 'Public Address (IPv4)',
-                    render(_, node) {
-                      return getExtendedNode(node, store.hostsCommonDetails)?.endpointip ?? '';
+                    title: 'Private Address',
+                    render: (_, node) => {
+                      // For private address, prefer IPv4 if available for the network type
+                      if (network?.isipv4 && node.address) {
+                        return node.address;
+                      }
+                      if (network?.isipv6 && node.address6) {
+                        return node.address6;
+                      }
+                      return '';
+                    },
+                  },
+                  {
+                    title: 'Public Address',
+                    render: (_, node) => {
+                      const extendedNode = getExtendedNode(node, store.hostsCommonDetails);
+                      // Prefer IPv4 if it exists and isn't empty
+                      if (extendedNode?.endpointip) {
+                        return extendedNode.endpointip;
+                      }
+                      // Fall back to IPv6 if IPv4 is empty
+                      return extendedNode?.endpointipv6 || '';
                     },
                   },
                   {
