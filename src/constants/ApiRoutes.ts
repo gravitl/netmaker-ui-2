@@ -28,4 +28,5 @@ export class ApiRoutes {
   static USERS_INVITE_SIGNUP = '/v1/users/invite-signup';
   static USERS_V1 = '/v1/users';
   static TAGS = '/v1/tags';
+  static ACL_V1 = '/v1/acls';
 }
