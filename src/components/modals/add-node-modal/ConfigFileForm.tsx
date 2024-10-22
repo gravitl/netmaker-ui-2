@@ -144,7 +144,7 @@ const ConfigFileForm = ({ networkId, form }: ConfigFileFormProps) => {
   };
 
   return (
-    <div className="">
+    <div className="z-20">
       <div className="flex flex-col px-8 py-6 border-b gap-7 border-stroke-default">
         <button
           onClick={() => setIsConfigExpanded(!isConfigExpanded)}

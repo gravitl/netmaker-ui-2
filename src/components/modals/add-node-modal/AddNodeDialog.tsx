@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   ChevronDownIcon,
   CommandLineIcon,
@@ -26,8 +26,7 @@ import linuxIconSrc from '../../../../public/icons/linux.svg';
 import dockerIconSrc from '../../../../public/icons/docker.svg';
 import ConfigFileTab from './ConfigFileTab';
 import { EnrollmentKeysService } from '@/services/EnrollmentKeysService';
-
-const RAC_DOCS_URL = 'https://docs.netmaker.io/docs/remote-access-client-rac';
+import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 
 const ManageUsersSection = () => {
   return (
@@ -92,17 +91,18 @@ const NetclientSection: React.FC<{
   const [linuxInstallCode, setLinuxInstallCode] = useState<string>('');
 
   const antdTheme = useTheme();
-  const appleStoreLink = 'https://apps.apple.com/us/app/netmaker-rac/id6479694220?itsct=apps_box_badge&amp;itscg=30200';
-  const playStoreLink =
-    'https://play.google.com/store/apps/details?id=com.net.netmaker&pli=1&utm_source=nmui&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1';
+  const store = useStore();
 
-  const updateLinuxInstallCode = (version: string) => {
-    const baseUrl = 'https://fileserver.netmaker.io/releases/download/v0.25.0';
-    const newCode = `wget -O netclient ${baseUrl}/netclient-linux-${version} && chmod +x ./netclient && sudo ./netclient install`;
-    setLinuxInstallCode(newCode);
-  };
+  const updateLinuxInstallCode = useCallback(
+    (version: string) => {
+      const baseUrl = `https://fileserver.netmaker.io/releases/download/${store.serverConfig?.Version}`;
+      const newCode = `wget -O netclient ${baseUrl}/netclient-linux-${version} && chmod +x ./netclient && sudo ./netclient install`;
+      setLinuxInstallCode(newCode);
+    },
+    [store.serverConfig?.Version],
+  );
 
-  const getDownloadLink = (instruction: any, selectedVersion: string) => {
+  const getDownloadLink = useCallback((instruction: any, selectedVersion: string) => {
     if (instruction.versions) {
       const versionInfo = instruction.versions.find((v: any) => v.version === selectedVersion);
       if (versionInfo) {
@@ -110,7 +110,7 @@ const NetclientSection: React.FC<{
       }
     }
     return instruction.CTALink;
-  };
+  }, []);
 
   const handleVersionSelect = (os: string, version: string) => {
     setSelectedVersions((prev) => ({ ...prev, [os]: version }));
@@ -265,11 +265,11 @@ const NetclientSection: React.FC<{
                         <Row>
                           <Col xs={12} style={{ textAlign: 'start' }}>
                             <Typography.Paragraph style={{ marginTop: '1rem' }}>Android</Typography.Paragraph>
-                            <QRCode value={playStoreLink} />
+                            <QRCode value={ExternalLinks.PLAY_STORE_LINK} />
                             <Typography.Paragraph style={{ marginTop: '1rem' }}>
                               Or download from store
                             </Typography.Paragraph>
-                            <a href={playStoreLink} target="_blank" rel="noreferrer">
+                            <a href={ExternalLinks.PLAY_STORE_LINK} target="_blank" rel="noreferrer">
                               <img
                                 alt="Get Remote Access Client on Google Play"
                                 src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"
@@ -287,11 +287,11 @@ const NetclientSection: React.FC<{
                           >
                             <Typography.Paragraph style={{ marginTop: '1rem' }}>iOS</Typography.Paragraph>
 
-                            <QRCode value={appleStoreLink} />
+                            <QRCode value={ExternalLinks.APPLE_STORE_LINK} />
                             <Typography.Paragraph style={{ marginTop: '1rem' }}>
                               Or download from store
                             </Typography.Paragraph>
-                            <a href={appleStoreLink} target="_blank" rel="noreferrer">
+                            <a href={ExternalLinks.APPLE_STORE_LINK} target="_blank" rel="noreferrer">
                               <img
                                 src="https://tools.applemediaservices.com/api/badges/download-on-the-app-store/white/en-us?size=250x83&amp;releaseDate=1711670400"
                                 alt="Download Remote Access Client on the App Store"
@@ -397,7 +397,7 @@ const ActiveUsersSection: React.FC<{
                 For Linux installations, please refer to our documentation for detailed instructions.
               </p>
               <a
-                href={RAC_DOCS_URL}
+                href={ExternalLinks.RAC_DOCS_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-block px-4 py-2 text-sm font-semibold text-white rounded-lg bg-button-primary-fill-default hover:bg-button-primary-fill-hover"

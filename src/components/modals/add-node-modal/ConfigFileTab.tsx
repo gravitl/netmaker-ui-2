@@ -86,7 +86,7 @@ const ConfigFileTab = ({ networkId, onClose }: { networkId: string; onClose: () 
         <ConfigFileForm networkId={networkId} form={form} />
         <EgressForm form={form} />
 
-        <div className="flex justify-end m-5">
+        <div className="z-0 flex justify-end m-5">
           <Button
             onClick={handleCreateConfig}
             disabled={isSubmitting}
