@@ -187,3 +187,16 @@
     background-color: transparent;
   }
 }
+
+.bottom-sidebar-menu-open {
+  border-right: none;
+  position: absolute;
+  bottom: 0;
+}
+
+.bottom-sidebar-menu-close {
+  border-right: none;
+  position: absolute;
+  bottom: 0;
+  width: 80px !important;
+}

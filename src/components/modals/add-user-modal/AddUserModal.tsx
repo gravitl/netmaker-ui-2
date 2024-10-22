@@ -76,7 +76,7 @@ export default function AddUserModal({
   const [activeTab, setActiveTab] = useState(defaultTabKey);
   const [isLoadingPlatformRoles, setIsLoadingPlatformRoles] = useState(true);
 
-  const palVal = Form.useWatch('platform_role_id', form);
+  const palVal: UserRoleId = Form.useWatch('platform_role_id', form);
 
   const networkRolesTableData = useMemo<NetworkRolesTableData[]>(() => {
     const roles = networkRoles
@@ -287,6 +287,31 @@ export default function AddUserModal({
     [getGroupsContent, getCustomRolesContent],
   );
 
+  const getPalDesc = useCallback((pal: UserRoleId) => {
+    switch (pal) {
+      case 'admin':
+        return <Typography.Text type="secondary">Admins can access all features and manage all users.</Typography.Text>;
+      case 'platform-user':
+        return (
+          <Typography.Text type="secondary">
+            Platform users can log into the dashboard and access the networks they are assigned to.
+          </Typography.Text>
+        );
+      case 'service-user':
+        return (
+          <Typography.Text type="secondary">
+            Service users cannot log into the dashboard; they use{' '}
+            <Typography.Link href={ExternalLinks.RAC_DOWNLOAD_DOCS_LINK} target="_blank">
+              RAC
+            </Typography.Link>{' '}
+            to access their assigned networks.
+          </Typography.Text>
+        );
+      default:
+        return '';
+    }
+  }, []);
+
   return (
     <Modal
       title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold', minWidth: '60vw' }}>Create a User</span>}
@@ -352,17 +377,7 @@ export default function AddUserModal({
                       tooltip="This specifies the server-wide permissions this user will have"
                       rules={[{ required: true }]}
                       initialValue={isServerEE ? undefined : 'admin'}
-                      extra={
-                        <Typography.Text type="secondary">
-                          Admins can access all features and manage all users. Platform users can log into the dashboard
-                          and access the networks they are assigned to. Service users cannot log into the dashboard;
-                          they use{' '}
-                          <Typography.Link href={ExternalLinks.RAC_DOWNLOAD_DOCS_LINK} target="_blank">
-                            RAC
-                          </Typography.Link>{' '}
-                          to access their assigned networks.
-                        </Typography.Text>
-                      }
+                      extra={getPalDesc(palVal)}
                     >
                       <Radio.Group>
                         {platformRoles.map((role) => (

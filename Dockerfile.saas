@@ -31,7 +31,7 @@ ENV VITE_NETMAKER_SUPPORT_EMAIL=help@netmaker.io
 # Other vars
 
 ENV VITE_NETCLIENT_BIN_URL_TEMPLATE=https://fileserver.netmaker.io/releases/download/:version/:fileName
-ENV VITE_NETMAKER_TRIAL_PERIOD_DOCS_URL=https://docs.netmaker.io/install.html#after-trial-period-ends
+ENV VITE_NETMAKER_TRIAL_PERIOD_DOCS_URL=https://docs.netmaker.io/docs/server-installation/quick-install#after-trial-period-ends
 
 RUN npm ci
 RUN npm audit fix || echo "ATTENTION!!! Failed to automatically patch vulnerabilities" >&2

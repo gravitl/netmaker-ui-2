@@ -25,6 +25,7 @@ import PlatformRoleDetailsPage from './pages/users/PlatformRoleDetailsPage';
 import ProfilePage from './pages/users/ProfilePage';
 import { useStore } from './store/store';
 import { useEffect, useState } from 'react';
+import { getNetworkRoute, resolveAppRoute } from './utils/RouteUtils';
 
 export const AppRoutes = {
   INDEX_ROUTE: '/',
@@ -92,10 +93,10 @@ const RedirectToFirstNetwork = () => {
     return null;
   }
   if (store.networks.length > 0) {
-    return <Navigate to={`/networks/${store.networks[0].netid}`} replace />;
+    return <Navigate to={getNetworkRoute(store.networks[0].netid)} replace />;
   }
 
-  return <Navigate to={AppRoutes.DASHBOARD_ROUTE} replace />;
+  return <Navigate to={resolveAppRoute('/dashboard')} replace />;
 };
 
 const routes: RouteObject[] = [
@@ -104,13 +105,9 @@ const routes: RouteObject[] = [
     path: AppRoutes.INDEX_ROUTE,
     element: <MainLayout />,
     children: [
-      {
-        index: true,
-
-        element: <RedirectToFirstNetwork />,
-      },
+      ...generateRoutePair('', <RedirectToFirstNetwork />),
       ...generateRoutePair(
-        AppRoutes.DASHBOARD_ROUTE,
+        AppRoutes.DASHBOARD_ROUTE.split('/').slice(1).join('/'),
         <ProtectedRoute>
           <DashboardPage isFullScreen={false} />
         </ProtectedRoute>,

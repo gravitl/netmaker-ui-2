@@ -46,7 +46,6 @@ const createAuthSlice: StateCreator<IAuthSlice, [], [], IAuthSlice> = (set, get)
   userPlatformRole: null,
 
   isLoggedIn() {
-    // TODO: fix username retrieval for SaaS
     return !!get().baseUrl && !!get().jwt && isValidJwt(get().jwt || '') && !!get().user && !!get().userPlatformRole;
   },
   setStore(config) {

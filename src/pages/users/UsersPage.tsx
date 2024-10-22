@@ -49,10 +49,9 @@ import UserDetailsModal from '@/components/modals/user-details-modal/UserDetails
 import InviteUserModal from '@/components/modals/invite-user-modal/InviteUserModal';
 import { useNavigate } from 'react-router-dom';
 import { AppRoutes } from '@/routes';
-import { set } from 'lodash';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 
-const USERS_DOCS_URL = 'https://docs.netmaker.io/pro/pro-users.html';
+const USERS_DOCS_URL = 'https://docs.netmaker.io/docs/features/users-management-pro';
 
 export const UsersPageTabs = {
   usersTabKey: 'users',
@@ -885,48 +884,52 @@ export default function UsersPage(props: PageProps) {
             >
               <ReloadOutlined /> Reload users
             </Button>
-            {isServerEE && ( // we dont have CE on SaaS
-              <Dropdown
-                placement="bottomRight"
-                menu={{
-                  items: [
-                    {
-                      key: 'invite',
-                      label: 'Invite a User',
-                      onClick: onInviteUser,
-                    },
-                  ].concat(
-                    isSaasBuild
-                      ? []
-                      : [
-                          {
-                            key: 'add',
-                            label: 'Create a User',
-                            onClick: onAddUser,
-                          },
-                        ],
-                  ),
-                }}
-              >
-                <Button
-                  size="large"
-                  type="primary"
-                  style={{ display: 'inline', marginRight: '0.5rem' }}
-                  ref={addUserButtonRef}
-                >
-                  <PlusOutlined /> Add a User
-                </Button>
-              </Dropdown>
-            )}
-            {!isSaasBuild && !isServerEE && (
+            {isSaasBuild && (
               <Button
                 size="large"
                 type="primary"
                 style={{ display: 'inline', marginRight: '0.5rem' }}
-                onClick={onAddUser}
+                onClick={onInviteUser}
               >
-                <PlusOutlined /> Create a User
+                <PlusOutlined /> Invite User(s)
               </Button>
+            )}
+            {!isSaasBuild && (
+              <>
+                {isServerEE && (
+                  <Dropdown
+                    placement="bottomRight"
+                    menu={{
+                      items: [
+                        {
+                          key: 'invite',
+                          label: 'Invite a User',
+                          onClick: onInviteUser,
+                        },
+                        {
+                          key: 'add',
+                          label: 'Create a User',
+                          onClick: onAddUser,
+                        },
+                      ],
+                    }}
+                  >
+                    <Button size="large" type="primary" style={{ display: 'inline', marginRight: '0.5rem' }}>
+                      <PlusOutlined /> Add a User
+                    </Button>
+                  </Dropdown>
+                )}
+                {!isServerEE && (
+                  <Button
+                    size="large"
+                    type="primary"
+                    style={{ display: 'inline', marginRight: '0.5rem' }}
+                    onClick={onAddUser}
+                  >
+                    <PlusOutlined /> Create a User
+                  </Button>
+                )}
+              </>
             )}
           </Col>
         </Row>

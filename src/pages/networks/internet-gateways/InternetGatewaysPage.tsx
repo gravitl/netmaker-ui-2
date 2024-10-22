@@ -32,7 +32,7 @@ interface InternetGatewaysPageProps {
   setIsAddInternetGatewayModalOpen: (isOpen: boolean) => void;
 }
 
-const INTERNET_GATEWAYS_DOCS_URL = 'https://docs.netmaker.io/pro/internet-gateways.html';
+const INTERNET_GATEWAYS_DOCS_URL = 'https://docs.netmaker.io/docs/features/internet-gateways-pro';
 
 export function InternetGatewaysPage({
   network,

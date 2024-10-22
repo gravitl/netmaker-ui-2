@@ -12,7 +12,7 @@ import {
   BookOutlined,
   DownloadOutlined,
 } from '@ant-design/icons';
-import { Alert, Button, Col, Divider, MenuProps, Row, Select, Switch, Typography } from 'antd';
+import { Alert, Col, Divider, MenuProps, Row, Select, Switch, Typography } from 'antd';
 import { Layout, Menu, theme } from 'antd';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
@@ -34,8 +34,6 @@ import VersionUpgradeModal from '@/components/modals/version-upgrade-modal/Versi
 import { lt } from 'semver';
 import { isAdminUserOrRole } from '@/utils/UserMgmtUtils';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
-import WelcomeModal from '@/components/modals/welcome-modal/WelcomeModal';
-import { Divide } from 'lucide-react';
 
 const { Content, Sider } = Layout;
 

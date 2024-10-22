@@ -42,7 +42,7 @@ export default function AddDnsModal({
           const addrs = ([] as Array<string>).concat(node.address || [], node.address6 || []).join(', ');
           return {
             label: `${addrs} (${getExtendedNode(node, store.hostsCommonDetails)?.name ?? ''})`,
-            value: node.address ?? node.address6 ?? '',
+            value: node.address || node.address6 || '',
           };
         }),
     [networkId, store.hostsCommonDetails, store.nodes],
