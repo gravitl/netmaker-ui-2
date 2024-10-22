@@ -117,17 +117,16 @@ import { Waypoints } from 'lucide-react';
 import { isAdminUserOrRole } from '@/utils/UserMgmtUtils';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 import RacDownloadBanner from '@/components/RacDownloadBanner';
-import {
-  ComputerDesktopIcon,
-  DocumentIcon,
-  FolderIcon,
-  PlusIcon,
-  ServerIcon,
-  UserIcon,
-} from '@heroicons/react/24/solid';
+import { DocumentIcon, FolderIcon, ServerIcon, UserIcon } from '@heroicons/react/24/solid';
 import AddNodeDialog from '@/components/modals/add-node-modal/AddNodeDialog';
 import { get } from 'lodash';
 import { TagManagementPage } from './tag-management/TagManagementPage';
+import arrowBidirectional from '../../../public/arrow-bidirectional.svg';
+import { UsersIcon, ComputerDesktopIcon, PlusIcon } from '@heroicons/react/24/solid';
+import AddACLModal from '@/components/modals/add-acl-modal/AddACLModal';
+import { ACLService } from '@/services/ACLService';
+import { ACLRule, ToggleEnabledACLRuleDto } from '@/services/dtos/ACLDtos';
+import UpdateACLModal from '@/components/modals/update-acl-modal/UpdateACLModal';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -276,6 +275,14 @@ export default function NetworkDetailsPage(props: PageProps) {
   //   }
   //   return null;
   // };
+  const [policyType, setPolicyType] = useState('All');
+  const [addPolicyModal, setAddPolicyModal] = useState(false);
+
+  //move this later
+
+  const [aclRules, setAclRules] = useState<ACLRule[]>([]);
+  const [isEditPolicyModalOpen, setIsEditPolicyModalOpen] = useState(false);
+  const [selectedEditPolicy, setSelectedEditPolicy] = useState<ACLRule | null>(null);
 
   const overviewTabContainerRef = useRef(null);
   const hostsTabContainerTableRef = useRef(null);
@@ -478,6 +485,25 @@ export default function NetworkDetailsPage(props: PageProps) {
       return networkNodes.filter((node) => node.relayedby).sort((a, b) => a.relayedby.localeCompare(b.relayedby));
     }
   }, [networkNodes, selectedRelay]);
+
+  const filteredACLRules = useMemo(() => {
+    return aclRules.filter((rule) => {
+      // First apply the search filter
+      const matchesSearch = rule.name.toLowerCase().includes(searchHost.toLowerCase());
+
+      // Then apply the policy type filter
+      let matchesPolicyType = true;
+      if (policyType === 'Resources') {
+        matchesPolicyType = rule.policy_type === 'device-policy';
+      } else if (policyType === 'Users') {
+        matchesPolicyType = rule.policy_type !== 'device-policy';
+      }
+      // If policyType is 'All', we keep matchesPolicyType as true
+
+      // Return true only if both conditions are met
+      return matchesSearch && matchesPolicyType;
+    });
+  }, [aclRules, searchHost, policyType]);
 
   const toggleClientStatus = useCallback(
     async (client: ExternalClient, newStatus: boolean) => {
@@ -2252,6 +2278,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                                   extraallowedips: node.static_node?.extraallowedips ?? [],
                                   postup: node.static_node?.postup,
                                   postdown: node.static_node?.postdown,
+                                  tags: node.static_node?.tags ?? {},
                                 };
                                 setTargetClient(clientData);
                                 setIsClientDetailsModalOpen(true);
@@ -2430,6 +2457,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                               extraallowedips: node.static_node?.extraallowedips ?? [],
                               postup: node.static_node?.postup,
                               postdown: node.static_node?.postdown,
+                              tags: node.static_node.tags,
                             };
                             setTargetClient(clientData);
                             setIsUpdateClientModalOpen(true);
@@ -2465,6 +2493,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                               extraallowedips: node.static_node?.extraallowedips ?? [],
                               postup: node.static_node?.postup,
                               postdown: node.static_node?.postdown,
+                              tags: node.static_node.tags,
                             };
                             setTargetClient(clientData);
                             setIsClientConfigModalOpen(true);
@@ -2499,6 +2528,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                               extraallowedips: node.static_node?.extraallowedips ?? [],
                               postup: node.static_node?.postup,
                               postdown: node.static_node?.postdown,
+                              tags: node.static_node.tags,
                             };
                             confirmDeleteClient(clientData);
                           },
@@ -3512,6 +3542,240 @@ export default function NetworkDetailsPage(props: PageProps) {
     jumpToTourStep,
   ]);
 
+  const fetchACLRules = useCallback(async () => {
+    try {
+      if (!networkId) return;
+      const aclRulesResponse = (await ACLService.getACLRules(networkId)).data.Response;
+      setAclRules(aclRulesResponse);
+    } catch (error) {
+      notify.error({
+        message: 'Failed to fetch ACL rules',
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
+      });
+    }
+  }, [networkId, notify]);
+
+  const togglePolicyStatus = useCallback(
+    async (policy: ACLRule) => {
+      try {
+        await ACLService.toggleEnabeledACLRule(policy, !policy.enabled);
+        await fetchACLRules();
+        notify.success({
+          message: `Policy ${policy.enabled ? 'disabled' : 'enabled'} successfully`,
+        });
+      } catch (err) {
+        if (err instanceof AxiosError) {
+          notify.error({
+            message: 'Error toggling policy status',
+            description: extractErrorMsg(err),
+          });
+        }
+      }
+    },
+    [fetchACLRules, notify],
+  );
+
+  const confirmDeletePolicy = useCallback(
+    (policy: ACLRule) => {
+      Modal.confirm({
+        title: `Delete Policy ${policy.name}`,
+        content: `Are you sure you want to delete this Policy?`,
+        onOk: async () => {
+          try {
+            await ACLService.deleteACLRule(policy.id);
+            await fetchACLRules();
+            notify.success({ message: 'Policy deleted successfully' });
+          } catch (err) {
+            if (err instanceof AxiosError) {
+              notify.error({
+                message: 'Error deleting policy',
+                description: extractErrorMsg(err),
+              });
+            }
+          }
+        },
+      });
+    },
+    [fetchACLRules, notify],
+  );
+
+  // Initial load effect
+  useEffect(() => {
+    fetchACLRules();
+  }, [fetchACLRules]);
+
+  // Main content render function
+  const getACLsContent = useCallback(() => {
+    const policyFilter = [
+      { name: 'All' },
+      { name: 'Resources', icon: ComputerDesktopIcon },
+      { name: 'Users', icon: UsersIcon },
+    ];
+
+    return (
+      <>
+        <div className="flex flex-col w-full gap-6">
+          <div className="flex justify-between w-full">
+            <div className="flex gap-2">
+              <Input
+                size="large"
+                placeholder="Search hosts"
+                value={searchHost}
+                onChange={(ev) => setSearchHost(ev.target.value)}
+                prefix={<SearchOutlined />}
+                allowClear
+                style={{ marginBottom: '.5rem' }}
+              />
+              <div className="flex gap-2">
+                {policyFilter.map((filter) => (
+                  <button
+                    key={filter.name}
+                    onClick={() => setPolicyType(filter.name)}
+                    className={`flex items-center gap-2 px-3 py-2 rounded text-sm transition-colors duration-200 ${
+                      policyType === filter.name
+                        ? 'bg-button-secondary-fill-default text-text-primary'
+                        : 'bg-transparent text-text-secondary hover:bg-button-secondary-fill-hover'
+                    }`}
+                  >
+                    {filter.icon && <filter.icon className="flex-shrink-0 w-4 h-4" />}
+                    <span className="whitespace-nowrap">{filter.name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <Col xs={24} md={6} className="add-host-dropdown-button">
+              <Button
+                type="primary"
+                style={{ width: '170px', marginBottom: '.5rem' }}
+                onClick={() => setAddPolicyModal(true)}
+                ref={hostsTabContainerAddHostsRef}
+              >
+                <span>Add Policy</span>
+              </Button>
+            </Col>
+          </div>
+          <Table
+            scroll={{ x: true }}
+            columns={[
+              {
+                title: 'Policy Name',
+                dataIndex: 'name',
+                sorter: (a: ACLRule, b: ACLRule) => a.name.localeCompare(b.name),
+                defaultSortOrder: 'ascend',
+              },
+              {
+                title: 'Type',
+                dataIndex: 'policy_type',
+                render: (policyType: string) => (
+                  <div className="flex items-center gap-2 text-sm-semibold">
+                    <span>
+                      {policyType === 'device-policy' ? (
+                        <ComputerDesktopIcon className="w-4 h-4" />
+                      ) : (
+                        <UsersIcon className="w-4 h-4" />
+                      )}
+                    </span>
+                    <span>{policyType === 'device-policy' ? 'Resources' : 'Users'}</span>
+                  </div>
+                ),
+              },
+              {
+                title: 'Source',
+                render: (_, rule: ACLRule) => (
+                  <>
+                    {rule.src_type.map((type, index) => (
+                      <Tooltip key={index} title={type.value}>
+                        <Tag>{type.value || 'Any'}</Tag>
+                      </Tooltip>
+                    ))}
+                  </>
+                ),
+              },
+              {
+                title: 'Direction',
+                render: () => <img src={arrowBidirectional} alt="Bidirectional" className="self-center w-32" />,
+              },
+              {
+                title: 'Destination',
+                render: (_, rule: ACLRule) => (
+                  <>
+                    {rule.dst_type.map((type, index) => (
+                      <Tooltip key={index} title={type.value}>
+                        <Tag>{type.value || 'Any'}</Tag>
+                      </Tooltip>
+                    ))}
+                  </>
+                ),
+              },
+              {
+                title: 'Active',
+                dataIndex: 'enabled',
+                render: (enabled: boolean, record: ACLRule) => (
+                  <Switch
+                    checked={enabled}
+                    onChange={(checked) => togglePolicyStatus({ ...record, enabled: !checked })}
+                    size="small"
+                  />
+                ),
+              },
+              {
+                width: '1rem',
+                align: 'right',
+                render: (_, rule: ACLRule) => (
+                  <Dropdown
+                    menu={{
+                      items: [
+                        {
+                          key: 'edit',
+                          label: 'Edit',
+                          onClick: () => {
+                            setSelectedEditPolicy(rule);
+                            setIsEditPolicyModalOpen(true);
+                          },
+                        },
+                        {
+                          key: 'remove',
+                          label: 'Remove',
+                          danger: true,
+                          onClick: () => confirmDeletePolicy(rule),
+                        },
+                      ],
+                    }}
+                  >
+                    <MoreOutlined />
+                  </Dropdown>
+                ),
+              },
+            ]}
+            dataSource={filteredACLRules}
+            rowKey="id"
+            size="small"
+          />
+          {networkId && (
+            <UpdateACLModal
+              isOpen={isEditPolicyModalOpen}
+              onClose={() => {
+                setIsEditPolicyModalOpen(false);
+                setSelectedEditPolicy(null);
+              }}
+              networkId={networkId}
+              selectedPolicy={selectedEditPolicy}
+            />
+          )}
+        </div>
+      </>
+    );
+  }, [
+    filteredACLRules,
+    policyType,
+    searchHost,
+    confirmDeletePolicy,
+    togglePolicyStatus,
+    networkId,
+    isEditPolicyModalOpen,
+    selectedEditPolicy,
+  ]);
+
   const getGraphContent = useCallback(() => {
     const containerHeight = '78vh';
 
@@ -3734,6 +3998,11 @@ export default function NetworkDetailsPage(props: PageProps) {
         key: 'access-control',
         label: `Access Control`,
         children: network && !isRefreshingNetwork ? getAclsContent() : <Skeleton active />,
+      },
+      {
+        key: 'acl',
+        label: `ACL`,
+        children: network && !isRefreshingNetwork ? getACLsContent() : <Skeleton active />,
       },
       {
         key: 'graph',
@@ -4204,6 +4473,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     await store.fetchNodes();
     loadNetwork();
     setIsRefreshingNetwork(false);
+    fetchACLRules();
   };
 
   useEffect(() => {
@@ -4216,6 +4486,20 @@ export default function NetworkDetailsPage(props: PageProps) {
       element.style.width = '900px';
     }
   }, [isTourOpen]);
+
+  useEffect(() => {
+    const fetchACLRules = async () => {
+      try {
+        if (!networkId) return;
+        const aclRulesResponse = (await ACLService.getACLRules(networkId)).data.Response;
+        setAclRules(aclRulesResponse);
+      } catch (error) {
+        console.error('Failed to fetch ACL rules:', error);
+      }
+    };
+
+    fetchACLRules();
+  }, [networkId]);
 
   useEffect(() => {
     loadNetwork();
@@ -4590,6 +4874,13 @@ export default function NetworkDetailsPage(props: PageProps) {
           addClientGatewayModalHostRef={addClientGatewayModalHostRef}
           addClientGatewayModalDefaultClientDNSRef={addClientGatewayModalDefaultClientDNSRef}
           addClientGatewayModalIsInternetGatewayRef={addClientGatewayModalIsInternetGatewayRef}
+        />
+        <AddACLModal
+          isOpen={addPolicyModal}
+          networkId={networkId}
+          onClose={() => {
+            setAddPolicyModal(false);
+          }}
         />
         {selectedGateway && (
           <UpdateIngressModal
