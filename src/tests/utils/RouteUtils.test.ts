@@ -37,6 +37,7 @@ const testHost: Host = {
 
 const testNetwork: Network = {
   netid: 'test-network',
+  displayName: 'test network',
   addressrange: '',
   addressrange6: '',
   nodeslastmodified: 0,

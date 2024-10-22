@@ -18,6 +18,7 @@ import { useStore } from '@/store/store';
 import { BrandingConfig } from '@/models/BrandingConfig';
 import { isSaasBuild } from '@/services/BaseService';
 import { NetworkUsecaseString } from '@/store/networkusecase';
+import NodeStatus from '@/components/ui/Status';
 
 export type NetworkUsecaseMap = {
   [key in NetworkUsecaseString]: string;
@@ -74,13 +75,13 @@ export function getHostHealth(
 
   switch (worstHealth) {
     default:
-      return shouldRender ? <Tag>Unknown</Tag> : 'unknown';
+      return shouldRender ? <NodeStatus nodeHealth="unknown" clickable /> : 'unknown';
     case 1:
-      return shouldRender ? <Tag color="error">Error</Tag> : 'error';
+      return shouldRender ? <NodeStatus nodeHealth="error" clickable /> : 'error';
     case 2:
-      return shouldRender ? <Tag color="warning">Warning</Tag> : 'warning';
+      return shouldRender ? <NodeStatus nodeHealth="warning" clickable /> : 'warning';
     case 3:
-      return shouldRender ? <Tag color="success">Healthy</Tag> : 'healthy';
+      return shouldRender ? <NodeStatus nodeHealth="healthy" clickable /> : 'healthy';
   }
 }
 

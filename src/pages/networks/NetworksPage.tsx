@@ -85,12 +85,12 @@ export default function NetworksPage(props: PageProps) {
         compare: (a, b) => a.netid.localeCompare(b.netid),
       },
       defaultSortOrder: 'ascend',
-      render: (netId) => (
+      render: (netId, network) => (
         <Link
           className="text-button-primary-fill-default"
           to={`${resolveAppRoute(AppRoutes.NETWORKS_ROUTE)}/${encodeURIComponent(netId)}`}
         >
-          {netId}
+          {network.displayName}
         </Link>
       ),
     },
