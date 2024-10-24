@@ -20,10 +20,8 @@ import { getNetworkHostRoute, resolveAppRoute } from '@/utils/RouteUtils';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import {
   CheckOutlined,
-  CloseCircleFilled,
   DashOutlined,
   DeleteOutlined,
-  DownloadOutlined,
   DownOutlined,
   EditOutlined,
   ExclamationCircleFilled,
@@ -98,7 +96,7 @@ import UpdateClientModal from '@/components/modals/update-client-modal/UpdateCli
 import { NULL_HOST, NULL_NODE } from '@/constants/Types';
 import UpdateNodeModal from '@/components/modals/update-node-modal/UpdateNodeModal';
 import VirtualisedTable from '@/components/VirtualisedTable';
-import { APP_UPDATE_POLL_INTERVAL, NETWORK_GRAPH_SIGMA_CONTAINER_ID } from '@/constants/AppConstants';
+import { NETWORK_GRAPH_SIGMA_CONTAINER_ID } from '@/constants/AppConstants';
 import UpdateIngressUsersModal from '@/components/modals/update-ingress-users-modal/UpdateIngressUsersModal';
 import getNodeImageProgram from 'sigma/rendering/webgl/programs/node.image';
 import { HOST_HEALTH_STATUS } from '@/models/NodeConnectivityStatus';
@@ -114,12 +112,12 @@ import { NetworkUsecaseString } from '@/store/networkusecase';
 import QuickSetupModal from '@/components/modals/quick-setup-modal/QuickSetupModal';
 import DownloadRemotesAccessClientModal from '@/components/modals/remote-access-client-modal/DownloadRemoteAccessClientModal';
 import SetNetworkFailoverModal from '@/components/modals/set-network-failover-modal/SetNetworkFailoverModal';
-import { convertNetworkPayloadToUiNetwork, convertUiNetworkToNetworkPayload } from '@/utils/NetworkUtils';
 import { TourType } from '../DashboardPage';
 import { Waypoints } from 'lucide-react';
 import { isAdminUserOrRole } from '@/utils/UserMgmtUtils';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 import RacDownloadBanner from '@/components/RacDownloadBanner';
+import { TagManagementPage } from './tag-management/TagManagementPage';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -3598,6 +3596,30 @@ export default function NetworkDetailsPage(props: PageProps) {
           ),
       });
     }
+
+    tabs.push({
+      key: 'tag-mgmt',
+      label: <Typography.Text>Tag Management</Typography.Text>,
+      children:
+        network && !isRefreshingNetwork ? (
+          <TagManagementPage
+            network={network.netid}
+            networkNodes={networkNodes}
+            // activeTabKey={activeTabKey}
+            // internetGatewaysTableRef={internetGatewaysTableRef}
+            // createInternetGatewayButtonRef={createInternetGatewayButtonRef}
+            // internetGatewaysConnectedHostsTableRef={internetGatewaysConnectedHostsTableRef}
+            // internetGatewaysUpdateConnectedHostsRef={internetGatewaysUpdateConnectedHostsRef}
+            // createInternetGatewayModalSelectHostRef={createInternetGatewayModalSelectHostRef}
+            // createInternetGatewayModalSelectConnectedHostsRef={createInternetGatewayModalSelectConnectedHostsRef}
+            // updateInternetGatewayModalSelectConnectedHostsRef={updateInternetGatewayModalSelectConnectedHostsRef}
+            // isAddInternetGatewayModalOpen={isAddInternetGatewayModalOpen}
+            // setIsAddInternetGatewayModalOpen={setIsAddInternetGatewayModalOpen}
+          />
+        ) : (
+          <Skeleton active />
+        ),
+    });
 
     tabs.push({
       key: 'overview',

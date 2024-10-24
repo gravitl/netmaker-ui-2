@@ -114,15 +114,29 @@ export default function EnrollmentKeyDetailsModal({ isOpen, enrollmentKey, onCan
             <Typography.Text>{enrollmentKey.networks.join(', ')}</Typography.Text>
           </Col>
         </Row>
-        <Divider style={{ margin: '1rem 0px 1rem 0px' }} />
-        <Row data-nmui-intercom="enrollment-key-details_relay">
-          <Col xs={8}>
-            <Typography.Text>Relay</Typography.Text>
-          </Col>
-          <Col xs={16}>
-            <Typography.Text>{relayName}</Typography.Text>
-          </Col>
-        </Row>
+        {isServerEE && (
+          <>
+            <Divider style={{ margin: '1rem 0px 1rem 0px' }} />
+            <Row data-nmui-intercom="enrollment-key-details_relay">
+              <Col xs={8}>
+                <Typography.Text>Relay</Typography.Text>
+              </Col>
+              <Col xs={16}>
+                <Typography.Text>{relayName}</Typography.Text>
+              </Col>
+            </Row>
+
+            <Divider style={{ margin: '1rem 0px 1rem 0px' }} />
+            <Row data-nmui-intercom="enrollment-key-details_relay">
+              <Col xs={8}>
+                <Typography.Text>Host Tags</Typography.Text>
+              </Col>
+              <Col xs={16}>
+                <Typography.Text>{enrollmentKey.groups?.join(', ') || 'n/a'}</Typography.Text>
+              </Col>
+            </Row>
+          </>
+        )}
         <Divider style={{ margin: '1rem 0px 1rem 0px' }} />
         <Row data-nmui-intercom="enrollment-key-details_joincmd">
           <Col xs={24}>

@@ -92,7 +92,7 @@
   --color-bg-contrast-default: var(--color-white);
   --color-bg-contrast-hover: var(--color-neutral-50);
 
-  --color-stroke-default: var(--color-neutral-200);
+  --color-stroke-default: var(--color-neutral-700);
 
   --color-text-primary: var(--color-neutral-800);
   --color-text-secondary: var(--color-neutral-400);

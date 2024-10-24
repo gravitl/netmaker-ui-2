@@ -1,16 +1,18 @@
 import { NULL_NODE_ID } from '@/constants/Types';
 import { EnrollmentKey } from '@/models/EnrollmentKey';
 import { ExtendedNode } from '@/models/Node';
+import { Tag } from '@/models/Tags';
 import { EnrollmentKeysService } from '@/services/EnrollmentKeysService';
+import { TagsService } from '@/services/TagsService';
 import { CreateEnrollmentKeyReqDto } from '@/services/dtos/CreateEnrollmentKeyReqDto';
 import { useStore } from '@/store/store';
 import { Modify } from '@/types/react-app-env';
 import { getExtendedNode, isNodeRelay } from '@/utils/NodeUtils';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { useServerLicense } from '@/utils/Utils';
-import { Button, Col, Divider, Form, Input, Modal, Row, Select, notification } from 'antd';
+import { Button, Col, Divider, Form, Input, Modal, Row, Select, Typography, notification } from 'antd';
 import { Dayjs } from 'dayjs';
-import { MouseEvent, useMemo } from 'react';
+import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
 
 interface UpdateEnrollmentKeyModalProps {
   isOpen: boolean;
@@ -30,9 +32,11 @@ export default function UpdateEnrollmentKeyModal({
   const [form] = Form.useForm<UpdateEnrollmentKeyFormData>();
   const store = useStore();
   const { isServerEE } = useServerLicense();
+  const [tags, setTags] = useState<Tag[]>([]);
 
   const resetModal = () => {
     form.resetFields();
+    setTags([]);
   };
 
   const relays = useMemo<ExtendedNode[]>(() => {
@@ -44,6 +48,30 @@ export default function UpdateEnrollmentKeyModal({
     }
     return relayNodes;
   }, [isServerEE, store.hostsCommonDetails, store.nodes, enrollmentKey]);
+
+  const filteredTags = useMemo<Tag[]>(() => {
+    const _tags = tags.filter((t) => enrollmentKey.networks?.includes(t.network));
+    if (!isServerEE) {
+      return [];
+    }
+    return _tags;
+  }, [enrollmentKey.networks, isServerEE, tags]);
+
+  const loadTags = useCallback(async () => {
+    try {
+      const res = await Promise.allSettled(enrollmentKey.networks?.map((n) => TagsService.getTagsPerNetwork(n)) ?? []);
+      res.forEach((r) => {
+        if (r.status === 'fulfilled') {
+          setTags((prev) => [...prev, ...(r.value.data.Response ?? [])]);
+        }
+      });
+    } catch (err) {
+      notification.error({
+        message: 'Failed to load tags',
+        description: extractErrorMsg(err as any),
+      });
+    }
+  }, [enrollmentKey.networks]);
 
   const updateEnrollmentKey = async () => {
     try {
@@ -66,6 +94,12 @@ export default function UpdateEnrollmentKeyModal({
       });
     }
   };
+
+  useEffect(() => {
+    if (isOpen) {
+      loadTags();
+    }
+  }, [isOpen, loadTags]);
 
   return (
     <Modal
@@ -104,6 +138,32 @@ export default function UpdateEnrollmentKeyModal({
                 ]}
               />
             </Form.Item>
+          )}
+
+          {isServerEE && (
+            <Row>
+              <Col xs={24}>
+                <Form.Item
+                  name="groups"
+                  label="Tags"
+                  data-nmui-intercom="add-enrollment-key-form_tags"
+                  extra={
+                    <Typography.Text disabled>
+                      Hosts that join with this key will automatically be given these tags
+                    </Typography.Text>
+                  }
+                >
+                  <Select
+                    placeholder="Select tags to assign to hosts"
+                    allowClear
+                    mode="multiple"
+                    style={{ width: '100%' }}
+                    options={filteredTags.map((tag) => ({ label: tag.tag_name, value: tag.id }))}
+                    disabled={enrollmentKey.networks?.length === 0}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
           )}
 
           <Row>

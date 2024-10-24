@@ -1,3 +1,5 @@
+import { Tag } from './Tags';
+
 export const UndefinedEnrollmentKey = 0;
 export const TimeBoundEnrollmentKey = 1;
 export const UsesBasedEnrollmentKey = 2;
@@ -13,4 +15,5 @@ export interface EnrollmentKey {
   unlimited: boolean;
   type: 0 | 1 | 2 | 3; // 0 = undefined, 1 = time expiration, 2 = uses, 3 = unlimited
   relay: string;
+  groups: Tag['id'][];
 }
