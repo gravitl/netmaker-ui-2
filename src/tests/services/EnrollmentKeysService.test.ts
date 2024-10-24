@@ -25,6 +25,7 @@ describe('EnrollmentKeysService', () => {
           unlimited: true,
           uses_remaining: 0,
           relay: '',
+          groups: [],
         },
         {
           value: 'key2',
@@ -36,6 +37,7 @@ describe('EnrollmentKeysService', () => {
           unlimited: false,
           uses_remaining: 0,
           relay: '',
+          groups: [],
         },
       ];
       mock.onGet(ApiRoutes.ENROLLMENT_KEYS).reply(200, expectedResponse);
@@ -56,6 +58,7 @@ describe('EnrollmentKeysService', () => {
         unlimited: true,
         uses_remaining: 0,
         relay: '',
+        groups: [],
       };
       const expectedResponse: EnrollmentKey = {
         expiration: 0,
@@ -67,6 +70,7 @@ describe('EnrollmentKeysService', () => {
         value: 'new-key',
         token: 'new-key',
         relay: '',
+        groups: [],
       };
       mock.onPost(ApiRoutes.ENROLLMENT_KEYS, expectedPayload).reply(201, expectedResponse);
 

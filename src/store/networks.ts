@@ -24,9 +24,10 @@ const createNetworkSlice: StateCreator<INetworkSlice, [], [], INetworkSlice> = (
   async fetchNetworks() {
     try {
       set(() => ({ isFetchingNetworks: true }));
-      const nets = (await NetworksService.getNetworksWithStats()).data.Response ?? [];
+      // const nets = (await NetworksService.getNetworksWithStats()).data.Response ?? [];
+      const nets = (await NetworksService.getNetworks()).data ?? [];
       set(() => ({
-        networks: nets.map((ns) => ({ ...convertNetworkPayloadToUiNetwork(ns), hosts: ns.hosts })),
+        networks: nets.map((ns) => ({ ...convertNetworkPayloadToUiNetwork(ns), hosts: 0 })),
         isFetchingNetworks: false,
       }));
     } catch (err) {
