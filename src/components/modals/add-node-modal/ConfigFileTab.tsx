@@ -18,7 +18,15 @@ export interface AddClientFormFields {
   is_internet_gw: boolean;
 }
 
-const ConfigFileTab = ({ networkId, onClose }: { networkId: string; onClose: () => void }) => {
+const ConfigFileTab = ({
+  networkId,
+  onClose,
+  onCreateClient,
+}: {
+  networkId: string;
+  onClose: () => void;
+  onCreateClient: () => void;
+}) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const store = useStore();
   const [form] = Form.useForm<AddClientFormFields>();
@@ -65,6 +73,7 @@ const ConfigFileTab = ({ networkId, onClose }: { networkId: string; onClose: () 
       };
 
       await NodesService.createExternalClient(gatewayId, networkId, configData);
+      onCreateClient();
       notify.success({ message: `Config file created` });
 
       // Reset the form after successful creation

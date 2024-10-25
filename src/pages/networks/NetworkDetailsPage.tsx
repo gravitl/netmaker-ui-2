@@ -4399,6 +4399,11 @@ export default function NetworkDetailsPage(props: PageProps) {
           networkId={networkId}
           isOpen={isAddNewHostModalOpen}
           onClose={() => setIsAddNewHostModalOpen(false)}
+          onCreateClient={() => {
+            loadClients();
+            store.fetchNodes();
+            loadAcls();
+          }}
         />
         <AddRemoteAccessGatewayModal
           isOpen={isAddClientGatewayModalOpen}

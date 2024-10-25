@@ -27,6 +27,7 @@ import dockerIconSrc from '../../../../public/icons/docker.svg';
 import ConfigFileTab from './ConfigFileTab';
 import { EnrollmentKeysService } from '@/services/EnrollmentKeysService';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
+import { isSaasBuild } from '@/services/BaseService';
 
 const ManageUsersSection = () => {
   return (
@@ -342,6 +343,7 @@ const ActiveUsersSection: React.FC<{
     { name: 'Mac', iconSrc: macIconSrc },
     { name: 'Linux', iconSrc: linuxIconSrc },
   ];
+
   const updateDownloadLink = (os: string, version: string) => {
     if (os === 'Windows') {
       setDownloadLink(getRACDownloadLink('windows', 'amd64')[0]);
@@ -380,8 +382,8 @@ const ActiveUsersSection: React.FC<{
   }, [RACOsSelected, RACOSSteps, selectedVersions]);
 
   return (
-    <div className="flex flex-col gap-2 ">
-      <div className="flex flex-col gap-2 px-8 py-6 border-b border-stroke-default ">
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 px-8 py-6 border-b border-stroke-default">
         <div className="flex items-center gap-2 text-text-primary">
           <CommandLineIcon className="w-4 h-4" />
           <h3 className="text-sm-semibold">Connect via Remote Access Client</h3>
@@ -404,74 +406,73 @@ const ActiveUsersSection: React.FC<{
               <span className="whitespace-nowrap">{option.name}</span>
             </button>
           ))}
-        </div>{' '}
+        </div>
         <div className="flex flex-col gap-7 mt-7">
-          {RACOsSelected === 'Linux' ? (
-            <div className="flex flex-col items-start gap-2">
-              <h4 className="text-base-semibold text-text-primary">Install on Linux</h4>
-              <p className="text-base-semibold text-text-secondary">
-                For Linux installations, please refer to our documentation for detailed instructions.
-              </p>
-              <a
-                href={ExternalLinks.RAC_DOCS_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block px-4 py-2 text-sm font-semibold text-white rounded-lg bg-button-primary-fill-default hover:bg-button-primary-fill-hover"
-              >
-                View Linux RAC Documentation
-              </a>
-            </div>
-          ) : (
-            RACOSSteps.filter((step) => step[RACOsSelected]).map((step) =>
-              step[RACOsSelected].map((instruction: any, index: number) => (
-                <div key={index} className="flex w-full gap-3">
-                  <h5 className="flex items-center justify-center w-6 h-6 border rounded-full text-sm-semibold text-text-secondary bg-bg-hover border-stroke-default">
-                    {index + 1}
-                  </h5>
-                  <div className="flex flex-col items-start w-full gap-2">
-                    <h4 className="text-base-semibold text-text-primary">{instruction.title}</h4>
-                    {Array.isArray(instruction.description) ? (
-                      <ul className="pl-5 list-disc text-base-semibold text-text-secondary">
-                        {instruction.description.map((item: string, idx: number) => (
-                          <li key={idx}>{item}</li>
-                        ))}
-                      </ul>
-                    ) : instruction.description ? (
-                      <p className="text-base-semibold text-text-secondary">{instruction.description}</p>
-                    ) : null}
-                    {instruction.versions && (
-                      <div className="relative">
-                        <select
-                          onChange={(e) => handleVersionSelect(RACOsSelected, e.target.value)}
-                          value={selectedVersions[RACOsSelected] || instruction.versions[0].version}
-                          className="px-4 py-2 pr-8 text-sm leading-tight border rounded-lg appearance-none text-text-primary bg-bg-default border-stroke-default focus:outline-none focus:border-blue-500"
-                        >
-                          {instruction.versions.map((version: any, idx: number) => (
-                            <option key={idx} value={version.version} className="text-text-primary">
-                              {version.version}
-                            </option>
-                          ))}
-                        </select>
-                        <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-text-secondary">
-                          <ChevronDownIcon className="w-4 h-4" />
-                        </div>
-                      </div>
-                    )}
-                    {instruction.Code && <CopyableCodeTag code={instruction.Code} />}
-                    {instruction.CTA && (
-                      <a
-                        href={downloadLink || instruction.CTALink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-block px-4 py-2 text-sm font-semibold text-white rounded-lg bg-button-primary-fill-default hover:bg-button-primary-fill-hover"
+          {RACOSSteps.filter((step) => step[RACOsSelected]).map((step) =>
+            step[RACOsSelected].map((instruction: any, index: number) => (
+              <div key={index} className="flex w-full gap-3">
+                <h5 className="flex items-center justify-center w-6 h-6 border rounded-full text-sm-semibold text-text-secondary bg-bg-hover border-stroke-default">
+                  {index + 1}
+                </h5>
+                <div className="flex flex-col items-start w-full gap-2">
+                  <h4 className="text-base-semibold text-text-primary">{instruction.title}</h4>
+                  {Array.isArray(instruction.description) ? (
+                    <ul className="pl-5 list-disc text-base-semibold text-text-secondary">
+                      {instruction.description.map((item: string, idx: number) => (
+                        <li key={idx}>{item}</li>
+                      ))}
+                    </ul>
+                  ) : instruction.description ? (
+                    <p className="text-base-semibold text-text-secondary">{instruction.description}</p>
+                  ) : null}
+                  {instruction.versions && (
+                    <div className="relative">
+                      <select
+                        onChange={(e) => handleVersionSelect(RACOsSelected, e.target.value)}
+                        value={selectedVersions[RACOsSelected] || instruction.versions[0].version}
+                        className="px-4 py-2 pr-8 text-sm leading-tight border rounded-lg appearance-none text-text-primary bg-bg-default border-stroke-default focus:outline-none focus:border-blue-500"
                       >
-                        {instruction.CTA}
-                      </a>
-                    )}
-                  </div>
+                        {instruction.versions.map((version: any, idx: number) => (
+                          <option key={idx} value={version.version} className="text-text-primary">
+                            {version.version}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-text-secondary">
+                        <ChevronDownIcon className="w-4 h-4" />
+                      </div>
+                    </div>
+                  )}
+
+                  {RACOsSelected === 'Linux' && instruction.versions && (
+                    <>
+                      {instruction.versions.map(
+                        (version: any) =>
+                          version.version === selectedVersions[RACOsSelected] && (
+                            <CopyableCodeTag key={version.version} code={version.Code} />
+                          ),
+                      )}
+                    </>
+                  )}
+
+                  {(!instruction.versions || RACOsSelected !== 'Linux') && (
+                    <>
+                      {instruction.Code && <CopyableCodeTag code={instruction.Code} />}
+                      {instruction.CTA && (
+                        <a
+                          href={downloadLink || instruction.CTALink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-block px-4 py-2 text-sm font-semibold text-white rounded-lg bg-button-primary-fill-default hover:bg-button-primary-fill-hover"
+                        >
+                          {instruction.CTA}
+                        </a>
+                      )}
+                    </>
+                  )}
                 </div>
-              )),
-            )
+              </div>
+            )),
           )}
         </div>
       </div>
@@ -480,11 +481,12 @@ const ActiveUsersSection: React.FC<{
   );
 };
 
-const AddNodeDialog: React.FC<{ isOpen: boolean; onClose: () => void; networkId: string }> = ({
-  isOpen,
-  onClose,
-  networkId,
-}) => {
+const AddNodeDialog: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  networkId: string;
+  onCreateClient: () => any;
+}> = ({ isOpen, onClose, networkId, onCreateClient }) => {
   const [method, setMethod] = useState('Netclient');
   const [netclientOS, setNetclientOS] = useState('Windows');
   const [RACOS, setRACOS] = useState('Windows');
@@ -512,7 +514,7 @@ const AddNodeDialog: React.FC<{ isOpen: boolean; onClose: () => void; networkId:
           CTALink: getNetclientDownloadLink('windows', 'amd64')[0],
         },
         {
-          title: 'In your CLI, run this command to install',
+          title: 'In your CLI, run this command as administrator to install',
           description: 'You’ll be redirected automatically after connecting successfully.',
           Code: `netclient join -t ${`${selectedEnrollmentKey ?? '<token>'}`}`,
         },
@@ -536,7 +538,7 @@ const AddNodeDialog: React.FC<{ isOpen: boolean; onClose: () => void; networkId:
         },
         {
           title: 'In your CLI, run this command to install',
-          Code: `netclient join -t ${`${selectedEnrollmentKey ?? '<token>'}`}`,
+          Code: `sudo netclient join -t ${`${selectedEnrollmentKey ?? '<token>'}`}`,
         },
       ],
     },
@@ -548,7 +550,7 @@ const AddNodeDialog: React.FC<{ isOpen: boolean; onClose: () => void; networkId:
         },
         {
           title: 'Join with this command',
-          Code: `netclient join -t ${`${selectedEnrollmentKey ?? '<token>'}`}`,
+          Code: `sudo netclient join -t ${`${selectedEnrollmentKey ?? '<token>'}`}`,
         },
       ],
     },
@@ -595,10 +597,19 @@ const AddNodeDialog: React.FC<{ isOpen: boolean; onClose: () => void; networkId:
           CTA: 'RAC for Windows',
           CTALink: getNetclientDownloadLink('windows', 'amd64')[0],
         },
-        {
-          title: 'Copy your tenant ID.',
-          Code: store.tenantId || store.serverConfig?.NetmakerTenantID || 'n/a',
-        },
+        ...(isSaasBuild
+          ? [
+              {
+                title: 'Copy your tenant ID.',
+                Code: store.tenantId || store.serverConfig?.NetmakerTenantID || 'n/a',
+              },
+            ]
+          : [
+              {
+                title: 'Copy Your Server Domain.',
+                Code: store.serverConfig?.APIHost || 'n/a',
+              },
+            ]),
         {
           title: 'Paste your tenant ID into the "Server" field in the app.',
         },
@@ -621,7 +632,7 @@ const AddNodeDialog: React.FC<{ isOpen: boolean; onClose: () => void; networkId:
       Mac: [
         {
           title: 'Download and launch the Remote Access Client app.',
-          description: 'Choose your architecture.',
+          description: 'Choose your CPU architecture.',
           CTA: 'RAC for Mac',
           versions: [
             {
@@ -634,10 +645,77 @@ const AddNodeDialog: React.FC<{ isOpen: boolean; onClose: () => void; networkId:
             },
           ],
         },
+        ...(isSaasBuild
+          ? [
+              {
+                title: 'Copy your tenant ID.',
+                Code: store.tenantId || store.serverConfig?.NetmakerTenantID || 'n/a',
+              },
+            ]
+          : [
+              {
+                title: 'Copy Your Server Domain.',
+                Code: store.serverConfig?.APIHost || 'n/a',
+              },
+            ]),
         {
-          title: 'Copy your tenant ID.',
-          Code: store.tenantId || store.serverConfig?.NetmakerTenantID || 'n/a',
+          title: 'Paste your tenant ID into the "Server" field in the app.',
         },
+        {
+          title: 'Sign in using the same method you used on account.netmaker.io',
+          description: [
+            'For username and password: Type them in and click "Log in"',
+            'For SSO: Click "Log in with Auth" and follow the prompts in your browser',
+          ],
+        },
+        {
+          title: `You'll see a list of gateways. If you don't, reach out to your admin for help.`,
+        },
+        {
+          title: `Find the gateway you want to use and click its "Connect" button.`,
+        },
+      ],
+    },
+    {
+      Linux: [
+        {
+          title: 'Download and launch the Remote Access Client app.',
+          description: 'Choose your Linux version.',
+          CTA: 'RAC for Linux',
+          versions: [
+            {
+              version: 'Ubuntu/Debian',
+              Code: `curl -sL 'https://apt.netmaker.org/remote-client/gpg.key' | sudo tee /etc/apt/trusted.gpg.d/remote-client.asc
+curl -sL 'https://apt.netmaker.org/remote-client/debian.deb.txt' | sudo tee /etc/apt/sources.list.d/remote-client.list
+sudo apt update
+sudo apt search remote-client  # to see available versions
+sudo apt install remote-client
+`,
+            },
+            {
+              version: 'Fedora/RedHat/CentOS/Rocky',
+              Code: `curl -sL 'https://rpm.netmaker.org/remote-client/gpg.key' | sudo tee /tmp/gpg.key
+curl -sL 'https://rpm.netmaker.org/remote-client/remote-client-repo' | sudo tee /etc/yum.repos.d/remote-client.repo
+sudo rpm --import /tmp/gpg.key
+sudo dnf check-update
+sudo dnf install remote-client
+`,
+            },
+          ],
+        },
+        ...(isSaasBuild
+          ? [
+              {
+                title: 'Copy your tenant ID.',
+                Code: store.tenantId || store.serverConfig?.NetmakerTenantID || 'n/a',
+              },
+            ]
+          : [
+              {
+                title: 'Copy Your Server Domain.',
+                Code: store.serverConfig?.APIHost || 'n/a',
+              },
+            ]),
         {
           title: 'Paste your tenant ID into the "Server" field in the app.',
         },
@@ -751,7 +829,9 @@ const AddNodeDialog: React.FC<{ isOpen: boolean; onClose: () => void; networkId:
                     netclientOSOptions={netclientOSOptions}
                   />
                 )}
-                {method === 'Config files' && <ConfigFileTab networkId={networkId} onClose={onClose} />}
+                {method === 'Config files' && (
+                  <ConfigFileTab networkId={networkId} onClose={onClose} onCreateClient={onCreateClient} />
+                )}{' '}
                 {method === 'User Access' && (
                   <ActiveUsersSection RACOsSelected={RACOS} setRACOsSelected={setRACOS} RACOSSteps={RACOSSteps} />
                 )}
