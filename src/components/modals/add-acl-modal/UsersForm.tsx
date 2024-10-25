@@ -45,6 +45,7 @@ interface TagSelectDropdownProps
 interface UsersFormProps {
   networkId: Network['netid'];
   onClose?: () => void;
+  fetchACLRules?: () => void;
 }
 
 const SelectDropdown: React.FC<SelectDropdownProps> = ({
@@ -326,7 +327,7 @@ const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
   );
 };
 
-const UsersForm: React.FC<UsersFormProps> = ({ networkId, onClose }) => {
+const UsersForm: React.FC<UsersFormProps> = ({ networkId, onClose, fetchACLRules }) => {
   const [notify, notifyCtx] = notification.useNotification();
   const [form] = Form.useForm();
   const [isPolicyEnabled, setIsPolicyEnabled] = useState(true);
@@ -407,6 +408,7 @@ const UsersForm: React.FC<UsersFormProps> = ({ networkId, onClose }) => {
       notify.success({ message: `Policy created` });
       form.resetFields();
       setIsPolicyEnabled(true);
+      fetchACLRules?.();
       onClose?.();
     } catch (err) {
       notify.error({

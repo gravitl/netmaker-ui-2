@@ -10,9 +10,16 @@ interface UpdateACLModalProps {
   onClose: () => void;
   networkId: Network['netid'];
   selectedPolicy: ACLRule | null;
+  fetchACLRules: () => void;
 }
 
-const UpdateACLModal: React.FC<UpdateACLModalProps> = ({ isOpen, onClose, networkId, selectedPolicy }) => {
+const UpdateACLModal: React.FC<UpdateACLModalProps> = ({
+  isOpen,
+  onClose,
+  networkId,
+  selectedPolicy,
+  fetchACLRules,
+}) => {
   if (!isOpen) return null;
 
   return (

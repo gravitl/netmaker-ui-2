@@ -8,9 +8,10 @@ interface AddACLModalProps {
   isOpen: boolean;
   onClose: () => void;
   networkId: Network['netid'];
+  fetchACLRules: () => void;
 }
 
-const AddACLModal: React.FC<AddACLModalProps> = ({ isOpen, onClose, networkId }) => {
+const AddACLModal: React.FC<AddACLModalProps> = ({ isOpen, onClose, networkId, fetchACLRules }) => {
   const [policyType, setPolicyType] = React.useState('Resources');
 
   const policyTypes = [
@@ -57,8 +58,12 @@ const AddACLModal: React.FC<AddACLModalProps> = ({ isOpen, onClose, networkId })
                   </button>
                 ))}
               </div>
-              {policyType === 'Users' && <UsersForm networkId={networkId} onClose={onClose} />}
-              {policyType === 'Resources' && <ResourcesForm networkId={networkId} onClose={onClose} />}{' '}
+              {policyType === 'Users' && (
+                <UsersForm networkId={networkId} onClose={onClose} fetchACLRules={fetchACLRules} />
+              )}
+              {policyType === 'Resources' && (
+                <ResourcesForm networkId={networkId} onClose={onClose} fetchACLRules={fetchACLRules} />
+              )}{' '}
             </div>
           </div>
         </div>
