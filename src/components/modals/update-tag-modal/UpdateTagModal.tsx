@@ -22,6 +22,7 @@ import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { notification } from 'antd';
 import { useCallback, useState } from 'react';
 import { NULL_NODE } from '@/constants/Types';
+import { deduceNodeId } from '@/utils/NodeUtils';
 
 interface UpdateTagModalProps {
   isOpen: boolean;
@@ -54,12 +55,12 @@ export default function UpdateTagModal({ isOpen, tag, nodes, onCancel, onUpdateT
       const newTag: Tag = (await TagsService.updateTag({ ...tag, tagged_nodes: selectedNodes })).data.Response;
       onUpdateTag?.(newTag ?? { ...tag, tagged_nodes: selectedNodes, used_by_count: selectedNodes.length });
       notification.success({
-        message: `Tag created successfully with name ${newTag?.tag_name}`,
+        message: `Tag updated successfully with name ${newTag?.tag_name}`,
       });
       resetModal();
     } catch (err) {
       notification.error({
-        message: 'Failed to create tag',
+        message: 'Failed to update tag',
         description: extractErrorMsg(err as any),
       });
     }
@@ -118,13 +119,19 @@ export default function UpdateTagModal({ isOpen, tag, nodes, onCancel, onUpdateT
               </FormLabel>
               <MultiSelect
                 options={nodes.map((node) => ({
-                  label: node.name ?? '',
-                  value: node.id,
+                  label: (node.is_static ? node.static_node.clientid : node.name) || '',
+                  value: deduceNodeId(node),
+                  icon: node.is_static ? undefined : ComputerIcon,
                 }))}
                 onValueChange={(vals) => {
-                  setSelectedNodes(vals.map((val) => nodes.find((node) => node.id === val) ?? NULL_NODE));
+                  console.log(vals);
+                  setSelectedNodes(
+                    vals.map(
+                      (val) => nodes.find((node) => node.id === val || node.static_node.clientid === val) ?? NULL_NODE,
+                    ),
+                  );
                 }}
-                defaultValue={(tag?.tagged_nodes ?? []).map((node) => node.id)}
+                defaultValue={(tag?.tagged_nodes ?? []).map((node) => deduceNodeId(node))}
                 variant="default"
                 placeholder="Search for devices"
                 className="bg-default-dark border-stroke-default"

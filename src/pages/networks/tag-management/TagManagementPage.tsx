@@ -8,7 +8,6 @@ import { Tag } from '@/models/Tags';
 import { TagsService } from '@/services/TagsService';
 import { ComputerIcon, PlusIcon, Search } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { z } from 'zod';
 import {
   Button as AntdButton,
   Dropdown,
@@ -24,7 +23,7 @@ import { AxiosError } from 'axios';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { Button } from '@/components/shadcn/Button';
 import AddTagModal from '@/components/modals/add-tag-modal/AddTagModal';
-import { ExtendedNode } from '@/models/Node';
+import { ExtendedNode, Node } from '@/models/Node';
 import UpdateTagModal from '@/components/modals/update-tag-modal/UpdateTagModal';
 import { Badge } from '@/components/shadcn/Badge';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/shadcn/HoverCard';
@@ -34,9 +33,14 @@ import { useStore } from '@/store/store';
 interface TagManagementPageProps {
   network: Network['netid'];
   networkNodes: ExtendedNode[];
+  staticNetworkNodes: Node[];
 }
 
-export function TagManagementPage({ network: networkId, networkNodes }: Readonly<TagManagementPageProps>) {
+export function TagManagementPage({
+  network: networkId,
+  networkNodes,
+  staticNetworkNodes,
+}: Readonly<TagManagementPageProps>) {
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
 
@@ -115,15 +119,19 @@ export function TagManagementPage({ network: networkId, networkNodes }: Readonly
               </Badge>
             </HoverCardTrigger>
             {tag.tagged_nodes.length > 0 && (
-              <HoverCardContent className="border-none min-w-fit w-fit">
+              <HoverCardContent key={`tagged-nodes-${tag.id}`} className="border-none min-w-fit w-fit">
                 <div className="bg-bg-default border border-stroke-default rounded m-2">
                   {tag.tagged_nodes.map((node, i) => (
-                    <>
-                      <div key={`node-${i}`} className="text-sm font-bold p-1 break-keep whitespace-nowrap">
-                        <ComputerIcon size={16} className="inline mr-2" />
-                        {getExtendedNode(node, store.hostsCommonDetails).name}
-                      </div>
-                    </>
+                    <div key={`node-${i}`} className="text-sm font-bold p-1 break-keep whitespace-nowrap">
+                      {node.is_static ? (
+                        node.static_node.clientid
+                      ) : (
+                        <>
+                          <ComputerIcon size={16} className="inline mr-2" />{' '}
+                          {getExtendedNode(node, store.hostsCommonDetails).name}
+                        </>
+                      )}
+                    </div>
                   ))}
                 </div>
               </HoverCardContent>
@@ -260,14 +268,6 @@ export function TagManagementPage({ network: networkId, networkNodes }: Readonly
           size="small"
           loading={isLoadingTags}
           scroll={{ x: true }}
-          onRow={(key) => {
-            return {
-              // onClick: () => {
-              //   setSelectedTag(key);
-              //   setIsEditTagModalOpen(true);
-              // },
-            };
-          }}
           pagination={{ size: 'small', hideOnSinglePage: true, pageSize: 50 }}
         />
 
@@ -332,7 +332,7 @@ export function TagManagementPage({ network: networkId, networkNodes }: Readonly
       {notifyCtx}
       <AddTagModal
         isOpen={isAddTagModalOpen}
-        nodes={networkNodes}
+        nodes={[...networkNodes, ...staticNetworkNodes]}
         networkId={networkId}
         onCancel={() => {
           setIsAddTagModalOpen(false);
@@ -352,7 +352,7 @@ export function TagManagementPage({ network: networkId, networkNodes }: Readonly
             setTags((prev) => prev.map((k) => (k.id === tag.id ? tag : k)));
             closeEditTagModal();
           }}
-          nodes={networkNodes}
+          nodes={[...networkNodes, ...staticNetworkNodes]}
           key={`update-tag-${selectedTag.id}`}
         />
       )}

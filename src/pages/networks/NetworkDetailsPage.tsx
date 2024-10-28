@@ -348,6 +348,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         .filter((node) => node.network === networkId || node.static_node?.network === networkId),
     [store.nodes, store.hostsCommonDetails, networkId],
   );
+  const staticNetworkNodes: Node[] = useMemo(() => store.nodes.filter((node) => node.is_static), [store.nodes]);
 
   //useeffect clg networkNodes
 
@@ -3789,6 +3790,7 @@ export default function NetworkDetailsPage(props: PageProps) {
           <TagManagementPage
             network={network.netid}
             networkNodes={networkNodes}
+            staticNetworkNodes={staticNetworkNodes}
             // activeTabKey={activeTabKey}
             // internetGatewaysTableRef={internetGatewaysTableRef}
             // createInternetGatewayButtonRef={createInternetGatewayButtonRef}
