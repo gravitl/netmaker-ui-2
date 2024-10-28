@@ -189,7 +189,7 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
                         className={cn(isAnimating ? 'animate-bounce' : '', 'p-2', multiSelectVariants({ variant }))}
                         style={{ animationDuration: `${animation}s`, backgroundColor: '#3F3F46' }}
                       >
-                        {IconComponent && <IconComponent className="h-4 w-4 mr-2" />}
+                        {IconComponent && <IconComponent className="h-4 w-4 mr-2 inline" />}
                         {option?.label}
                         <XCircle
                           className="ml-2 h-4 w-4 cursor-pointer"
@@ -268,7 +268,7 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
                     >
                       <div className="flex justify-between" style={{ width: '100%' }}>
                         <span>
-                          {option.icon && <option.icon className="mr-2 h-4 w-4 text-muted-foreground" />}
+                          {option.icon && <option.icon className="mr-2 h-4 w-4 text-muted-foreground inline" />}
                           <span className="mr-2">{option.label}</span>
                         </span>
                         {isSelected && <CheckIcon className="h-4 w-4" />}

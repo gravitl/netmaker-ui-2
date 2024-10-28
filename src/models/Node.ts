@@ -1,4 +1,6 @@
+import { ExternalClient } from './ExternalClient';
 import { HostCommonDetails } from './Host';
+import { Tag } from './Tags';
 
 export interface Node {
   id: string;
@@ -45,6 +47,10 @@ export interface Node {
   fail_over_peers: Node['id'][]; // temporary don't know the type;
   metadata?: string;
   additional_rag_ips: string[];
+  is_static: boolean;
+  is_user_node: boolean;
+  tags: Record<Tag['id'], null>;
+  static_node: ExternalClient;
 }
 
 export type AddressType = 'address' | 'address6' | 'localaddress';

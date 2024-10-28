@@ -21,6 +21,8 @@ import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { notification } from 'antd';
 import { useCallback, useState } from 'react';
 import { NULL_NODE } from '@/constants/Types';
+import { deduceNodeId } from '@/utils/NodeUtils';
+import { ComputerIcon } from 'lucide-react';
 
 interface AddTagModalProps {
   isOpen: boolean;
@@ -122,11 +124,16 @@ export default function AddTagModal({ isOpen, nodes, networkId, onCancel, onCrea
               </FormLabel>
               <MultiSelect
                 options={nodes.map((node) => ({
-                  label: node.name ?? '',
-                  value: node.id,
+                  label: (node.is_static ? node.static_node.clientid : node.name) || '',
+                  value: deduceNodeId(node),
+                  icon: node.is_static ? undefined : ComputerIcon,
                 }))}
                 onValueChange={(vals) => {
-                  setSelectedNodes(vals.map((val) => nodes.find((node) => node.id === val) ?? NULL_NODE));
+                  setSelectedNodes(
+                    vals.map(
+                      (val) => nodes.find((node) => node.id === val || node.static_node.clientid === val) ?? NULL_NODE,
+                    ),
+                  );
                 }}
                 variant="default"
                 placeholder="Search for devices"
