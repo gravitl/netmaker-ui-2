@@ -3615,7 +3615,14 @@ export default function NetworkDetailsPage(props: PageProps) {
       },
       {
         key: 'acl',
-        label: `ACL`,
+        label: (
+          <Typography.Text>
+            ACL{' '}
+            <span className="ml-2 px-2 py-0.5 text-white bg-button-primary-fill-default rounded-full text-xs">
+              Beta
+            </span>
+          </Typography.Text>
+        ),
         children: network && !isRefreshingNetwork ? getACLsContent() : <Skeleton active />,
       },
       {

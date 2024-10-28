@@ -1,4 +1,4 @@
-import { SearchOutlined, MoreOutlined } from '@ant-design/icons';
+import { SearchOutlined, MoreOutlined, DownloadOutlined } from '@ant-design/icons';
 import { ComputerDesktopIcon, UsersIcon } from '@heroicons/react/24/solid';
 import { Button, Dropdown, Input, Table, Tag, Tooltip, Switch, Modal, Col } from 'antd';
 import { NotificationInstance } from 'antd/es/notification/interface';
@@ -9,6 +9,7 @@ import { ACLService } from '@/services/ACLService';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import arrowBidirectional from '../../../../public/arrow-bidirectional.svg';
 import UpdateACLModal from '@/components/modals/update-acl-modal/UpdateACLModal';
+import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 
 interface ACLPageProps {
   networkId: string;
@@ -104,6 +105,14 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, setAd
 
   return (
     <div className="flex flex-col w-full gap-6">
+      <div className="flex items-start w-full gap-4 p-5 mb-2 border rounded-xl bg-bg-contrastDefault border-stroke-default">
+        <div className="flex flex-col w-full gap-2">
+          <h3 className="text-text-primary text-base-semibold">Introducing the New ACLs</h3>
+          <p className="text-base text-text-secondary">
+            Coming soon to replace the current Access Control system. Streamlined, powerful, and built for the future.
+          </p>
+        </div>
+      </div>
       <div className="flex justify-between w-full">
         <div className="flex gap-2">
           <Input
