@@ -20,7 +20,7 @@ interface DownloadRemoteAccessClientModalProps {
   page?: PageType;
 }
 
-const RAC_DOCS_URL = 'https://docs.netmaker.io/pro/rac.html';
+const RAC_DOCS_URL = 'https://docs.netmaker.io/docs/remote-access-client-rac';
 
 export default function DownloadRemotesAccessClientModal({ isOpen, onCancel }: DownloadRemoteAccessClientModalProps) {
   const store = useStore();

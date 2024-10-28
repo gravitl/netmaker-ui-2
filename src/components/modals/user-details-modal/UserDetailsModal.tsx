@@ -306,6 +306,31 @@ export default function UserDetailsModal({
     [getGroupsContent, getCustomRolesContent],
   );
 
+  const getPalDesc = useCallback((pal: UserRoleId) => {
+    switch (pal) {
+      case 'admin':
+        return <Typography.Text type="secondary">Admins can access all features and manage all users.</Typography.Text>;
+      case 'platform-user':
+        return (
+          <Typography.Text type="secondary">
+            Platform users can log into the dashboard and access the networks they are assigned to.
+          </Typography.Text>
+        );
+      case 'service-user':
+        return (
+          <Typography.Text type="secondary">
+            Service users cannot log into the dashboard; they use{' '}
+            <Typography.Link href={ExternalLinks.RAC_DOWNLOAD_DOCS_LINK} target="_blank">
+              RAC
+            </Typography.Link>{' '}
+            to access their assigned networks.
+          </Typography.Text>
+        );
+      default:
+        return '';
+    }
+  }, []);
+
   useEffect(() => {
     if (isServerEE && isOpen) {
       loadGroups();
@@ -398,17 +423,7 @@ export default function UserDetailsModal({
                     tooltip="This specifies the server-wide permissions this user will have"
                     initialValue={user.platform_role_id}
                     required
-                    extra={
-                      <Typography.Text type="secondary">
-                        Admins can access all features and manage all users. Platform users can log into the dashboard
-                        and access the networks they are assigned to. Service users cannot log into the dashboard; they
-                        use{' '}
-                        <Typography.Link href={ExternalLinks.RAC_DOWNLOAD_DOCS_LINK} target="_blank">
-                          RAC
-                        </Typography.Link>{' '}
-                        to access their assigned networks.
-                      </Typography.Text>
-                    }
+                    extra={getPalDesc(palVal)}
                   >
                     <Select
                       placeholder="Select a platform access level for the user"
