@@ -75,6 +75,28 @@ export const NULL_NODE: Node = {
     inet_node_client_ids: undefined,
   },
   additional_rag_ips: [],
+  is_static: false,
+  is_user_node: false,
+  static_node: {
+    clientid: '',
+    description: '',
+    privatekey: '',
+    publickey: '',
+    network: '',
+    address: '',
+    address6: '',
+    ingressgatewayid: '',
+    ingressgatewayendpoint: '',
+    lastmodified: 0,
+    enabled: false,
+    ownerid: '',
+    internal_ip_addr: '',
+    internal_ip_addr6: '',
+    dns: '',
+    extraallowedips: [],
+    tags: {},
+  },
+  tags: {},
 };
 
 export const NULL_NETWORK_PROSETTINGS: ProSettings = {
