@@ -347,28 +347,39 @@ export default function NetworkDetailsPage(props: PageProps) {
     () =>
       store.nodes
         .map((node) => getExtendedNode(node, store.hostsCommonDetails))
-        .filter((node) => node.network === networkId),
+        .filter((node) => node.network === networkId || node.static_node?.network === networkId),
     [store.nodes, store.hostsCommonDetails, networkId],
   );
 
+  //useeffect clg networkNodes
+
   const filteredNetworkNodes = useMemo<ExtendedNode[]>(() => {
-    return networkNodes.filter((node) => {
+    const filtered = networkNodes.filter((node) => {
       const nodeString =
         `${node?.name ?? ''}${node.address ?? ''}${node.address6 ?? ''}${node.id ?? ''}${node.endpointip ?? ''}${node.publickey ?? ''}`.toLowerCase();
       const matchesSearch = nodeString.includes(searchHost.toLowerCase());
 
-      switch (activeNodeFilter) {
-        case 'Netclient':
-          return matchesSearch && !node.is_static && !node.is_user_node;
-        case 'Config files':
-          return matchesSearch && node.is_static;
-        case 'Active Users':
-          return matchesSearch && node.is_user_node;
-        case 'All':
-        default:
-          return matchesSearch;
-      }
+      if (!matchesSearch) return false;
+
+      const shouldInclude = (() => {
+        switch (activeNodeFilter) {
+          case 'Netclient':
+            return !node.is_static && !node.is_user_node;
+          case 'Config files':
+            return node.is_static && !node.is_user_node;
+          case 'Active Users':
+            return node.is_user_node;
+          case 'All':
+            return true;
+          default:
+            return true;
+        }
+      })();
+
+      return shouldInclude;
     });
+
+    return filtered;
   }, [searchHost, networkNodes, activeNodeFilter]);
 
   const internetGatewaysCount = useMemo(() => {
@@ -2217,18 +2228,46 @@ export default function NetworkDetailsPage(props: PageProps) {
                       return (
                         <>
                           <Link
-                            to={getNetworkHostRoute(node.hostid, node.network)}
+                            to={node.is_static ? '#' : getNetworkHostRoute(node.hostid, node.network)}
                             title={`Network Host ID: ${node.id}`}
                             className="flex items-center gap-2"
+                            onClick={(e) => {
+                              if (node.is_static) {
+                                e.preventDefault();
+                                const clientData: ExternalClient = {
+                                  clientid: node.static_node?.clientid ?? '',
+                                  description: '',
+                                  privatekey: node.static_node?.privatekey ?? '',
+                                  publickey: node.static_node?.publickey ?? '',
+                                  network: networkId ?? '',
+                                  address: node.static_node?.address ?? '',
+                                  address6: node.static_node?.address6 ?? '',
+                                  ingressgatewayid: node.static_node?.ingressgatewayid ?? '',
+                                  ingressgatewayendpoint: node.static_node?.ingressgatewayendpoint ?? '',
+                                  lastmodified: node.lastmodified ?? 0,
+                                  enabled: node.static_node?.enabled ?? false,
+                                  ownerid: node.static_node?.ownerid ?? '',
+                                  internal_ip_addr: '',
+                                  internal_ip_addr6: '',
+                                  dns: node.static_node?.dns ?? '',
+                                  extraallowedips: node.static_node?.extraallowedips ?? [],
+                                  postup: node.static_node?.postup,
+                                  postdown: node.static_node?.postdown,
+                                };
+                                setTargetClient(clientData);
+                                setIsClientDetailsModalOpen(true);
+                              }
+                            }}
                           >
-                            {getExtendedNode(node, store.hostsCommonDetails).is_static ? (
+                            {getExtendedNode(node, store.hostsCommonDetails).is_static &&
+                            !getExtendedNode(node, store.hostsCommonDetails).is_user_node ? (
                               <DocumentIcon className="w-4 h-4 text-text-primary" />
                             ) : getExtendedNode(node, store.hostsCommonDetails).is_user_node ? (
                               <UserIcon className="w-4 h-4 text-text-primary" />
                             ) : (
                               <ServerIcon className="w-4 h-4 text-text-primary" />
                             )}
-                            <span>{hostName}</span>
+                            <span>{node.is_static ? node.static_node?.clientid : hostName}</span>
                           </Link>
                           {node.pendingdelete && (
                             <Badge style={{ marginLeft: '1rem' }} status="processing" color="red" text="Removing..." />
@@ -2258,12 +2297,18 @@ export default function NetworkDetailsPage(props: PageProps) {
                   {
                     title: 'Private Address',
                     render: (_, node) => {
-                      // For private address, prefer IPv4 if available for the network type
-                      if (network?.isipv4 && node.address) {
-                        return node.address;
-                      }
-                      if (network?.isipv6 && node.address6) {
-                        return node.address6;
+                      if (node.is_static) {
+                        if (node.static_node?.address !== '') {
+                          return node.static_node?.address;
+                        } else {
+                          return node.static_node?.address6;
+                        }
+                      } else {
+                        if (node.address !== '') {
+                          return node.address;
+                        } else {
+                          return node.address6;
+                        }
                       }
                       return '';
                     },
@@ -2273,7 +2318,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                     render: (_, node) => {
                       const extendedNode = getExtendedNode(node, store.hostsCommonDetails);
                       // Prefer IPv4 if it exists and isn't empty
-                      if (extendedNode?.endpointip) {
+                      if (extendedNode?.endpointip !== '') {
                         return extendedNode.endpointip;
                       }
                       // Fall back to IPv6 if IPv4 is empty
@@ -2284,11 +2329,15 @@ export default function NetworkDetailsPage(props: PageProps) {
                     title: 'Gateway',
                     render(_, node) {
                       const extendedNode = getExtendedNode(node, store.hostsCommonDetails);
-                      if (extendedNode.is_static && extendedNode.static_node) {
+                      const gatewayId = extendedNode.static_node?.ingressgatewayendpoint;
+                      if (extendedNode.is_static && extendedNode.static_node && gatewayId) {
+                        const gatewayNode = networkNodes.find((n) => n.id === node.static_node?.ingressgatewayid);
+                        const gatewayName = gatewayNode ? gatewayNode.name : 'gatewayId';
+
                         return (
-                          <span className="flex flex-col">
+                          <span className="flex items-center gap-2">
                             <ServerIcon className="w-4 h-4 text-text-primary" />
-                            <span>extendedNode.static_node.ingressgatewayid</span>
+                            <span>{gatewayName}</span>
                           </span>
                         );
                       } else {
@@ -2315,6 +2364,14 @@ export default function NetworkDetailsPage(props: PageProps) {
                   {
                     title: 'Status',
                     render(_, node) {
+                      const extendedNode = getExtendedNode(node, store.hostsCommonDetails);
+                      if (extendedNode.is_static) {
+                        return node.static_node?.enabled ? (
+                          <Tag color="success">Enabled</Tag>
+                        ) : (
+                          <Tag color="error">Disabled</Tag>
+                        );
+                      }
                       return getHostHealth(node.hostid, [node]);
                     },
                     filters: [
@@ -2341,55 +2398,153 @@ export default function NetworkDetailsPage(props: PageProps) {
                     width: '1rem',
                     align: 'right',
                     render(_: boolean, node) {
+                      const extendedNode = getExtendedNode(node, store.hostsCommonDetails);
+
+                      const staticNodeMenu = [
+                        {
+                          key: 'edit',
+                          label: (
+                            <Typography.Text
+                              disabled={!isAdminUserOrRole(store.user!) && store.username !== node.static_node?.ownerid}
+                            >
+                              <EditOutlined /> Edit
+                            </Typography.Text>
+                          ),
+                          disabled: !isAdminUserOrRole(store.user!) && store.username !== node.static_node?.ownerid,
+                          onClick: () => {
+                            const clientData: ExternalClient = {
+                              clientid: node.static_node?.clientid ?? '',
+                              description: '',
+                              privatekey: node.static_node?.privatekey ?? '',
+                              publickey: node.static_node?.publickey ?? '',
+                              network: networkId ?? '',
+                              address: node.static_node?.address ?? '',
+                              address6: node.static_node?.address6 ?? '',
+                              ingressgatewayid: node.static_node?.ingressgatewayid ?? '',
+                              ingressgatewayendpoint: node.static_node?.ingressgatewayendpoint ?? '',
+                              lastmodified: node.lastmodified ?? 0,
+                              enabled: node.static_node?.enabled ?? false,
+                              ownerid: node.static_node?.ownerid ?? '',
+                              internal_ip_addr: '',
+                              internal_ip_addr6: '',
+                              dns: node.static_node?.dns ?? '',
+                              extraallowedips: node.static_node?.extraallowedips ?? [],
+                              postup: node.static_node?.postup,
+                              postdown: node.static_node?.postdown,
+                            };
+                            setTargetClient(clientData);
+                            setIsUpdateClientModalOpen(true);
+                          },
+                        },
+                        {
+                          key: 'view',
+                          label: (
+                            <Typography.Text
+                              disabled={!isAdminUserOrRole(store.user!) && store.username !== node.static_node?.ownerid}
+                            >
+                              <EyeOutlined /> View Config
+                            </Typography.Text>
+                          ),
+                          disabled: !isAdminUserOrRole(store.user!) && store.username !== node.static_node?.ownerid,
+                          onClick: () => {
+                            const clientData: ExternalClient = {
+                              clientid: node.static_node?.clientid ?? '',
+                              description: '',
+                              privatekey: node.static_node?.privatekey ?? '',
+                              publickey: node.static_node?.publickey ?? '',
+                              network: networkId ?? '',
+                              address: node.static_node?.address ?? '',
+                              address6: node.static_node?.address6 ?? '',
+                              ingressgatewayid: node.static_node?.ingressgatewayid ?? '',
+                              ingressgatewayendpoint: node.static_node?.ingressgatewayendpoint ?? '',
+                              lastmodified: node.lastmodified ?? 0,
+                              enabled: node.static_node?.enabled ?? false,
+                              ownerid: node.static_node?.ownerid ?? '',
+                              internal_ip_addr: '',
+                              internal_ip_addr6: '',
+                              dns: node.static_node?.dns ?? '',
+                              extraallowedips: node.static_node?.extraallowedips ?? [],
+                              postup: node.static_node?.postup,
+                              postdown: node.static_node?.postdown,
+                            };
+                            setTargetClient(clientData);
+                            setIsClientConfigModalOpen(true);
+                          },
+                        },
+                        {
+                          key: 'delete',
+                          danger: true,
+                          label: (
+                            <>
+                              <DeleteOutlined /> Delete
+                            </>
+                          ),
+                          disabled: !isAdminUserOrRole(store.user!) && store.username !== node.static_node?.ownerid,
+                          onClick: () => {
+                            const clientData: ExternalClient = {
+                              clientid: node.static_node?.clientid ?? '',
+                              description: '', // Empty string as it's required but not in static node
+                              privatekey: node.static_node?.privatekey ?? '',
+                              publickey: node.static_node?.publickey ?? '',
+                              network: networkId ?? '',
+                              address: node.static_node?.address ?? '',
+                              address6: node.static_node?.address6 ?? '',
+                              ingressgatewayid: node.static_node?.ingressgatewayid ?? '',
+                              ingressgatewayendpoint: node.static_node?.ingressgatewayendpoint ?? '',
+                              lastmodified: node.lastmodified ?? 0,
+                              enabled: node.static_node?.enabled ?? false,
+                              ownerid: node.static_node?.ownerid ?? '',
+                              internal_ip_addr: '', // Empty string as it's required but not in static node
+                              internal_ip_addr6: '', // Empty string as it's required but not in static node
+                              dns: node.static_node?.dns ?? '',
+                              extraallowedips: node.static_node?.extraallowedips ?? [],
+                              postup: node.static_node?.postup,
+                              postdown: node.static_node?.postdown,
+                            };
+                            confirmDeleteClient(clientData);
+                          },
+                        },
+                      ] as MenuProps['items'];
+                      const regularNodeMenu = [
+                        {
+                          key: 'edit',
+                          label: 'Edit',
+                          disabled: node.pendingdelete !== false,
+                          title: node.pendingdelete !== false ? 'Host is being removed from network' : '',
+                          onClick: () => editNode(node),
+                        },
+                        ...(isServerEE
+                          ? [
+                              {
+                                key: 'failover',
+                                label: node.is_fail_over ? 'Unset as failover' : 'Set as failover',
+                                title: node.is_fail_over
+                                  ? 'Stop this host as acting as the network failover'
+                                  : 'Make this the network failover host. Any existing failover host will be replaced.',
+                                onClick: () => confirmNodeFailoverStatusChange(node, !node.is_fail_over),
+                              },
+                            ]
+                          : []),
+                        {
+                          key: 'disconnect',
+                          label: node.connected ? 'Disconnect host' : 'Connect host',
+                          disabled: node.pendingdelete !== false,
+                          title: node.pendingdelete !== false ? 'Host is being disconnected from network' : '',
+                          onClick: () =>
+                            disconnectNodeFromNetwork(!node.connected, getExtendedNode(node, store.hostsCommonDetails)),
+                        },
+                        {
+                          key: 'remove',
+                          label: 'Remove from network',
+                          danger: true,
+                          onClick: () => removeNodeFromNetwork(false, getExtendedNode(node, store.hostsCommonDetails)),
+                        },
+                      ];
+
                       return (
                         <Dropdown
                           menu={{
-                            items: (
-                              [
-                                {
-                                  key: 'edit',
-                                  label: 'Edit',
-                                  disabled: node.pendingdelete !== false,
-                                  title: node.pendingdelete !== false ? 'Host is being removed from network' : '',
-                                  onClick: () => editNode(node),
-                                },
-                              ] as any[]
-                            )
-                              .concat(
-                                isServerEE
-                                  ? [
-                                      {
-                                        key: 'failover',
-                                        label: node.is_fail_over ? 'Unset as failover' : 'Set as failover',
-                                        title: node.is_fail_over
-                                          ? 'Stop this host as acting as the network failover'
-                                          : 'Make this the network failover host. Any existing failover host will be replaced.',
-                                        onClick: () => confirmNodeFailoverStatusChange(node, !node.is_fail_over),
-                                      },
-                                    ]
-                                  : [],
-                              )
-                              .concat([
-                                {
-                                  key: 'disconnect',
-                                  label: node.connected ? 'Disconnect host' : 'Connect host',
-                                  disabled: node.pendingdelete !== false,
-                                  title: node.pendingdelete !== false ? 'Host is being disconnected from network' : '',
-
-                                  onClick: () =>
-                                    disconnectNodeFromNetwork(
-                                      !node.connected,
-                                      getExtendedNode(node, store.hostsCommonDetails),
-                                    ),
-                                },
-                                {
-                                  key: 'remove',
-                                  label: 'Remove from network',
-                                  danger: true,
-                                  onClick: () =>
-                                    removeNodeFromNetwork(false, getExtendedNode(node, store.hostsCommonDetails)),
-                                },
-                              ]),
+                            items: extendedNode.is_static ? staticNodeMenu : regularNodeMenu,
                           }}
                         >
                           <MoreOutlined />
@@ -2399,7 +2554,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   },
                 ]}
                 dataSource={filteredNetworkNodes}
-                rowKey="id"
+                rowKey={(node) => (node.is_static ? `${node.static_node?.clientid}` : node.id)}
                 size="small"
                 ref={hostsTabContainerTableRef}
               />
