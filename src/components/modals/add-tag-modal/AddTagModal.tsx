@@ -22,7 +22,7 @@ import { notification } from 'antd';
 import { useCallback, useState } from 'react';
 import { NULL_NODE } from '@/constants/Types';
 import { deduceNodeId } from '@/utils/NodeUtils';
-import { ComputerIcon } from 'lucide-react';
+import { FileIcon, ServerIcon } from 'lucide-react';
 import { useStore } from '@/store/store';
 
 interface AddTagModalProps {
@@ -155,7 +155,7 @@ export default function AddTagModal({ isOpen, nodes, networkId, onCancel, onCrea
                 options={nodes.map((node) => ({
                   label: (node.is_static ? node.static_node.clientid : node.name) || '',
                   value: deduceNodeId(node),
-                  icon: node.is_static ? undefined : ComputerIcon,
+                  icon: node.is_static ? FileIcon : ServerIcon,
                 }))}
                 onValueChange={(vals) => {
                   setSelectedNodes(
@@ -167,6 +167,7 @@ export default function AddTagModal({ isOpen, nodes, networkId, onCancel, onCrea
                 variant="default"
                 placeholder="Search for devices"
                 className="bg-default-dark border-stroke-default"
+                currentTheme={currentTheme}
                 style={{
                   marginTop: '0rem',
                   backgroundColor: currentTheme === 'dark' ? 'var(--color-bg-default-dark)' : 'var(--color-bg-default)',

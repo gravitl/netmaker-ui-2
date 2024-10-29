@@ -13,7 +13,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '@/components/shadcn/Input';
 import { Button } from '@/components/shadcn/Button';
-import { ComputerIcon } from 'lucide-react';
+import { FileIcon, ServerIcon } from 'lucide-react';
 import { MultiSelect } from '@/components/shadcn/MultiSelect';
 import { ExtendedNode, Node } from '@/models/Node';
 import { TagsService } from '@/services/TagsService';
@@ -23,6 +23,7 @@ import { notification } from 'antd';
 import { useCallback, useState } from 'react';
 import { NULL_NODE } from '@/constants/Types';
 import { deduceNodeId } from '@/utils/NodeUtils';
+import { useStore } from '@/store/store';
 
 interface UpdateTagModalProps {
   isOpen: boolean;
@@ -38,6 +39,8 @@ const updateTagFormSchema = z.object({
 });
 
 export default function UpdateTagModal({ isOpen, tag, nodes, onCancel, onUpdateTag }: Readonly<UpdateTagModalProps>) {
+  const store = useStore();
+  const currentTheme = store.currentTheme;
   const form = useForm<z.infer<typeof updateTagFormSchema>>({
     resolver: zodResolver(updateTagFormSchema),
     defaultValues: tag,
@@ -49,6 +52,8 @@ export default function UpdateTagModal({ isOpen, tag, nodes, onCancel, onUpdateT
     form.reset();
     setSelectedNodes([]);
   }, [form]);
+
+  console.log(nodes);
 
   const handleUpdateTag = async () => {
     try {
@@ -76,13 +81,25 @@ export default function UpdateTagModal({ isOpen, tag, nodes, onCancel, onUpdateT
         }
       }}
     >
-      <DialogContent className="border-stroke-default" style={{ backgroundColor: '#27272A' }}>
+      <DialogContent
+        className="border-stroke-default"
+        style={{
+          backgroundColor: currentTheme === 'dark' ? 'var(--color-bg-default-dark)' : 'var(--color-bg-default)',
+        }}
+      >
         {/* <DialogClose>
           <XCircleIcon className="w-6 h-6 text-text-secondary rounded-full p-2" />
           hello
         </DialogClose> */}
         <DialogHeader>
-          <DialogTitle className="text-xl">Update Tag</DialogTitle>
+          <DialogTitle
+            className="text-xl"
+            style={{
+              color: currentTheme === 'dark' ? 'var(--color-text-primary-dark)' : 'var(--color-neutral-800)',
+            }}
+          >
+            Update Tag
+          </DialogTitle>
           <DialogDescription className="text-base text-text-secondary">Tags group nodes</DialogDescription>
         </DialogHeader>
 
@@ -121,7 +138,7 @@ export default function UpdateTagModal({ isOpen, tag, nodes, onCancel, onUpdateT
                 options={nodes.map((node) => ({
                   label: (node.is_static ? node.static_node.clientid : node.name) || '',
                   value: deduceNodeId(node),
-                  icon: node.is_static ? undefined : ComputerIcon,
+                  icon: node.is_static ? FileIcon : ServerIcon,
                 }))}
                 onValueChange={(vals) => {
                   console.log(vals);
@@ -135,7 +152,12 @@ export default function UpdateTagModal({ isOpen, tag, nodes, onCancel, onUpdateT
                 variant="default"
                 placeholder="Search for devices"
                 className="bg-default-dark border-stroke-default"
-                style={{ backgroundColor: '#27272A', marginTop: '0rem' }}
+                currentTheme={currentTheme}
+                style={{
+                  marginTop: '0rem',
+                  backgroundColor: currentTheme === 'dark' ? 'var(--color-bg-default-dark)' : 'var(--color-bg-default)',
+                  color: currentTheme === 'dark' ? 'var(--color-text-primary-dark)' : 'var(--color-neutral-800)',
+                }}
               />
             </form>
           </Form>

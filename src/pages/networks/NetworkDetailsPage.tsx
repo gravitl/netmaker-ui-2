@@ -22,7 +22,6 @@ import {
   CheckOutlined,
   DashOutlined,
   DeleteOutlined,
-  DownOutlined,
   EditOutlined,
   ExclamationCircleFilled,
   EyeOutlined,
@@ -59,7 +58,6 @@ import {
   Row,
   Select,
   Skeleton,
-  Space,
   Steps,
   Switch,
   Table,
@@ -90,7 +88,6 @@ import {
   useServerLicense,
 } from '@/utils/Utils';
 import AddHostsToNetworkModal from '@/components/modals/add-hosts-to-network-modal/AddHostsToNetworkModal';
-import NewHostModal from '@/components/modals/new-host-modal/NewHostModal';
 import UpdateIngressModal from '@/components/modals/update-remote-access-gateway-modal/UpdateRemoteAccessGatewayModal';
 import UpdateClientModal from '@/components/modals/update-client-modal/UpdateClientModal';
 import { NULL_HOST, NULL_NODE } from '@/constants/Types';
@@ -106,7 +103,6 @@ import { NetworkDetailTourStep } from '@/utils/Types';
 import TourComponent, { JumpToTourStepObj } from '@/pages/networks/TourComponent';
 import AddRemoteAccessGatewayModal from '@/components/modals/add-remote-access-gateway-modal/AddRemoteAccessGatewayModal';
 import { InternetGatewaysPage } from './internet-gateways/InternetGatewaysPage';
-import { AvailableOses } from '@/models/AvailableOses';
 import { NetworkUsage, networkUsecaseMap } from '@/constants/NetworkUseCases';
 import { NetworkUsecaseString } from '@/store/networkusecase';
 import QuickSetupModal from '@/components/modals/quick-setup-modal/QuickSetupModal';
@@ -117,16 +113,13 @@ import { Waypoints } from 'lucide-react';
 import { isAdminUserOrRole } from '@/utils/UserMgmtUtils';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 import RacDownloadBanner from '@/components/RacDownloadBanner';
-import { DocumentIcon, FolderIcon, ServerIcon, UserIcon } from '@heroicons/react/24/solid';
+import { DocumentIcon, ServerIcon, UserIcon } from '@heroicons/react/24/solid';
 import AddNodeDialog from '@/components/modals/add-node-modal/AddNodeDialog';
-import { get } from 'lodash';
 import { TagManagementPage } from './tag-management/TagManagementPage';
-import arrowBidirectional from '../../../public/arrow-bidirectional.svg';
-import { UsersIcon, ComputerDesktopIcon, PlusIcon } from '@heroicons/react/24/solid';
+import { PlusIcon } from '@heroicons/react/24/solid';
 import AddACLModal from '@/components/modals/add-acl-modal/AddACLModal';
 import { ACLService } from '@/services/ACLService';
-import { ACLRule, ToggleEnabledACLRuleDto } from '@/services/dtos/ACLDtos';
-import UpdateACLModal from '@/components/modals/update-acl-modal/UpdateACLModal';
+import { ACLRule } from '@/services/dtos/ACLDtos';
 import ACLPage from './acl/ACLPage';
 
 interface ExternalRoutesTableData {
@@ -3850,11 +3843,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         label: <Typography.Text>Tag Management</Typography.Text>,
         children:
           network && !isRefreshingNetwork ? (
-            <TagManagementPage
-              network={network.netid}
-              networkNodes={networkNodes}
-              staticNetworkNodes={staticNetworkNodes}
-            />
+            <TagManagementPage network={network.netid} networkNodes={networkNodes} />
           ) : (
             <Skeleton active />
           ),
@@ -3869,24 +3858,28 @@ export default function NetworkDetailsPage(props: PageProps) {
 
     return tabs;
   }, [
+    networkHosts.length,
     network,
     isRefreshingNetwork,
-    getOverviewContent,
-    networkHosts.length,
     getHostsContent,
     clientGateways.length,
     getClientsContent,
     egresses.length,
     getEgressContent,
-    getDnsContent,
     getAclsContent,
+    getACLsContent,
+    getDnsContent,
     getGraphContent,
     isServerEE,
     getMetricsContent,
+    getOverviewContent,
     relays.length,
     getRelayContent,
     internetGatewaysCount,
+    // activeTabKey,
     isAddInternetGatewayModalOpen,
+    networkNodes,
+    staticNetworkNodes,
   ]);
 
   const loadMetrics = useCallback(async () => {

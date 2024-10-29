@@ -6,7 +6,7 @@ import { Input } from '@/components/shadcn/Input';
 import { Network } from '@/models/Network';
 import { Tag } from '@/models/Tags';
 import { TagsService } from '@/services/TagsService';
-import { ComputerIcon, FileIcon, PlusIcon, Search } from 'lucide-react';
+import { FileIcon, PlusIcon, Search, ServerIcon } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Button as AntdButton,
@@ -23,7 +23,7 @@ import { AxiosError } from 'axios';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { Button } from '@/components/shadcn/Button';
 import AddTagModal from '@/components/modals/add-tag-modal/AddTagModal';
-import { ExtendedNode, Node } from '@/models/Node';
+import { ExtendedNode } from '@/models/Node';
 import UpdateTagModal from '@/components/modals/update-tag-modal/UpdateTagModal';
 import { Badge } from '@/components/shadcn/Badge';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/shadcn/HoverCard';
@@ -33,14 +33,9 @@ import { useStore } from '@/store/store';
 interface TagManagementPageProps {
   network: Network['netid'];
   networkNodes: ExtendedNode[];
-  staticNetworkNodes: Node[];
 }
 
-export function TagManagementPage({
-  network: networkId,
-  networkNodes,
-  staticNetworkNodes,
-}: Readonly<TagManagementPageProps>) {
+export function TagManagementPage({ network: networkId, networkNodes }: Readonly<TagManagementPageProps>) {
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
 
@@ -115,7 +110,7 @@ export function TagManagementPage({
           <HoverCard>
             <HoverCardTrigger>
               <Badge className="rounded px-2 py-1.5 bg-bg-default border border-stroke-default">
-                <ComputerIcon size={16} className="inline mr-2" /> {val === 1 ? `1 node` : `${val} nodes`}
+                <ServerIcon size={16} className="inline mr-2" /> {val === 1 ? `1 node` : `${val} nodes`}
               </Badge>
             </HoverCardTrigger>
             {tag.tagged_nodes.length > 0 && (
@@ -129,7 +124,7 @@ export function TagManagementPage({
                         </>
                       ) : (
                         <>
-                          <ComputerIcon size={16} className="inline mr-2" />{' '}
+                          <ServerIcon size={16} className="inline mr-2" />{' '}
                           {getExtendedNode(node, store.hostsCommonDetails).name}
                         </>
                       )}
@@ -337,7 +332,7 @@ export function TagManagementPage({
       {notifyCtx}
       <AddTagModal
         isOpen={isAddTagModalOpen}
-        nodes={[...networkNodes, ...staticNetworkNodes]}
+        nodes={[...networkNodes]}
         networkId={networkId}
         onCancel={() => {
           setIsAddTagModalOpen(false);
@@ -357,7 +352,7 @@ export function TagManagementPage({
             setTags((prev) => prev.map((k) => (k.id === tag.id ? tag : k)));
             closeEditTagModal();
           }}
-          nodes={[...networkNodes, ...staticNetworkNodes]}
+          nodes={[...networkNodes]}
           key={`update-tag-${selectedTag.id}`}
         />
       )}

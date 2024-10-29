@@ -15,6 +15,7 @@ import {
   CommandList,
   CommandSeparator,
 } from '@/components/shadcn/Command';
+import { AvailableThemes } from '@/models/AvailableThemes';
 
 /**
  * Variants for the multi-select component to handle different styles.
@@ -98,6 +99,8 @@ interface MultiSelectProps
    * Optional, can be used to add custom styles.
    */
   className?: string;
+
+  currentTheme?: AvailableThemes;
 }
 
 export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
@@ -113,6 +116,7 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
       modalPopover = false,
       asChild = false,
       className,
+      currentTheme,
       ...props
     },
     ref,
@@ -243,7 +247,10 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
         </PopoverTrigger>
         <PopoverContent
           className="w-auto p-0 bg-inherit hover:bg-inherit border-stroke-default"
-          style={{ backgroundColor: '#27272A' }}
+          style={{
+            backgroundColor: currentTheme === 'dark' ? 'var(--color-bg-default-dark)' : 'var(--color-bg-default)',
+            color: currentTheme === 'dark' ? 'var(--color-text-primary-dark)' : 'var(--color-neutral-800)',
+          }}
           align="start"
           onEscapeKeyDown={() => setIsPopoverOpen(false)}
         >
