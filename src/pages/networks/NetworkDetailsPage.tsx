@@ -256,7 +256,6 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [isSetNetworkFailoverModalOpen, setIsSetNetworkFailoverModalOpen] = useState(false);
   const [isAddInternetGatewayModalOpen, setIsAddInternetGatewayModalOpen] = useState(false);
   const [policyType, setPolicyType] = useState('All');
-  const [addPolicyModal, setAddPolicyModal] = useState(false);
 
   //move this later
 
@@ -3187,11 +3186,11 @@ export default function NetworkDetailsPage(props: PageProps) {
     fetchACLRules();
   }, [fetchACLRules]);
 
-  const reloadACL = async () => {
+  const reloadACL = useCallback(async () => {
     setIsRefreshingNetwork(true);
     await fetchACLRules();
     setIsRefreshingNetwork(false);
-  };
+  }, [fetchACLRules]);
 
   const getACLsContent = useCallback(() => {
     return (
@@ -3200,12 +3199,11 @@ export default function NetworkDetailsPage(props: PageProps) {
           networkId={networkId}
           notify={notify}
           hostsTabContainerAddHostsRef={hostsTabContainerAddHostsRef}
-          setAddPolicyModal={setAddPolicyModal}
           reloadACL={reloadACL}
         />
       )
     );
-  }, [networkId, notify, hostsTabContainerAddHostsRef, setAddPolicyModal, reloadACL]);
+  }, [networkId, notify, hostsTabContainerAddHostsRef, reloadACL]);
 
   const getAclsContent = useCallback(() => {
     return (
@@ -4514,15 +4512,7 @@ export default function NetworkDetailsPage(props: PageProps) {
           addClientGatewayModalDefaultClientDNSRef={addClientGatewayModalDefaultClientDNSRef}
           addClientGatewayModalIsInternetGatewayRef={addClientGatewayModalIsInternetGatewayRef}
         />
-        <AddACLModal
-          isOpen={addPolicyModal}
-          networkId={networkId}
-          onClose={() => {
-            setAddPolicyModal(false);
-          }}
-          fetchACLRules={() => fetchACLRules()}
-          reloadACL={reloadACL}
-        />
+
         {selectedGateway && (
           <UpdateIngressModal
             key={`update-ingress-${selectedGateway.id}`}

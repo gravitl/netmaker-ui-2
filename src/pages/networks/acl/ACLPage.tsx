@@ -1,4 +1,4 @@
-import { SearchOutlined, MoreOutlined, DownloadOutlined } from '@ant-design/icons';
+import { SearchOutlined, MoreOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { ComputerDesktopIcon, UsersIcon } from '@heroicons/react/24/solid';
 import { Button, Dropdown, Input, Table, Tag, Tooltip, Switch, Modal, Col } from 'antd';
 import { NotificationInstance } from 'antd/es/notification/interface';
@@ -9,28 +9,22 @@ import { ACLService } from '@/services/ACLService';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import arrowBidirectional from '../../../../public/arrow-bidirectional.svg';
 import UpdateACLModal from '@/components/modals/update-acl-modal/UpdateACLModal';
-import { ExternalLinks } from '@/constants/LinkAndImageConstants';
+import AddACLModal from '@/components/modals/add-acl-modal/AddACLModal';
 
 interface ACLPageProps {
   networkId: string;
   notify: NotificationInstance;
   hostsTabContainerAddHostsRef: React.RefObject<HTMLButtonElement>;
-  setAddPolicyModal: (value: boolean) => void;
   reloadACL: () => void;
 }
 
-export const ACLPage = ({
-  networkId,
-  notify,
-  hostsTabContainerAddHostsRef,
-  setAddPolicyModal,
-  reloadACL,
-}: ACLPageProps) => {
+export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, reloadACL }: ACLPageProps) => {
   const [aclRules, setAclRules] = useState<ACLRule[]>([]);
   const [searchHost, setSearchHost] = useState('');
   const [policyType, setPolicyType] = useState('All');
   const [isEditPolicyModalOpen, setIsEditPolicyModalOpen] = useState(false);
   const [selectedEditPolicy, setSelectedEditPolicy] = useState<ACLRule | null>(null);
+  const [addPolicyModal, setAddPolicyModal] = useState(false);
 
   const fetchACLRules = useCallback(async () => {
     try {
@@ -231,36 +225,52 @@ export const ACLPage = ({
           {
             width: '1rem',
             align: 'right',
-            render: (_, rule: ACLRule) =>
-              !rule.default && (
-                <Dropdown
-                  menu={{
-                    items: [
-                      {
-                        key: 'edit',
-                        label: 'Edit',
-                        onClick: () => {
-                          setSelectedEditPolicy(rule);
-                          setIsEditPolicyModalOpen(true);
-                        },
+            render: (_, rule: ACLRule) => (
+              <Dropdown
+                menu={{
+                  items: [
+                    {
+                      key: 'edit',
+                      label: 'Edit',
+                      icon: <EditOutlined />,
+                      onClick: () => {
+                        setSelectedEditPolicy(rule);
+                        setIsEditPolicyModalOpen(true);
                       },
-                      {
-                        key: 'remove',
-                        label: 'Remove',
-                        danger: true,
-                        onClick: () => confirmDeletePolicy(rule),
-                      },
-                    ],
-                  }}
-                >
-                  <MoreOutlined />
-                </Dropdown>
-              ),
+                      disabled: rule.default,
+                    },
+                    {
+                      key: 'remove',
+                      label: 'Remove',
+                      icon: <DeleteOutlined />,
+                      danger: true,
+                      onClick: () => confirmDeletePolicy(rule),
+                      disabled: rule.default,
+                    },
+                  ],
+                }}
+                disabled={rule.default}
+              >
+                <MoreOutlined
+                  className={`${rule.default ? 'text-text-disabled cursor-not-allowed opacity-30' : 'cursor-pointer'}`}
+                />
+              </Dropdown>
+            ),
           },
         ]}
         dataSource={filteredACLRules}
         rowKey="id"
         size="small"
+      />
+      <AddACLModal
+        isOpen={addPolicyModal}
+        networkId={networkId}
+        onClose={() => {
+          setAddPolicyModal(false);
+        }}
+        fetchACLRules={() => fetchACLRules()}
+        reloadACL={reloadACL}
+        notify={notify}
       />
       {networkId && (
         <UpdateACLModal
@@ -273,6 +283,7 @@ export const ACLPage = ({
           selectedPolicy={selectedEditPolicy}
           fetchACLRules={fetchACLRules}
           reloadACL={reloadACL}
+          notify={notify}
         />
       )}
     </div>

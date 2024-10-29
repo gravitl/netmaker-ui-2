@@ -3,6 +3,7 @@ import { ComputerDesktopIcon, UsersIcon, XMarkIcon } from '@heroicons/react/24/s
 import UsersForm from './UsersForm';
 import ResourcesForm from './RessourcesForm';
 import { Network } from '@/models/Network';
+import { NotificationInstance } from 'antd/es/notification/interface';
 
 interface AddACLModalProps {
   isOpen: boolean;
@@ -10,9 +11,10 @@ interface AddACLModalProps {
   networkId: Network['netid'];
   fetchACLRules: () => void;
   reloadACL: () => void;
+  notify: NotificationInstance;
 }
 
-const AddACLModal: React.FC<AddACLModalProps> = ({ isOpen, onClose, networkId, fetchACLRules, reloadACL }) => {
+const AddACLModal: React.FC<AddACLModalProps> = ({ isOpen, onClose, networkId, fetchACLRules, reloadACL, notify }) => {
   const [policyType, setPolicyType] = React.useState('Resources');
 
   const policyTypes = [
@@ -33,7 +35,7 @@ const AddACLModal: React.FC<AddACLModalProps> = ({ isOpen, onClose, networkId, f
             </div>
             <button
               onClick={onClose}
-              className="inline-flex p-2 rounded-full hover:bg-opacity-50 hover:bg-button-outline-fill-hover"
+              className="inline-flex p-2 rounded-full bg-opacity-10 hover:bg-button-outline-fill-hover"
             >
               <XMarkIcon className="w-5 h-5 text-button-outline-text-default" />
             </button>
@@ -65,6 +67,7 @@ const AddACLModal: React.FC<AddACLModalProps> = ({ isOpen, onClose, networkId, f
                   onClose={onClose}
                   fetchACLRules={fetchACLRules}
                   reloadACL={reloadACL}
+                  notify={notify}
                 />
               )}
               {policyType === 'Resources' && (
@@ -73,6 +76,7 @@ const AddACLModal: React.FC<AddACLModalProps> = ({ isOpen, onClose, networkId, f
                   onClose={onClose}
                   fetchACLRules={fetchACLRules}
                   reloadACL={reloadACL}
+                  notify={notify}
                 />
               )}{' '}
             </div>

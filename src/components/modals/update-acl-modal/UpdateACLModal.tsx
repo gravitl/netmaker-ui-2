@@ -4,6 +4,7 @@ import { Network } from '@/models/Network';
 import { ACLRule } from '@/services/dtos/ACLDtos';
 import UpdateUsersForm from './UpdateUsersForm';
 import UpdateRessourcesForm from './UpdateRessourcesForm';
+import { NotificationInstance } from 'antd/es/notification/interface';
 
 interface UpdateACLModalProps {
   isOpen: boolean;
@@ -12,6 +13,7 @@ interface UpdateACLModalProps {
   selectedPolicy: ACLRule | null;
   fetchACLRules: () => void;
   reloadACL: () => void;
+  notify: NotificationInstance;
 }
 
 const UpdateACLModal: React.FC<UpdateACLModalProps> = ({
@@ -21,6 +23,7 @@ const UpdateACLModal: React.FC<UpdateACLModalProps> = ({
   selectedPolicy,
   fetchACLRules,
   reloadACL,
+  notify,
 }) => {
   if (!isOpen) return null;
 
@@ -48,6 +51,7 @@ const UpdateACLModal: React.FC<UpdateACLModalProps> = ({
                   onClose={onClose}
                   selectedPolicy={selectedPolicy}
                   reloadACL={reloadACL}
+                  notify={notify}
                 />
               ) : selectedPolicy?.policy_type === 'device-policy' ? (
                 <UpdateRessourcesForm
@@ -55,6 +59,7 @@ const UpdateACLModal: React.FC<UpdateACLModalProps> = ({
                   onClose={onClose}
                   selectedPolicy={selectedPolicy}
                   reloadACL={reloadACL}
+                  notify={notify}
                 />
               ) : null}
             </div>
