@@ -249,12 +249,15 @@ export function TagManagementPage({
         <Input
           type="search"
           placeholder="Search for Tags"
-          className="w-80 border-bg-default"
+          className="w-80 border-bg-default bg-bg-default"
           startIcon={Search}
           onChange={(ev) => setSearchText(ev.target.value)}
           value={searchText}
         />
-        <Button className="bg-button-primary-fill-default float-end" onClick={() => setIsAddTagModalOpen(true)}>
+        <Button
+          className="bg-button-primary-fill-default text-text-primary light:invert float-end"
+          onClick={() => setIsAddTagModalOpen(true)}
+        >
           <PlusIcon className="inline mr-2" />
           Add Tag
         </Button>

@@ -23,6 +23,7 @@ import { useCallback, useState } from 'react';
 import { NULL_NODE } from '@/constants/Types';
 import { deduceNodeId } from '@/utils/NodeUtils';
 import { ComputerIcon } from 'lucide-react';
+import { useStore } from '@/store/store';
 
 interface AddTagModalProps {
   isOpen: boolean;
@@ -42,6 +43,8 @@ const createTagFormSchema = z.object({
 });
 
 export default function AddTagModal({ isOpen, nodes, networkId, onCancel, onCreateTag }: Readonly<AddTagModalProps>) {
+  const store = useStore();
+  const currentTheme = store.currentTheme;
   const form = useForm<z.infer<typeof createTagFormSchema>>({
     resolver: zodResolver(createTagFormSchema),
     defaultValues: {
@@ -83,13 +86,24 @@ export default function AddTagModal({ isOpen, nodes, networkId, onCancel, onCrea
         }
       }}
     >
-      <DialogContent className="border-stroke-default" style={{ backgroundColor: '#27272A' }}>
+      <DialogContent
+        className="border-stroke-default"
+        style={{
+          backgroundColor: currentTheme === 'dark' ? 'var(--color-bg-default-dark)' : 'var(--color-bg-default)',
+        }}
+      >
         {/* <DialogClose>
           <XCircleIcon className="w-6 h-6 text-text-secondary rounded-full p-2" />
           hello
         </DialogClose> */}
         <DialogHeader>
-          <DialogTitle className="text-xl">Create New Tag</DialogTitle>
+          <DialogTitle
+            style={{
+              color: currentTheme === 'dark' ? 'var(--color-text-primary-dark)' : 'var(--color-neutral-800)',
+            }}
+          >
+            Create New Tag
+          </DialogTitle>
           <DialogDescription className="text-base text-text-secondary">Tags group nodes</DialogDescription>
         </DialogHeader>
 
@@ -103,12 +117,23 @@ export default function AddTagModal({ isOpen, nodes, networkId, onCancel, onCrea
                 name="tag_name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-base-semibold">Name</FormLabel>
+                    <FormLabel
+                      className="text-base-semibold"
+                      style={{
+                        color: currentTheme === 'dark' ? 'var(--color-text-primary-dark)' : 'var(--color-neutral-800)',
+                      }}
+                    >
+                      Name
+                    </FormLabel>
                     <FormControl>
                       <Input
                         placeholder="A name for your tag"
-                        className="color-bg-default-dark"
-                        style={{ backgroundColor: '#27272A' }}
+                        style={{
+                          backgroundColor:
+                            currentTheme === 'dark' ? 'var(--color-bg-default-dark)' : 'var(--color-bg-default)',
+                          color:
+                            currentTheme === 'dark' ? 'var(--color-text-primary-dark)' : 'var(--color-neutral-800)',
+                        }}
                         {...field}
                       />
                     </FormControl>
@@ -118,7 +143,11 @@ export default function AddTagModal({ isOpen, nodes, networkId, onCancel, onCrea
               />
               <FormLabel
                 className="text-base-semibold inline-block"
-                style={{ marginTop: '2rem', marginBottom: '1rem' }}
+                style={{
+                  marginTop: '2rem',
+                  marginBottom: '1rem',
+                  color: currentTheme === 'dark' ? 'var(--color-text-primary-dark)' : 'var(--color-neutral-800)',
+                }}
               >
                 Grouped Devices
               </FormLabel>
@@ -138,7 +167,11 @@ export default function AddTagModal({ isOpen, nodes, networkId, onCancel, onCrea
                 variant="default"
                 placeholder="Search for devices"
                 className="bg-default-dark border-stroke-default"
-                style={{ backgroundColor: '#27272A', marginTop: '0rem' }}
+                style={{
+                  marginTop: '0rem',
+                  backgroundColor: currentTheme === 'dark' ? 'var(--color-bg-default-dark)' : 'var(--color-bg-default)',
+                  color: currentTheme === 'dark' ? 'var(--color-text-primary-dark)' : 'var(--color-neutral-800)',
+                }}
               />
             </form>
           </Form>
