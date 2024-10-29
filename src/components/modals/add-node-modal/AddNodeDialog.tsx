@@ -610,16 +610,37 @@ const AddNodeDialog: React.FC<{
                 Code: store.serverConfig?.APIHost || 'n/a',
               },
             ]),
-        {
-          title: 'Paste your tenant ID into the "Server" field in the app.',
-        },
-        {
-          title: 'Sign in using the same method you used on account.netmaker.io',
-          description: [
-            'For username and password: Type them in and click "Log in"',
-            'For SSO: Click "Log in with Auth" and follow the prompts in your browser',
-          ],
-        },
+        ...(isSaasBuild
+          ? [
+              {
+                title: 'Paste your tenant ID into the "Server" field in the app.',
+              },
+            ]
+          : [
+              {
+                title: 'Paste your Server Domain into the "Server" field in the app.',
+              },
+            ]),
+        ...(isSaasBuild
+          ? [
+              {
+                title: 'Sign in using the same method you used on account.netmaker.io',
+                description: [
+                  'For username and password: Type them in and click "Log in."',
+                  'For SSO: Click "Log in with Auth" and follow the prompts in your browser.',
+                ],
+              },
+            ]
+          : [
+              {
+                title: 'Sign in using the registered account.',
+                description: [
+                  'For username and password: Type them in and click "Log in."',
+                  'For SSO: Click "Log in with Auth" and follow the prompts in your browser.',
+                ],
+              },
+            ]),
+
         {
           title: `You'll see a list of gateways. If you don't, reach out to your admin for help.`,
         },
@@ -658,16 +679,37 @@ const AddNodeDialog: React.FC<{
                 Code: store.serverConfig?.APIHost || 'n/a',
               },
             ]),
-        {
-          title: 'Paste your tenant ID into the "Server" field in the app.',
-        },
-        {
-          title: 'Sign in using the same method you used on account.netmaker.io',
-          description: [
-            'For username and password: Type them in and click "Log in"',
-            'For SSO: Click "Log in with Auth" and follow the prompts in your browser',
-          ],
-        },
+        ...(isSaasBuild
+          ? [
+              {
+                title: 'Paste your tenant ID into the "Server" field in the app.',
+              },
+            ]
+          : [
+              {
+                title: 'Paste your Server Domain into the "Server" field in the app.',
+              },
+            ]),
+        ...(isSaasBuild
+          ? [
+              {
+                title: 'Sign in using the same method you used on account.netmaker.io',
+                description: [
+                  'For username and password: Type them in and click "Log in."',
+                  'For SSO: Click "Log in with Auth" and follow the prompts in your browser.',
+                ],
+              },
+            ]
+          : [
+              {
+                title: 'Sign in using the registered account.',
+                description: [
+                  'For username and password: Type them in and click "Log in."',
+                  'For SSO: Click "Log in with Auth" and follow the prompts in your browser.',
+                ],
+              },
+            ]),
+
         {
           title: `You'll see a list of gateways. If you don't, reach out to your admin for help.`,
         },
@@ -716,16 +758,37 @@ sudo dnf install remote-client
                 Code: store.serverConfig?.APIHost || 'n/a',
               },
             ]),
-        {
-          title: 'Paste your tenant ID into the "Server" field in the app.',
-        },
-        {
-          title: 'Sign in using the same method you used on account.netmaker.io',
-          description: [
-            'For username and password: Type them in and click "Log in"',
-            'For SSO: Click "Log in with Auth" and follow the prompts in your browser',
-          ],
-        },
+        ...(isSaasBuild
+          ? [
+              {
+                title: 'Paste your tenant ID into the "Server" field in the app.',
+              },
+            ]
+          : [
+              {
+                title: 'Paste your Server Domain into the "Server" field in the app.',
+              },
+            ]),
+        ...(isSaasBuild
+          ? [
+              {
+                title: 'Sign in using the same method you used on account.netmaker.io',
+                description: [
+                  'For username and password: Type them in and click "Log in."',
+                  'For SSO: Click "Log in with Auth" and follow the prompts in your browser.',
+                ],
+              },
+            ]
+          : [
+              {
+                title: 'Sign in using the registered account.',
+                description: [
+                  'For username and password: Type them in and click "Log in."',
+                  'For SSO: Click "Log in with Auth" and follow the prompts in your browser.',
+                ],
+              },
+            ]),
+
         {
           title: `You'll see a list of gateways. If you don't, reach out to your admin for help.`,
         },
