@@ -6,7 +6,7 @@ import { Input } from '@/components/shadcn/Input';
 import { Network } from '@/models/Network';
 import { Tag } from '@/models/Tags';
 import { TagsService } from '@/services/TagsService';
-import { ComputerIcon, PlusIcon, Search } from 'lucide-react';
+import { ComputerIcon, FileIcon, PlusIcon, Search } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Button as AntdButton,
@@ -124,7 +124,9 @@ export function TagManagementPage({
                   {tag.tagged_nodes.map((node, i) => (
                     <div key={`node-${i}`} className="text-sm font-bold p-1 break-keep whitespace-nowrap">
                       {node.is_static ? (
-                        node.static_node.clientid
+                        <>
+                          <FileIcon size={16} className="inline mr-2" /> {node.static_node.clientid}
+                        </>
                       ) : (
                         <>
                           <ComputerIcon size={16} className="inline mr-2" />{' '}

@@ -4415,6 +4415,8 @@ export default function NetworkDetailsPage(props: PageProps) {
                   setIsInitialLoad(true);
                   setActiveTabKey(tabKey);
                 }}
+                className="network-details-tabs"
+                moreIcon={null}
               />
             </Col>
           </Row>
