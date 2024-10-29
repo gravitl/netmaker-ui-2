@@ -2789,7 +2789,7 @@ export default function NetworkDetailsPage(props: PageProps) {
 
         {!isEmpty && (
           <>
-            <Row>
+            <Row style={{ width: '100%' }}>
               {isServerEE && (
                 <Row style={{ width: '100%' }}>
                   {/* <Col

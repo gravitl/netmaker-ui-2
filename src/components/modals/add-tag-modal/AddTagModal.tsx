@@ -39,7 +39,7 @@ const createTagFormSchema = z.object({
     .min(3)
     .max(50)
     .trim()
-    .regex(/^[a-zA-Z-]+$/, 'Tag name can only contain characters A-Z, a-z and -'),
+    .regex(/^[a-zA-Z0-9-]+$/, 'Tag name can only contain characters A-Z, a-z, 0-9 and -'),
 });
 
 export default function AddTagModal({ isOpen, nodes, networkId, onCancel, onCreateTag }: Readonly<AddTagModalProps>) {
