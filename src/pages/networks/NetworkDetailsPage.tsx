@@ -3783,13 +3783,6 @@ export default function NetworkDetailsPage(props: PageProps) {
         label: `Egress (${egresses.length})`,
         children: network && !isRefreshingNetwork ? getEgressContent() : <Skeleton active />,
       },
-      !isSaasBuild
-        ? {
-            key: 'dns',
-            label: `DNS`,
-            children: network && !isRefreshingNetwork ? getDnsContent() : <Skeleton active />,
-          }
-        : ({} as never),
       {
         key: 'access-control',
         label: `Access Control`,
@@ -3800,6 +3793,13 @@ export default function NetworkDetailsPage(props: PageProps) {
         label: `ACL`,
         children: network && !isRefreshingNetwork ? getACLsContent() : <Skeleton active />,
       },
+      !isSaasBuild
+        ? {
+            key: 'dns',
+            label: `DNS`,
+            children: network && !isRefreshingNetwork ? getDnsContent() : <Skeleton active />,
+          }
+        : ({} as never),
       {
         key: 'graph',
         label: `Graph`,
@@ -3845,22 +3845,21 @@ export default function NetworkDetailsPage(props: PageProps) {
             <Skeleton active />
           ),
       });
+      tabs.splice(5, 0, {
+        key: 'tag-mgmt',
+        label: <Typography.Text>Tag Management</Typography.Text>,
+        children:
+          network && !isRefreshingNetwork ? (
+            <TagManagementPage
+              network={network.netid}
+              networkNodes={networkNodes}
+              staticNetworkNodes={staticNetworkNodes}
+            />
+          ) : (
+            <Skeleton active />
+          ),
+      });
     }
-
-    tabs.push({
-      key: 'tag-mgmt',
-      label: <Typography.Text>Tag Management</Typography.Text>,
-      children:
-        network && !isRefreshingNetwork ? (
-          <TagManagementPage
-            network={network.netid}
-            networkNodes={networkNodes}
-            staticNetworkNodes={staticNetworkNodes}
-          />
-        ) : (
-          <Skeleton active />
-        ),
-    });
 
     tabs.push({
       key: 'overview',
