@@ -172,7 +172,7 @@ export default function InviteUserModal({
               allowClear
               options={rowData.roles
                 .sort((a, b) => a.id.localeCompare(b.id))
-                .map((r) => ({ value: r.id, label: r.ui_name || r.id }))}
+                .map((r) => ({ value: r.id, label: r.name || r.id }))}
               onSelect={(roleId: UserRole['id']) => {
                 setSelectedNetworkRoles((prev) => {
                   return [...prev, { network: rowData.network, role: roleId }];
@@ -190,6 +190,11 @@ export default function InviteUserModal({
     ],
     [],
   );
+
+  const filteredGroups = useMemo(() => {
+    if (palVal === 'service-user') return groups.filter((g) => !g.id.toLocaleLowerCase().includes('admin'));
+    return groups;
+  }, [groups, palVal]);
 
   const loadGroups = useCallback(async () => {
     try {
@@ -304,18 +309,18 @@ export default function InviteUserModal({
             <Select
               mode="multiple"
               placeholder="Select groups"
-              options={groups
+              options={filteredGroups
                 .sort((a, b) => a.id.localeCompare(b.id))
                 .map((g) => ({
                   value: g.id,
-                  label: g.id,
+                  label: g.name || g.id,
                 }))}
             />
           </Form.Item>
         </Col>
       </Row>
     );
-  }, [groups]);
+  }, [filteredGroups]);
 
   const getCustomRolesContent = useCallback(() => {
     return (
@@ -346,13 +351,16 @@ export default function InviteUserModal({
         label: 'Groups',
         children: getGroupsContent(),
       },
-      {
-        key: customRolesTabKey,
-        label: 'Additional Roles Per Network',
-        children: getCustomRolesContent(),
-      },
+      // {
+      //   key: customRolesTabKey,
+      //   label: 'Additional Roles Per Network',
+      //   children: getCustomRolesContent(),
+      // },
     ],
-    [getGroupsContent, getCustomRolesContent],
+    [
+      getGroupsContent,
+      // getCustomRolesContent
+    ],
   );
 
   const getPalDesc = useCallback((pal: UserRoleId) => {
@@ -427,7 +435,19 @@ export default function InviteUserModal({
                         <Form.Item
                           name="platform_role_id"
                           label="Platform Access Level"
-                          tooltip="This specifies the server-wide permissions this user will have"
+                          tooltip={
+                            <span>
+                              This specifies the server-wide permissions this user will have{' '}
+                              <a
+                                href={ExternalLinks.USER_MGMT_DOCS_PAL_URL}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="underline"
+                              >
+                                Learn More
+                              </a>
+                            </span>
+                          }
                           rules={[{ required: true }]}
                           initialValue={isServerEE ? undefined : 'admin'}
                           extra={getPalDesc(palVal)}
