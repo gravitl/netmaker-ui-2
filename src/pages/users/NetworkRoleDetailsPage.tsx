@@ -187,14 +187,14 @@ export default function NetworkRoleDetailsPage(props: PageProps) {
     }
     Modal.confirm({
       title: 'Delete Role',
-      content: `Are you sure you want to delete the role "${role.ui_name || role.id}"? This will remove the role from all users/groups, and they will lose any associated permissions.`,
+      content: `Are you sure you want to delete the role "${role.name || role.id}"? This will remove the role from all users/groups, and they will lose any associated permissions.`,
       onOk: async () => {
         try {
-          await UsersService.deleteRole(role.ui_name || role.id);
+          await UsersService.deleteRole(role.name || role.id);
           notification.success({ message: `Role "${role.id}" deleted` });
           navigate(resolveAppRoute(AppRoutes.USERS_ROUTE, { tab: UsersPageTabs.rolesTabKey }));
         } catch (error) {
-          notify.error({ message: `Failed to delete role "${role.ui_name || role.id}"` });
+          notify.error({ message: `Failed to delete role "${role.name || role.id}"` });
         }
       },
     });
@@ -621,7 +621,7 @@ export default function NetworkRoleDetailsPage(props: PageProps) {
                   // rules={[{ required: true, whitespace: false }]}
                   style={{ width: '80%' }}
                 >
-                  <Typography.Text style={{ fontWeight: 'bold' }}>{role?.ui_name ?? ''}</Typography.Text>
+                  <Typography.Text style={{ fontWeight: 'bold' }}>{role?.name ?? ''}</Typography.Text>
                   <br />
                   <Typography.Text style={{ fontSize: '90%', fontWeight: 'light' }}>
                     (ID: {role?.id ?? ''})

@@ -10,6 +10,8 @@ const INTEGRATING_NON_NATIVE_DEVICES_LINK =
 const ROUTE_LOCAL_NETWORK_TRAFFIC_LINK = 'https://docs.netmaker.io/'; /// NEED TO ADD LINK
 const HOW_TO_ADD_USERS_TO_NETWORK = 'https://www.netmaker.io/resources/how-to-add-users-to-netmaker-saas';
 const USER_MGMT_DOCS_URL = 'https://docs.netmaker.io/#';
+const USER_MGMT_DOCS_PAL_URL =
+  'https://docs.netmaker.io/docs/operations-guide/granting-access-to-your-vpn#roles__platform-roles-server-wide-access-level';
 const UI_DOCS_URL = 'https://docs.netmaker.io/docs/references/user-interface';
 const USER_MGMT_DOCS_NETWORK_ROLES_URL = 'https://docs.netmaker.io/docs/features/users-management-pro#network-roles';
 const USER_MGMT_DOCS_USER_GROUPS_URL = 'https://docs.netmaker.io/docs/features/users-management-pro#user-groups';
@@ -43,6 +45,7 @@ export const ExternalLinks = {
   USER_MGMT_DOCS_USER_GROUPS_URL,
   USER_MGMT_DOCS_INVITES_URL,
   RAC_DOWNLOAD_LINK,
+  USER_MGMT_DOCS_PAL_URL,
   APPLE_STORE_LINK,
   PLAY_STORE_LINK,
   RAC_DOCS_URL,

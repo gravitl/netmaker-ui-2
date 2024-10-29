@@ -63,7 +63,7 @@ export type RsrcTypeValue = {
 
 export interface UserRole {
   id: UserRoleId;
-  ui_name: string;
+  name: string;
   default: boolean;
   deny_dashboard_access: boolean;
   full_access: boolean;
@@ -77,6 +77,7 @@ export interface UserGroup {
   platform_role: UserRoleId;
   network_roles: { [network in Network['netid']]: { [role in UserRoleId]: object } };
   meta_data: string;
+  name: string;
 }
 
 export interface UserInvite {

@@ -1,5 +1,5 @@
 import { useStore } from '@/store/store';
-import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, PlusOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import {
   Button,
   Card,
@@ -31,6 +31,7 @@ import { NetworksService } from '@/services/NetworksService';
 import { convertNetworkPayloadToUiNetwork } from '@/utils/NetworkUtils';
 import AddUsersToGroupModal from '@/components/modals/add-users-to-group-modal/AddUsersToGroupModal';
 import { UsersPageTabs } from './UsersPage';
+import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 
 interface metadataFormValues {
   name: string;
@@ -45,7 +46,7 @@ interface networkRolesFormValues {
 
 interface NetworkRolesTableData {
   network_id: UserRole['network_id'];
-  network_roles: { roleId: UserRole['id']; uiName: UserRole['ui_name'] }[];
+  network_roles: { roleId: UserRole['id']; uiName: UserRole['name'] }[];
 }
 
 export default function UserGroupDetailsPage(props: PageProps) {
@@ -110,7 +111,7 @@ export default function UserGroupDetailsPage(props: PageProps) {
       network_id: network.netid,
       network_roles: availableUserRoles
         .filter((role) => role.network_id === network.netid)
-        .map((role) => ({ uiName: role.ui_name, roleId: role.id })),
+        .map((role) => ({ uiName: role.name, roleId: role.id })),
     }));
   }, [availbleNetworks, availableUserRoles]);
 
@@ -245,6 +246,7 @@ export default function UserGroupDetailsPage(props: PageProps) {
 
       await UsersService.updateGroup({
         id: group.id,
+        name: group.name,
         network_roles: networkRolesPayload,
         meta_data: metadata.metadata,
         platform_role: metadata.platformRole,
@@ -295,6 +297,11 @@ export default function UserGroupDetailsPage(props: PageProps) {
             <Row gutter={[24, 0]}>
               <Col xs={24} md={12}>
                 <Form.Item name="name" label="Group Name" style={{ width: '80%' }}>
+                  <Typography.Text style={{ fontWeight: 'bold' }}>{group?.name ?? ''}</Typography.Text>
+                </Form.Item>
+              </Col>
+              <Col xs={24} md={12}>
+                <Form.Item name="id" label="Group ID" style={{ width: '80%' }}>
                   <Typography.Text style={{ fontWeight: 'bold' }}>{group?.id ?? ''}</Typography.Text>
                 </Form.Item>
               </Col>
@@ -337,7 +344,18 @@ export default function UserGroupDetailsPage(props: PageProps) {
 
         <Row className="tabbed-page-row-padding" style={{ paddingBottom: '0px' }}>
           <Col xs={24}>
-            <Card size="small" title="Associated Network Roles" style={{ width: '100%', marginBottom: '2rem' }}>
+            <Card
+              size="small"
+              title={
+                <>
+                  <span>Associated Network Roles</span>
+                  <a href={ExternalLinks.USER_MGMT_DOCS_NETWORK_ROLES_URL} target="_blank" rel="noreferrer">
+                    <QuestionCircleOutlined style={{ marginLeft: '.5rem' }} />
+                  </a>
+                </>
+              }
+              style={{ width: '100%', marginBottom: '2rem' }}
+            >
               <Form form={networkRolesForm}>
                 <Row style={{ padding: '.5rem 0rem' }} data-nmui-intercom="new-group_network-roles">
                   <Col xs={24}>

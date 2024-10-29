@@ -92,7 +92,7 @@ export default function RolesPage({
         render(_, role) {
           return (
             <>
-              <Typography.Link>{role.ui_name || role.id}</Typography.Link>
+              <Typography.Link>{role.name || role.id}</Typography.Link>
             </>
           );
         },

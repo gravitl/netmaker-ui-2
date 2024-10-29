@@ -1,5 +1,5 @@
 import { useStore } from '@/store/store';
-import { InfoCircleOutlined, PlusOutlined } from '@ant-design/icons';
+import { InfoCircleOutlined, PlusOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import {
   Button,
   Card,
@@ -33,6 +33,7 @@ import { convertNetworkPayloadToUiNetwork } from '@/utils/NetworkUtils';
 import AddUsersToGroupModal from '@/components/modals/add-users-to-group-modal/AddUsersToGroupModal';
 import CreateNetworkRoleModal from './CreateNetworkRoleModal';
 import { UsersPageTabs } from './UsersPage';
+import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 
 interface metadataFormValues {
   name: string;
@@ -47,7 +48,7 @@ interface networkRolesFormValues {
 
 interface NetworkRolesTableData {
   network_id: UserRole['network_id'];
-  network_roles: { roleId: UserRole['id']; uiName: UserRole['ui_name'] }[];
+  network_roles: { roleId: UserRole['id']; name: UserRole['name'] }[];
 }
 
 export default function CreateUserGroupPage(props: PageProps) {
@@ -84,7 +85,7 @@ export default function CreateUserGroupPage(props: PageProps) {
       network_id: network.netid,
       network_roles: availableUserRoles
         .filter((role) => role.network_id === network.netid)
-        .map((role) => ({ uiName: role.ui_name, roleId: role.id })),
+        .map((role) => ({ name: role.name, roleId: role.id })),
     }));
   }, [availbleNetworks, availableUserRoles]);
 
@@ -105,7 +106,7 @@ export default function CreateUserGroupPage(props: PageProps) {
               placeholder="Select a role for this network"
               options={[
                 ...rowData.network_roles
-                  .map((role) => ({ label: role.uiName || role.roleId, value: role.roleId }))
+                  .map((role) => ({ label: role.name || role.roleId, value: role.roleId }))
                   .sort((a, b) => a.label.localeCompare(b.label)),
                 {
                   label: '+ Create a new role',
@@ -190,7 +191,8 @@ export default function CreateUserGroupPage(props: PageProps) {
       await UsersService.createGroup({
         members: groupMembers.map((m) => m.username),
         user_group: {
-          id: metadata.name,
+          id: metadata.name.replaceAll(' ', '-').toLowerCase(),
+          name: metadata.name,
           network_roles: networkRolesPayload,
           meta_data: metadata.metadata,
           platform_role: metadata.platformRole,
@@ -331,7 +333,18 @@ export default function CreateUserGroupPage(props: PageProps) {
 
         <Row className="tabbed-page-row-padding" style={{ paddingBottom: '0px' }} ref={groupNetworkAccessRef}>
           <Col xs={24}>
-            <Card size="small" title="Associated Network Roles" style={{ width: '100%', marginBottom: '2rem' }}>
+            <Card
+              size="small"
+              title={
+                <>
+                  <span>Associated Network Roles</span>
+                  <a href={ExternalLinks.USER_MGMT_DOCS_NETWORK_ROLES_URL} target="_blank" rel="noreferrer">
+                    <QuestionCircleOutlined style={{ marginLeft: '.5rem' }} />
+                  </a>
+                </>
+              }
+              style={{ width: '100%', marginBottom: '2rem' }}
+            >
               <Form form={networkRolesForm}>
                 <Row style={{ padding: '.5rem 0rem' }} data-nmui-intercom="new-group_network-roles">
                   <Col xs={24}>

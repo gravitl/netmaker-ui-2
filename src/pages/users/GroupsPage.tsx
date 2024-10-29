@@ -104,21 +104,36 @@ export default function GroupsPage({
       {
         title: 'Name',
         dataIndex: 'id',
-        render(name) {
+        render(id, group) {
           return (
             <>
               <Typography.Link
                 onClick={() => {
-                  navigate(getUserGroupRoute(name));
+                  navigate(getUserGroupRoute(id));
                 }}
+                title={group.meta_data}
               >
-                {name}
+                {group.name || group.id}
               </Typography.Link>
             </>
           );
         },
         sorter: (a, b) => a.id?.localeCompare(b.id ?? '') ?? 0,
         defaultSortOrder: 'ascend',
+      },
+      {
+        title: 'Description',
+        dataIndex: 'meta_data',
+        width: '50%',
+        render(desc) {
+          return (
+            <>
+              <Typography.Text ellipsis={{ tooltip: desc }} style={{ width: '100%' }}>
+                {desc ?? ''}
+              </Typography.Text>
+            </>
+          );
+        },
       },
       {
         title: 'Member Count',
@@ -240,6 +255,36 @@ export default function GroupsPage({
       )}
       {!isEmpty && (
         <>
+          <Row className="mb-4">
+            <Col xs={24} md={16}>
+              <Typography className="secondary text-xl text-text-secondary">
+                Groups help manage users in clusters, such as Admins, Offshore, etc.
+                <br />
+                Create groups to categorize users and assign roles to define permissions effectively.
+              </Typography>
+            </Col>
+            <Col xs={24} md={8} style={{ textAlign: 'right' }}>
+              <Button
+                title="Go to user management documentation"
+                style={{ marginRight: '1rem' }}
+                href={ExternalLinks.USER_MGMT_DOCS_USER_GROUPS_URL}
+                target="_blank"
+                referrerPolicy="no-referrer"
+                ref={groupsHelpButtonRef}
+              >
+                <QuestionCircleOutlined />
+                View Docs
+              </Button>
+              <Button
+                onClick={() => {
+                  setIsTourOpen(true);
+                }}
+                style={{ marginRight: '0.5rem' }}
+              >
+                <InfoCircleOutlined /> Start Tour
+              </Button>
+            </Col>
+          </Row>
           <Row style={{ width: '100%', marginBottom: '2rem' }}>
             <Col xs={24} md={12} ref={groupsSearchInputRef}>
               <Input
@@ -253,25 +298,6 @@ export default function GroupsPage({
               />
             </Col>
             <Col xs={24} md={12} style={{ textAlign: 'right' }}>
-              <Button
-                title="Go to user management documentation"
-                size="large"
-                style={{ marginRight: '1rem' }}
-                href={ExternalLinks.USER_MGMT_DOCS_USER_GROUPS_URL}
-                target="_blank"
-                referrerPolicy="no-referrer"
-                icon={<QuestionCircleOutlined />}
-                ref={groupsHelpButtonRef}
-              />
-              <Button
-                size="large"
-                onClick={() => {
-                  setIsTourOpen(true);
-                }}
-                style={{ marginRight: '0.5rem' }}
-              >
-                <InfoCircleOutlined /> Start Tour
-              </Button>
               <Button
                 type="primary"
                 size="large"

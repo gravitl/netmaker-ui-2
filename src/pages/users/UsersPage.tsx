@@ -36,7 +36,7 @@ import { PageProps } from '../../models/Page';
 import './UsersPage.scss';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { UsersService } from '@/services/UsersService';
-import { User, UserInvite } from '@/models/User';
+import { User, UserGroup, UserInvite } from '@/models/User';
 import AddUserModal from '@/components/modals/add-user-modal/AddUserModal';
 import UpdateUserModal from '@/components/modals/update-user-modal/UpdateUserModal';
 import { isSaasBuild } from '@/services/BaseService';
@@ -88,6 +88,7 @@ export default function UsersPage(props: PageProps) {
   const [isLoadingPendingUsers, setIsLoadingPendingUsers] = useState(true);
   const [pendingUsersSearch, setPendingUsersSearch] = useState('');
   const [currentTourStep, setCurrentTourStep] = useState(0);
+  const [groups, setGroups] = useState<UserGroup[]>([]);
 
   const usersTableRef = useRef(null);
   const addUserButtonRef = useRef(null);
@@ -152,6 +153,18 @@ export default function UsersPage(props: PageProps) {
       });
     } finally {
       setIsLoadingInvites(false);
+    }
+  }, [notify]);
+
+  const loadGroups = useCallback(async () => {
+    try {
+      const groups = (await UsersService.getGroups()).data.Response;
+      setGroups(groups);
+    } catch (err) {
+      notify.error({
+        message: 'Failed to load groups',
+        description: extractErrorMsg(err as any),
+      });
     }
   }, [notify]);
 
@@ -465,8 +478,8 @@ export default function UsersPage(props: PageProps) {
         render(_, user) {
           return Object.keys(user?.user_group_ids ?? {}).map((g, i) => (
             <>
-              <Typography.Link key={g} onClick={() => navigate(getUserGroupRoute(g))}>
-                {g}
+              <Typography.Link key={g} onClick={() => navigate(getUserGroupRoute(g))} title={`ID: ${g}`}>
+                {groups.find((gr) => gr.id === g)?.name ?? <Skeleton.Input active style={{ height: '1.3rem' }} />}
               </Typography.Link>
               {i !== Object.keys(user?.user_group_ids).length - 1 ? <span key={i}>, </span> : <span key={i}></span>}
             </>
@@ -485,7 +498,7 @@ export default function UsersPage(props: PageProps) {
     }
 
     return cols;
-  }, [isServerEE, store.username, navigate, canChangePassword, canDeleteUser, onEditUser, confirmDeleteUser]);
+  }, [isServerEE, store.username, navigate, canChangePassword, canDeleteUser, onEditUser, confirmDeleteUser, groups]);
 
   const userInvitesTableColumns: TableColumnsType<UserInvite> = useMemo(
     () => [
@@ -846,6 +859,35 @@ export default function UsersPage(props: PageProps) {
   const getUsersContent = useCallback(() => {
     return (
       <>
+        <Row className="mb-4">
+          <Col xs={24} md={16}>
+            <Typography className="secondary text-xl text-text-secondary">
+              Identify users and control access to the platform.
+              <br />
+              Create users, assign roles, and organize them into groups to manage access levels effectively.
+            </Typography>
+          </Col>
+          <Col xs={24} md={8} style={{ textAlign: 'right' }}>
+            <Button
+              title="Go to Users documentation"
+              href={USERS_DOCS_URL}
+              target="_blank"
+              style={{ marginRight: '0.5rem' }}
+              ref={usersHelpButtonRef}
+            >
+              <QuestionCircleOutlined />
+              View Docs
+            </Button>
+            <Button
+              onClick={() => {
+                setIsTourOpen(true);
+              }}
+              style={{ marginRight: '0.5rem' }}
+            >
+              <InfoCircleOutlined /> Start Tour
+            </Button>
+          </Col>
+        </Row>
         <Row>
           <Col xs={24} md={8} ref={searchUsersInputRef}>
             <Input
@@ -858,24 +900,6 @@ export default function UsersPage(props: PageProps) {
             />
           </Col>
           <Col xs={24} md={16} style={{ textAlign: 'right' }} className="user-table-button">
-            <Button
-              title="Go to Users documentation"
-              size="large"
-              href={USERS_DOCS_URL}
-              target="_blank"
-              icon={<QuestionCircleOutlined />}
-              style={{ marginRight: '0.5rem' }}
-              ref={usersHelpButtonRef}
-            />
-            <Button
-              size="large"
-              onClick={() => {
-                setIsTourOpen(true);
-              }}
-              style={{ marginRight: '0.5rem' }}
-            >
-              <InfoCircleOutlined /> Start Tour
-            </Button>
             <Button
               size="large"
               onClick={() => loadUsers()}
@@ -958,6 +982,35 @@ export default function UsersPage(props: PageProps) {
   const getInvitesContent = useCallback(() => {
     return (
       <>
+        <Row className="mb-4">
+          <Col xs={24} md={16}>
+            <Typography className="secondary text-xl text-text-secondary">
+              User invitations allow you to add users to your network or server via email.
+              <br />
+              Simply enter the user&apos;s email address, and they&apos;ll receive a link to join your network.
+            </Typography>
+          </Col>
+          <Col xs={24} md={8} style={{ textAlign: 'right' }}>
+            <Button
+              title="Go to Users documentation"
+              href={ExternalLinks.USER_MGMT_DOCS_INVITES_URL}
+              target="_blank"
+              style={{ marginRight: '0.5em' }}
+              ref={invitesHelpButtonRef}
+            >
+              <QuestionCircleOutlined />
+              View Docs
+            </Button>
+            <Button
+              onClick={() => {
+                setIsTourOpen(true);
+              }}
+              style={{ marginRight: '0.5em' }}
+            >
+              <InfoCircleOutlined /> Start Tour
+            </Button>
+          </Col>
+        </Row>
         <Row>
           <Col xs={24} md={8} ref={invitesSearchInputRef}>
             <Input
@@ -970,24 +1023,6 @@ export default function UsersPage(props: PageProps) {
             />
           </Col>
           <Col xs={24} md={16} style={{ textAlign: 'right' }} className="pending-user-table-button">
-            <Button
-              title="Go to Users documentation"
-              size="large"
-              href={ExternalLinks.USER_MGMT_DOCS_INVITES_URL}
-              target="_blank"
-              icon={<QuestionCircleOutlined />}
-              style={{ marginRight: '0.5em' }}
-              ref={invitesHelpButtonRef}
-            />
-            <Button
-              size="large"
-              onClick={() => {
-                setIsTourOpen(true);
-              }}
-              style={{ marginRight: '0.5em' }}
-            >
-              <InfoCircleOutlined /> Start Tour
-            </Button>
             <Button
               size="large"
               onClick={() => loadInvites()}
@@ -1047,6 +1082,35 @@ export default function UsersPage(props: PageProps) {
   const getPendingUsersContent = useCallback(() => {
     return (
       <>
+        <Row className="mb-4">
+          <Col xs={24} md={16}>
+            <Typography className="secondary text-xl text-text-secondary">
+              Pending users are individuals who initiated signup through the web UI or RAC and are awaiting approval to
+              join your network or server.
+              <br />
+              You can review their requests to approve or deny access as needed.
+            </Typography>
+          </Col>
+          <Col xs={24} md={8} style={{ textAlign: 'right' }}>
+            <Button
+              title="Go to Users documentation"
+              style={{ marginRight: '0.5rem' }}
+              href={USERS_DOCS_URL}
+              target="_blank"
+              ref={pendingUsersHelpButtonRef}
+            >
+              <QuestionCircleOutlined />
+              View Docs
+            </Button>
+            <Button
+              onClick={() => {
+                setIsTourOpen(true);
+              }}
+            >
+              <InfoCircleOutlined /> Start Tour
+            </Button>
+          </Col>
+        </Row>
         <Row>
           <Col xs={24} md={8} ref={pendingUsersSearchInputRef}>
             <Input
@@ -1059,15 +1123,6 @@ export default function UsersPage(props: PageProps) {
             />
           </Col>
           <Col xs={24} md={16} style={{ textAlign: 'right' }} className="pending-user-table-button">
-            <Button
-              size="large"
-              onClick={() => {
-                setIsTourOpen(true);
-              }}
-              style={{ marginRight: '0.5em' }}
-            >
-              <InfoCircleOutlined /> Start Tour
-            </Button>
             <Button
               size="large"
               onClick={() => loadPendingUsers()}
@@ -1084,14 +1139,6 @@ export default function UsersPage(props: PageProps) {
             >
               <StopOutlined /> Deny all users
             </Button>
-            <Button
-              title="Go to Users documentation"
-              style={{ marginLeft: '0.5rem' }}
-              href={USERS_DOCS_URL}
-              target="_blank"
-              icon={<QuestionCircleOutlined />}
-              ref={pendingUsersHelpButtonRef}
-            />
           </Col>
         </Row>
         <Row className="" style={{ marginTop: '1rem' }}>
@@ -1135,20 +1182,20 @@ export default function UsersPage(props: PageProps) {
       tabs.splice(
         1,
         0,
-        {
-          key: UsersPageTabs.rolesTabKey,
-          label: 'Network Roles',
-          children: (
-            <RolesPage
-              triggerDataRefresh={triggerDataRefresh}
-              setIsTourOpen={setIsTourOpen}
-              networkRolesHelpButtonRef={networkRolesHelpButtonRef}
-              networkRolesTableRef={networkRolesTableRef}
-              networkRolesSearchInputRef={networkRolesSearchInputRef}
-              networkRolesCreateRoleButtonRef={networkRolesCreateRoleButtonRef}
-            />
-          ),
-        },
+        // {
+        //   key: UsersPageTabs.rolesTabKey,
+        //   label: 'Network Roles',
+        //   children: (
+        //     <RolesPage
+        //       triggerDataRefresh={triggerDataRefresh}
+        //       setIsTourOpen={setIsTourOpen}
+        //       networkRolesHelpButtonRef={networkRolesHelpButtonRef}
+        //       networkRolesTableRef={networkRolesTableRef}
+        //       networkRolesSearchInputRef={networkRolesSearchInputRef}
+        //       networkRolesCreateRoleButtonRef={networkRolesCreateRoleButtonRef}
+        //     />
+        //   ),
+        // },
         {
           key: UsersPageTabs.groupsTabKey,
           label: 'Groups',
@@ -1213,10 +1260,11 @@ export default function UsersPage(props: PageProps) {
     if (isServerEE) {
       loadInvites();
       loadPendingUsers();
+      loadGroups();
     }
 
     queryParams.get('tab') && setActiveTab(queryParams.get('tab') as string);
-  }, [loadUsers, isServerEE, loadInvites, loadPendingUsers]);
+  }, [loadUsers, isServerEE, loadInvites, loadPendingUsers, loadGroups]);
 
   return (
     <Layout.Content
