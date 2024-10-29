@@ -45,6 +45,29 @@ export interface Node {
   fail_over_peers: Node['id'][]; // temporary don't know the type;
   metadata?: string;
   additional_rag_ips: string[];
+  //after nodes flow
+  is_static?: boolean;
+  is_user_node?: boolean;
+  static_node?: {
+    clientid: string;
+    privatekey: string;
+    publickey: string;
+    network: string;
+    dns: string;
+    address: string;
+    address6: string;
+    extraallowedips: string[];
+    allowed_ips: string[] | null;
+    ingressgatewayid: string;
+    ingressgatewayendpoint: string;
+    lastmodified: number;
+    enabled: boolean;
+    ownerid: string;
+    deniednodeacls: string[] | null;
+    remote_access_client_id: string;
+    postup: string;
+    postdown: string;
+  };
 }
 
 export type AddressType = 'address' | 'address6' | 'localaddress';
