@@ -214,7 +214,7 @@ const UpdateResourcesForm: React.FC<UpdateResourcesFormProps> = ({ networkId, on
         enabled: isPolicyEnabled,
       };
 
-      await ACLService.updateACLRule(updatedPolicy);
+      await ACLService.updateACLRule(updatedPolicy, networkId);
       notify.success({ message: 'Policy updated successfully' });
       onClose?.();
     } catch (err) {

@@ -424,7 +424,7 @@ const UpdateUsersForm: React.FC<UpdateUsersFormProps> = ({ networkId, onClose, s
         enabled: isPolicyEnabled,
       };
 
-      await ACLService.updateACLRule(updatedPolicy);
+      await ACLService.updateACLRule(updatedPolicy, networkId);
       notify.success({ message: 'Policy updated successfully' });
       onClose?.();
     } catch (err) {

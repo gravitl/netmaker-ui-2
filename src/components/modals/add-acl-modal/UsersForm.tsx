@@ -404,7 +404,7 @@ const UsersForm: React.FC<UsersFormProps> = ({ networkId, onClose, fetchACLRules
         enabled: isPolicyEnabled,
       };
 
-      await ACLService.createACLRule(payload);
+      await ACLService.createACLRule(payload, networkId);
       notify.success({ message: `Policy created` });
       form.resetFields();
       setIsPolicyEnabled(true);

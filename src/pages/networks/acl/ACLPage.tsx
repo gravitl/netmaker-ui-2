@@ -40,7 +40,7 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, setAd
   const togglePolicyStatus = useCallback(
     async (policy: ACLRule) => {
       try {
-        await ACLService.toggleEnabeledACLRule(policy, !policy.enabled);
+        await ACLService.toggleEnabeledACLRule(policy, !policy.enabled, networkId);
         await fetchACLRules();
         notify.success({
           message: `Policy ${policy.enabled ? 'disabled' : 'enabled'} successfully`,
@@ -64,7 +64,7 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, setAd
         content: `Are you sure you want to delete this Policy?`,
         onOk: async () => {
           try {
-            await ACLService.deleteACLRule(policy.id);
+            await ACLService.deleteACLRule(policy.id, networkId);
             await fetchACLRules();
             notify.success({ message: 'Policy deleted successfully' });
           } catch (err) {

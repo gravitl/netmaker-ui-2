@@ -205,7 +205,7 @@ const ResourcesForm: React.FC<ResourcesFormProps> = ({ networkId, onClose, fetch
         enabled: isPolicyEnabled,
       };
 
-      await ACLService.createACLRule(payload);
+      await ACLService.createACLRule(payload, networkId);
       notify.success({ message: `Policy created` });
       form.resetFields();
       setIsPolicyEnabled(true);
