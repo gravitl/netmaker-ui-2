@@ -16,9 +16,16 @@ interface ACLPageProps {
   notify: NotificationInstance;
   hostsTabContainerAddHostsRef: React.RefObject<HTMLButtonElement>;
   setAddPolicyModal: (value: boolean) => void;
+  reloadACL: () => void;
 }
 
-export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, setAddPolicyModal }: ACLPageProps) => {
+export const ACLPage = ({
+  networkId,
+  notify,
+  hostsTabContainerAddHostsRef,
+  setAddPolicyModal,
+  reloadACL,
+}: ACLPageProps) => {
   const [aclRules, setAclRules] = useState<ACLRule[]>([]);
   const [searchHost, setSearchHost] = useState('');
   const [policyType, setPolicyType] = useState('All');
@@ -38,10 +45,14 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, setAd
     }
   }, [networkId, notify]);
 
+  useEffect(() => {
+    fetchACLRules();
+  }, [fetchACLRules]);
+
   const togglePolicyStatus = useCallback(
     async (policy: ACLRule) => {
       try {
-        await ACLService.toggleEnabeledACLRule(policy, !policy.enabled);
+        await ACLService.toggleEnabeledACLRule(policy, !policy.enabled, networkId);
         await fetchACLRules();
         notify.success({
           message: `Policy ${policy.enabled ? 'disabled' : 'enabled'} successfully`,
@@ -55,7 +66,7 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, setAd
         }
       }
     },
-    [fetchACLRules, notify],
+    [fetchACLRules, notify, networkId],
   );
 
   const confirmDeletePolicy = useCallback(
@@ -65,7 +76,7 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, setAd
         content: `Are you sure you want to delete this Policy?`,
         onOk: async () => {
           try {
-            await ACLService.deleteACLRule(policy.id);
+            await ACLService.deleteACLRule(policy.id, networkId);
             await fetchACLRules();
             notify.success({ message: 'Policy deleted successfully' });
           } catch (err) {
@@ -79,7 +90,7 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, setAd
         },
       });
     },
-    [fetchACLRules, notify],
+    [fetchACLRules, notify, networkId],
   );
 
   const filteredACLRules = aclRules.filter((rule) => {
@@ -105,11 +116,12 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, setAd
 
   return (
     <div className="flex flex-col w-full gap-6">
-      <div className="flex items-start w-full gap-4 p-5 mb-2 border rounded-xl bg-bg-contrastDefault border-stroke-default">
+      <div className="flex items-start w-full gap-4 p-5 mb-2 border border-stroke-default rounded-xl bg-bg-contrastDefault ">
         <div className="flex flex-col w-full gap-2">
-          <h3 className="text-text-primary text-base-semibold">Introducing the New ACLs</h3>
+          <h3 className="text-text-primary text-base-semibold">Introducing the New Access Control System</h3>
           <p className="text-base text-text-secondary">
-            Coming soon to replace the current Access Control system. Streamlined, powerful, and built for the future.
+            Coming soon to replace the current Access Control system. Built to make access management easier and more
+            secure.
           </p>
         </div>
       </div>
@@ -219,30 +231,31 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, setAd
           {
             width: '1rem',
             align: 'right',
-            render: (_, rule: ACLRule) => (
-              <Dropdown
-                menu={{
-                  items: [
-                    {
-                      key: 'edit',
-                      label: 'Edit',
-                      onClick: () => {
-                        setSelectedEditPolicy(rule);
-                        setIsEditPolicyModalOpen(true);
+            render: (_, rule: ACLRule) =>
+              !rule.default && (
+                <Dropdown
+                  menu={{
+                    items: [
+                      {
+                        key: 'edit',
+                        label: 'Edit',
+                        onClick: () => {
+                          setSelectedEditPolicy(rule);
+                          setIsEditPolicyModalOpen(true);
+                        },
                       },
-                    },
-                    {
-                      key: 'remove',
-                      label: 'Remove',
-                      danger: true,
-                      onClick: () => confirmDeletePolicy(rule),
-                    },
-                  ],
-                }}
-              >
-                <MoreOutlined />
-              </Dropdown>
-            ),
+                      {
+                        key: 'remove',
+                        label: 'Remove',
+                        danger: true,
+                        onClick: () => confirmDeletePolicy(rule),
+                      },
+                    ],
+                  }}
+                >
+                  <MoreOutlined />
+                </Dropdown>
+              ),
           },
         ]}
         dataSource={filteredACLRules}
@@ -259,6 +272,7 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, setAd
           networkId={networkId}
           selectedPolicy={selectedEditPolicy}
           fetchACLRules={fetchACLRules}
+          reloadACL={reloadACL}
         />
       )}
     </div>

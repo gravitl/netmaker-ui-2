@@ -11,6 +11,7 @@ interface UpdateACLModalProps {
   networkId: Network['netid'];
   selectedPolicy: ACLRule | null;
   fetchACLRules: () => void;
+  reloadACL: () => void;
 }
 
 const UpdateACLModal: React.FC<UpdateACLModalProps> = ({
@@ -19,6 +20,7 @@ const UpdateACLModal: React.FC<UpdateACLModalProps> = ({
   networkId,
   selectedPolicy,
   fetchACLRules,
+  reloadACL,
 }) => {
   if (!isOpen) return null;
 
@@ -41,9 +43,19 @@ const UpdateACLModal: React.FC<UpdateACLModalProps> = ({
           <div className="flex w-full px-8 py-6">
             <div className="flex flex-col w-full gap-2">
               {selectedPolicy?.policy_type === 'user-policy' ? (
-                <UpdateUsersForm networkId={networkId} onClose={onClose} selectedPolicy={selectedPolicy} />
+                <UpdateUsersForm
+                  networkId={networkId}
+                  onClose={onClose}
+                  selectedPolicy={selectedPolicy}
+                  reloadACL={reloadACL}
+                />
               ) : selectedPolicy?.policy_type === 'device-policy' ? (
-                <UpdateRessourcesForm networkId={networkId} onClose={onClose} selectedPolicy={selectedPolicy} />
+                <UpdateRessourcesForm
+                  networkId={networkId}
+                  onClose={onClose}
+                  selectedPolicy={selectedPolicy}
+                  reloadACL={reloadACL}
+                />
               ) : null}
             </div>
           </div>

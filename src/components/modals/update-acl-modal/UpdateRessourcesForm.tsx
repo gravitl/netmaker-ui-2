@@ -32,6 +32,7 @@ interface UpdateResourcesFormProps {
   networkId: Network['netid'];
   onClose?: () => void;
   selectedPolicy: ACLRule;
+  reloadACL: () => void;
 }
 
 const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
@@ -155,7 +156,7 @@ const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
   );
 };
 
-const UpdateResourcesForm: React.FC<UpdateResourcesFormProps> = ({ networkId, onClose, selectedPolicy }) => {
+const UpdateResourcesForm: React.FC<UpdateResourcesFormProps> = ({ networkId, onClose, selectedPolicy, reloadACL }) => {
   const [notify, notifyCtx] = notification.useNotification();
   const [form] = Form.useForm();
   const [isPolicyEnabled, setIsPolicyEnabled] = useState(selectedPolicy.enabled);
@@ -214,8 +215,9 @@ const UpdateResourcesForm: React.FC<UpdateResourcesFormProps> = ({ networkId, on
         enabled: isPolicyEnabled,
       };
 
-      await ACLService.updateACLRule(updatedPolicy);
+      await ACLService.updateACLRule(updatedPolicy, networkId);
       notify.success({ message: 'Policy updated successfully' });
+      reloadACL();
       onClose?.();
     } catch (err) {
       notify.error({

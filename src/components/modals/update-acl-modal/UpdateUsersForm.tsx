@@ -46,6 +46,7 @@ interface UpdateUsersFormProps {
   networkId: Network['netid'];
   onClose?: () => void;
   selectedPolicy: ACLRule;
+  reloadACL: () => void;
 }
 
 const SelectDropdown: React.FC<SelectDropdownProps> = ({
@@ -135,7 +136,7 @@ const SelectDropdown: React.FC<SelectDropdownProps> = ({
       {isOpen && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
-          <div className="absolute z-20 mt-1 overflow-hidden border rounded-lg shadow-lg w-96 bg-bg-default border-stroke-default">
+          <div className="absolute z-20 mt-1 overflow-hidden border rounded-lg shadow-lg w-[520px] bg-bg-default border-stroke-default">
             <div className="p-2 border-b border-stroke-default">
               <div className="relative">
                 <input
@@ -149,10 +150,10 @@ const SelectDropdown: React.FC<SelectDropdownProps> = ({
               </div>
             </div>
 
-            <div className="max-h-[300px] overflow-y-auto w-full">
+            <div className="max-h-[180px] overflow-y-auto w-full">
               <div className="flex w-full">
                 {filteredItems.groups.length > 0 && (
-                  <div className="w-full py-1">
+                  <div className="w-full py-1 overflow-y-auto">
                     <div className="px-3 py-1 text-sm text-text-secondary">Select groups</div>
                     {filteredItems.groups.map((group) => (
                       <div
@@ -169,7 +170,7 @@ const SelectDropdown: React.FC<SelectDropdownProps> = ({
                 )}
 
                 {filteredItems.users.length > 0 && (
-                  <div className="w-full py-1">
+                  <div className="w-full py-1 overflow-y-auto">
                     <div className="px-3 py-1 text-sm text-text-secondary">Select individual users</div>
                     {filteredItems.users.map((user) => (
                       <div
@@ -326,7 +327,7 @@ const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
     </div>
   );
 };
-const UpdateUsersForm: React.FC<UpdateUsersFormProps> = ({ networkId, onClose, selectedPolicy }) => {
+const UpdateUsersForm: React.FC<UpdateUsersFormProps> = ({ networkId, onClose, selectedPolicy, reloadACL }) => {
   const [notify, notifyCtx] = notification.useNotification();
   const [form] = Form.useForm();
   const [isPolicyEnabled, setIsPolicyEnabled] = useState(selectedPolicy.enabled);
@@ -424,8 +425,9 @@ const UpdateUsersForm: React.FC<UpdateUsersFormProps> = ({ networkId, onClose, s
         enabled: isPolicyEnabled,
       };
 
-      await ACLService.updateACLRule(updatedPolicy);
+      await ACLService.updateACLRule(updatedPolicy, networkId);
       notify.success({ message: 'Policy updated successfully' });
+      reloadACL();
       onClose?.();
     } catch (err) {
       notify.error({

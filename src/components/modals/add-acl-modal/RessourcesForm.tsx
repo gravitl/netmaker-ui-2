@@ -32,6 +32,7 @@ interface ResourcesFormProps {
   networkId: Network['netid'];
   onClose?: () => void;
   fetchACLRules?: () => void;
+  reloadACL?: () => void;
 }
 
 const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
@@ -155,7 +156,7 @@ const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
   );
 };
 
-const ResourcesForm: React.FC<ResourcesFormProps> = ({ networkId, onClose, fetchACLRules }) => {
+const ResourcesForm: React.FC<ResourcesFormProps> = ({ networkId, onClose, fetchACLRules, reloadACL }) => {
   const [form] = Form.useForm();
   const [isPolicyEnabled, setIsPolicyEnabled] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -205,11 +206,12 @@ const ResourcesForm: React.FC<ResourcesFormProps> = ({ networkId, onClose, fetch
         enabled: isPolicyEnabled,
       };
 
-      await ACLService.createACLRule(payload);
+      await ACLService.createACLRule(payload, networkId);
       notify.success({ message: `Policy created` });
       form.resetFields();
       setIsPolicyEnabled(true);
       fetchACLRules?.();
+      reloadACL?.();
       onClose?.();
     } catch (err) {
       notify.error({

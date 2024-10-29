@@ -9,9 +9,10 @@ interface AddACLModalProps {
   onClose: () => void;
   networkId: Network['netid'];
   fetchACLRules: () => void;
+  reloadACL: () => void;
 }
 
-const AddACLModal: React.FC<AddACLModalProps> = ({ isOpen, onClose, networkId, fetchACLRules }) => {
+const AddACLModal: React.FC<AddACLModalProps> = ({ isOpen, onClose, networkId, fetchACLRules, reloadACL }) => {
   const [policyType, setPolicyType] = React.useState('Resources');
 
   const policyTypes = [
@@ -59,10 +60,20 @@ const AddACLModal: React.FC<AddACLModalProps> = ({ isOpen, onClose, networkId, f
                 ))}
               </div>
               {policyType === 'Users' && (
-                <UsersForm networkId={networkId} onClose={onClose} fetchACLRules={fetchACLRules} />
+                <UsersForm
+                  networkId={networkId}
+                  onClose={onClose}
+                  fetchACLRules={fetchACLRules}
+                  reloadACL={reloadACL}
+                />
               )}
               {policyType === 'Resources' && (
-                <ResourcesForm networkId={networkId} onClose={onClose} fetchACLRules={fetchACLRules} />
+                <ResourcesForm
+                  networkId={networkId}
+                  onClose={onClose}
+                  fetchACLRules={fetchACLRules}
+                  reloadACL={reloadACL}
+                />
               )}{' '}
             </div>
           </div>

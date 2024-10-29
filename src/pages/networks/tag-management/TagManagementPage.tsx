@@ -116,10 +116,10 @@ export function TagManagementPage({ network: networkId, networkNodes }: Readonly
             </HoverCardTrigger>
             {tag.tagged_nodes.length > 0 && (
               <HoverCardContent className="border-none min-w-fit w-fit">
-                <div className="bg-bg-default border border-stroke-default rounded m-2">
+                <div className="m-2 border rounded bg-bg-default border-stroke-default">
                   {tag.tagged_nodes.map((node, i) => (
                     <>
-                      <div key={`node-${i}`} className="text-sm font-bold p-1 break-keep whitespace-nowrap">
+                      <div key={`node-${i}`} className="p-1 text-sm font-bold break-keep whitespace-nowrap">
                         <ComputerIcon size={16} className="inline mr-2" />
                         {getExtendedNode(node, store.hostsCommonDetails).name}
                       </div>
@@ -218,20 +218,20 @@ export function TagManagementPage({ network: networkId, networkNodes }: Readonly
         </span>
       </div> */}
 
-      <div className="w-100 columns-2">
+      {/* <div className="w-100 columns-2">
         <h3 className="text-2xl font-bold">Tag Management</h3>
-        <div className="w-50 text-right">
+        <div className="text-right w-50">
           <AntdButton className="mr-2">Docs</AntdButton>
-          {/* <AntdButton>Tour Tag Management</AntdButton> */}
+          <AntdButton>Tour Tag Management</AntdButton>
         </div>
       </div>
 
       <div className="mt-4" style={{ maxWidth: '60%' }}>
-        <span className="text-text-secondary text-xl">
+        <span className="text-xl text-text-secondary">
           Organize and categorize your resources efficiently with customizable tags. Apply tags to instances and other
           assets for improved resource management.
         </span>
-      </div>
+      </div> */}
 
       <br />
 

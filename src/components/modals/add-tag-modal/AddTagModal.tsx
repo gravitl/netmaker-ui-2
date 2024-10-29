@@ -81,9 +81,9 @@ export default function AddTagModal({ isOpen, nodes, networkId, onCancel, onCrea
         }
       }}
     >
-      <DialogContent className="border-stroke-default" style={{ backgroundColor: '#27272A' }}>
+      <DialogContent className="border-stroke-default bg-bg-default">
         {/* <DialogClose>
-          <XCircleIcon className="w-6 h-6 text-text-secondary rounded-full p-2" />
+          <XCircleIcon className="w-6 h-6 p-2 rounded-full text-text-secondary" />
           hello
         </DialogClose> */}
         <DialogHeader>
@@ -115,7 +115,7 @@ export default function AddTagModal({ isOpen, nodes, networkId, onCancel, onCrea
                 )}
               />
               <FormLabel
-                className="text-base-semibold inline-block"
+                className="inline-block text-base-semibold"
                 style={{ marginTop: '2rem', marginBottom: '1rem' }}
               >
                 Grouped Devices

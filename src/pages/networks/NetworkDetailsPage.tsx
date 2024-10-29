@@ -3170,9 +3170,58 @@ export default function NetworkDetailsPage(props: PageProps) {
     selectedRelay,
   ]);
 
+  const fetchACLRules = useCallback(async () => {
+    try {
+      if (!networkId) return;
+      const aclRulesResponse = (await ACLService.getACLRules(networkId)).data.Response;
+      setAclRules(aclRulesResponse);
+    } catch (error) {
+      notify.error({
+        message: 'Failed to fetch ACL rules',
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
+      });
+    }
+  }, [networkId, notify]);
+
+  useEffect(() => {
+    fetchACLRules();
+  }, [fetchACLRules]);
+
+  const reloadACL = async () => {
+    setIsRefreshingNetwork(true);
+    await fetchACLRules();
+    setIsRefreshingNetwork(false);
+  };
+
+  const getACLsContent = useCallback(() => {
+    return (
+      networkId && (
+        <ACLPage
+          networkId={networkId}
+          notify={notify}
+          hostsTabContainerAddHostsRef={hostsTabContainerAddHostsRef}
+          setAddPolicyModal={setAddPolicyModal}
+          reloadACL={reloadACL}
+        />
+      )
+    );
+  }, [networkId, notify, hostsTabContainerAddHostsRef, setAddPolicyModal, reloadACL]);
+
   const getAclsContent = useCallback(() => {
     return (
       <>
+        <div className="flex items-start w-full gap-4 p-5 mb-6 border border-stroke-default rounded-xl bg-bg-contrastDefault ">
+          <div className="flex flex-col w-full gap-2">
+            <h3 className="text-text-primary text-base-semibold">Introducing the New Access Control System</h3>
+            <p className="text-base text-text-secondary">
+              Coming soon to replace the current Access Control system. Built to make access management easier and more
+              secure.
+            </p>
+          </div>
+          <Button type="primary" onClick={() => setActiveTabKey('acl')}>
+            Try new ACLs
+          </Button>{' '}
+        </div>
         <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
           {networkHosts.length + clients.length > 50 ? (
             <Row style={{ width: '100%' }}>
@@ -3360,36 +3409,6 @@ export default function NetworkDetailsPage(props: PageProps) {
     notify,
     jumpToTourStep,
   ]);
-
-  const fetchACLRules = useCallback(async () => {
-    try {
-      if (!networkId) return;
-      const aclRulesResponse = (await ACLService.getACLRules(networkId)).data.Response;
-      setAclRules(aclRulesResponse);
-    } catch (error) {
-      notify.error({
-        message: 'Failed to fetch ACL rules',
-        description: error instanceof Error ? error.message : 'Unknown error occurred',
-      });
-    }
-  }, [networkId, notify]);
-
-  useEffect(() => {
-    fetchACLRules();
-  }, [fetchACLRules]);
-
-  const getACLsContent = useCallback(() => {
-    return (
-      networkId && (
-        <ACLPage
-          networkId={networkId}
-          notify={notify}
-          hostsTabContainerAddHostsRef={hostsTabContainerAddHostsRef}
-          setAddPolicyModal={setAddPolicyModal}
-        />
-      )
-    );
-  }, [networkId, notify, hostsTabContainerAddHostsRef, setAddPolicyModal]);
   const getGraphContent = useCallback(() => {
     const containerHeight = '78vh';
 
@@ -4501,7 +4520,8 @@ export default function NetworkDetailsPage(props: PageProps) {
           onClose={() => {
             setAddPolicyModal(false);
           }}
-          fetchACLRules={fetchACLRules}
+          fetchACLRules={() => fetchACLRules()}
+          reloadACL={reloadACL}
         />
         {selectedGateway && (
           <UpdateIngressModal
