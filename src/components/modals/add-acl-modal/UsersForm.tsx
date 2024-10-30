@@ -20,6 +20,7 @@ import { Network } from '@/models/Network';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { NotificationInstance } from 'antd/es/notification/interface';
 import { Link } from 'react-router-dom';
+import { useServerLicense } from '@/utils/Utils';
 
 interface Item {
   id: string;
@@ -70,6 +71,8 @@ const SelectDropdown: React.FC<SelectDropdownProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
+
+  const { isServerEE } = useServerLicense();
 
   const toggleItem = useCallback(
     (item: User) => {
@@ -162,7 +165,7 @@ const SelectDropdown: React.FC<SelectDropdownProps> = ({
 
             <div className="w-full">
               <div className="flex w-full max-h-[180px]">
-                {filteredItems.groups.length > 0 && (
+                {filteredItems.groups.length > 0 && isServerEE && (
                   <div className="w-full py-1 overflow-y-auto">
                     <div className="px-3 py-1 text-sm text-text-secondary">Select groups</div>
                     {filteredItems.groups.map((group) => (
@@ -172,7 +175,7 @@ const SelectDropdown: React.FC<SelectDropdownProps> = ({
                         onClick={() => toggleGroup(group)}
                       >
                         <UsersIcon className="w-4 h-4 text-text-secondary" />
-                        {group.id}
+                        {group.name}
                         {value.some((v) => v.id === group.id) && <div className="w-4 h-4 ml-auto">✓</div>}
                       </div>
                     ))}
@@ -349,6 +352,8 @@ const UsersForm: React.FC<UsersFormProps> = ({ networkId, onClose, fetchACLRules
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
 
+  const { isServerEE } = useServerLicense();
+
   const {
     register,
     handleSubmit,
@@ -377,7 +382,18 @@ const UsersForm: React.FC<UsersFormProps> = ({ networkId, onClose, fetchACLRules
     const fetchGroups = async () => {
       try {
         const response = await UsersService.getGroups();
-        setGroupsList(response.data.Response || []);
+        const filteredGroups = (response.data.Response || []).filter((group) => {
+          if (!group.network_roles) {
+            return false;
+          }
+
+          return (
+            Object.keys(group.network_roles).includes(networkId) ||
+            Object.keys(group.network_roles).includes('all_networks')
+          );
+        });
+
+        setGroupsList(filteredGroups);
       } catch (error) {
         console.error('Error fetching groups:', error);
         setGroupsList([]);
@@ -395,9 +411,9 @@ const UsersForm: React.FC<UsersFormProps> = ({ networkId, onClose, fetchACLRules
     };
 
     fetchUsers();
-    fetchGroups();
+    isServerEE && fetchGroups();
     fetchTags();
-  }, [networkId]);
+  }, [networkId, isServerEE]);
 
   const convertSourceItemsToTypeValues = useCallback((items: Item[]): SourceTypeValue[] => {
     return items.map((item) => ({
