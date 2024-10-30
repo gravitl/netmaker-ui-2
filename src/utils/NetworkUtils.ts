@@ -40,6 +40,7 @@ export function convertUiNetworkToNetworkPayload(network: Network): NetworkPaylo
 export function convertNetworkPayloadToUiNetwork(network: NetworkPayload): Network {
   return {
     ...network,
+    displayName: network.netid.replace(/-+/g, ' '),
     defaultmtu: Number(network.defaultmtu),
     defaultlistenport: Number(network.defaultlistenport),
     defaultkeepalive: Number(network.defaultkeepalive),
@@ -124,11 +125,11 @@ function generateRandomHex(size: number) {
 }
 
 export function generateCgnatCIDR() {
-  return `100.${generateRandomNumber(254, true)}.${generateRandomNumber(254, true)}.0/24`;
+  return `100.64.${generateRandomNumber(254, true)}.0/24`;
 }
 
 export function generateCgnatCIDR6() {
-  return `fd:${generateRandomHex(4)}:${generateRandomHex(4)}:${generateRandomHex(4)}::/64`;
+  return `fd3c:${generateRandomHex(4)}:${generateRandomHex(4)}:${generateRandomHex(4)}::/64`;
 }
 
 export function generateCIDR() {
