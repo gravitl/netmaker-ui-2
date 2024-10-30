@@ -247,7 +247,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   });
   const [isSetNetworkFailoverModalOpen, setIsSetNetworkFailoverModalOpen] = useState(false);
   const [isAddInternetGatewayModalOpen, setIsAddInternetGatewayModalOpen] = useState(false);
-  const [activeNodeFilter, setActiveNodeFilter] = useState('All');
+  const [activeNodeFilter, setActiveNodeFilter] = useState('Netclient');
 
   const filters = [
     { name: 'All', icon: null },
