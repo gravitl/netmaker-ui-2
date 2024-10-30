@@ -90,7 +90,7 @@ const SelectDropdown: React.FC<SelectDropdownProps> = ({
     (group: UserGroup) => {
       const newItem: Item = {
         id: group.id,
-        name: group.id,
+        name: group.name,
         type: 'group',
       };
       const isSelected = value.some((v) => v.id === group.id);
@@ -102,7 +102,7 @@ const SelectDropdown: React.FC<SelectDropdownProps> = ({
   const filteredItems = useMemo(() => {
     const searchLower = searchText.toLowerCase();
     return {
-      groups: groups.filter((group) => group.id.toLowerCase().includes(searchLower)),
+      groups: groups.filter((group) => group.name.toLowerCase().includes(searchLower)),
       users: users.filter((user) => user.username.toLowerCase().includes(searchLower)),
     };
   }, [searchText, users, groups]);
@@ -238,7 +238,7 @@ const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
     } else {
       const tagItem: Item = {
         id: '*',
-        name: 'All',
+        name: 'All Resources',
         type: 'tag',
       };
       onChange([tagItem]);
@@ -348,7 +348,7 @@ const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
                 aria-selected={value.some((v) => v.id === '*')}
               >
                 <TagIcon className="w-4 h-4 text-text-secondary" aria-hidden="true" />
-                <span className="flex-1">All</span>
+                <span className="flex-1">All Resources</span>
                 {value.some((v) => v.id === '*') && <div className="w-4 h-4 ml-auto text-primary-500">✓</div>}
               </div>
 
@@ -416,18 +416,32 @@ const UpdateUsersForm: React.FC<UpdateUsersFormProps> = ({ networkId, onClose, s
     },
   });
 
-  const convertSourceTypesToItems = useCallback((sourceTypes: SourceTypeValue[]): Item[] => {
-    return sourceTypes.map((source) => ({
-      id: source.value,
-      name: source.value,
-      type: source.id === 'user' ? 'user' : 'group',
-    }));
-  }, []);
+  const convertSourceTypesToItems = useCallback(
+    (sourceTypes: SourceTypeValue[]): Item[] => {
+      return sourceTypes.map((source) => {
+        if (source.id === 'user-group') {
+          // Look up the group name from groupsList
+          const group = groupsList.find((g) => g.id === source.value);
+          return {
+            id: source.value,
+            name: group?.name || source.value, // Fallback to value if group not found
+            type: 'group',
+          };
+        }
+        return {
+          id: source.value,
+          name: source.value,
+          type: 'user',
+        };
+      });
+    },
+    [groupsList],
+  );
 
   const convertDestinationTypeToItems = useCallback((destinationTypes: DestinationTypeValue[]): Item[] => {
     return destinationTypes.map((dest) => ({
       id: dest.value,
-      name: dest.value === '*' ? 'All' : dest.value,
+      name: dest.value === '*' ? 'All Resources' : dest.value,
       type: 'tag',
     }));
   }, []);

@@ -61,7 +61,7 @@ const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
     } else {
       const tagItem: Item = {
         id: '*',
-        name: 'All',
+        name: 'All Resources',
         type: 'tag',
       };
       onChange([tagItem]);
@@ -171,7 +171,7 @@ const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
                 aria-selected={value.some((v) => v.id === '*')}
               >
                 <TagIcon className="w-4 h-4 text-text-secondary" aria-hidden="true" />
-                <span className="flex-1">All</span>
+                <span className="flex-1">All Resources</span>
                 {value.some((v) => v.id === '*') && <div className="w-4 h-4 ml-auto text-primary-500">✓</div>}
               </div>
 
@@ -244,7 +244,7 @@ const UpdateResourcesForm: React.FC<UpdateResourcesFormProps> = ({
   const convertTypeToItems = useCallback((typeValues: (SourceTypeValue | DestinationTypeValue)[]): Item[] => {
     return typeValues.map((type) => ({
       id: type.value,
-      name: type.value === '*' ? 'All' : type.value,
+      name: type.value === '*' ? 'All Resources' : type.value,
       type: 'tag',
     }));
   }, []);

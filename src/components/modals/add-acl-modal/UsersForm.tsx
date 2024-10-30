@@ -232,24 +232,34 @@ const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
   const [searchText, setSearchText] = useState('');
 
   const selectAllTag = () => {
-    const tagItem: Item = {
-      id: '*',
-      name: 'All',
-      type: 'tag',
-    };
-    onChange([tagItem]);
-    setIsOpen(false);
+    const isAllCurrentlySelected = value.some((v) => v.id === '*');
+
+    if (isAllCurrentlySelected) {
+      onChange([]);
+    } else {
+      const tagItem: Item = {
+        id: '*',
+        name: 'All Resources',
+        type: 'tag',
+      };
+      onChange([tagItem]);
+    }
   };
 
   const toggleTag = useCallback(
     (tag: Tag) => {
+      if (value.some((v) => v.id === '*')) {
+        return;
+      }
       const tagItem: Item = {
         id: tag.id,
         name: tag.tag_name,
         type: 'tag',
       };
       const isSelected = value.some((v) => v.id === tag.id);
-      onChange(isSelected ? value.filter((v) => v.id !== tag.id) : [...value, tagItem]);
+      const newValue = isSelected ? value.filter((v) => v.id !== tag.id) : [...value, tagItem];
+
+      onChange(newValue);
     },
     [value, onChange],
   );
@@ -320,21 +330,33 @@ const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
                 onClick={selectAllTag}
               >
                 <TagIcon className="w-4 h-4 text-text-secondary" />
-                All
+                All Resources
                 {value.some((v) => v.id === '*') && <div className="w-4 h-4 ml-auto">✓</div>}
               </div>
 
-              {filteredTags.map((tag) => (
-                <div
-                  key={tag.id}
-                  className="flex items-center gap-2 px-3 py-2 text-sm cursor-pointer hover:bg-button-secondary-fill-hover"
-                  onClick={() => toggleTag(tag)}
-                >
-                  <TagIcon className="w-4 h-4 text-text-secondary" />
-                  {tag.tag_name}
-                  {value.some((v) => v.id === tag.id) && <div className="w-4 h-4 ml-auto">✓</div>}
-                </div>
-              ))}
+              {filteredTags.map((tag) => {
+                const isSelected = value.some((v) => v.id === tag.id);
+                const isDisabled = value.some((v) => v.id === '*');
+
+                return (
+                  <div
+                    key={tag.id}
+                    className={`
+        flex items-center gap-2 px-3 py-2 text-sm
+        ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-button-secondary-fill-hover'}
+        ${isSelected && !isDisabled ? 'bg-button-secondary-fill-hover' : ''}
+      `}
+                    onClick={() => !isDisabled && toggleTag(tag)}
+                    role="option"
+                    aria-selected={isSelected}
+                    aria-disabled={isDisabled}
+                  >
+                    <TagIcon className="w-4 h-4 text-text-secondary" aria-hidden="true" />
+                    <span className="flex-1">{tag.tag_name}</span>
+                    {isSelected && !isDisabled && <div className="w-4 h-4 ml-auto text-primary-500">✓</div>}
+                  </div>
+                );
+              })}
             </div>
           </div>
         </>

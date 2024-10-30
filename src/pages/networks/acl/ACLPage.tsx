@@ -1,5 +1,5 @@
 import { SearchOutlined, MoreOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import { ComputerDesktopIcon, UsersIcon } from '@heroicons/react/24/solid';
+import { ComputerDesktopIcon, TagIcon, UserIcon, UsersIcon } from '@heroicons/react/24/solid';
 import { Button, Dropdown, Input, Table, Tag, Tooltip, Switch, Modal, Col } from 'antd';
 import { NotificationInstance } from 'antd/es/notification/interface';
 import { useCallback, useEffect, useState } from 'react';
@@ -10,6 +10,11 @@ import { extractErrorMsg } from '@/utils/ServiceUtils';
 import arrowBidirectional from '../../../../public/arrow-bidirectional.svg';
 import UpdateACLModal from '@/components/modals/update-acl-modal/UpdateACLModal';
 import AddACLModal from '@/components/modals/add-acl-modal/AddACLModal';
+import { UsersService } from '@/services/UsersService';
+import { User, UserGroup } from '@/models/User';
+import { useServerLicense } from '@/utils/Utils';
+import { Tag as TagType } from '@/models/Tags';
+import { TagsService } from '@/services/TagsService';
 
 interface ACLPageProps {
   networkId: string;
@@ -25,6 +30,10 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, reloa
   const [isEditPolicyModalOpen, setIsEditPolicyModalOpen] = useState(false);
   const [selectedEditPolicy, setSelectedEditPolicy] = useState<ACLRule | null>(null);
   const [addPolicyModal, setAddPolicyModal] = useState(false);
+  const [usersList, setUsersList] = useState<User[]>([]);
+  const [groupsList, setGroupsList] = useState<UserGroup[]>([]);
+  const { isServerEE } = useServerLicense();
+  const [tagsList, setTagsList] = useState<TagType[]>([]);
 
   const fetchACLRules = useCallback(async () => {
     try {
@@ -38,6 +47,51 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, reloa
       });
     }
   }, [networkId, notify]);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await UsersService.getUsers();
+        setUsersList(response.data || []);
+      } catch (error) {
+        console.error('Error fetching users:', error);
+        setUsersList([]);
+      }
+    };
+
+    const fetchTags = async () => {
+      try {
+        const tags = (await TagsService.getTagsPerNetwork(networkId)).data.Response;
+        setTagsList(tags);
+      } catch (error) {
+        console.error('Error fetching tags:', error);
+        setTagsList([]);
+      }
+    };
+
+    const fetchGroups = async () => {
+      try {
+        const response = await UsersService.getGroups();
+        const filteredGroups = (response.data.Response || []).filter((group) => {
+          if (!group.network_roles) {
+            return false;
+          }
+          return (
+            Object.keys(group.network_roles).includes(networkId) ||
+            Object.keys(group.network_roles).includes('all_networks')
+          );
+        });
+        setGroupsList(filteredGroups);
+      } catch (error) {
+        console.error('Error fetching groups:', error);
+        setGroupsList([]);
+      }
+    };
+
+    fetchUsers();
+    isServerEE && fetchGroups();
+    fetchTags();
+  }, [networkId, isServerEE]);
 
   useEffect(() => {
     fetchACLRules();
@@ -188,20 +242,40 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, reloa
             render: (_, rule: ACLRule) => (
               <>
                 {rule.src_type.map((type: SourceTypeValue, index) => {
-                  const displayValue =
-                    type.value === '*'
-                      ? type.id === 'user'
+                  let displayValue = type.value;
+                  let Icon = UserIcon;
+
+                  if (type.value === '*') {
+                    displayValue =
+                      type.id === 'user'
                         ? 'All Users'
                         : type.id === 'user-group'
                           ? 'All Groups'
                           : type.id === 'tag'
-                            ? 'All Ressources'
-                            : type.value
-                      : type.value || 'Any';
+                            ? 'All Resources'
+                            : type.value;
+
+                    Icon = type.id === 'user' ? UserIcon : type.id === 'user-group' ? UsersIcon : TagIcon;
+                  } else if (type.id === 'user-group') {
+                    const group = groupsList.find((g) => g.id === type.value);
+                    displayValue = group?.name || type.value;
+                    Icon = UsersIcon;
+                  } else if (type.id === 'tag') {
+                    const tag = tagsList.find((t) => t.id === type.value);
+                    displayValue = tag?.tag_name || type.value;
+                    Icon = TagIcon;
+                  } else if (type.id === 'user') {
+                    Icon = UserIcon;
+                  }
 
                   return (
                     <Tooltip key={index} title={displayValue}>
-                      <Tag>{displayValue}</Tag>
+                      <Tag>
+                        <div className="flex items-center gap-1">
+                          <Icon className="w-3 h-3" />
+                          <span>{displayValue}</span>
+                        </div>
+                      </Tag>
                     </Tooltip>
                   );
                 })}
@@ -217,11 +291,23 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, reloa
             render: (_, rule: ACLRule) => (
               <>
                 {rule.dst_type.map((type: DestinationTypeValue, index) => {
-                  const displayValue = type.value === '*' ? 'All Resources' : type.value || 'Any';
+                  let displayValue = type.value;
+
+                  if (type.value === '*') {
+                    displayValue = 'All Resources';
+                  } else {
+                    const tag = tagsList.find((t) => t.id === type.value);
+                    displayValue = tag?.tag_name || type.value;
+                  }
 
                   return (
                     <Tooltip key={index} title={displayValue}>
-                      <Tag>{displayValue}</Tag>
+                      <Tag>
+                        <div className="flex items-center gap-1">
+                          <TagIcon className="w-3 h-3" />
+                          <span>{displayValue}</span>
+                        </div>
+                      </Tag>
                     </Tooltip>
                   );
                 })}
