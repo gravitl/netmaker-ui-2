@@ -246,6 +246,7 @@ export default function AddUserModal({
                 .map((g) => ({
                   value: g.id,
                   label: g.name,
+                  title: g.meta_data,
                 }))}
             />
           </Form.Item>

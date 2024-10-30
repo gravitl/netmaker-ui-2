@@ -314,6 +314,7 @@ export default function InviteUserModal({
                 .map((g) => ({
                   value: g.id,
                   label: g.name || g.id,
+                  title: g.meta_data,
                 }))}
             />
           </Form.Item>
