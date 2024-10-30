@@ -4,7 +4,7 @@ import { Button, Dropdown, Input, Table, Tag, Tooltip, Switch, Modal, Col } from
 import { NotificationInstance } from 'antd/es/notification/interface';
 import { useCallback, useEffect, useState } from 'react';
 import { AxiosError } from 'axios';
-import { ACLRule } from '@/services/dtos/ACLDtos';
+import { ACLRule, DestinationTypeValue, SourceTypeValue } from '@/services/dtos/ACLDtos';
 import { ACLService } from '@/services/ACLService';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import arrowBidirectional from '../../../../public/arrow-bidirectional.svg';
@@ -187,11 +187,24 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, reloa
             title: 'Source',
             render: (_, rule: ACLRule) => (
               <>
-                {rule.src_type.map((type, index) => (
-                  <Tooltip key={index} title={type.value}>
-                    <Tag>{type.value || 'Any'}</Tag>
-                  </Tooltip>
-                ))}
+                {rule.src_type.map((type: SourceTypeValue, index) => {
+                  const displayValue =
+                    type.value === '*'
+                      ? type.id === 'user'
+                        ? 'All Users'
+                        : type.id === 'user-group'
+                          ? 'All Groups'
+                          : type.id === 'tag'
+                            ? 'All Ressources'
+                            : type.value
+                      : type.value || 'Any';
+
+                  return (
+                    <Tooltip key={index} title={displayValue}>
+                      <Tag>{displayValue}</Tag>
+                    </Tooltip>
+                  );
+                })}
               </>
             ),
           },
@@ -203,11 +216,15 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, reloa
             title: 'Destination',
             render: (_, rule: ACLRule) => (
               <>
-                {rule.dst_type.map((type, index) => (
-                  <Tooltip key={index} title={type.value}>
-                    <Tag>{type.value || 'Any'}</Tag>
-                  </Tooltip>
-                ))}
+                {rule.dst_type.map((type: DestinationTypeValue, index) => {
+                  const displayValue = type.value === '*' ? 'All Resources' : type.value || 'Any';
+
+                  return (
+                    <Tooltip key={index} title={displayValue}>
+                      <Tag>{displayValue}</Tag>
+                    </Tooltip>
+                  );
+                })}
               </>
             ),
           },
