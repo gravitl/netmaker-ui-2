@@ -1,4 +1,4 @@
-import { EditOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { InfoCircleOutlined } from '@ant-design/icons';
 import { Button, Col, Divider, Form, Input, Modal, notification, Row, Select, Switch, theme, Tooltip } from 'antd';
 import { MouseEvent, MutableRefObject, Ref, useCallback } from 'react';
 import { CreateNetworkDto } from '@/services/dtos/CreateNetworkDto';
@@ -11,14 +11,12 @@ import {
   convertNetworkPayloadToUiNetwork,
   generateCgnatCIDR,
   generateCgnatCIDR6,
-  generateCIDR,
-  generateCIDR6,
-  generateNetworkName,
   isPrivateIpCidr,
   isValidIpv4Cidr,
   isValidIpv6Cidr,
 } from '@/utils/NetworkUtils';
 import { convertUiNetworkToNetworkPayload } from '@/utils/NetworkUtils';
+import { ShuffleIcon } from 'lucide-react';
 
 interface AddNetworkModalProps {
   isOpen: boolean;
@@ -36,7 +34,6 @@ export default function AddNetworkModal({
   isOpen,
   onCreateNetwork: onCreateNetwork,
   onCancel,
-  autoFillButtonRef,
   networkNameInputRef,
   ipv4InputRef,
   ipv6InputRef,
@@ -58,6 +55,9 @@ export default function AddNetworkModal({
   const createNetwork = async () => {
     try {
       const formData = await form.validateFields();
+      formData.netid = formData.netid?.trim() ?? '';
+      formData.netid = formData.netid.replace(/\s+/g, '-');
+      formData.netid = formData.netid.toLocaleLowerCase();
       const network = convertNetworkPayloadToUiNetwork(
         (await NetworksService.createNetwork(convertUiNetworkToNetworkPayload(formData as unknown as Network))).data,
       );
@@ -98,16 +98,19 @@ export default function AddNetworkModal({
     [store.networks],
   );
 
-  const autoFillDetails = useCallback(() => {
-    form.setFieldsValue({
-      // netid: generateNetworkName(),
-      addressrange: isIpv4Val ? autoFillCIDR(true) : '',
-      addressrange6: isIpv6Val ? autoFillCIDR(false) : '',
-      defaultacl: 'yes',
-      defaultDns: '',
-    });
-    form.validateFields();
-  }, [form, isIpv4Val, isIpv6Val]);
+  const autoFillDetails = useCallback(
+    (type: 'ipv4' | 'ipv6') => {
+      form.setFieldsValue({
+        // netid: generateNetworkName(),
+        addressrange: type === 'ipv4' && isIpv4Val ? autoFillCIDR(true) : form.getFieldValue('addressrange'),
+        addressrange6: type === 'ipv6' && isIpv6Val ? autoFillCIDR(false) : form.getFieldValue('addressrange6'),
+        defaultacl: 'yes',
+        defaultDns: '',
+      });
+      form.validateFields();
+    },
+    [autoFillCIDR, form, isIpv4Val, isIpv6Val],
+  );
 
   return (
     <Modal
@@ -123,12 +126,6 @@ export default function AddNetworkModal({
     >
       <Divider style={{ margin: '0px 0px 2rem 0px' }} />
       <div className="CustomModalBody">
-        <div className="" style={{ marginBottom: '2rem' }}>
-          <Button onClick={() => autoFillDetails()} ref={autoFillButtonRef}>
-            <EditOutlined /> Autofill
-          </Button>
-        </div>
-
         <Form
           name="add-network-form"
           form={form}
@@ -142,9 +139,23 @@ export default function AddNetworkModal({
           <Row ref={networkNameInputRef}>
             <Col xs={24}>
               <Form.Item
-                label="Network name"
+                label={
+                  <>
+                    Network Name
+                    <Tooltip title="The name of the network">
+                      <InfoCircleOutlined style={{ marginLeft: '.5rem', opacity: '.7' }} />
+                    </Tooltip>
+                  </>
+                }
                 name="netid"
-                rules={[{ required: true }]}
+                rules={[
+                  {
+                    required: true,
+                    pattern: /^[a-zA-Z0-9 _-]+$/,
+                    message:
+                      'Please enter a network name. Valid characters are a-z, 0-9, space, underscore (_) and hypen (-)',
+                  },
+                ]}
                 data-nmui-intercom="add-network-form_netid"
               >
                 <Input placeholder="Network name" />
@@ -164,7 +175,12 @@ export default function AddNetworkModal({
           >
             <Col xs={24}>
               <Row justify="space-between" style={{ marginBottom: isIpv4Val ? '.5rem' : '0px' }}>
-                <Col>IPv4</Col>
+                <Col>
+                  IPv4
+                  <Tooltip title="An IPv4 Address Range can be added to your network, and each machine will be given a private IPv4 address which is accessible from other hosts in the network.">
+                    <InfoCircleOutlined style={{ marginLeft: '.5rem', opacity: '.7' }} />
+                  </Tooltip>
+                </Col>
                 <Col>
                   <Form.Item name="isipv4" noStyle valuePropName="checked" data-nmui-intercom="add-network-form_isipv4">
                     <Switch />
@@ -178,6 +194,7 @@ export default function AddNetworkModal({
                       name="addressrange"
                       style={{ marginBottom: '0px' }}
                       data-nmui-intercom="add-network-form_addressrange"
+                      initialValue=""
                       rules={[
                         {
                           validator: (_: any, ipv4: string) => {
@@ -193,7 +210,7 @@ export default function AddNetworkModal({
                           validator(_, value) {
                             if (isPrivateIpCidr(value)) {
                               return Promise.reject(
-                                'The IP range is a common LAN IP range, You may want to use a distinct IP range that does not overlap with your local network',
+                                'This IP range is commonly used for LANs. Confirm that it does not overlap with your home or office network.',
                               );
                             }
                             return Promise.resolve();
@@ -201,7 +218,14 @@ export default function AddNetworkModal({
                         },
                       ]}
                     >
-                      <Input placeholder="Enter address CIDR (eg: 192.168.1.0/24)" />
+                      <Input
+                        placeholder="Enter address CIDR (eg: 100.64.1.0/24)"
+                        suffix={
+                          <span title="Generate a random address range" onClick={() => autoFillDetails('ipv4')}>
+                            <ShuffleIcon color={themeToken.colorTextSecondary} opacity={0.8} size="1rem" />
+                          </span>
+                        }
+                      />
                     </Form.Item>
                   </Col>
                 </Row>
@@ -221,7 +245,12 @@ export default function AddNetworkModal({
           >
             <Col xs={24}>
               <Row justify="space-between" style={{ marginBottom: isIpv6Val ? '.5rem' : '0px' }}>
-                <Col>IPv6</Col>
+                <Col>
+                  IPv6
+                  <Tooltip title="An IPv6 Address Range can be added to your network, and each machine will be given a private IPv6 address which is accessible from other hosts in the network.">
+                    <InfoCircleOutlined style={{ marginLeft: '.5rem', opacity: '.7' }} />
+                  </Tooltip>
+                </Col>
                 <Col>
                   <Form.Item name="isipv6" noStyle valuePropName="checked" data-nmui-intercom="add-network-form_isipv6">
                     <Switch />
@@ -235,6 +264,7 @@ export default function AddNetworkModal({
                       name="addressrange6"
                       data-nmui-intercom="add-network-form_addressrange6"
                       style={{ marginBottom: '0px' }}
+                      initialValue=""
                       rules={[
                         {
                           validator: (_: any, ipv6: string) => {
@@ -250,7 +280,7 @@ export default function AddNetworkModal({
                           validator(_, value) {
                             if (isPrivateIpCidr(value)) {
                               return Promise.reject(
-                                'The IP range is a common LAN IP range, You may want to use a distinct IP range that does not overlap with your local network',
+                                'This IP range is commonly used for LANs. Confirm that it does not overlap with your home or office network.',
                               );
                             }
                             return Promise.resolve();
@@ -258,7 +288,14 @@ export default function AddNetworkModal({
                         },
                       ]}
                     >
-                      <Input placeholder="Enter address CIDR (eg: 2002::1234:abcd:ffff:c0a8:101/64)" />
+                      <Input
+                        placeholder="Enter address CIDR (eg: fd3c:49b3:973f:ee87::/64)"
+                        suffix={
+                          <span title="Generate a random address range" onClick={() => autoFillDetails('ipv6')}>
+                            <ShuffleIcon color={themeToken.colorTextSecondary} opacity={0.8} size="1rem" />
+                          </span>
+                        }
+                      />
                     </Form.Item>
                   </Col>
                 </Row>
@@ -278,11 +315,10 @@ export default function AddNetworkModal({
             <Col xs={24}>
               <Row justify="space-between">
                 <Col>
-                  Default Access Control{' '}
+                  Default Access Control
                   <Tooltip title="The default access control rule for any device added to the the network">
-                    {' '}
-                    <InfoCircleOutlined />
-                  </Tooltip>{' '}
+                    <InfoCircleOutlined style={{ marginLeft: '.5rem', opacity: '.7' }} />
+                  </Tooltip>
                 </Col>
                 <Col xs={8}>
                   <Form.Item

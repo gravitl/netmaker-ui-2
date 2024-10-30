@@ -113,14 +113,14 @@ import { Waypoints } from 'lucide-react';
 import { isAdminUserOrRole } from '@/utils/UserMgmtUtils';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 import RacDownloadBanner from '@/components/RacDownloadBanner';
-import { DocumentIcon, ServerIcon, UserIcon } from '@heroicons/react/24/solid';
-import AddNodeDialog from '@/components/modals/add-node-modal/AddNodeDialog';
 import { TagManagementPage } from './tag-management/TagManagementPage';
 import { PlusIcon } from '@heroicons/react/24/solid';
 import AddACLModal from '@/components/modals/add-acl-modal/AddACLModal';
 import { ACLService } from '@/services/ACLService';
 import { ACLRule } from '@/services/dtos/ACLDtos';
 import ACLPage from './acl/ACLPage';
+import { DocumentIcon, PlusIcon, ServerIcon, UserIcon } from '@heroicons/react/24/solid';
+import AddNodeDialog from '@/components/modals/add-node-modal/AddNodeDialog';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -1988,7 +1988,7 @@ export default function NetworkDetailsPage(props: PageProps) {
             disabled={!isEditingNetwork}
           >
             <Form.Item
-              label="Network name"
+              label="Network ID"
               name="netid"
               rules={[{ required: true }]}
               data-nmui-intercom="network-details-form_netid"
@@ -4275,7 +4275,7 @@ export default function NetworkDetailsPage(props: PageProps) {
 
   const promptConfirmDelete = () => {
     Modal.confirm({
-      title: `Do you want to delete network ${network?.netid}?`,
+      title: `Do you want to delete network ${network?.displayName}?`,
       icon: <ExclamationCircleFilled />,
       onOk() {
         onNetworkDelete();
@@ -4373,7 +4373,7 @@ export default function NetworkDetailsPage(props: PageProps) {
               <Row>
                 <Col xs={18} lg={12}>
                   <Typography.Title level={2} style={{ marginTop: '.5rem', marginBottom: '2rem' }}>
-                    {network?.netid}
+                    {network?.displayName}
                   </Typography.Title>
                 </Col>
                 <Col xs={24} lg={12} style={{ textAlign: 'right' }} className="network-details-table-buttons">
