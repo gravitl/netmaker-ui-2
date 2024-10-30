@@ -53,23 +53,17 @@ export default function UpdateTagModal({ isOpen, tag, nodes, onCancel, onUpdateT
     setSelectedNodes([]);
   }, [form]);
 
-  const handleUpdateTag = async (fields: z.infer<typeof updateTagFormSchema>) => {
+  const handleUpdateTag = async () => {
     try {
-      const newTag: Tag = (
-        await TagsService.updateTag({
-          ...tag,
-          // tag_name: fields.tag_name,
-          tagged_nodes: selectedNodes,
-        })
-      ).data.Response;
+      const newTag: Tag = (await TagsService.updateTag({ ...tag, tagged_nodes: selectedNodes })).data.Response;
       onUpdateTag?.(newTag ?? { ...tag, tagged_nodes: selectedNodes, used_by_count: selectedNodes.length });
       notification.success({
-        message: `Tag updated successfully with name ${newTag?.tag_name}`,
+        message: `Tag created successfully with name ${newTag?.tag_name}`,
       });
       resetModal();
     } catch (err) {
       notification.error({
-        message: 'Failed to update tag',
+        message: 'Failed to create tag',
         description: extractErrorMsg(err as any),
       });
     }
@@ -85,25 +79,13 @@ export default function UpdateTagModal({ isOpen, tag, nodes, onCancel, onUpdateT
         }
       }}
     >
-      <DialogContent
-        className="border-stroke-default"
-        style={{
-          backgroundColor: currentTheme === 'dark' ? 'var(--color-bg-default-dark)' : 'var(--color-bg-default)',
-        }}
-      >
+      <DialogContent className="border-stroke-default" style={{ backgroundColor: '#27272A' }}>
         {/* <DialogClose>
-          <XCircleIcon className="w-6 h-6 text-text-secondary rounded-full p-2" />
+          <XCircleIcon className="w-6 h-6 p-2 rounded-full text-text-secondary" />
           hello
         </DialogClose> */}
         <DialogHeader>
-          <DialogTitle
-            className="text-xl"
-            style={{
-              color: currentTheme === 'dark' ? 'var(--color-text-primary-dark)' : 'var(--color-neutral-800)',
-            }}
-          >
-            Update Tag
-          </DialogTitle>
+          <DialogTitle className="text-xl">Update Tag</DialogTitle>
           <DialogDescription className="text-base text-text-secondary">Tags group nodes</DialogDescription>
         </DialogHeader>
 
@@ -117,26 +99,14 @@ export default function UpdateTagModal({ isOpen, tag, nodes, onCancel, onUpdateT
                 name="tag_name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel
-                      className="text-base-semibold"
-                      style={{
-                        color: currentTheme === 'dark' ? 'var(--color-text-primary-dark)' : 'var(--color-neutral-800)',
-                      }}
-                    >
-                      Name
-                    </FormLabel>
+                    <FormLabel className="text-base-semibold">Name</FormLabel>
                     <FormControl>
                       <Input
                         placeholder="A name for your tag"
                         className="color-bg-default-dark"
+                        style={{ backgroundColor: '#27272A' }}
                         disabled
                         title="Tag name cannot be updated"
-                        style={{
-                          backgroundColor:
-                            currentTheme === 'dark' ? 'var(--color-bg-default-dark)' : 'var(--color-bg-default)',
-                          color:
-                            currentTheme === 'dark' ? 'var(--color-text-primary-dark)' : 'var(--color-neutral-800)',
-                        }}
                         {...field}
                       />
                     </FormControl>
@@ -145,35 +115,24 @@ export default function UpdateTagModal({ isOpen, tag, nodes, onCancel, onUpdateT
                 )}
               />
               <FormLabel
-                className="text-base-semibold inline-block"
+                className="inline-block text-base-semibold"
                 style={{ marginTop: '2rem', marginBottom: '1rem' }}
               >
                 Grouped Devices
               </FormLabel>
               <MultiSelect
                 options={nodes.map((node) => ({
-                  label: (node.is_static ? node.static_node.clientid : node.name) || '',
-                  value: deduceNodeId(node),
-                  icon: node.is_static ? FileIcon : ServerIcon,
+                  label: node.name ?? '',
+                  value: node.id,
                 }))}
                 onValueChange={(vals) => {
-                  console.log(vals);
-                  setSelectedNodes(
-                    vals.map(
-                      (val) => nodes.find((node) => node.id === val || node.static_node.clientid === val) ?? NULL_NODE,
-                    ),
-                  );
+                  setSelectedNodes(vals.map((val) => nodes.find((node) => node.id === val) ?? NULL_NODE));
                 }}
-                defaultValue={(tag?.tagged_nodes ?? []).map((node) => deduceNodeId(node))}
+                defaultValue={(tag?.tagged_nodes ?? []).map((node) => node.id)}
                 variant="default"
                 placeholder="Search for devices"
                 className="bg-default-dark border-stroke-default"
-                currentTheme={currentTheme}
-                style={{
-                  marginTop: '0rem',
-                  backgroundColor: currentTheme === 'dark' ? 'var(--color-bg-default-dark)' : 'var(--color-bg-default)',
-                  color: currentTheme === 'dark' ? 'var(--color-text-primary-dark)' : 'var(--color-neutral-800)',
-                }}
+                style={{ backgroundColor: '#27272A', marginTop: '0rem' }}
               />
             </form>
           </Form>

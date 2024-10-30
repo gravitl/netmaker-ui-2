@@ -3348,6 +3348,18 @@ export default function NetworkDetailsPage(props: PageProps) {
   const getAclsContent = useCallback(() => {
     return (
       <>
+        <div className="flex items-start w-full gap-4 p-5 mb-6 border border-stroke-default rounded-xl bg-bg-contrastDefault ">
+          <div className="flex flex-col w-full gap-2">
+            <h3 className="text-text-primary text-base-semibold">Introducing the New Access Control System</h3>
+            <p className="text-base text-text-secondary">
+              Coming soon to replace the current Access Control system. Built to make access management easier and more
+              secure.
+            </p>
+          </div>
+          <Button type="primary" onClick={() => setActiveTabKey('acl')}>
+            Try new ACLs
+          </Button>{' '}
+        </div>
         <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
           {networkHosts.length + clients.length > 50 ? (
             <Row style={{ width: '100%' }}>
@@ -3553,6 +3565,13 @@ export default function NetworkDetailsPage(props: PageProps) {
     fetchACLRules();
   }, [fetchACLRules]);
 
+  const reloadACL = async () => {
+    setIsRefreshingNetwork(true);
+    fetchACLRules();
+
+    setIsRefreshingNetwork(false);
+  };
+
   const getACLsContent = useCallback(() => {
     return (
       networkId && (
@@ -3560,7 +3579,7 @@ export default function NetworkDetailsPage(props: PageProps) {
           networkId={networkId}
           notify={notify}
           hostsTabContainerAddHostsRef={hostsTabContainerAddHostsRef}
-          setAddPolicyModal={setAddPolicyModal}
+          reloadACL={reloadACL}
         />
       )
     );
@@ -3783,7 +3802,14 @@ export default function NetworkDetailsPage(props: PageProps) {
       },
       {
         key: 'acl',
-        label: `ACL`,
+        label: (
+          <Typography.Text>
+            ACL{' '}
+            <span className="ml-2 px-2 py-0.5 text-white bg-button-primary-fill-default rounded-full text-xs">
+              Beta
+            </span>
+          </Typography.Text>
+        ),
         children: network && !isRefreshingNetwork ? getACLsContent() : <Skeleton active />,
       },
       !isSaasBuild
@@ -4664,14 +4690,6 @@ export default function NetworkDetailsPage(props: PageProps) {
           addClientGatewayModalHostRef={addClientGatewayModalHostRef}
           addClientGatewayModalDefaultClientDNSRef={addClientGatewayModalDefaultClientDNSRef}
           addClientGatewayModalIsInternetGatewayRef={addClientGatewayModalIsInternetGatewayRef}
-        />
-        <AddACLModal
-          isOpen={addPolicyModal}
-          networkId={networkId}
-          onClose={() => {
-            setAddPolicyModal(false);
-          }}
-          fetchACLRules={fetchACLRules}
         />
         {selectedGateway && (
           <UpdateIngressModal

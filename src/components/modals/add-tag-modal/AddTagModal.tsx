@@ -21,9 +21,6 @@ import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { notification } from 'antd';
 import { useCallback, useState } from 'react';
 import { NULL_NODE } from '@/constants/Types';
-import { deduceNodeId } from '@/utils/NodeUtils';
-import { FileIcon, ServerIcon } from 'lucide-react';
-import { useStore } from '@/store/store';
 
 interface AddTagModalProps {
   isOpen: boolean;
@@ -39,12 +36,10 @@ const createTagFormSchema = z.object({
     .min(3)
     .max(50)
     .trim()
-    .regex(/^[a-zA-Z0-9-]+$/, 'Tag name can only contain characters A-Z, a-z, 0-9 and -'),
+    .regex(/^[a-zA-Z-]+$/, 'Tag name can only contain characters A-Z, a-z and -'),
 });
 
 export default function AddTagModal({ isOpen, nodes, networkId, onCancel, onCreateTag }: Readonly<AddTagModalProps>) {
-  const store = useStore();
-  const currentTheme = store.currentTheme;
   const form = useForm<z.infer<typeof createTagFormSchema>>({
     resolver: zodResolver(createTagFormSchema),
     defaultValues: {
@@ -86,24 +81,13 @@ export default function AddTagModal({ isOpen, nodes, networkId, onCancel, onCrea
         }
       }}
     >
-      <DialogContent
-        className="border-stroke-default"
-        style={{
-          backgroundColor: currentTheme === 'dark' ? 'var(--color-bg-default-dark)' : 'var(--color-bg-default)',
-        }}
-      >
+      <DialogContent className="border-stroke-default bg-bg-default">
         {/* <DialogClose>
-          <XCircleIcon className="w-6 h-6 text-text-secondary rounded-full p-2" />
+          <XCircleIcon className="w-6 h-6 p-2 rounded-full text-text-secondary" />
           hello
         </DialogClose> */}
         <DialogHeader>
-          <DialogTitle
-            style={{
-              color: currentTheme === 'dark' ? 'var(--color-text-primary-dark)' : 'var(--color-neutral-800)',
-            }}
-          >
-            Create New Tag
-          </DialogTitle>
+          <DialogTitle className="text-xl">Create New Tag</DialogTitle>
           <DialogDescription className="text-base text-text-secondary">Tags group nodes</DialogDescription>
         </DialogHeader>
 
@@ -117,23 +101,12 @@ export default function AddTagModal({ isOpen, nodes, networkId, onCancel, onCrea
                 name="tag_name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel
-                      className="text-base-semibold"
-                      style={{
-                        color: currentTheme === 'dark' ? 'var(--color-text-primary-dark)' : 'var(--color-neutral-800)',
-                      }}
-                    >
-                      Name
-                    </FormLabel>
+                    <FormLabel className="text-base-semibold">Name</FormLabel>
                     <FormControl>
                       <Input
                         placeholder="A name for your tag"
-                        style={{
-                          backgroundColor:
-                            currentTheme === 'dark' ? 'var(--color-bg-default-dark)' : 'var(--color-bg-default)',
-                          color:
-                            currentTheme === 'dark' ? 'var(--color-text-primary-dark)' : 'var(--color-neutral-800)',
-                        }}
+                        className="color-bg-default-dark"
+                        style={{ backgroundColor: '#27272A' }}
                         {...field}
                       />
                     </FormControl>
@@ -142,37 +115,23 @@ export default function AddTagModal({ isOpen, nodes, networkId, onCancel, onCrea
                 )}
               />
               <FormLabel
-                className="text-base-semibold inline-block"
-                style={{
-                  marginTop: '2rem',
-                  marginBottom: '1rem',
-                  color: currentTheme === 'dark' ? 'var(--color-text-primary-dark)' : 'var(--color-neutral-800)',
-                }}
+                className="inline-block text-base-semibold"
+                style={{ marginTop: '2rem', marginBottom: '1rem' }}
               >
                 Grouped Devices
               </FormLabel>
               <MultiSelect
                 options={nodes.map((node) => ({
-                  label: (node.is_static ? node.static_node.clientid : node.name) || '',
-                  value: deduceNodeId(node),
-                  icon: node.is_static ? FileIcon : ServerIcon,
+                  label: node.name ?? '',
+                  value: node.id,
                 }))}
                 onValueChange={(vals) => {
-                  setSelectedNodes(
-                    vals.map(
-                      (val) => nodes.find((node) => node.id === val || node.static_node.clientid === val) ?? NULL_NODE,
-                    ),
-                  );
+                  setSelectedNodes(vals.map((val) => nodes.find((node) => node.id === val) ?? NULL_NODE));
                 }}
                 variant="default"
                 placeholder="Search for devices"
                 className="bg-default-dark border-stroke-default"
-                currentTheme={currentTheme}
-                style={{
-                  marginTop: '0rem',
-                  backgroundColor: currentTheme === 'dark' ? 'var(--color-bg-default-dark)' : 'var(--color-bg-default)',
-                  color: currentTheme === 'dark' ? 'var(--color-text-primary-dark)' : 'var(--color-neutral-800)',
-                }}
+                style={{ backgroundColor: '#27272A', marginTop: '0rem' }}
               />
             </form>
           </Form>

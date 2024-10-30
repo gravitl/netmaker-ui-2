@@ -1,4 +1,4 @@
-import { SearchOutlined, MoreOutlined } from '@ant-design/icons';
+import { SearchOutlined, MoreOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { ComputerDesktopIcon, UsersIcon } from '@heroicons/react/24/solid';
 import { Button, Dropdown, Input, Table, Tag, Tooltip, Switch, Modal, Col } from 'antd';
 import { NotificationInstance } from 'antd/es/notification/interface';
@@ -9,20 +9,22 @@ import { ACLService } from '@/services/ACLService';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import arrowBidirectional from '../../../../public/arrow-bidirectional.svg';
 import UpdateACLModal from '@/components/modals/update-acl-modal/UpdateACLModal';
+import AddACLModal from '@/components/modals/add-acl-modal/AddACLModal';
 
 interface ACLPageProps {
   networkId: string;
   notify: NotificationInstance;
   hostsTabContainerAddHostsRef: React.RefObject<HTMLButtonElement>;
-  setAddPolicyModal: (value: boolean) => void;
+  reloadACL: () => void;
 }
 
-export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, setAddPolicyModal }: ACLPageProps) => {
+export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, reloadACL }: ACLPageProps) => {
   const [aclRules, setAclRules] = useState<ACLRule[]>([]);
   const [searchHost, setSearchHost] = useState('');
   const [policyType, setPolicyType] = useState('All');
   const [isEditPolicyModalOpen, setIsEditPolicyModalOpen] = useState(false);
   const [selectedEditPolicy, setSelectedEditPolicy] = useState<ACLRule | null>(null);
+  const [addPolicyModal, setAddPolicyModal] = useState(false);
 
   const fetchACLRules = useCallback(async () => {
     try {
@@ -36,6 +38,10 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, setAd
       });
     }
   }, [networkId, notify]);
+
+  useEffect(() => {
+    fetchACLRules();
+  }, [fetchACLRules]);
 
   const togglePolicyStatus = useCallback(
     async (policy: ACLRule) => {
@@ -54,7 +60,7 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, setAd
         }
       }
     },
-    [fetchACLRules, notify],
+    [fetchACLRules, notify, networkId],
   );
 
   const confirmDeletePolicy = useCallback(
@@ -78,7 +84,7 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, setAd
         },
       });
     },
-    [fetchACLRules, notify],
+    [fetchACLRules, notify, networkId],
   );
 
   const filteredACLRules = aclRules.filter((rule) => {
@@ -104,6 +110,15 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, setAd
 
   return (
     <div className="flex flex-col w-full gap-6">
+      <div className="flex items-start w-full gap-4 p-5 mb-2 border border-stroke-default rounded-xl bg-bg-contrastDefault ">
+        <div className="flex flex-col w-full gap-2">
+          <h3 className="text-text-primary text-base-semibold">Introducing the New Access Control System</h3>
+          <p className="text-base text-text-secondary">
+            Coming soon to replace the current Access Control system. Built to make access management easier and more
+            secure.
+          </p>
+        </div>
+      </div>
       <div className="flex justify-between w-full">
         <div className="flex gap-2">
           <Input
@@ -217,21 +232,28 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, setAd
                     {
                       key: 'edit',
                       label: 'Edit',
+                      icon: <EditOutlined />,
                       onClick: () => {
                         setSelectedEditPolicy(rule);
                         setIsEditPolicyModalOpen(true);
                       },
+                      disabled: rule.default,
                     },
                     {
                       key: 'remove',
                       label: 'Remove',
+                      icon: <DeleteOutlined />,
                       danger: true,
                       onClick: () => confirmDeletePolicy(rule),
+                      disabled: rule.default,
                     },
                   ],
                 }}
+                disabled={rule.default}
               >
-                <MoreOutlined />
+                <MoreOutlined
+                  className={`${rule.default ? 'text-text-disabled cursor-not-allowed opacity-30' : 'cursor-pointer'}`}
+                />
               </Dropdown>
             ),
           },
@@ -239,6 +261,16 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, setAd
         dataSource={filteredACLRules}
         rowKey="id"
         size="small"
+      />
+      <AddACLModal
+        isOpen={addPolicyModal}
+        networkId={networkId}
+        onClose={() => {
+          setAddPolicyModal(false);
+        }}
+        fetchACLRules={() => fetchACLRules()}
+        reloadACL={reloadACL}
+        notify={notify}
       />
       {networkId && (
         <UpdateACLModal
@@ -250,6 +282,8 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, setAd
           networkId={networkId}
           selectedPolicy={selectedEditPolicy}
           fetchACLRules={fetchACLRules}
+          reloadACL={reloadACL}
+          notify={notify}
         />
       )}
     </div>

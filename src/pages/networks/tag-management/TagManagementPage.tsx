@@ -6,8 +6,9 @@ import { Input } from '@/components/shadcn/Input';
 import { Network } from '@/models/Network';
 import { Tag } from '@/models/Tags';
 import { TagsService } from '@/services/TagsService';
-import { FileIcon, PlusIcon, Search, ServerIcon } from 'lucide-react';
+import { ComputerIcon, PlusIcon, Search } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { z } from 'zod';
 import {
   Button as AntdButton,
   Dropdown,
@@ -110,25 +111,19 @@ export function TagManagementPage({ network: networkId, networkNodes }: Readonly
           <HoverCard>
             <HoverCardTrigger>
               <Badge className="rounded px-2 py-1.5 bg-bg-default border border-stroke-default">
-                <ServerIcon size={16} className="inline mr-2" /> {val === 1 ? `1 node` : `${val} nodes`}
+                <ComputerIcon size={16} className="inline mr-2" /> {val === 1 ? `1 node` : `${val} nodes`}
               </Badge>
             </HoverCardTrigger>
             {tag.tagged_nodes.length > 0 && (
-              <HoverCardContent key={`tagged-nodes-${tag.id}`} className="border-none min-w-fit w-fit">
-                <div className="bg-bg-default border border-stroke-default rounded m-2">
+              <HoverCardContent className="border-none min-w-fit w-fit">
+                <div className="m-2 border rounded bg-bg-default border-stroke-default">
                   {tag.tagged_nodes.map((node, i) => (
-                    <div key={`node-${i}`} className="text-sm font-bold p-1 break-keep whitespace-nowrap">
-                      {node.is_static ? (
-                        <>
-                          <FileIcon size={16} className="inline mr-2" /> {node.static_node.clientid}
-                        </>
-                      ) : (
-                        <>
-                          <ServerIcon size={16} className="inline mr-2" />{' '}
-                          {getExtendedNode(node, store.hostsCommonDetails).name}
-                        </>
-                      )}
-                    </div>
+                    <>
+                      <div key={`node-${i}`} className="p-1 text-sm font-bold break-keep whitespace-nowrap">
+                        <ComputerIcon size={16} className="inline mr-2" />
+                        {getExtendedNode(node, store.hostsCommonDetails).name}
+                      </div>
+                    </>
                   ))}
                 </div>
               </HoverCardContent>
@@ -223,20 +218,20 @@ export function TagManagementPage({ network: networkId, networkNodes }: Readonly
         </span>
       </div> */}
 
-      <div className="w-100 columns-2">
+      {/* <div className="w-100 columns-2">
         <h3 className="text-2xl font-bold">Tag Management</h3>
-        <div className="w-50 text-right">
+        <div className="text-right w-50">
           <AntdButton className="mr-2">Docs</AntdButton>
-          {/* <AntdButton>Tour Tag Management</AntdButton> */}
+          <AntdButton>Tour Tag Management</AntdButton>
         </div>
       </div>
 
       <div className="mt-4" style={{ maxWidth: '60%' }}>
-        <span className="text-text-secondary text-xl">
+        <span className="text-xl text-text-secondary">
           Organize and categorize your resources efficiently with customizable tags. Apply tags to instances and other
           assets for improved resource management.
         </span>
-      </div>
+      </div> */}
 
       <br />
 
@@ -244,15 +239,12 @@ export function TagManagementPage({ network: networkId, networkNodes }: Readonly
         <Input
           type="search"
           placeholder="Search for Tags"
-          className="w-80 border-bg-default bg-bg-default"
+          className="w-80 border-bg-default"
           startIcon={Search}
           onChange={(ev) => setSearchText(ev.target.value)}
           value={searchText}
         />
-        <Button
-          className="bg-button-primary-fill-default text-text-primary light:invert float-end"
-          onClick={() => setIsAddTagModalOpen(true)}
-        >
+        <Button className="bg-button-primary-fill-default float-end" onClick={() => setIsAddTagModalOpen(true)}>
           <PlusIcon className="inline mr-2" />
           Add Tag
         </Button>
@@ -268,6 +260,14 @@ export function TagManagementPage({ network: networkId, networkNodes }: Readonly
           size="small"
           loading={isLoadingTags}
           scroll={{ x: true }}
+          onRow={(key) => {
+            return {
+              // onClick: () => {
+              //   setSelectedTag(key);
+              //   setIsEditTagModalOpen(true);
+              // },
+            };
+          }}
           pagination={{ size: 'small', hideOnSinglePage: true, pageSize: 50 }}
         />
 
@@ -332,7 +332,7 @@ export function TagManagementPage({ network: networkId, networkNodes }: Readonly
       {notifyCtx}
       <AddTagModal
         isOpen={isAddTagModalOpen}
-        nodes={[...networkNodes]}
+        nodes={networkNodes}
         networkId={networkId}
         onCancel={() => {
           setIsAddTagModalOpen(false);
@@ -352,7 +352,7 @@ export function TagManagementPage({ network: networkId, networkNodes }: Readonly
             setTags((prev) => prev.map((k) => (k.id === tag.id ? tag : k)));
             closeEditTagModal();
           }}
-          nodes={[...networkNodes]}
+          nodes={networkNodes}
           key={`update-tag-${selectedTag.id}`}
         />
       )}

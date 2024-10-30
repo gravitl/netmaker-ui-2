@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { Form, Switch, Button, notification } from 'antd';
+import { Switch, Button, notification } from 'antd';
+import { useForm, Controller } from 'react-hook-form';
 import {
   ComputerDesktopIcon,
   WrenchIcon,
@@ -14,6 +15,7 @@ import { CreateACLRuleDto, SourceTypeValue, DestinationTypeValue } from '@/servi
 import { Network } from '@/models/Network';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { Tag } from '@/models/Tags';
+import { NotificationInstance } from 'antd/es/notification/interface';
 
 interface Item {
   id: string;
@@ -32,6 +34,14 @@ interface ResourcesFormProps {
   networkId: Network['netid'];
   onClose?: () => void;
   fetchACLRules?: () => void;
+  reloadACL?: () => void;
+  notify: NotificationInstance;
+}
+
+interface FormValues {
+  name: string;
+  source: Item[];
+  destination: Item[];
 }
 
 const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
@@ -44,24 +54,34 @@ const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
   const [searchText, setSearchText] = useState('');
 
   const selectAllTag = () => {
-    const tagItem: Item = {
-      id: '*',
-      name: 'All',
-      type: 'tag',
-    };
-    onChange([tagItem]);
-    setIsOpen(false);
+    const isAllCurrentlySelected = value.some((v) => v.id === '*');
+
+    if (isAllCurrentlySelected) {
+      onChange([]);
+    } else {
+      const tagItem: Item = {
+        id: '*',
+        name: 'All',
+        type: 'tag',
+      };
+      onChange([tagItem]);
+    }
   };
 
   const toggleTag = useCallback(
     (tag: Tag) => {
+      if (value.some((v) => v.id === '*')) {
+        return;
+      }
       const tagItem: Item = {
         id: tag.id,
         name: tag.tag_name,
         type: 'tag',
       };
       const isSelected = value.some((v) => v.id === tag.id);
-      onChange(isSelected ? value.filter((v) => v.id !== tag.id) : [...value, tagItem]);
+      const newValue = isSelected ? value.filter((v) => v.id !== tag.id) : [...value, tagItem];
+
+      onChange(newValue);
     },
     [value, onChange],
   );
@@ -83,6 +103,16 @@ const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
       <div
         className="flex cursor-pointer flex-wrap items-center min-h-[38px] w-full p-2 border rounded-lg bg-bg-default border-stroke-default"
         onClick={() => setIsOpen(true)}
+        role="combobox"
+        aria-expanded={isOpen}
+        aria-haspopup="true"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setIsOpen(true);
+          }
+        }}
       >
         {value.length === 0 ? (
           <span className="px-2 text-text-secondary">{placeholder}</span>
@@ -96,11 +126,13 @@ const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
                 <TagIcon className="w-3 h-3" />
                 {item.name}
                 <XMarkIcon
-                  className="w-4 h-4 cursor-pointer"
+                  className="w-4 h-4 cursor-pointer hover:text-text-primary"
                   onClick={(e) => {
                     e.stopPropagation();
                     removeItem(item);
                   }}
+                  role="button"
+                  aria-label={`Remove ${item.name}`}
                 />
               </span>
             ))}
@@ -111,8 +143,11 @@ const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
 
       {isOpen && (
         <>
-          <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
-          <div className="absolute z-20 mt-1 overflow-hidden border rounded-lg shadow-lg w-96 bg-bg-default border-stroke-default">
+          <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} aria-hidden="true" />
+          <div
+            className="absolute z-20 mt-1 overflow-hidden border rounded-lg shadow-lg w-96 bg-bg-default border-stroke-default"
+            role="listbox"
+          >
             <div className="p-2 border-b border-stroke-default">
               <div className="relative">
                 <input
@@ -121,32 +156,56 @@ const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
                   onChange={(e) => setSearchText(e.target.value)}
                   placeholder="Search tags..."
                   className="w-full pl-8 pr-2 py-1.5 text-sm border rounded-md bg-bg-default border-stroke-default focus:outline-none focus:ring-1 focus:ring-primary-500"
+                  onClick={(e) => e.stopPropagation()}
+                  autoComplete="off"
                 />
-                <MagnifyingGlassIcon className="absolute w-4 h-4 left-2 top-2 text-text-secondary" />
+                <MagnifyingGlassIcon className="absolute w-4 h-4 left-2 top-2 text-text-secondary" aria-hidden="true" />
               </div>
             </div>
 
-            <div className="w-full py-1">
+            <div className="w-full overflow-y-auto max-h-[300px]" role="presentation">
               <div
                 className="flex items-center gap-2 px-3 py-2 text-sm cursor-pointer hover:bg-button-secondary-fill-hover"
                 onClick={selectAllTag}
+                role="option"
+                aria-selected={value.some((v) => v.id === '*')}
               >
-                <TagIcon className="w-4 h-4 text-text-secondary" />
-                All
-                {value.some((v) => v.id === '*') && <div className="w-4 h-4 ml-auto">✓</div>}
+                <TagIcon className="w-4 h-4 text-text-secondary" aria-hidden="true" />
+                <span className="flex-1">All</span>
+                {value.some((v) => v.id === '*') && <div className="w-4 h-4 ml-auto text-primary-500">✓</div>}
               </div>
 
-              {filteredTags.map((tag) => (
-                <div
-                  key={tag.id}
-                  className="flex items-center gap-2 px-3 py-2 text-sm cursor-pointer hover:bg-button-secondary-fill-hover"
-                  onClick={() => toggleTag(tag)}
-                >
-                  <TagIcon className="w-4 h-4 text-text-secondary" />
-                  {tag.tag_name}
-                  {value.some((v) => v.id === tag.id) && <div className="w-4 h-4 ml-auto">✓</div>}
-                </div>
-              ))}
+              {filteredTags.length === 0 && searchText && (
+                <div className="px-3 py-2 text-sm text-text-secondary">No tags found</div>
+              )}
+
+              {filteredTags.map((tag) => {
+                const isSelected = value.some((v) => v.id === tag.id);
+                const isDisabled = value.some((v) => v.id === '*');
+
+                return (
+                  <div
+                    key={tag.id}
+                    className={`
+                      flex items-center gap-2 px-3 py-2 text-sm
+                      ${
+                        isDisabled
+                          ? 'opacity-50 cursor-not-allowed'
+                          : 'cursor-pointer hover:bg-button-secondary-fill-hover'
+                      }
+                      ${isSelected && !isDisabled ? 'bg-button-secondary-fill-hover' : ''}
+                    `}
+                    onClick={() => !isDisabled && toggleTag(tag)}
+                    role="option"
+                    aria-selected={isSelected}
+                    aria-disabled={isDisabled}
+                  >
+                    <TagIcon className="w-4 h-4 text-text-secondary" aria-hidden="true" />
+                    <span className="flex-1">{tag.tag_name}</span>
+                    {isSelected && !isDisabled && <div className="w-4 h-4 ml-auto text-primary-500">✓</div>}
+                  </div>
+                );
+              })}
             </div>
           </div>
         </>
@@ -155,14 +214,26 @@ const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
   );
 };
 
-const ResourcesForm: React.FC<ResourcesFormProps> = ({ networkId, onClose, fetchACLRules }) => {
-  const [form] = Form.useForm();
+const ResourcesForm: React.FC<ResourcesFormProps> = ({ networkId, onClose, fetchACLRules, reloadACL, notify }) => {
   const [isPolicyEnabled, setIsPolicyEnabled] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [notify, notifyCtx] = notification.useNotification();
   const [tagsList, setTagsList] = useState<Tag[]>([]);
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors },
+    reset,
+  } = useForm<FormValues>({
+    defaultValues: {
+      name: '',
+      source: [],
+      destination: [],
+    },
+  });
 
   const loadTags = useCallback(async () => {
     try {
@@ -177,17 +248,32 @@ const ResourcesForm: React.FC<ResourcesFormProps> = ({ networkId, onClose, fetch
     loadTags();
   }, [loadTags]);
 
-  const convertItemToTypeValue = useCallback((item: Item): SourceTypeValue | DestinationTypeValue => {
+  const convertSourceItemToTypeValue = useCallback((item: Item): SourceTypeValue => {
     return {
       id: 'tag',
       value: item.id,
     };
   }, []);
 
-  const handleSubmit = async (values: any) => {
+  const convertDestinationItemToTypeValue = useCallback((item: Item): DestinationTypeValue => {
+    return {
+      id: 'tag',
+      value: item.id,
+    };
+  }, []);
+
+  const onSubmit = async (values: FormValues) => {
     try {
       if (!networkId) {
         setError('Network ID is required');
+        return;
+      }
+
+      if (!values.name || !values.source.length || !values.destination.length) {
+        notify.error({
+          message: 'Validation Error',
+          description: 'Please fill in all required fields',
+        });
         return;
       }
 
@@ -195,21 +281,32 @@ const ResourcesForm: React.FC<ResourcesFormProps> = ({ networkId, onClose, fetch
       setError(null);
       setIsSuccess(false);
 
+      const srcType =
+        values.source[0].id === '*'
+          ? [{ id: 'tag' as const, value: '*' }]
+          : values.source.map(convertSourceItemToTypeValue);
+
+      const dstType =
+        values.destination[0].id === '*'
+          ? [{ id: 'tag' as const, value: '*' }]
+          : values.destination.map(convertDestinationItemToTypeValue);
+
       const payload: CreateACLRuleDto = {
         name: values.name,
         network_id: networkId,
         policy_type: 'device-policy',
-        src_type: (values.source || []).map((item: Item) => convertItemToTypeValue(item)),
-        dst_type: (values.destination || []).map((item: Item) => convertItemToTypeValue(item)),
+        src_type: srcType,
+        dst_type: dstType,
         allowed_traffic_direction: 1,
         enabled: isPolicyEnabled,
       };
 
       await ACLService.createACLRule(payload, networkId);
-      notify.success({ message: `Policy created` });
-      form.resetFields();
+      notify.success({ message: `Ressources policy created` });
+      reset();
       setIsPolicyEnabled(true);
       fetchACLRules?.();
+      reloadACL?.();
       onClose?.();
     } catch (err) {
       notify.error({
@@ -220,7 +317,6 @@ const ResourcesForm: React.FC<ResourcesFormProps> = ({ networkId, onClose, fetch
       setIsSubmitting(false);
     }
   };
-
   return (
     <div className="w-full">
       {error && <div className="p-3 mb-4 text-sm text-red-600 border border-red-200 rounded-md bg-red-50">{error}</div>}
@@ -229,33 +325,42 @@ const ResourcesForm: React.FC<ResourcesFormProps> = ({ networkId, onClose, fetch
           Policy created successfully
         </div>
       )}
-      <Form form={form} className="w-full" onFinish={handleSubmit}>
-        <Form.Item name="name" rules={[{ required: true, message: 'Please enter a rule name' }]}>
-          <div className="flex flex-col w-full gap-2">
-            <label htmlFor="rule-name" className="block text-sm font-semibold text-text-primary">
-              Rule name
-            </label>
-            <input
-              type="text"
-              id="rule-name"
-              placeholder="e.g. api-gateway-access"
-              className="w-full p-2 text-sm border rounded-lg bg-bg-default border-stroke-default"
-            />
-          </div>
-        </Form.Item>
+
+      <form onSubmit={handleSubmit(onSubmit)} className="w-full">
+        <div className="flex flex-col w-full gap-2 mb-4">
+          <label htmlFor="name" className="block text-sm font-semibold text-text-primary">
+            Rule name
+          </label>
+          <input
+            {...register('name', { required: true })}
+            type="text"
+            id="name"
+            placeholder="e.g. api-gateway-access"
+            className="w-full p-2 text-sm border rounded-lg bg-bg-default border-stroke-default"
+          />
+          {errors.name && <span className="text-sm text-red-500">Rule name is required</span>}
+        </div>
 
         <div className="flex w-full gap-7">
-          <Form.Item name="source" className="w-full" rules={[{ required: true, message: 'Please select source' }]}>
+          <div className="w-full">
             <div className="flex flex-col w-full gap-2">
               <label className="block text-sm font-semibold text-text-primary">Source</label>
-              <TagSelectDropdown
-                value={form.getFieldValue('source') || []}
-                onChange={(value) => form.setFieldsValue({ source: value })}
-                placeholder="Select source"
-                tags={tagsList}
+              <Controller
+                name="source"
+                control={control}
+                rules={{ required: true }}
+                render={({ field }) => (
+                  <TagSelectDropdown
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Select source"
+                    tags={tagsList}
+                  />
+                )}
               />
+              {errors.source && <span className="text-sm text-red-500">Source is required</span>}
             </div>
-          </Form.Item>
+          </div>
 
           <div className="flex flex-col items-center justify-center w-2/3 gap-2">
             <img
@@ -265,40 +370,41 @@ const ResourcesForm: React.FC<ResourcesFormProps> = ({ networkId, onClose, fetch
             />
           </div>
 
-          <Form.Item
-            name="destination"
-            className="w-full"
-            rules={[{ required: true, message: 'Please select destination' }]}
-          >
+          <div className="w-full">
             <div className="flex flex-col w-full gap-2">
               <label className="block text-sm font-semibold text-text-primary">Destination</label>
-              <TagSelectDropdown
-                value={form.getFieldValue('destination') || []}
-                onChange={(value) => form.setFieldsValue({ destination: value })}
-                placeholder="Select destination"
-                tags={tagsList}
+              <Controller
+                name="destination"
+                control={control}
+                rules={{ required: true }}
+                render={({ field }) => (
+                  <TagSelectDropdown
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Select destination"
+                    tags={tagsList}
+                  />
+                )}
               />
+              {errors.destination && <span className="text-sm text-red-500">Destination is required</span>}
             </div>
-          </Form.Item>
+          </div>
         </div>
 
-        <Form.Item>
-          <div className="flex w-full gap-2 p-4 mt-2 border rounded-md border-stroke-default">
-            <div className="flex flex-col w-full gap-1">
-              <h3 className="text-base font-semibold text-text-primary">Enable Policy</h3>
-              <p className="text-text-secondary">Use to enable or disable policy.</p>
-            </div>
-            <Switch checked={isPolicyEnabled} onChange={setIsPolicyEnabled} />
+        <div className="flex w-full gap-2 p-4 mt-4 border rounded-md border-stroke-default">
+          <div className="flex flex-col w-full gap-1">
+            <h3 className="text-base font-semibold text-text-primary">Enable Policy</h3>
+            <p className="text-text-secondary">Use to enable or disable policy.</p>
           </div>
-        </Form.Item>
+          <Switch checked={isPolicyEnabled} onChange={setIsPolicyEnabled} />
+        </div>
 
         <div className="flex justify-end w-full gap-4 pt-4">
-          <Button type="primary" htmlType="submit" loading={isSubmitting} className="px-4">
+          <Button type="primary" loading={isSubmitting} onClick={handleSubmit(onSubmit)}>
             Save Policy
           </Button>
         </div>
-      </Form>
-      {notifyCtx}
+      </form>
     </div>
   );
 };

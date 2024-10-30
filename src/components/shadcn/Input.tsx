@@ -11,7 +11,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(({ className, type, start
   const EndIcon = endIcon;
 
   return (
-    <div className="w-full relative">
+    <div className="relative w-full">
       <input
         type={type}
         className={cn(

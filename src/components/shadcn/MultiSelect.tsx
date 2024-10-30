@@ -182,7 +182,7 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
             )}
           >
             {selectedValues.length > 0 ? (
-              <div className="flex justify-between items-center w-full">
+              <div className="flex items-center justify-between w-full">
                 <div className="flex flex-wrap items-center">
                   {selectedValues.slice(0, maxCount).map((value) => {
                     const option = options.find((o) => o.value === value);
@@ -193,10 +193,10 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
                         className={cn(isAnimating ? 'animate-bounce' : '', 'p-2', multiSelectVariants({ variant }))}
                         style={{ animationDuration: `${animation}s`, backgroundColor: '#3F3F46' }}
                       >
-                        {IconComponent && <IconComponent className="h-4 w-4 mr-2 inline" />}
+                        {IconComponent && <IconComponent className="inline w-4 h-4 mr-2" />}
                         {option?.label}
                         <XCircle
-                          className="ml-2 h-4 w-4 cursor-pointer"
+                          className="w-4 h-4 ml-2 cursor-pointer"
                           onClick={(event) => {
                             event.stopPropagation();
                             toggleOption(value);
@@ -216,7 +216,7 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
                     >
                       {`+ ${selectedValues.length - maxCount} more`}
                       <XCircle
-                        className="ml-2 h-4 w-4 cursor-pointer"
+                        className="w-4 h-4 ml-2 cursor-pointer"
                         onClick={(event) => {
                           event.stopPropagation();
                           clearExtraOptions();
@@ -233,14 +233,14 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
                       handleClear();
                     }}
                   />
-                  <Separator orientation="vertical" className="flex min-h-6 h-full" />
+                  <Separator orientation="vertical" className="flex h-full min-h-6" />
                   <ChevronDown className="h-4 mx-2 cursor-pointer text-muted-foreground" />
                 </div>
               </div>
             ) : (
               <div className="flex items-center justify-between w-full mx-auto">
-                <span className="text-sm text-muted-foreground text-text-secondary mx-3">{placeholder}</span>
-                <ChevronDown className="h-4 cursor-pointer text-muted-foreground mx-2" />
+                <span className="mx-3 text-sm text-muted-foreground text-text-secondary">{placeholder}</span>
+                <ChevronDown className="h-4 mx-2 cursor-pointer text-muted-foreground" />
               </div>
             )}
           </Button>
@@ -262,7 +262,7 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
                 <CommandItem key="all" onSelect={toggleAll} className="cursor-pointer">
                   <div className="flex justify-between" style={{ width: '100%' }}>
                     <span className="mr-2">(Select All)</span>
-                    {selectedValues.length === options.length && <CheckIcon className="inline h-4 w-4" />}
+                    {selectedValues.length === options.length && <CheckIcon className="inline w-4 h-4" />}
                   </div>
                 </CommandItem>
                 {options.map((option) => {
@@ -275,10 +275,10 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
                     >
                       <div className="flex justify-between" style={{ width: '100%' }}>
                         <span>
-                          {option.icon && <option.icon className="mr-2 h-4 w-4 text-muted-foreground inline" />}
+                          {option.icon && <option.icon className="inline w-4 h-4 mr-2 text-muted-foreground" />}
                           <span className="mr-2">{option.label}</span>
                         </span>
-                        {isSelected && <CheckIcon className="h-4 w-4" />}
+                        {isSelected && <CheckIcon className="w-4 h-4" />}
                       </div>
                     </CommandItem>
                   );
@@ -289,15 +289,15 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
                 <div className="flex items-center justify-between">
                   {selectedValues.length > 0 && (
                     <>
-                      <CommandItem onSelect={handleClear} className="flex-1 justify-center cursor-pointer">
+                      <CommandItem onSelect={handleClear} className="justify-center flex-1 cursor-pointer">
                         Clear
                       </CommandItem>
-                      <Separator orientation="vertical" className="flex min-h-6 h-full" />
+                      <Separator orientation="vertical" className="flex h-full min-h-6" />
                     </>
                   )}
                   <CommandItem
                     onSelect={() => setIsPopoverOpen(false)}
-                    className="flex-1 justify-center cursor-pointer max-w-full"
+                    className="justify-center flex-1 max-w-full cursor-pointer"
                   >
                     Close
                   </CommandItem>

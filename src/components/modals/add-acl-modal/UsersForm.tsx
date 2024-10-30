@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { Form, Switch, Button, notification } from 'antd';
+import { notification, Switch, Button } from 'antd';
+import { useForm, Controller } from 'react-hook-form';
 import {
   UsersIcon,
   WrenchIcon,
@@ -17,6 +18,8 @@ import { Tag } from '@/models/Tags';
 import { CreateACLRuleDto, SourceTypeValue, DestinationTypeValue } from '@/services/dtos/ACLDtos';
 import { Network } from '@/models/Network';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
+import { NotificationInstance } from 'antd/es/notification/interface';
+import { Link } from 'react-router-dom';
 
 interface Item {
   id: string;
@@ -46,6 +49,14 @@ interface UsersFormProps {
   networkId: Network['netid'];
   onClose?: () => void;
   fetchACLRules?: () => void;
+  reloadACL: () => void;
+  notify: NotificationInstance;
+}
+
+interface FormValues {
+  name: string;
+  source: Item[];
+  destination: Item[];
 }
 
 const SelectDropdown: React.FC<SelectDropdownProps> = ({
@@ -135,7 +146,7 @@ const SelectDropdown: React.FC<SelectDropdownProps> = ({
       {isOpen && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
-          <div className="absolute z-20 mt-1 overflow-hidden border rounded-lg shadow-lg w-96 bg-bg-default border-stroke-default">
+          <div className="absolute z-20 mt-1 overflow-hidden border rounded-lg shadow-lg w-[520px] bg-bg-default border-stroke-default">
             <div className="p-2 border-b border-stroke-default">
               <div className="relative">
                 <input
@@ -149,10 +160,10 @@ const SelectDropdown: React.FC<SelectDropdownProps> = ({
               </div>
             </div>
 
-            <div className="max-h-[300px] overflow-y-auto w-full">
-              <div className="flex w-full">
+            <div className="w-full">
+              <div className="flex w-full max-h-[180px]">
                 {filteredItems.groups.length > 0 && (
-                  <div className="w-full py-1">
+                  <div className="w-full py-1 overflow-y-auto">
                     <div className="px-3 py-1 text-sm text-text-secondary">Select groups</div>
                     {filteredItems.groups.map((group) => (
                       <div
@@ -169,7 +180,7 @@ const SelectDropdown: React.FC<SelectDropdownProps> = ({
                 )}
 
                 {filteredItems.users.length > 0 && (
-                  <div className="w-full py-1">
+                  <div className="w-full py-1 overflow-y-auto">
                     <div className="px-3 py-1 text-sm text-text-secondary">Select individual users</div>
                     {filteredItems.users.map((user) => (
                       <div
@@ -188,14 +199,16 @@ const SelectDropdown: React.FC<SelectDropdownProps> = ({
 
               {showManageButton && (
                 <div className="w-full p-2 border-t border-stroke-default">
-                  <button
-                    type="button"
-                    onClick={onManageClick}
-                    className="flex items-center justify-center w-full gap-2 px-4 py-2 text-sm transition-colors duration-200 rounded-md bg-button-primary-fill-default hover:bg-button-primary-fill-hover"
-                  >
-                    <WrenchIcon className="w-4 h-4" />
-                    Manage groups
-                  </button>
+                  <Link to="/users">
+                    <button
+                      type="button"
+                      onClick={onManageClick}
+                      className="flex items-center justify-center w-full gap-2 px-4 py-2 text-sm transition-colors duration-200 rounded-md bg-button-primary-fill-default hover:bg-button-primary-fill-hover"
+                    >
+                      <WrenchIcon className="w-4 h-4" />
+                      Manage groups and users
+                    </button>
+                  </Link>
                 </div>
               )}
             </div>
@@ -327,9 +340,7 @@ const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
   );
 };
 
-const UsersForm: React.FC<UsersFormProps> = ({ networkId, onClose, fetchACLRules }) => {
-  const [notify, notifyCtx] = notification.useNotification();
-  const [form] = Form.useForm();
+const UsersForm: React.FC<UsersFormProps> = ({ networkId, onClose, fetchACLRules, reloadACL, notify }) => {
   const [isPolicyEnabled, setIsPolicyEnabled] = useState(true);
   const [usersList, setUsersList] = useState<User[]>([]);
   const [groupsList, setGroupsList] = useState<UserGroup[]>([]);
@@ -337,6 +348,20 @@ const UsersForm: React.FC<UsersFormProps> = ({ networkId, onClose, fetchACLRules
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors },
+    reset,
+  } = useForm<FormValues>({
+    defaultValues: {
+      name: '',
+      source: [],
+      destination: [],
+    },
+  });
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -388,7 +413,15 @@ const UsersForm: React.FC<UsersFormProps> = ({ networkId, onClose, fetchACLRules
     };
   }, []);
 
-  const handleSubmit = async (values: any) => {
+  const onSubmit = async (values: FormValues) => {
+    if (!values.name || !values.source.length || !values.destination.length) {
+      notify.error({
+        message: 'Validation Error',
+        description: 'Please fill in all required fields',
+      });
+      return;
+    }
+
     try {
       setIsSubmitting(true);
       setError(null);
@@ -398,17 +431,18 @@ const UsersForm: React.FC<UsersFormProps> = ({ networkId, onClose, fetchACLRules
         name: values.name,
         network_id: networkId,
         policy_type: 'user-policy',
-        src_type: convertSourceItemsToTypeValues(values.source || []),
-        dst_type: (values.destination || []).map((item: Item) => convertDestinationItemToTypeValue(item)),
+        src_type: convertSourceItemsToTypeValues(values.source),
+        dst_type: values.destination.map(convertDestinationItemToTypeValue),
         allowed_traffic_direction: 1,
         enabled: isPolicyEnabled,
       };
 
       await ACLService.createACLRule(payload, networkId);
-      notify.success({ message: `Policy created` });
-      form.resetFields();
+      notify.success({ message: `User policy created` });
+      reset();
       setIsPolicyEnabled(true);
       fetchACLRules?.();
+      reloadACL();
       onClose?.();
     } catch (err) {
       notify.error({
@@ -419,6 +453,7 @@ const UsersForm: React.FC<UsersFormProps> = ({ networkId, onClose, fetchACLRules
       setIsSubmitting(false);
     }
   };
+
   return (
     <div className="w-full">
       {error && <div className="p-3 mb-4 text-sm text-red-600 border border-red-200 rounded-md bg-red-50">{error}</div>}
@@ -427,35 +462,44 @@ const UsersForm: React.FC<UsersFormProps> = ({ networkId, onClose, fetchACLRules
           Policy created successfully
         </div>
       )}
-      <Form form={form} className="w-full" onFinish={handleSubmit}>
-        <Form.Item name="name" rules={[{ required: true, message: 'Please enter a rule name' }]}>
-          <div className="flex flex-col w-full gap-2">
-            <label htmlFor="rule-name" className="block text-sm font-semibold text-text-primary">
-              Rule name
-            </label>
-            <input
-              type="text"
-              id="rule-name"
-              placeholder="e.g. devops-team"
-              className="w-full p-2 text-sm border rounded-lg bg-bg-default border-stroke-default"
-            />
-          </div>
-        </Form.Item>
+
+      <form onSubmit={handleSubmit(onSubmit)} className="w-full">
+        <div className="flex flex-col w-full gap-2 mb-4">
+          <label htmlFor="name" className="block text-sm font-semibold text-text-primary">
+            Rule name
+          </label>
+          <input
+            {...register('name', { required: true })}
+            type="text"
+            id="name"
+            placeholder="e.g. devops-team"
+            className="w-full p-2 text-sm border rounded-lg bg-bg-default border-stroke-default"
+          />
+          {errors.name && <span className="text-sm text-red-500">Rule name is required</span>}
+        </div>
 
         <div className="flex w-full gap-7">
-          <Form.Item name="source" className="w-full" rules={[{ required: true, message: 'Please select source' }]}>
+          <div className="w-full">
             <div className="flex flex-col w-full gap-2">
               <label className="block text-sm font-semibold text-text-primary">Source</label>
-              <SelectDropdown
-                value={form.getFieldValue('source') || []}
-                onChange={(value) => form.setFieldsValue({ source: value })}
-                placeholder="Select source"
-                showManageButton={true}
-                users={usersList}
-                groups={groupsList}
+              <Controller
+                name="source"
+                control={control}
+                rules={{ required: true }}
+                render={({ field }) => (
+                  <SelectDropdown
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Select source"
+                    showManageButton={true}
+                    users={usersList}
+                    groups={groupsList}
+                  />
+                )}
               />
+              {errors.source && <span className="text-sm text-red-500">Source is required</span>}
             </div>
-          </Form.Item>
+          </div>
 
           <div className="flex flex-col items-center justify-center w-2/3 gap-2">
             <img
@@ -465,40 +509,41 @@ const UsersForm: React.FC<UsersFormProps> = ({ networkId, onClose, fetchACLRules
             />
           </div>
 
-          <Form.Item
-            name="destination"
-            className="w-full"
-            rules={[{ required: true, message: 'Please select destination' }]}
-          >
+          <div className="w-full">
             <div className="flex flex-col w-full gap-2">
               <label className="block text-sm font-semibold text-text-primary">Destination</label>
-              <TagSelectDropdown
-                value={form.getFieldValue('destination') || []}
-                onChange={(value) => form.setFieldsValue({ destination: value })}
-                placeholder="Select destination tag"
-                tags={tagsList}
+              <Controller
+                name="destination"
+                control={control}
+                rules={{ required: true }}
+                render={({ field }) => (
+                  <TagSelectDropdown
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Select destination tag"
+                    tags={tagsList}
+                  />
+                )}
               />
+              {errors.destination && <span className="text-sm text-red-500">Destination is required</span>}
             </div>
-          </Form.Item>
+          </div>
         </div>
 
-        <Form.Item>
-          <div className="flex w-full gap-2 p-4 mt-2 border rounded-md border-stroke-default">
-            <div className="flex flex-col w-full gap-1">
-              <h3 className="text-base font-semibold text-text-primary">Enable Policy</h3>
-              <p className="text-text-secondary">Use to enable or disable policy.</p>
-            </div>
-            <Switch checked={isPolicyEnabled} onChange={setIsPolicyEnabled} />
+        <div className="flex w-full gap-2 p-4 mt-4 border rounded-md border-stroke-default">
+          <div className="flex flex-col w-full gap-1">
+            <h3 className="text-base font-semibold text-text-primary">Enable Policy</h3>
+            <p className="text-text-secondary">Use to enable or disable policy.</p>
           </div>
-        </Form.Item>
+          <Switch checked={isPolicyEnabled} onChange={setIsPolicyEnabled} />
+        </div>
 
         <div className="flex justify-end w-full gap-4 pt-4">
-          <Button type="primary" htmlType="submit" loading={isSubmitting} className="px-4">
+          <Button type="primary" loading={isSubmitting} onClick={handleSubmit(onSubmit)}>
             Save Policy
           </Button>
         </div>
-      </Form>
-      {notifyCtx}
+      </form>
     </div>
   );
 };
