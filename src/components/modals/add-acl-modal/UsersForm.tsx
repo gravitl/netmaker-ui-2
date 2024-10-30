@@ -91,7 +91,7 @@ const SelectDropdown: React.FC<SelectDropdownProps> = ({
     (group: UserGroup) => {
       const newItem: Item = {
         id: group.id,
-        name: group.id,
+        name: group.name,
         type: 'group',
       };
       const isSelected = value.some((v) => v.id === group.id);
