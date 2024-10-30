@@ -1,4 +1,4 @@
-export type NodeConnectivityStatus = 'healthy' | 'warning' | 'error' | 'unknown';
+export type NodeConnectivityStatus = 'healthy' | 'warning' | 'error' | 'disconnected' | 'unknown';
 
 export const HOST_HEALTH_STATUS = {
   healthy: 'healthy',

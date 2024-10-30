@@ -20,11 +20,8 @@ import { getNetworkHostRoute, resolveAppRoute } from '@/utils/RouteUtils';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import {
   CheckOutlined,
-  CloseCircleFilled,
   DashOutlined,
   DeleteOutlined,
-  DownloadOutlined,
-  DownOutlined,
   EditOutlined,
   ExclamationCircleFilled,
   EyeOutlined,
@@ -61,7 +58,6 @@ import {
   Row,
   Select,
   Skeleton,
-  Space,
   Steps,
   Switch,
   Table,
@@ -92,7 +88,6 @@ import {
   useServerLicense,
 } from '@/utils/Utils';
 import AddHostsToNetworkModal from '@/components/modals/add-hosts-to-network-modal/AddHostsToNetworkModal';
-import NewHostModal from '@/components/modals/new-host-modal/NewHostModal';
 import UpdateIngressModal from '@/components/modals/update-remote-access-gateway-modal/UpdateRemoteAccessGatewayModal';
 import UpdateClientModal from '@/components/modals/update-client-modal/UpdateClientModal';
 import { NULL_HOST, NULL_NODE } from '@/constants/Types';
@@ -108,28 +103,18 @@ import { NetworkDetailTourStep } from '@/utils/Types';
 import TourComponent, { JumpToTourStepObj } from '@/pages/networks/TourComponent';
 import AddRemoteAccessGatewayModal from '@/components/modals/add-remote-access-gateway-modal/AddRemoteAccessGatewayModal';
 import { InternetGatewaysPage } from './internet-gateways/InternetGatewaysPage';
-import { AvailableOses } from '@/models/AvailableOses';
 import { NetworkUsage, networkUsecaseMap } from '@/constants/NetworkUseCases';
 import { NetworkUsecaseString } from '@/store/networkusecase';
 import QuickSetupModal from '@/components/modals/quick-setup-modal/QuickSetupModal';
 import DownloadRemotesAccessClientModal from '@/components/modals/remote-access-client-modal/DownloadRemoteAccessClientModal';
 import SetNetworkFailoverModal from '@/components/modals/set-network-failover-modal/SetNetworkFailoverModal';
-import { convertNetworkPayloadToUiNetwork, convertUiNetworkToNetworkPayload } from '@/utils/NetworkUtils';
 import { TourType } from '../DashboardPage';
 import { Waypoints } from 'lucide-react';
 import { isAdminUserOrRole } from '@/utils/UserMgmtUtils';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 import RacDownloadBanner from '@/components/RacDownloadBanner';
-import {
-  ComputerDesktopIcon,
-  DocumentIcon,
-  FolderIcon,
-  PlusIcon,
-  ServerIcon,
-  UserIcon,
-} from '@heroicons/react/24/solid';
+import { DocumentIcon, PlusIcon, ServerIcon, UserIcon } from '@heroicons/react/24/solid';
 import AddNodeDialog from '@/components/modals/add-node-modal/AddNodeDialog';
-import { get } from 'lodash';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -1969,7 +1954,7 @@ export default function NetworkDetailsPage(props: PageProps) {
             disabled={!isEditingNetwork}
           >
             <Form.Item
-              label="Network name"
+              label="Network ID"
               name="netid"
               rules={[{ required: true }]}
               data-nmui-intercom="network-details-form_netid"
@@ -4175,7 +4160,7 @@ export default function NetworkDetailsPage(props: PageProps) {
 
   const promptConfirmDelete = () => {
     Modal.confirm({
-      title: `Do you want to delete network ${network?.netid}?`,
+      title: `Do you want to delete network ${network?.displayName}?`,
       icon: <ExclamationCircleFilled />,
       onOk() {
         onNetworkDelete();
@@ -4258,7 +4243,7 @@ export default function NetworkDetailsPage(props: PageProps) {
               <Row>
                 <Col xs={18} lg={12}>
                   <Typography.Title level={2} style={{ marginTop: '.5rem', marginBottom: '2rem' }}>
-                    {network?.netid}
+                    {network?.displayName}
                   </Typography.Title>
                 </Col>
                 <Col xs={24} lg={12} style={{ textAlign: 'right' }} className="network-details-table-buttons">

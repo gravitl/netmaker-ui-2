@@ -126,7 +126,7 @@ describe('Utils', () => {
     expect(getHostHealth(testNode1.hostid, [testNode1, testNode2], false)).toEqual('warning');
 
     render(getHostHealth(testNode1.hostid, [testNode1, testNode2], true) as JSX.Element);
-    expect(screen.getByText('Warning')).toBeInTheDocument();
+    expect(screen.getByText(/Warning/)).toBeInTheDocument();
     cleanup();
   });
 
