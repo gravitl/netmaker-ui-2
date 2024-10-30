@@ -1,4 +1,4 @@
-import { PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import {
   Button,
   Card,
@@ -24,6 +24,7 @@ import { Network } from '@/models/Network';
 import { NetworksService } from '@/services/NetworksService';
 import { convertNetworkPayloadToUiNetwork } from '@/utils/NetworkUtils';
 import AddUsersToGroupModal from '@/components/modals/add-users-to-group-modal/AddUsersToGroupModal';
+import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 
 interface metadataFormValues {
   name: string;
@@ -38,7 +39,7 @@ interface networkRolesFormValues {
 
 interface NetworkRolesTableData {
   network_id: UserRole['network_id'];
-  network_roles: { roleId: UserRole['id']; uiName: UserRole['ui_name'] }[];
+  network_roles: { roleId: UserRole['id']; uiName: UserRole['name'] }[];
 }
 
 interface CreateUserGroupModalProps {
@@ -77,7 +78,7 @@ export default function CreateUserGroupModal({
       network_id: network.netid,
       network_roles: availableUserRoles
         .filter((role) => role.network_id === network.netid)
-        .map((role) => ({ uiName: role.ui_name, roleId: role.id })),
+        .map((role) => ({ uiName: role.name, roleId: role.id })),
     }));
   }, [availbleNetworks, availableUserRoles]);
 
@@ -179,7 +180,8 @@ export default function CreateUserGroupModal({
         await UsersService.createGroup({
           members: groupMembers.map((m) => m.username),
           user_group: {
-            id: metadata.name,
+            id: metadata.name.replaceAll(' ', '-').toLowerCase(),
+            name: metadata.name,
             network_roles: networkRolesPayload,
             meta_data: metadata.metadata,
             platform_role: metadata.platformRole,
@@ -273,7 +275,18 @@ export default function CreateUserGroupModal({
 
           <Row style={{ paddingBottom: '0px' }}>
             <Col xs={24}>
-              <Card size="small" title="Associated Network Roles" style={{ width: '100%', marginBottom: '2rem' }}>
+              <Card
+                size="small"
+                title={
+                  <>
+                    <span>Associated Network Roles</span>
+                    <a href={ExternalLinks.USER_MGMT_DOCS_NETWORK_ROLES_URL} target="_blank" rel="noreferrer">
+                      <QuestionCircleOutlined style={{ marginLeft: '.5rem' }} />
+                    </a>
+                  </>
+                }
+                style={{ width: '100%', marginBottom: '2rem' }}
+              >
                 <Form form={networkRolesForm}>
                   <Row style={{ padding: '.5rem 0rem' }} data-nmui-intercom="new-group_network-roles">
                     <Col xs={24}>

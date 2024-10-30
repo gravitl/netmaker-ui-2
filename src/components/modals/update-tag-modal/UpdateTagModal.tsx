@@ -13,7 +13,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '@/components/shadcn/Input';
 import { Button } from '@/components/shadcn/Button';
-import { ComputerIcon } from 'lucide-react';
+import { FileIcon, ServerIcon } from 'lucide-react';
 import { MultiSelect } from '@/components/shadcn/MultiSelect';
 import { ExtendedNode, Node } from '@/models/Node';
 import { TagsService } from '@/services/TagsService';
@@ -22,6 +22,8 @@ import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { notification } from 'antd';
 import { useCallback, useState } from 'react';
 import { NULL_NODE } from '@/constants/Types';
+import { deduceNodeId } from '@/utils/NodeUtils';
+import { useStore } from '@/store/store';
 
 interface UpdateTagModalProps {
   isOpen: boolean;
@@ -37,6 +39,8 @@ const updateTagFormSchema = z.object({
 });
 
 export default function UpdateTagModal({ isOpen, tag, nodes, onCancel, onUpdateTag }: Readonly<UpdateTagModalProps>) {
+  const store = useStore();
+  const currentTheme = store.currentTheme;
   const form = useForm<z.infer<typeof updateTagFormSchema>>({
     resolver: zodResolver(updateTagFormSchema),
     defaultValues: tag,
@@ -77,7 +81,7 @@ export default function UpdateTagModal({ isOpen, tag, nodes, onCancel, onUpdateT
     >
       <DialogContent className="border-stroke-default" style={{ backgroundColor: '#27272A' }}>
         {/* <DialogClose>
-          <XCircleIcon className="w-6 h-6 text-text-secondary rounded-full p-2" />
+          <XCircleIcon className="w-6 h-6 p-2 rounded-full text-text-secondary" />
           hello
         </DialogClose> */}
         <DialogHeader>
@@ -111,7 +115,7 @@ export default function UpdateTagModal({ isOpen, tag, nodes, onCancel, onUpdateT
                 )}
               />
               <FormLabel
-                className="text-base-semibold inline-block"
+                className="inline-block text-base-semibold"
                 style={{ marginTop: '2rem', marginBottom: '1rem' }}
               >
                 Grouped Devices

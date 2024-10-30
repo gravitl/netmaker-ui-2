@@ -1,4 +1,4 @@
-import { NULL_HOST } from '@/constants/Types';
+import { NULL_HOST, NULL_NODE_ID } from '@/constants/Types';
 import { ExternalClient } from '@/models/ExternalClient';
 import { Host, HostCommonDetails } from '@/models/Host';
 import { ExtendedNode, Node } from '@/models/Node';
@@ -61,4 +61,15 @@ export function isNodeRelay(node: Node): boolean {
  */
 export function isHostNatted(host: Host): boolean {
   return host.nat_type !== undefined && host.nat_type !== null && host.nat_type !== '' && host.nat_type !== 'public';
+}
+
+/**
+ * Util to determine the node's true ID; whether it is static or not.
+ *
+ * @param node
+ * @returns node or static node id
+ */
+export function deduceNodeId(node: Node): Node['id'] {
+  if (node.is_static) return node.static_node.clientid;
+  return node.id;
 }
