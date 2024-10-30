@@ -149,17 +149,17 @@ describe('Utils', () => {
   });
 
   it('gets formatted time', () => {
-    const sec0 = 0;
-    const sec1 = 1_000_000_000;
-    const min1 = 60 * sec1;
+    const min0 = 0;
+    const min1 = 1;
     const hour1 = 60 * min1;
+    const hour1min30 = 60 * min1 + 30 * min1;
     const day1 = 24 * hour1;
 
-    expect(getFormattedTime(sec0)).toEqual('0h0m');
-    expect(getFormattedTime(sec1)).toEqual('0h1m');
-    expect(getFormattedTime(min1)).toEqual('0h1m');
-    expect(getFormattedTime(hour1)).toEqual('1h0m');
-    expect(getFormattedTime(day1)).toEqual('24h0m');
+    expect(getFormattedTime(min0)).toEqual('0 hrs 0 mins');
+    expect(getFormattedTime(min1)).toEqual('0 hrs 1 mins');
+    expect(getFormattedTime(hour1)).toEqual('1 hrs 0 mins');
+    expect(getFormattedTime(hour1min30)).toEqual('1 hrs 30 mins');
+    expect(getFormattedTime(day1)).toEqual('24 hrs 0 mins');
   });
 
   describe('renderMetricValue', () => {
@@ -202,6 +202,7 @@ describe('Utils', () => {
         uptime: 0,
         totalFractionalUptime: 0,
         uptimePercent: 0,
+        totaltime: 0,
       };
       const result = renderMetricValue(metricType, value);
       const screen = render(<>{result}</>);

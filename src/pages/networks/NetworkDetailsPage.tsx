@@ -600,8 +600,9 @@ export default function NetworkDetailsPage(props: PageProps) {
         acc.uptime![key] = {
           fractionalUptime: nodeConnectivityMap?.[key].uptime ?? 0,
           totalFractionalUptime: nodeConnectivityMap?.[key].totaltime ?? 0,
-          uptime: nodeConnectivityMap?.[key].actualuptime ?? 0,
           uptimePercent: nodeConnectivityMap?.[key].percentup.toFixed(2) ?? 0,
+          uptime: nodeConnectivityMap?.[key].uptime ?? 0,
+          totaltime: nodeConnectivityMap?.[key].totaltime ?? 0,
         };
         return acc;
       }, res);
@@ -1716,10 +1717,11 @@ export default function NetworkDetailsPage(props: PageProps) {
         dataIndex: 'uptime',
         render: (val, data) => {
           const uptime: UptimeNodeMetrics = {
-            uptime: data.actualuptime ?? 0,
+            uptime: data.uptime ?? 0,
             fractionalUptime: data.uptime ?? 0,
             totalFractionalUptime: data.totaltime ?? 0,
             uptimePercent: data?.percentup?.toFixed(2) ?? 0,
+            totaltime: data.totaltime ?? 0,
           };
           return renderMetricValue('uptime', uptime);
         },
