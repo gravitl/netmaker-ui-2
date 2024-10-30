@@ -30,6 +30,7 @@ import { Badge } from '@/components/shadcn/Badge';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/shadcn/HoverCard';
 import { getExtendedNode } from '@/utils/NodeUtils';
 import { useStore } from '@/store/store';
+import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 
 interface TagManagementPageProps {
   network: Network['netid'];
@@ -218,11 +219,13 @@ export function TagManagementPage({ network: networkId, networkNodes }: Readonly
         </span>
       </div> */}
 
-      {/* <div className="w-100 columns-2">
+      <div className="w-100 columns-2">
         <h3 className="text-2xl font-bold">Tag Management</h3>
         <div className="text-right w-50">
-          <AntdButton className="mr-2">Docs</AntdButton>
-          <AntdButton>Tour Tag Management</AntdButton>
+          <AntdButton className="mr-2" href={ExternalLinks.TAGS_DOCS_URL} target="_blank" rel="noreferrer">
+            Docs
+          </AntdButton>
+          {/* <AntdButton>Tour Tag Management</AntdButton> */}
         </div>
       </div>
 
@@ -231,7 +234,7 @@ export function TagManagementPage({ network: networkId, networkNodes }: Readonly
           Organize and categorize your resources efficiently with customizable tags. Apply tags to instances and other
           assets for improved resource management.
         </span>
-      </div> */}
+      </div>
 
       <br />
 
@@ -239,12 +242,15 @@ export function TagManagementPage({ network: networkId, networkNodes }: Readonly
         <Input
           type="search"
           placeholder="Search for Tags"
-          className="w-80 border-bg-default"
+          className="w-80 border-bg-default bg-bg-default"
           startIcon={Search}
           onChange={(ev) => setSearchText(ev.target.value)}
           value={searchText}
         />
-        <Button className="bg-button-primary-fill-default float-end" onClick={() => setIsAddTagModalOpen(true)}>
+        <Button
+          className="bg-button-primary-fill-default text-text-primary light:invert float-end"
+          onClick={() => setIsAddTagModalOpen(true)}
+        >
           <PlusIcon className="inline mr-2" />
           Add Tag
         </Button>
@@ -260,6 +266,7 @@ export function TagManagementPage({ network: networkId, networkNodes }: Readonly
           size="small"
           loading={isLoadingTags}
           scroll={{ x: true }}
+          pagination={{ size: 'small', hideOnSinglePage: true, pageSize: 20 }}
           onRow={(key) => {
             return {
               // onClick: () => {
@@ -268,7 +275,6 @@ export function TagManagementPage({ network: networkId, networkNodes }: Readonly
               // },
             };
           }}
-          pagination={{ size: 'small', hideOnSinglePage: true, pageSize: 50 }}
         />
 
         {/* TODO: refactor into tag mgmt table component */}

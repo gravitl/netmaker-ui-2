@@ -3864,16 +3864,18 @@ export default function NetworkDetailsPage(props: PageProps) {
             <Skeleton active />
           ),
       });
-      tabs.splice(5, 0, {
-        key: 'tag-mgmt',
-        label: <Typography.Text>Tag Management</Typography.Text>,
-        children:
-          network && !isRefreshingNetwork ? (
-            <TagManagementPage network={network.netid} networkNodes={networkNodes} />
-          ) : (
-            <Skeleton active />
-          ),
-      });
+      if (store.userPlatformRole && isAdminUserOrRole(store.userPlatformRole)) {
+        tabs.splice(5, 0, {
+          key: 'tag-mgmt',
+          label: <Typography.Text>Tag Management</Typography.Text>,
+          children:
+            network && !isRefreshingNetwork ? (
+              <TagManagementPage network={network.netid} networkNodes={networkNodes} />
+            ) : (
+              <Skeleton active />
+            ),
+        });
+      }
     }
 
     tabs.push({
@@ -3906,6 +3908,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     isAddInternetGatewayModalOpen,
     networkNodes,
     staticNetworkNodes,
+    store.userPlatformRole,
   ]);
 
   const loadMetrics = useCallback(async () => {

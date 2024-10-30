@@ -1,3 +1,4 @@
+import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 import { NULL_NODE_ID } from '@/constants/Types';
 import { EnrollmentKey } from '@/models/EnrollmentKey';
 import { ExtendedNode } from '@/models/Node';
@@ -59,12 +60,14 @@ export default function UpdateEnrollmentKeyModal({
 
   const loadTags = useCallback(async () => {
     try {
+      const availableTags: Tag[] = [];
       const res = await Promise.allSettled(enrollmentKey.networks?.map((n) => TagsService.getTagsPerNetwork(n)) ?? []);
       res.forEach((r) => {
         if (r.status === 'fulfilled') {
-          setTags((prev) => [...prev, ...(r.value.data.Response ?? [])]);
+          availableTags.push(...r.value.data.Response);
         }
       });
+      setTags(availableTags);
     } catch (err) {
       notification.error({
         message: 'Failed to load tags',
@@ -147,6 +150,14 @@ export default function UpdateEnrollmentKeyModal({
                   name="groups"
                   label="Tags"
                   data-nmui-intercom="add-enrollment-key-form_tags"
+                  tooltip={
+                    <Typography.Text>
+                      Tags help to group hosts.{' '}
+                      <a target="_blank" href={ExternalLinks.TAGS_DOCS_URL} rel="noreferrer">
+                        Learn more
+                      </a>
+                    </Typography.Text>
+                  }
                   extra={
                     <Typography.Text disabled>
                       Hosts that join with this key will automatically be given these tags
@@ -158,7 +169,7 @@ export default function UpdateEnrollmentKeyModal({
                     allowClear
                     mode="multiple"
                     style={{ width: '100%' }}
-                    options={filteredTags.map((tag) => ({ label: tag.tag_name, value: tag.id }))}
+                    options={filteredTags.map((tag) => ({ label: `${tag.tag_name} (${tag.network})`, value: tag.id }))}
                     disabled={enrollmentKey.networks?.length === 0}
                   />
                 </Form.Item>

@@ -27,6 +27,7 @@ import { getExtendedNode, isNodeRelay } from '@/utils/NodeUtils';
 import { useServerLicense } from '@/utils/Utils';
 import { Tag } from '@/models/Tags';
 import { TagsService } from '@/services/TagsService';
+import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 
 interface AddEnrollmentKeyModalProps {
   isOpen: boolean;
@@ -268,6 +269,14 @@ export default function AddEnrollmentKeyModal({
                 <Form.Item
                   name="groups"
                   label="Tags"
+                  tooltip={
+                    <Typography.Text>
+                      Tags help to group hosts.{' '}
+                      <a target="_blank" href={ExternalLinks.TAGS_DOCS_URL} rel="noreferrer">
+                        Learn more
+                      </a>
+                    </Typography.Text>
+                  }
                   data-nmui-intercom="add-enrollment-key-form_tags"
                   extra={
                     <Typography.Text disabled>
@@ -280,7 +289,10 @@ export default function AddEnrollmentKeyModal({
                     allowClear
                     mode="multiple"
                     style={{ width: '100%' }}
-                    options={filteredTags.map((tag) => ({ label: tag.tag_name, value: tag.id }))}
+                    options={filteredTags.map((tag) => ({
+                      label: `${tag.tag_name} (${tag.network})`,
+                      value: tag.id,
+                    }))}
                     disabled={networksVal?.length === 0}
                   />
                 </Form.Item>
