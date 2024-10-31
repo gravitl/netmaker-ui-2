@@ -1,14 +1,9 @@
-// import { Badge } from '@/components/shadcn/Badge';
-// import { Button } from '@/components/shadcn/Button';
-
 import { Input } from '@/components/shadcn/Input';
-// import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/shadcn/Table';
 import { Network } from '@/models/Network';
 import { Tag } from '@/models/Tags';
 import { TagsService } from '@/services/TagsService';
 import { ComputerIcon, PlusIcon, Search } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { z } from 'zod';
 import {
   Button as AntdButton,
   Dropdown,
@@ -65,7 +60,7 @@ export function TagManagementPage({ network: networkId, networkNodes }: Readonly
         content: `Are you sure you want to remove this tag?`,
         onOk: async () => {
           try {
-            await TagsService.deleteTag(tag.id);
+            await TagsService.deleteTag(tag);
             setTags((prev) => prev.filter((k) => k.id !== tag.id));
             notify.success({
               message: 'Tag removed',
