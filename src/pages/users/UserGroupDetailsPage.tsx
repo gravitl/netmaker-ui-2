@@ -134,6 +134,8 @@ export default function UserGroupDetailsPage(props: PageProps) {
             <Select
               style={{ width: '100%' }}
               placeholder="Select a role for this network"
+              disabled={group?.default ?? true}
+              title={group?.default ? 'Default groups cannot be modified' : ''}
               options={[
                 { label: 'n/a', value: '' },
                 ...rowData.network_roles
@@ -145,7 +147,7 @@ export default function UserGroupDetailsPage(props: PageProps) {
         ),
       },
     ],
-    [group?.network_roles],
+    [group?.default, group?.network_roles],
   );
 
   const groupMembersTableCols = useMemo<TableColumnProps<User>[]>(
@@ -250,6 +252,7 @@ export default function UserGroupDetailsPage(props: PageProps) {
         network_roles: networkRolesPayload,
         meta_data: metadata.metadata,
         platform_role: metadata.platformRole,
+        default: group.default,
       });
 
       notification.success({ message: 'User group updated successfully' });
@@ -293,7 +296,7 @@ export default function UserGroupDetailsPage(props: PageProps) {
           <Col xs={24}>
             <Typography.Title level={4}>General</Typography.Title>
           </Col>
-          <Form form={metadataForm} layout="vertical" style={{ width: '100%' }}>
+          <Form form={metadataForm} layout="vertical" style={{ width: '100%' }} disabled={group?.default ?? true}>
             <Row gutter={[24, 0]}>
               <Col xs={24} md={12}>
                 <Form.Item name="name" label="Group Name" style={{ width: '80%' }}>
@@ -317,7 +320,11 @@ export default function UserGroupDetailsPage(props: PageProps) {
                   style={{ width: '80%' }}
                   initialValue={group?.meta_data ?? ''}
                 >
-                  <Input.TextArea placeholder="Enter a description for this new group" style={{ width: '100%' }} />
+                  <Input.TextArea
+                    placeholder="Enter a description for this new group"
+                    style={{ width: '100%' }}
+                    title={group?.default ? 'Default groups cannot be modified' : ''}
+                  />
                 </Form.Item>
               </Col>
               {/* <Col xs={24}>
