@@ -32,6 +32,7 @@ export interface UptimeNodeMetrics {
   fractionalUptime: number;
   totalFractionalUptime: number;
   uptimePercent: number | string;
+  totaltime: number;
 }
 
 export type MetricCategories =

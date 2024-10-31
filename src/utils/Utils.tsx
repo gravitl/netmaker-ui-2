@@ -203,18 +203,13 @@ export function getFormattedData(data: number): string {
 /**
  * Gets the formatted time in hours and minutes.
  *
- * @param time unix time
+ * @param time number of mins
  * @returns formatted time in hrs and mins
  */
 export function getFormattedTime(time: number): string {
-  let timeString = '';
-  if (time) {
-    const { hours, min } = getTimeMinHrs(time);
-    timeString = `${hours}h${min}m`;
-  } else {
-    timeString = '0h0m';
-  }
-  return timeString;
+  const hours = Math.floor(time / 60);
+  const minutes = time % 60;
+  return `${hours || 0} hrs ${minutes || 0} mins`;
 }
 
 /**
@@ -288,10 +283,7 @@ export function renderMetricValue(metricType: MetricCategories, value: unknown):
       );
       break;
     case 'uptime':
-      fractionalDowntime =
-        (value as UptimeNodeMetrics).totalFractionalUptime / (value as UptimeNodeMetrics).fractionalUptime;
-      downtime =
-        (fractionalDowntime * (value as UptimeNodeMetrics).uptime) / (value as UptimeNodeMetrics).fractionalUptime;
+      downtime = (value as UptimeNodeMetrics).totaltime - (value as UptimeNodeMetrics).uptime;
       return (
         <Tooltip
           title={
@@ -323,7 +315,7 @@ export function renderMetricValue(metricType: MetricCategories, value: unknown):
             percent={100}
             success={{ percent: Number((value as UptimeNodeMetrics).uptimePercent) }}
           />{' '}
-          {(value as UptimeNodeMetrics).uptimePercent}%
+          {(value as UptimeNodeMetrics).uptimePercent || 0}%
         </Tooltip>
       );
       break;
