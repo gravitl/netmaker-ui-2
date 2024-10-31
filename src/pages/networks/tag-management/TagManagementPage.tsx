@@ -2,7 +2,7 @@ import { Input } from '@/components/shadcn/Input';
 import { Network } from '@/models/Network';
 import { Tag } from '@/models/Tags';
 import { TagsService } from '@/services/TagsService';
-import { ComputerIcon, PlusIcon, Search } from 'lucide-react';
+import { ComputerIcon, FileIcon, PlusIcon, Search } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Button as AntdButton,
@@ -114,12 +114,20 @@ export function TagManagementPage({ network: networkId, networkNodes }: Readonly
               <HoverCardContent className="border-none min-w-fit w-fit">
                 <div className="m-2 border rounded bg-bg-default border-stroke-default">
                   {tag.tagged_nodes.map((node, i) => (
-                    <>
-                      <div key={`node-${i}`} className="p-1 text-sm font-bold break-keep whitespace-nowrap">
-                        <ComputerIcon size={16} className="inline mr-2" />
-                        {getExtendedNode(node, store.hostsCommonDetails).name}
-                      </div>
-                    </>
+                    <div key={`node-${i}`} className="p-1 text-sm font-bold break-keep whitespace-nowrap">
+                      {!node.is_static && (
+                        <>
+                          <ComputerIcon size={16} className="inline mr-2" />
+                          {getExtendedNode(node, store.hostsCommonDetails).name}
+                        </>
+                      )}
+                      {node.is_static && (
+                        <>
+                          <FileIcon size={16} className="inline mr-2" />
+                          {node.static_node.clientid}
+                        </>
+                      )}
+                    </div>
                   ))}
                 </div>
               </HoverCardContent>
