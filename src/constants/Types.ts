@@ -1,4 +1,4 @@
-import { Host } from '@/models/Host';
+import { Host, HostCommonDetails } from '@/models/Host';
 import { Node } from '@/models/Node';
 import { ProSettings } from '@/models/ProSettings';
 import { Tag } from '@/models/Tags';
@@ -28,6 +28,22 @@ export const NULL_HOST: Host = {
   nat_type: 'public',
   persistentkeepalive: 0,
   autoupdate: false,
+};
+
+export const NULL_HOST_COMMON_DETAILS: HostCommonDetails = {
+  name: '',
+  version: '',
+  endpointip: '',
+  endpointipv6: '',
+  publickey: '',
+  os: '',
+  listenport: 0,
+  isstaticendpoint: false,
+  isstaticport: false,
+  mtu: 0,
+  interfaces: [],
+  macaddress: '',
+  firewallinuse: '',
 };
 
 export const NULL_NODE: Node = {

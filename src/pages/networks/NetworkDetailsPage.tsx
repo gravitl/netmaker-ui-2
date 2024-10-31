@@ -249,12 +249,15 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [isAddInternetGatewayModalOpen, setIsAddInternetGatewayModalOpen] = useState(false);
   const [activeNodeFilter, setActiveNodeFilter] = useState('Netclient');
 
-  const filters = [
-    { name: 'All', icon: null },
-    { name: 'Netclient', icon: ServerIcon },
-    { name: 'Config files', icon: DocumentIcon },
-    { name: 'Active Users', icon: UserIcon },
-  ];
+  const filters = useMemo(
+    () => [
+      { name: 'All', icon: null },
+      { name: 'Netclient', icon: ServerIcon },
+      { name: 'Config files', icon: DocumentIcon },
+      { name: 'Active Users', icon: UserIcon },
+    ],
+    [],
+  );
 
   // const getNodeIcon = (node) => {
   //   const extendedNode = getExtendedNode(node, store.hostsCommonDetails);
@@ -343,8 +346,11 @@ export default function NetworkDetailsPage(props: PageProps) {
   const networkNodes = useMemo(
     () =>
       store.nodes
-        .map((node) => getExtendedNode(node, store.hostsCommonDetails))
-        .filter((node) => node.network === networkId || node.static_node?.network === networkId),
+        .map((node) => ({
+          ...getExtendedNode(node, store.hostsCommonDetails),
+          tableId: node.is_static ? node.static_node.clientid : node.id,
+        }))
+        .filter((node) => node.network === networkId || node.static_node.network === networkId),
     [store.nodes, store.hostsCommonDetails, networkId],
   );
   const staticNetworkNodes: Node[] = useMemo(() => store.nodes.filter((node) => node.is_static), [store.nodes]);
@@ -2238,7 +2244,11 @@ export default function NetworkDetailsPage(props: PageProps) {
             )}
             <div className="table-wrapper">
               <Table
+                rowKey="tableId"
                 scroll={{ x: true }}
+                dataSource={filteredNetworkNodes}
+                size="small"
+                ref={hostsTabContainerTableRef}
                 columns={[
                   {
                     title: 'Node name',
@@ -2248,7 +2258,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                         <>
                           <Link
                             to={node.is_static ? '#' : getNetworkHostRoute(node.hostid, node.network)}
-                            title={`Network Host ID: ${node.id}`}
+                            title={`Network Host ID: ${node.is_static ? node.static_node.clientid : node.id}`}
                             className="flex items-center gap-2"
                             onClick={(e) => {
                               if (node.is_static) {
@@ -2576,10 +2586,6 @@ export default function NetworkDetailsPage(props: PageProps) {
                     },
                   },
                 ]}
-                dataSource={filteredNetworkNodes}
-                rowKey={(node) => (node.is_static ? `${node.static_node?.clientid}` : node.id)}
-                size="small"
-                ref={hostsTabContainerTableRef}
               />
             </div>
           </Col>
@@ -2590,12 +2596,8 @@ export default function NetworkDetailsPage(props: PageProps) {
     searchHost,
     checkIfManagedHostIsLoading,
     isServerEE,
-    networkNodes.length,
     isFailoverNodePresentInNetwork,
-    network?.isipv4,
-    network?.isipv6,
     filteredNetworkNodes,
-    jumpToTourStep,
     store.hostsCommonDetails,
     branding.primaryColorDark,
     branding.primaryColorLight,
@@ -2604,6 +2606,13 @@ export default function NetworkDetailsPage(props: PageProps) {
     disconnectNodeFromNetwork,
     removeNodeFromNetwork,
     store.currentTheme,
+    activeNodeFilter,
+    confirmDeleteClient,
+    filters,
+    networkId,
+    networkNodes,
+    store.user,
+    store.username,
   ]);
 
   const getDnsContent = useCallback(() => {
