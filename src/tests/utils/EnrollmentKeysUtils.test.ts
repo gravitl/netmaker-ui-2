@@ -18,6 +18,7 @@ describe('EnrollmentKeysUtils', () => {
       uses_remaining: 0,
       value: '',
       relay: '',
+      groups: [],
     };
     const invalidKeyUnlimited: EnrollmentKey = {
       tags: ['test'],
@@ -29,6 +30,7 @@ describe('EnrollmentKeysUtils', () => {
       uses_remaining: 0,
       value: '',
       relay: '',
+      groups: [],
     };
     const validKeyUses: EnrollmentKey = {
       tags: ['test'],
@@ -40,6 +42,7 @@ describe('EnrollmentKeysUtils', () => {
       uses_remaining: 1,
       value: '',
       relay: '',
+      groups: [],
     };
     const invalidKeyUses: EnrollmentKey = {
       tags: ['test'],
@@ -51,6 +54,7 @@ describe('EnrollmentKeysUtils', () => {
       uses_remaining: 0,
       value: '',
       relay: '',
+      groups: [],
     };
     const validKeyTime: EnrollmentKey = {
       tags: ['test'],
@@ -62,6 +66,7 @@ describe('EnrollmentKeysUtils', () => {
       uses_remaining: 0,
       value: '',
       relay: '',
+      groups: [],
     };
     const invalidKeyTime: EnrollmentKey = {
       tags: ['test'],
@@ -73,6 +78,7 @@ describe('EnrollmentKeysUtils', () => {
       uses_remaining: 0,
       value: '',
       relay: '',
+      groups: [],
     };
     const validKeyDeprecated: Partial<EnrollmentKey> = {
       tags: ['test'],
@@ -83,6 +89,7 @@ describe('EnrollmentKeysUtils', () => {
       unlimited: false,
       uses_remaining: 1,
       value: '',
+      groups: [],
     };
     const invalidKeyDeprecated: Partial<EnrollmentKey> = {
       tags: ['test'],
@@ -93,6 +100,7 @@ describe('EnrollmentKeysUtils', () => {
       unlimited: false,
       uses_remaining: 0,
       value: '',
+      groups: [],
     };
 
     expect(isEnrollmentKeyValid(validKeyUnlimited)).toEqual(true);

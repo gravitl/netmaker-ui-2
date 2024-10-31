@@ -93,7 +93,7 @@ import UpdateClientModal from '@/components/modals/update-client-modal/UpdateCli
 import { NULL_HOST, NULL_NODE } from '@/constants/Types';
 import UpdateNodeModal from '@/components/modals/update-node-modal/UpdateNodeModal';
 import VirtualisedTable from '@/components/VirtualisedTable';
-import { APP_UPDATE_POLL_INTERVAL, NETWORK_GRAPH_SIGMA_CONTAINER_ID } from '@/constants/AppConstants';
+import { NETWORK_GRAPH_SIGMA_CONTAINER_ID } from '@/constants/AppConstants';
 import UpdateIngressUsersModal from '@/components/modals/update-ingress-users-modal/UpdateIngressUsersModal';
 import getNodeImageProgram from 'sigma/rendering/webgl/programs/node.image';
 import { HOST_HEALTH_STATUS } from '@/models/NodeConnectivityStatus';
@@ -113,6 +113,10 @@ import { Waypoints } from 'lucide-react';
 import { isAdminUserOrRole } from '@/utils/UserMgmtUtils';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 import RacDownloadBanner from '@/components/RacDownloadBanner';
+import { TagManagementPage } from './tag-management/TagManagementPage';
+import { ACLService } from '@/services/ACLService';
+import { ACLRule } from '@/services/dtos/ACLDtos';
+import ACLPage from './acl/ACLPage';
 import { DocumentIcon, PlusIcon, ServerIcon, UserIcon } from '@heroicons/react/24/solid';
 import AddNodeDialog from '@/components/modals/add-node-modal/AddNodeDialog';
 
@@ -243,7 +247,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   });
   const [isSetNetworkFailoverModalOpen, setIsSetNetworkFailoverModalOpen] = useState(false);
   const [isAddInternetGatewayModalOpen, setIsAddInternetGatewayModalOpen] = useState(false);
-  const [activeNodeFilter, setActiveNodeFilter] = useState('All');
+  const [activeNodeFilter, setActiveNodeFilter] = useState('Netclient');
 
   const filters = [
     { name: 'All', icon: null },
@@ -263,6 +267,14 @@ export default function NetworkDetailsPage(props: PageProps) {
   //   }
   //   return null;
   // };
+  const [policyType, setPolicyType] = useState('All');
+  const [addPolicyModal, setAddPolicyModal] = useState(false);
+
+  //move this later
+
+  const [aclRules, setAclRules] = useState<ACLRule[]>([]);
+  const [isEditPolicyModalOpen, setIsEditPolicyModalOpen] = useState(false);
+  const [selectedEditPolicy, setSelectedEditPolicy] = useState<ACLRule | null>(null);
 
   const overviewTabContainerRef = useRef(null);
   const hostsTabContainerTableRef = useRef(null);
@@ -335,6 +347,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         .filter((node) => node.network === networkId || node.static_node?.network === networkId),
     [store.nodes, store.hostsCommonDetails, networkId],
   );
+  const staticNetworkNodes: Node[] = useMemo(() => store.nodes.filter((node) => node.is_static), [store.nodes]);
 
   //useeffect clg networkNodes
 
@@ -464,6 +477,25 @@ export default function NetworkDetailsPage(props: PageProps) {
       return networkNodes.filter((node) => node.relayedby).sort((a, b) => a.relayedby.localeCompare(b.relayedby));
     }
   }, [networkNodes, selectedRelay]);
+
+  const filteredACLRules = useMemo(() => {
+    return aclRules.filter((rule) => {
+      // First apply the search filter
+      const matchesSearch = rule.name.toLowerCase().includes(searchHost.toLowerCase());
+
+      // Then apply the policy type filter
+      let matchesPolicyType = true;
+      if (policyType === 'Resources') {
+        matchesPolicyType = rule.policy_type === 'device-policy';
+      } else if (policyType === 'Users') {
+        matchesPolicyType = rule.policy_type !== 'device-policy';
+      }
+      // If policyType is 'All', we keep matchesPolicyType as true
+
+      // Return true only if both conditions are met
+      return matchesSearch && matchesPolicyType;
+    });
+  }, [aclRules, searchHost, policyType]);
 
   const toggleClientStatus = useCallback(
     async (client: ExternalClient, newStatus: boolean) => {
@@ -2238,6 +2270,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                                   extraallowedips: node.static_node?.extraallowedips ?? [],
                                   postup: node.static_node?.postup,
                                   postdown: node.static_node?.postdown,
+                                  tags: node.static_node?.tags ?? {},
                                 };
                                 setTargetClient(clientData);
                                 setIsClientDetailsModalOpen(true);
@@ -2416,6 +2449,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                               extraallowedips: node.static_node?.extraallowedips ?? [],
                               postup: node.static_node?.postup,
                               postdown: node.static_node?.postdown,
+                              tags: node.static_node.tags,
                             };
                             setTargetClient(clientData);
                             setIsUpdateClientModalOpen(true);
@@ -2451,6 +2485,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                               extraallowedips: node.static_node?.extraallowedips ?? [],
                               postup: node.static_node?.postup,
                               postdown: node.static_node?.postdown,
+                              tags: node.static_node.tags,
                             };
                             setTargetClient(clientData);
                             setIsClientConfigModalOpen(true);
@@ -2485,6 +2520,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                               extraallowedips: node.static_node?.extraallowedips ?? [],
                               postup: node.static_node?.postup,
                               postdown: node.static_node?.postdown,
+                              tags: node.static_node.tags,
                             };
                             confirmDeleteClient(clientData);
                           },
@@ -2751,7 +2787,7 @@ export default function NetworkDetailsPage(props: PageProps) {
 
         {!isEmpty && (
           <>
-            <Row>
+            <Row style={{ width: '100%' }}>
               {isServerEE && (
                 <Row style={{ width: '100%' }}>
                   {/* <Col
@@ -3310,6 +3346,18 @@ export default function NetworkDetailsPage(props: PageProps) {
   const getAclsContent = useCallback(() => {
     return (
       <>
+        <div className="flex items-start w-full gap-4 p-5 mb-6 border border-stroke-default rounded-xl bg-bg-contrastDefault ">
+          <div className="flex flex-col w-full gap-2">
+            <h3 className="text-text-primary text-base-semibold">Introducing the New Access Control System</h3>
+            <p className="text-base text-text-secondary">
+              Coming soon to replace the current Access Control system. Built to make access management easier and more
+              secure.
+            </p>
+          </div>
+          <Button type="primary" onClick={() => setActiveTabKey('acl')}>
+            Try new ACLs
+          </Button>{' '}
+        </div>
         <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
           {networkHosts.length + clients.length > 50 ? (
             <Row style={{ width: '100%' }}>
@@ -3498,6 +3546,42 @@ export default function NetworkDetailsPage(props: PageProps) {
     jumpToTourStep,
   ]);
 
+  const fetchACLRules = useCallback(async () => {
+    try {
+      if (!networkId) return;
+      const aclRulesResponse = (await ACLService.getACLRules(networkId)).data.Response;
+      setAclRules(aclRulesResponse);
+    } catch (error) {
+      notify.error({
+        message: 'Failed to fetch ACL rules',
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
+      });
+    }
+  }, [networkId, notify]);
+
+  useEffect(() => {
+    fetchACLRules();
+  }, [fetchACLRules]);
+
+  const reloadACL = async () => {
+    setIsRefreshingNetwork(true);
+    fetchACLRules();
+
+    setIsRefreshingNetwork(false);
+  };
+
+  const getACLsContent = useCallback(() => {
+    return (
+      networkId && (
+        <ACLPage
+          networkId={networkId}
+          notify={notify}
+          hostsTabContainerAddHostsRef={hostsTabContainerAddHostsRef}
+          reloadACL={reloadACL}
+        />
+      )
+    );
+  }, [networkId, notify, hostsTabContainerAddHostsRef, setAddPolicyModal]);
   const getGraphContent = useCallback(() => {
     const containerHeight = '78vh';
 
@@ -3709,6 +3793,23 @@ export default function NetworkDetailsPage(props: PageProps) {
         label: `Egress (${egresses.length})`,
         children: network && !isRefreshingNetwork ? getEgressContent() : <Skeleton active />,
       },
+      {
+        key: 'access-control',
+        label: `Access Control`,
+        children: network && !isRefreshingNetwork ? getAclsContent() : <Skeleton active />,
+      },
+      {
+        key: 'acl',
+        label: (
+          <Typography.Text>
+            ACL{' '}
+            <span className="ml-2 px-2 py-0.5 text-white bg-button-primary-fill-default rounded-full text-xs">
+              Beta
+            </span>
+          </Typography.Text>
+        ),
+        children: network && !isRefreshingNetwork ? getACLsContent() : <Skeleton active />,
+      },
       !isSaasBuild
         ? {
             key: 'dns',
@@ -3716,11 +3817,6 @@ export default function NetworkDetailsPage(props: PageProps) {
             children: network && !isRefreshingNetwork ? getDnsContent() : <Skeleton active />,
           }
         : ({} as never),
-      {
-        key: 'access-control',
-        label: `Access Control`,
-        children: network && !isRefreshingNetwork ? getAclsContent() : <Skeleton active />,
-      },
       {
         key: 'graph',
         label: `Graph`,
@@ -3766,6 +3862,18 @@ export default function NetworkDetailsPage(props: PageProps) {
             <Skeleton active />
           ),
       });
+      if (store.userPlatformRole && isAdminUserOrRole(store.userPlatformRole)) {
+        tabs.splice(5, 0, {
+          key: 'tag-mgmt',
+          label: <Typography.Text>Tag Management</Typography.Text>,
+          children:
+            network && !isRefreshingNetwork ? (
+              <TagManagementPage network={network.netid} networkNodes={networkNodes} />
+            ) : (
+              <Skeleton active />
+            ),
+        });
+      }
     }
 
     tabs.push({
@@ -3776,24 +3884,29 @@ export default function NetworkDetailsPage(props: PageProps) {
 
     return tabs;
   }, [
+    networkHosts.length,
     network,
     isRefreshingNetwork,
-    getOverviewContent,
-    networkHosts.length,
     getHostsContent,
     clientGateways.length,
     getClientsContent,
     egresses.length,
     getEgressContent,
-    getDnsContent,
     getAclsContent,
+    getACLsContent,
+    getDnsContent,
     getGraphContent,
     isServerEE,
     getMetricsContent,
+    getOverviewContent,
     relays.length,
     getRelayContent,
     internetGatewaysCount,
+    // activeTabKey,
     isAddInternetGatewayModalOpen,
+    networkNodes,
+    staticNetworkNodes,
+    store.userPlatformRole,
   ]);
 
   const loadMetrics = useCallback(async () => {
@@ -4175,6 +4288,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     await store.fetchNodes();
     loadNetwork();
     setIsRefreshingNetwork(false);
+    fetchACLRules();
   };
 
   useEffect(() => {
@@ -4187,6 +4301,20 @@ export default function NetworkDetailsPage(props: PageProps) {
       element.style.width = '900px';
     }
   }, [isTourOpen]);
+
+  useEffect(() => {
+    const fetchACLRules = async () => {
+      try {
+        if (!networkId) return;
+        const aclRulesResponse = (await ACLService.getACLRules(networkId)).data.Response;
+        setAclRules(aclRulesResponse);
+      } catch (error) {
+        console.error('Failed to fetch ACL rules:', error);
+      }
+    };
+
+    fetchACLRules();
+  }, [networkId]);
 
   useEffect(() => {
     loadNetwork();
@@ -4307,6 +4435,8 @@ export default function NetworkDetailsPage(props: PageProps) {
                   setIsInitialLoad(true);
                   setActiveTabKey(tabKey);
                 }}
+                className="network-details-tabs"
+                moreIcon={null}
               />
             </Col>
           </Row>

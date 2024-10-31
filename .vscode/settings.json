@@ -1,6 +1,4 @@
 {
-  "workbench.colorTheme": "Solarized Dark",
-  "githubPullRequests.ignoredPullRequestBranches": [
-    "master"
-  ]
+  "workbench.colorTheme": "One Dark Pro Darker",
+  "githubPullRequests.ignoredPullRequestBranches": ["master"]
 }

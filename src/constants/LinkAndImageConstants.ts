@@ -15,11 +15,11 @@ const USER_MGMT_DOCS_PAL_URL =
 const UI_DOCS_URL = 'https://docs.netmaker.io/docs/references/user-interface';
 const USER_MGMT_DOCS_NETWORK_ROLES_URL = 'https://docs.netmaker.io/docs/features/users-management-pro#network-roles';
 const USER_MGMT_DOCS_USER_GROUPS_URL = 'https://docs.netmaker.io/docs/features/users-management-pro#user-groups';
-const USER_MGMT_DOCS_INVITES_URL = 'https://docs.netmaker.io/docs/features/users-management-pro#user-groups#adding-users__user-invite';
+const USER_MGMT_DOCS_INVITES_URL =
+  'https://docs.netmaker.io/docs/features/users-management-pro#user-groups#adding-users__user-invite';
 const APPLE_STORE_LINK = 'https://apps.apple.com/us/app/netmaker-rac/id6479694220?itsct=apps_box_badge&amp;itscg=30200';
 const PLAY_STORE_LINK =
   'https://play.google.com/store/apps/details?id=com.net.netmaker&pli=1&utm_source=nmui&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1';
-
 
 const EGRESS_IMG = '/egress.webp';
 const RAG_IMG = '/rag.webp';
@@ -27,6 +27,7 @@ const NET_IMG = '/network.webp';
 const WELCOME_IMG = '/welcome-image.webp';
 const RAC_DOWNLOAD_LINK = 'https://www.netmaker.io/download';
 const RAC_DOCS_URL = 'https://docs.netmaker.io/docs/remote-access-client-rac';
+const TAGS_DOCS_URL = 'https://docs.netmaker.io/docs/features/tag-management';
 
 export const ExternalLinks = {
   RAC_LINK,
@@ -49,6 +50,7 @@ export const ExternalLinks = {
   APPLE_STORE_LINK,
   PLAY_STORE_LINK,
   RAC_DOCS_URL,
+  TAGS_DOCS_URL,
 };
 
 export const AppImages = {

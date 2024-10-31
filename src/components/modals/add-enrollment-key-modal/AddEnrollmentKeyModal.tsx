@@ -12,8 +12,9 @@ import {
   Radio,
   Row,
   Select,
+  Typography,
 } from 'antd';
-import { MouseEvent, Ref, useMemo, useState } from 'react';
+import { MouseEvent, Ref, useCallback, useEffect, useMemo, useState } from 'react';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { EnrollmentKey } from '@/models/EnrollmentKey';
 import { CreateEnrollmentKeyReqDto } from '@/services/dtos/CreateEnrollmentKeyReqDto';
@@ -24,6 +25,9 @@ import dayjs, { Dayjs } from 'dayjs';
 import { ExtendedNode } from '@/models/Node';
 import { getExtendedNode, isNodeRelay } from '@/utils/NodeUtils';
 import { useServerLicense } from '@/utils/Utils';
+import { Tag } from '@/models/Tags';
+import { TagsService } from '@/services/TagsService';
+import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 
 interface AddEnrollmentKeyModalProps {
   isOpen: boolean;
@@ -62,9 +66,11 @@ export default function AddEnrollmentKeyModal({
   }, [networkId, store.networks]);
 
   const [type, setType] = useState<'unlimited' | 'uses' | 'time'>('unlimited');
+  const [tags, setTags] = useState<Tag[]>([]);
 
   const resetModal = () => {
     form.resetFields();
+    setTags([]);
   };
 
   const relays = useMemo<ExtendedNode[]>(() => {
@@ -76,6 +82,35 @@ export default function AddEnrollmentKeyModal({
     }
     return relayNodes;
   }, [isServerEE, networksVal, store.hostsCommonDetails, store.nodes]);
+
+  const filteredTags = useMemo<Tag[]>(() => {
+    const _tags = tags.filter((t) => networksVal?.includes(t.network));
+    if (!isServerEE) {
+      return [];
+    }
+    return _tags;
+  }, [isServerEE, networksVal, tags]);
+
+  const loadTags = useCallback(async () => {
+    try {
+      if (!networkId) {
+        const res = await Promise.allSettled(store.networks.map((n) => TagsService.getTagsPerNetwork(n.netid)));
+        res.forEach((r) => {
+          if (r.status === 'fulfilled') {
+            setTags((prev) => [...prev, ...(r.value.data.Response ?? [])]);
+          }
+        });
+        return;
+      }
+      const tags = (await TagsService.getTagsPerNetwork(networkId)).data.Response;
+      setTags(tags);
+    } catch (err) {
+      notify.error({
+        message: 'Failed to load tags',
+        description: extractErrorMsg(err as any),
+      });
+    }
+  }, [networkId, notify, store.networks]);
 
   const createEnrollmentKey = async () => {
     try {
@@ -108,6 +143,12 @@ export default function AddEnrollmentKeyModal({
       });
     }
   };
+
+  useEffect(() => {
+    if (isOpen) {
+      loadTags();
+    }
+  }, [isOpen, loadTags]);
 
   return (
     <Modal
@@ -215,6 +256,43 @@ export default function AddEnrollmentKeyModal({
                     allowClear
                     style={{ width: '100%' }}
                     options={relays.map((node) => ({ label: `${node.name} (${node.network})`, value: node.id }))}
+                    disabled={networksVal?.length === 0}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+          )}
+
+          {isServerEE && (
+            <Row>
+              <Col xs={24}>
+                <Form.Item
+                  name="groups"
+                  label="Tags"
+                  tooltip={
+                    <Typography.Text>
+                      Tags help to group hosts.{' '}
+                      <a target="_blank" href={ExternalLinks.TAGS_DOCS_URL} rel="noreferrer">
+                        Learn more
+                      </a>
+                    </Typography.Text>
+                  }
+                  data-nmui-intercom="add-enrollment-key-form_tags"
+                  extra={
+                    <Typography.Text disabled>
+                      Hosts that join with this key will automatically be given these tags
+                    </Typography.Text>
+                  }
+                >
+                  <Select
+                    placeholder="Select tags to assign to hosts"
+                    allowClear
+                    mode="multiple"
+                    style={{ width: '100%' }}
+                    options={filteredTags.map((tag) => ({
+                      label: `${tag.tag_name} (${tag.network})`,
+                      value: tag.id,
+                    }))}
                     disabled={networksVal?.length === 0}
                   />
                 </Form.Item>
