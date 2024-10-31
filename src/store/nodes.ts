@@ -42,7 +42,7 @@ const createNodeSlice: StateCreator<INodeSlice, [], [], INodeSlice> = (set, get)
           nodes.push(...result.value.data);
         }
       });
-
+      nodes.sort((a, b) => a.id.localeCompare(b.id));
       set(() => ({ nodes, isFetchingNodes: false }));
     } catch (err) {
       console.error(err);

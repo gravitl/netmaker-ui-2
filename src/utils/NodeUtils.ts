@@ -1,4 +1,4 @@
-import { NULL_HOST, NULL_NODE_ID } from '@/constants/Types';
+import { NULL_HOST, NULL_HOST_COMMON_DETAILS, NULL_NODE_ID } from '@/constants/Types';
 import { ExternalClient } from '@/models/ExternalClient';
 import { Host, HostCommonDetails } from '@/models/Host';
 import { ExtendedNode, Node } from '@/models/Node';
@@ -40,7 +40,7 @@ export function getNodeConnectivityStatus(node: Node | ExternalClient): NodeConn
  */
 export function getExtendedNode(node: Node, hostCommonDetails: Record<string, HostCommonDetails>): ExtendedNode {
   const hostDetails = hostCommonDetails[node?.hostid];
-  return { ...node, ...(hostDetails ? hostDetails : NULL_HOST) };
+  return { ...(hostDetails ?? NULL_HOST_COMMON_DETAILS), ...node };
 }
 
 /**
