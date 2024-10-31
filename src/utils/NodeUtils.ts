@@ -1,4 +1,4 @@
-import { NULL_HOST, NULL_HOST_COMMON_DETAILS, NULL_NODE_ID } from '@/constants/Types';
+import { NULL_HOST_COMMON_DETAILS } from '@/constants/Types';
 import { ExternalClient } from '@/models/ExternalClient';
 import { Host, HostCommonDetails } from '@/models/Host';
 import { ExtendedNode, Node } from '@/models/Node';

@@ -28,7 +28,6 @@ import {
   TableColumnsType,
   Tabs,
   TabsProps,
-  Tag,
   Tour,
   TourProps,
   Typography,
@@ -47,6 +46,7 @@ import NewHostModal from '@/components/modals/new-host-modal/NewHostModal';
 import { lt } from 'semver';
 import { ExtendedNode } from '@/models/Node';
 import { HOST_HEALTH_STATUS } from '@/models/NodeConnectivityStatus';
+import NodeStatus from '@/components/ui/Status';
 
 const HOST_DOCS_URL = 'https://docs.netmaker.io/docs/references/user-interface#hosts';
 
@@ -382,7 +382,7 @@ export default function HostsPage(props: PageProps) {
       //   },
       // },
       {
-        title: 'Health Status',
+        title: 'Status',
         filters: [
           {
             text: 'Healthy',
@@ -427,13 +427,13 @@ export default function HostsPage(props: PageProps) {
 
           switch (worstHealth) {
             default:
-              return <Tag>Unknown</Tag>;
+              return <NodeStatus nodeHealth="unknown" />;
             case 1:
-              return <Tag color="error">Error</Tag>;
+              return <NodeStatus nodeHealth="error" />;
             case 2:
-              return <Tag color="warning">Warning</Tag>;
+              return <NodeStatus nodeHealth="warning" />;
             case 3:
-              return <Tag color="success">Healthy</Tag>;
+              return <NodeStatus nodeHealth="healthy" />;
           }
         },
       },
@@ -1025,7 +1025,7 @@ export default function HostsPage(props: PageProps) {
           <>
             <Row className="page-row-padding">
               <Col xs={24}>
-                <Typography.Title level={3}>Global Hosts</Typography.Title>
+                <Typography.Title level={3}>Devices</Typography.Title>
               </Col>
             </Row>
 

@@ -33,6 +33,7 @@ import { PageProps } from '../../models/Page';
 
 import './HostDetailsPage.scss';
 import { resolveAppRoute, useQuery } from '@/utils/RouteUtils';
+import NodeStatus from '@/components/ui/Status';
 
 export default function HostDetailsPage(props: PageProps) {
   const { hostId } = useParams<{ hostId: string }>();
@@ -99,13 +100,13 @@ export default function HostDetailsPage(props: PageProps) {
 
     switch (worstHealth) {
       default:
-        return <Tag>&#9679; Unknown</Tag>;
+        return <NodeStatus nodeHealth="unknown" />;
       case 1:
-        return <Tag color="error">&#9679; Error</Tag>;
+        return <NodeStatus nodeHealth="error" />;
       case 2:
-        return <Tag color="warning">&#9679; Warning</Tag>;
+        return <NodeStatus nodeHealth="warning" />;
       case 3:
-        return <Tag color="success">&#9679; Healthy</Tag>;
+        return <NodeStatus nodeHealth="healthy" />;
     }
   }, [host?.id, store.nodes]);
 

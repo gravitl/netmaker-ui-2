@@ -31,7 +31,7 @@ import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { NodesService } from '@/services/NodesService';
 import { Host } from '@/models/Host';
 import { PUBLIC_DNS_RESOLVERS } from '@/constants/AppConstants';
-import { useServerLicense, validateExtClientNameField } from '@/utils/Utils';
+import { getHostHealth, useServerLicense, validateExtClientNameField } from '@/utils/Utils';
 import _ from 'lodash';
 
 interface AddClientModalProps {
@@ -138,13 +138,13 @@ export default function AddClientModal({
         },
       },
       {
-        title: 'Health status',
+        title: 'Status',
         render(_, node) {
-          return getNodeConnectivity(node);
+          return getHostHealth(node.hostid, [node]);
         },
       },
     ];
-  }, [getNodeConnectivity]);
+  }, []);
 
   const resetModal = () => {
     form.resetFields();

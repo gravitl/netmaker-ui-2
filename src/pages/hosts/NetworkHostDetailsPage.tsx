@@ -40,6 +40,7 @@ import { DATE_TIME_FORMAT } from '@/constants/AppConstants';
 import UpdateNodeModal from '@/components/modals/update-node-modal/UpdateNodeModal';
 import { NodesService } from '@/services/NodesService';
 import dayjs from 'dayjs';
+import NodeStatus from '@/components/ui/Status';
 
 export default function NetworkHostDetailsPage(props: PageProps) {
   const { hostId, networkId } = useParams<{ hostId: string; networkId: string }>();
@@ -88,13 +89,13 @@ export default function NetworkHostDetailsPage(props: PageProps) {
 
     switch (nodeHealth) {
       default:
-        return <Tag>&#9679; Unknown</Tag>;
+        return <NodeStatus nodeHealth="unknown" />;
       case 'error':
-        return <Tag color="error">&#9679; Error</Tag>;
+        return <NodeStatus nodeHealth="error" />;
       case 'warning':
-        return <Tag color="warning">&#9679; Warning</Tag>;
+        return <NodeStatus nodeHealth="warning" />;
       case 'healthy':
-        return <Tag color="success">&#9679; Healthy</Tag>;
+        return <NodeStatus nodeHealth="healthy" />;
     }
   }, [node]);
 

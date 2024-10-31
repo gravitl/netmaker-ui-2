@@ -29,6 +29,7 @@ import { NodesService } from '@/services/NodesService';
 import { CreateEgressNodeDto } from '@/services/dtos/CreateEgressNodeDto';
 import './AddEgressModal.styles.scss';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
+import { getHostHealth } from '@/utils/Utils';
 
 interface AddEgressModalProps {
   isOpen: boolean;
@@ -116,13 +117,13 @@ export default function AddEgressModal({
         dataIndex: 'firewallinuse',
       },
       {
-        title: 'Health status',
+        title: 'Status',
         render(_, node) {
-          return getNodeConnectivity(node);
+          return getHostHealth(node.hostid, [node]);
         },
       },
     ];
-  }, [getNodeConnectivity]);
+  }, []);
 
   const isNodeSelectable = (node: Node) => {
     return !node.isegressgateway;
