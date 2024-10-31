@@ -265,6 +265,7 @@ export default function UserDetailsModal({
                 .map((g) => ({
                   value: g.id,
                   label: g.name,
+                  title: g.meta_data,
                 }))}
             />
           </Form.Item>
