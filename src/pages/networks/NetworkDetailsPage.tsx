@@ -109,7 +109,7 @@ import QuickSetupModal from '@/components/modals/quick-setup-modal/QuickSetupMod
 import DownloadRemotesAccessClientModal from '@/components/modals/remote-access-client-modal/DownloadRemoteAccessClientModal';
 import SetNetworkFailoverModal from '@/components/modals/set-network-failover-modal/SetNetworkFailoverModal';
 import { TourType } from '../DashboardPage';
-import { Waypoints } from 'lucide-react';
+import { WaypointsIcon } from 'lucide-react';
 import { isAdminUserOrRole } from '@/utils/UserMgmtUtils';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 import RacDownloadBanner from '@/components/RacDownloadBanner';
@@ -2259,7 +2259,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                           <Link
                             to={node.is_static ? '#' : getNetworkHostRoute(node.hostid, node.network)}
                             title={`Network Host ID: ${node.is_static ? node.static_node.clientid : node.id}`}
-                            className="flex items-center gap-2"
+                            className="inline-flex items-center gap-2"
                             onClick={(e) => {
                               if (node.is_static) {
                                 e.preventDefault();
@@ -2304,8 +2304,8 @@ export default function NetworkDetailsPage(props: PageProps) {
                           )}
                           {isServerEE && node.is_fail_over && (
                             <Tooltip title="This host is acting as the network's failover host">
-                              <Waypoints
-                                style={{ marginLeft: '.5rem' }}
+                              <WaypointsIcon
+                                style={{ marginLeft: '.5rem', marginBottom: '.5rem', display: 'inline' }}
                                 color={
                                   store.currentTheme === 'dark' ? branding.primaryColorDark : branding.primaryColorLight
                                 }
