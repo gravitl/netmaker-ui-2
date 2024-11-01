@@ -3791,7 +3791,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     const tabs: TabsProps['items'] = [
       {
         key: 'hosts',
-        label: `Nodes (${networkHosts.length})`,
+        label: `Nodes (${networkNodes.length})`,
         children: network && !isRefreshingNetwork ? getHostsContent() : <Skeleton active />,
       },
       {
