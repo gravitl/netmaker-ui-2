@@ -124,7 +124,7 @@ export default function MainLayout() {
           ? {
               key: 'hosts',
               icon: LaptopOutlined,
-              label: 'Global Hosts',
+              label: 'Devices',
             }
           : undefined!,
         userHasFullAccess

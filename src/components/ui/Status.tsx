@@ -50,7 +50,7 @@ export default function NodeStatus(props: StatusProps) {
       case 'healthy':
         return infoModalTitle ? (
           <span className="inline-flex justify-center">
-            <CircleCheckIcon className="text-green-600 inline-block mr-2" /> Host Connected
+            <CircleCheckIcon className="text-green-600 inline-block mr-2" /> Node Connected
           </span>
         ) : (
           'Connected'
@@ -74,7 +74,7 @@ export default function NodeStatus(props: StatusProps) {
       case 'disconnected':
         return infoModalTitle ? (
           <span className="inline-flex justify-center">
-            <CircleSlashIcon className="text-neutral-600 inline-block mr-2" /> Host Disconnected
+            <CircleSlashIcon className="text-neutral-600 inline-block mr-2" /> Node Disconnected
           </span>
         ) : (
           'Disconnected'
@@ -82,7 +82,7 @@ export default function NodeStatus(props: StatusProps) {
       default:
         return infoModalTitle ? (
           <span className="inline-flex justify-center">
-            <CircleSlashIcon className="text-neutral-600 inline-block mr-2" /> Unknown Host Status
+            <CircleSlashIcon className="text-neutral-600 inline-block mr-2" /> Unknown Node Status
           </span>
         ) : (
           'Unknown'
@@ -95,13 +95,13 @@ export default function NodeStatus(props: StatusProps) {
       case 'healthy':
         return 'Node is healthy and connected. All systems are functioning normally.';
       case 'warning':
-        return 'Host connectivity is degraded. Network performance may be affected.';
+        return 'Node connectivity is degraded. Network performance may be affected.';
       case 'error':
-        return 'Host connection lost. Check network settings or re-sync the host.';
+        return 'Node connection lost. Check network settings or re-sync the node.';
       case 'disconnected':
-        return 'Host is disconnected from the network. You can connect to restore connection.';
+        return 'Node is disconnected from the network. You can connect to restore connection.';
       default:
-        return "Host's status is unknown. It may no longer be connected to any network on this server.";
+        return "Node's status is unknown. It may no longer be connected to any network on this server.";
     }
   };
 

@@ -31,7 +31,7 @@ import { Host } from '@/models/Host';
 import { CreateIngressNodeDto } from '@/services/dtos/CreateIngressNodeDto';
 import { PUBLIC_DNS_RESOLVERS } from '@/constants/AppConstants';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
-import { useServerLicense } from '@/utils/Utils';
+import { getHostHealth, useServerLicense } from '@/utils/Utils';
 
 interface AddRemoteAccessGatewayModalProps {
   isOpen: boolean;
@@ -119,13 +119,13 @@ export default function AddRemoteAccessGatewayModal({
         dataIndex: 'os',
       },
       {
-        title: 'Health status',
+        title: 'Status',
         render(_, node) {
-          return getNodeConnectivity(node);
+          return getHostHealth(node.hostid, [node]);
         },
       },
     ];
-  }, [getNodeConnectivity]);
+  }, []);
 
   const DNS_RESOLVERS = useMemo(() => {
     if (!store.serverConfig?.CoreDNSAddr || store.serverConfig?.CoreDNSAddr === '') {
