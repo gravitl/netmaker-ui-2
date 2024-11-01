@@ -24,10 +24,23 @@ const AddACLModal: React.FC<AddACLModalProps> = ({ isOpen, onClose, networkId, f
 
   if (!isOpen) return null;
 
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
+  const handleDialogClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  };
+
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-[#141414] bg-opacity-50">
-      <div className="flex items-center justify-center min-h-full p-4">
-        <div className="relative w-full max-w-[620px] bg-bg-default border border-stroke-default rounded-xl">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-[#141414] bg-opacity-50" onClick={handleOverlayClick}>
+      <div className="flex items-center justify-center min-h-full p-4" onClick={handleOverlayClick}>
+        <div
+          className="relative w-full max-w-[620px] bg-bg-default border border-stroke-default rounded-xl"
+          onClick={handleDialogClick}
+        >
           <div className="flex items-start justify-between w-full gap-6 py-6 pl-8 pr-3 border-b border-stroke-default bg-bg-default rounded-t-xl">
             <div className="flex flex-col gap-1">
               <h2 className="text-xl text-text-primary">Create new access control policy</h2>

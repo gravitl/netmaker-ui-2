@@ -559,8 +559,14 @@ export default function NetworkDetailsPage(props: PageProps) {
   }, [acls, clients, networkNodes, showClientAcls, store.hostsCommonDetails]);
 
   const filteredAclDataV2 = useMemo<AclTableData[]>(() => {
-    return aclTableDataV2.filter((node) => node.name.toLowerCase().includes(searchAclHost.toLowerCase()));
-  }, [aclTableDataV2, searchAclHost]);
+    return aclTableDataV2
+      .filter((node) => {
+        if (node.type === 'client') return true;
+        const foundNode = networkNodes.find((n) => n.id === node.nodeOrClientId);
+        return foundNode && !foundNode.is_static;
+      })
+      .filter((node) => node.name.toLowerCase().includes(searchAclHost.toLowerCase()));
+  }, [aclTableDataV2, searchAclHost, networkNodes]);
 
   const connectivityStatusMetricsData = useMemo<NodeMetricsTableData[]>(() => {
     return Object.keys(networkNodeMetrics?.nodes ?? {}).map((nodeId) => {
@@ -1432,6 +1438,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       nodeOrClientIdColTuple: [type: 'client' | 'node', id: Node['id'] | ExternalClient['clientid']],
     ) => {
       // always enable client-to-client ACLs sinnce that's not supported currently
+
       if (nodeOrClientIdRowTuple[0] === 'client' && nodeOrClientIdColTuple[0] === 'client') {
         if (newAclLevel === ACL_UNDEFINED) {
           return <DashOutlined />;
@@ -1545,27 +1552,32 @@ export default function NetworkDetailsPage(props: PageProps) {
           );
         },
       },
-      ...aclTableDataV2.map((aclData) => ({
-        title: aclData.name,
-        width: '5rem',
-        render(_: unknown, aclEntry: (typeof aclTableDataV2)[0]) {
-          // aclEntry => row, aclData => column
-          return renderAclValue(
-            // original acl status
-            originalAcls[aclEntry.nodeOrClientId]?.[aclData.nodeOrClientId] ?? ACL_UNDEFINED,
+      ...aclTableDataV2
+        .filter((aclData) => {
+          if (aclData.type === 'client') return true;
+          const foundNode = networkNodes.find((n) => n.id === aclData.nodeOrClientId);
+          return foundNode && !foundNode.is_static;
+        })
+        .map((aclData) => ({
+          title: aclData.name,
+          width: '5rem',
+          render(_: unknown, aclEntry: (typeof aclTableDataV2)[0]) {
+            // aclEntry => row, aclData => column
+            return renderAclValue(
+              // original acl status
+              originalAcls[aclEntry.nodeOrClientId]?.[aclData.nodeOrClientId] ?? ACL_UNDEFINED,
 
-            // new acl status
-            acls[aclEntry.nodeOrClientId]?.[aclData?.nodeOrClientId] ?? ACL_UNDEFINED,
+              // new acl status
+              acls[aclEntry.nodeOrClientId]?.[aclData?.nodeOrClientId] ?? ACL_UNDEFINED,
 
-            // node or client IDs
-            [aclEntry.type, aclEntry.nodeOrClientId],
-            [aclData.type, aclData.nodeOrClientId],
-          );
-        },
-      })),
+              // node or client IDs
+              [aclEntry.type, aclEntry.nodeOrClientId],
+              [aclData.type, aclData.nodeOrClientId],
+            );
+          },
+        })),
     ];
-  }, [aclTableDataV2, acls, clientsMap, originalAcls]);
-
+  }, [aclTableDataV2, acls, clientsMap, originalAcls, networkNodes, setAcls, searchAclHost]);
   const hasAclsBeenEdited = useMemo(() => JSON.stringify(acls) !== JSON.stringify(originalAcls), [acls, originalAcls]);
 
   const metricsTableCols = useMemo<TableColumnProps<NodeMetricsTableData>[]>(() => {
