@@ -125,7 +125,7 @@ function generateRandomHex(size: number) {
 }
 
 export function generateCgnatCIDR() {
-  return `100.64.${generateRandomNumber(254, true)}.0/24`;
+  return `100.${generateRandomNumber(64, true) + 63}.${generateRandomNumber(254, true)}.0/24`;
 }
 
 export function generateCgnatCIDR6() {
