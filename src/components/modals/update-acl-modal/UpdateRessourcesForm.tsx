@@ -123,10 +123,10 @@ const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
                 key={item.id}
                 className="inline-flex items-center gap-1 px-2 py-1 text-sm rounded text-text-primary bg-bg-hover"
               >
-                <TagIcon className="w-3 h-3" />
+                <TagIcon className="w-3 h-3 shrink-0" />
                 {item.name}
                 <XMarkIcon
-                  className="w-4 h-4 cursor-pointer hover:text-text-primary"
+                  className="w-4 h-4 cursor-pointer hover:text-text-primary shrink-0"
                   onClick={(e) => {
                     e.stopPropagation();
                     removeItem(item);
@@ -138,7 +138,7 @@ const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
             ))}
           </div>
         )}
-        <ChevronDownIcon className="absolute w-4 h-4 ml-auto top-2 right-2 text-text-secondary" />
+        <ChevronDownIcon className="absolute w-4 h-4 ml-auto shrink-0 top-2 right-2 text-text-secondary" />
       </div>
 
       {isOpen && (
@@ -159,7 +159,10 @@ const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
                   onClick={(e) => e.stopPropagation()}
                   autoComplete="off"
                 />
-                <MagnifyingGlassIcon className="absolute w-4 h-4 left-2 top-2 text-text-secondary" aria-hidden="true" />
+                <MagnifyingGlassIcon
+                  className="absolute w-4 h-4 shrink-0 left-2 top-2 text-text-secondary"
+                  aria-hidden="true"
+                />
               </div>
             </div>
 
@@ -170,7 +173,7 @@ const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
                 role="option"
                 aria-selected={value.some((v) => v.id === '*')}
               >
-                <TagIcon className="w-4 h-4 text-text-secondary" aria-hidden="true" />
+                <TagIcon className="w-4 h-4 text-text-secondary shrink-0" aria-hidden="true" />
                 <span className="flex-1">All Resources</span>
                 {value.some((v) => v.id === '*') && <div className="w-4 h-4 ml-auto text-primary-500">✓</div>}
               </div>
@@ -200,7 +203,7 @@ const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
                     aria-selected={isSelected}
                     aria-disabled={isDisabled}
                   >
-                    <TagIcon className="w-4 h-4 text-text-secondary" aria-hidden="true" />
+                    <TagIcon className="w-4 h-4 shrink-0 text-text-secondary" aria-hidden="true" />
                     <span className="flex-1">{tag.tag_name}</span>
                     {isSelected && !isDisabled && <div className="w-4 h-4 ml-auto text-primary-500">✓</div>}
                   </div>

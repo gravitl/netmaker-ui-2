@@ -173,8 +173,8 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, reloa
           </p>
         </div>
       </div>
-      <div className="flex justify-between w-full">
-        <div className="flex gap-2">
+      <div className="flex flex-col justify-between w-full gap-4 md:flex-row">
+        <div className="flex flex-col gap-3 md:flex-row">
           <Input
             size="large"
             placeholder="Search policies"
@@ -182,14 +182,15 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, reloa
             onChange={(ev) => setSearchHost(ev.target.value)}
             prefix={<SearchOutlined />}
             allowClear
-            style={{ marginBottom: '.5rem' }}
+            className="w-[300px]"
           />
-          <div className="flex gap-2">
+
+          <div className="flex gap-2 px-4 pb-2 -mx-4 overflow-x-auto sm:mx-0 sm:px-0 sm:overflow-x-visible">
             {policyFilter.map((filter) => (
               <button
                 key={filter.name}
                 onClick={() => setPolicyType(filter.name)}
-                className={`flex items-center gap-2 px-3 py-2 rounded text-sm transition-colors duration-200 ${
+                className={`flex items-center gap-2 px-3 py-2 rounded text-sm transition-colors duration-200 flex-shrink-0 ${
                   policyType === filter.name
                     ? 'bg-button-secondary-fill-default text-text-primary'
                     : 'bg-transparent text-text-secondary hover:bg-button-secondary-fill-hover'
@@ -201,16 +202,15 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, reloa
             ))}
           </div>
         </div>
-        <Col xs={24} md={6} className="add-host-dropdown-button">
-          <Button
-            type="primary"
-            style={{ width: '170px', marginBottom: '.5rem' }}
-            onClick={() => setAddPolicyModal(true)}
-            ref={hostsTabContainerAddHostsRef}
-          >
-            <span>Add Policy</span>
-          </Button>
-        </Col>
+
+        <Button
+          type="primary"
+          className="w-full sm:w-[170px]"
+          onClick={() => setAddPolicyModal(true)}
+          ref={hostsTabContainerAddHostsRef}
+        >
+          <span>Add Policy</span>
+        </Button>
       </div>
       <Table
         scroll={{ x: true }}
@@ -228,9 +228,9 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, reloa
               <div className="flex items-center gap-2 text-sm-semibold">
                 <span>
                   {policyType === 'device-policy' ? (
-                    <ComputerDesktopIcon className="w-4 h-4" />
+                    <ComputerDesktopIcon className="w-4 h-4 shrink-0" />
                   ) : (
-                    <UsersIcon className="w-4 h-4" />
+                    <UsersIcon className="w-4 h-4 shrink-0" />
                   )}
                 </span>
                 <span>{policyType === 'device-policy' ? 'Resources' : 'Users'}</span>
@@ -272,7 +272,7 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, reloa
                     <Tooltip key={index} title={displayValue}>
                       <Tag>
                         <div className="flex items-center gap-1">
-                          <Icon className="w-3 h-3" />
+                          <Icon className="w-3 h-3 shrink-0" />
                           <span>{displayValue}</span>
                         </div>
                       </Tag>
@@ -304,7 +304,7 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, reloa
                     <Tooltip key={index} title={displayValue}>
                       <Tag>
                         <div className="flex items-center gap-1">
-                          <TagIcon className="w-3 h-3" />
+                          <TagIcon className="w-3 h-3 shrink-0" />
                           <span>{displayValue}</span>
                         </div>
                       </Tag>

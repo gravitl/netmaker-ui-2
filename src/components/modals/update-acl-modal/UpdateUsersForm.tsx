@@ -129,10 +129,14 @@ const SelectDropdown: React.FC<SelectDropdownProps> = ({
                 key={item.id}
                 className="inline-flex items-center gap-1 px-2 py-1 text-sm rounded text-text-primary bg-bg-hover"
               >
-                {item.type === 'group' ? <UsersIcon className="w-3 h-3" /> : <UserIcon className="w-3 h-3" />}
+                {item.type === 'group' ? (
+                  <UsersIcon className="w-3 h-3 shrink-0" />
+                ) : (
+                  <UserIcon className="w-3 h-3 shrink-0" />
+                )}
                 {item.name}
                 <XMarkIcon
-                  className="w-4 h-4 cursor-pointer"
+                  className="w-4 h-4 cursor-pointer shrink-0"
                   onClick={(e) => {
                     e.stopPropagation();
                     removeItem(item);
@@ -142,7 +146,7 @@ const SelectDropdown: React.FC<SelectDropdownProps> = ({
             ))}
           </div>
         )}
-        <ChevronDownIcon className="absolute w-4 h-4 ml-auto top-2 right-2 text-text-secondary" />
+        <ChevronDownIcon className="absolute w-4 h-4 ml-auto shrink-0 top-2 right-2 text-text-secondary" />
       </div>
 
       {isOpen && (
@@ -158,7 +162,7 @@ const SelectDropdown: React.FC<SelectDropdownProps> = ({
                   placeholder="Search groups and users..."
                   className="w-full pl-8 pr-2 py-1.5 text-sm border rounded-md bg-bg-default border-stroke-default focus:outline-none focus:ring-1 focus:ring-primary-500"
                 />
-                <MagnifyingGlassIcon className="absolute w-4 h-4 left-2 top-2 text-text-secondary" />
+                <MagnifyingGlassIcon className="absolute w-4 h-4 shrink-0 left-2 top-2 text-text-secondary" />
               </div>
             </div>
 
@@ -173,7 +177,7 @@ const SelectDropdown: React.FC<SelectDropdownProps> = ({
                         className="flex items-center gap-2 px-3 py-2 text-sm cursor-pointer hover:bg-button-secondary-fill-hover"
                         onClick={() => toggleGroup(group)}
                       >
-                        <UsersIcon className="w-4 h-4 text-text-secondary" />
+                        <UsersIcon className="w-4 h-4 shrink-0 text-text-secondary" />
                         {group.name}
                         {value.some((v) => v.id === group.id) && <div className="w-4 h-4 ml-auto">✓</div>}
                       </div>
@@ -190,7 +194,7 @@ const SelectDropdown: React.FC<SelectDropdownProps> = ({
                         className="flex items-center gap-2 px-3 py-2 text-sm cursor-pointer hover:bg-button-secondary-fill-hover"
                         onClick={() => toggleItem(user)}
                       >
-                        <UserIcon className="w-4 h-4 text-text-secondary" />
+                        <UserIcon className="w-4 h-4 shrink-0 text-text-secondary" />
                         {user.username}
                         {value.some((v) => v.id === user.username) && <div className="w-4 h-4 ml-auto">✓</div>}
                       </div>
@@ -207,7 +211,7 @@ const SelectDropdown: React.FC<SelectDropdownProps> = ({
                       onClick={onManageClick}
                       className="flex items-center justify-center w-full gap-2 px-4 py-2 text-sm transition-colors duration-200 rounded-md bg-button-primary-fill-default hover:bg-button-primary-fill-hover"
                     >
-                      <WrenchIcon className="w-4 h-4" />
+                      <WrenchIcon className="w-4 h-4 shrink-0" />
                       Manage groups and users
                     </button>
                   </Link>
@@ -300,10 +304,10 @@ const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
                 key={item.id}
                 className="inline-flex items-center gap-1 px-2 py-1 text-sm rounded text-text-primary bg-bg-hover"
               >
-                <TagIcon className="w-3 h-3" />
+                <TagIcon className="w-3 h-3 shrink-0" />
                 {item.name}
                 <XMarkIcon
-                  className="w-4 h-4 cursor-pointer hover:text-text-primary"
+                  className="w-4 h-4 cursor-pointer shrink-0 hover:text-text-primary"
                   onClick={(e) => {
                     e.stopPropagation();
                     removeItem(item);
@@ -315,7 +319,7 @@ const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
             ))}
           </div>
         )}
-        <ChevronDownIcon className="absolute w-4 h-4 ml-auto top-2 right-2 text-text-secondary" />
+        <ChevronDownIcon className="absolute w-4 h-4 ml-auto shrink-0 top-2 right-2 text-text-secondary" />
       </div>
 
       {isOpen && (
@@ -336,7 +340,10 @@ const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
                   onClick={(e) => e.stopPropagation()}
                   autoComplete="off"
                 />
-                <MagnifyingGlassIcon className="absolute w-4 h-4 left-2 top-2 text-text-secondary" aria-hidden="true" />
+                <MagnifyingGlassIcon
+                  className="absolute w-4 h-4 shrink-0 left-2 top-2 text-text-secondary"
+                  aria-hidden="true"
+                />
               </div>
             </div>
 
@@ -347,7 +354,7 @@ const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
                 role="option"
                 aria-selected={value.some((v) => v.id === '*')}
               >
-                <TagIcon className="w-4 h-4 text-text-secondary" aria-hidden="true" />
+                <TagIcon className="w-4 h-4 shrink-0 text-text-secondary" aria-hidden="true" />
                 <span className="flex-1">All Resources</span>
                 {value.some((v) => v.id === '*') && <div className="w-4 h-4 ml-auto text-primary-500">✓</div>}
               </div>
@@ -377,7 +384,7 @@ const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
                     aria-selected={isSelected}
                     aria-disabled={isDisabled}
                   >
-                    <TagIcon className="w-4 h-4 text-text-secondary" aria-hidden="true" />
+                    <TagIcon className="w-4 h-4 shrink-0 text-text-secondary" aria-hidden="true" />
                     <span className="flex-1">{tag.tag_name}</span>
                     {isSelected && !isDisabled && <div className="w-4 h-4 ml-auto text-primary-500">✓</div>}
                   </div>

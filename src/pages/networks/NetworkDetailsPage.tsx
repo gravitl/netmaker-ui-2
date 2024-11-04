@@ -2180,8 +2180,8 @@ export default function NetworkDetailsPage(props: PageProps) {
       <div className="network-hosts-tab-content" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
         <Row justify="space-between" align="middle" style={{ marginBottom: '1rem', width: '100%' }}>
           {isServerEE && <RacDownloadBanner />}
-          <div className="flex flex-col w-full gap-4 sm:flex-row">
-            <div className="flex flex-col flex-grow gap-4 sm:flex-row">
+          <div className="inline-flex flex-col w-full gap-4 md:flex-row">
+            <div className="inline-flex flex-col flex-grow gap-4 md:flex-row">
               <Input
                 size="large"
                 placeholder="Search nodes"
@@ -2189,7 +2189,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                 onChange={(ev) => setSearchHost(ev.target.value)}
                 prefix={<SearchOutlined />}
                 allowClear
-                style={{ maxWidth: '240px' }}
+                style={{ maxWidth: '240px', height: '40px' }}
               />
               <div className="flex flex-wrap gap-2">
                 {filters.map((filter) => (
@@ -2304,11 +2304,11 @@ export default function NetworkDetailsPage(props: PageProps) {
                           >
                             {getExtendedNode(node, store.hostsCommonDetails).is_static &&
                             !getExtendedNode(node, store.hostsCommonDetails).is_user_node ? (
-                              <DocumentIcon className="w-4 h-4 text-text-primary" />
+                              <DocumentIcon className="w-4 h-4 shrink-0 text-text-primary" />
                             ) : getExtendedNode(node, store.hostsCommonDetails).is_user_node ? (
-                              <UserIcon className="w-4 h-4 text-text-primary" />
+                              <UserIcon className="w-4 h-4 shrink-0 text-text-primary" />
                             ) : (
-                              <ServerIcon className="w-4 h-4 text-text-primary" />
+                              <ServerIcon className="w-4 h-4 shrink-0 text-text-primary" />
                             )}
                             <span>{node.is_static ? node.static_node?.clientid : hostName}</span>
                           </Link>
@@ -2379,8 +2379,8 @@ export default function NetworkDetailsPage(props: PageProps) {
 
                         return (
                           <span className="flex items-center gap-2">
-                            <ServerIcon className="w-4 h-4 text-text-primary" />
-                            <span>{gatewayName}</span>
+                            <ServerIcon className="w-4 h-4 shrink-0 text-text-primary" />
+                            <span className="w-full break-words">{gatewayName}</span>
                           </span>
                         );
                       } else {
@@ -4282,9 +4282,9 @@ export default function NetworkDetailsPage(props: PageProps) {
           <FloatButton
             icon={<QuestionCircleOutlined />}
             type="primary"
-            style={{ left: store.isSidebarCollapsed ? 90 : 210 }}
             badge={{ dot: true }}
             onClick={toggleFloatingButton}
+            className={`fixed bottom-4 ${store.isSidebarCollapsed ? 'left-4' : 'left-52'}`}
           />
         )}
         {!showFloatingButton && (
