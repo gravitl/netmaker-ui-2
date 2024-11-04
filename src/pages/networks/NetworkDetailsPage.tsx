@@ -29,6 +29,7 @@ import {
   InfoCircleOutlined,
   LoadingOutlined,
   MoreOutlined,
+  PlayCircleOutlined,
   PlusOutlined,
   QuestionCircleOutlined,
   ReloadOutlined,
@@ -2483,6 +2484,36 @@ export default function NetworkDetailsPage(props: PageProps) {
                           },
                         },
                         {
+                          key: 'toggle',
+                          icon: node.static_node?.enabled ? <StopOutlined /> : <PlayCircleOutlined />,
+                          label: node.static_node?.enabled ? 'Disable' : 'Enable',
+                          disabled: !isAdminUserOrRole(store.user!) && store.username !== node.static_node?.ownerid,
+                          onClick: () => {
+                            const clientData: ExternalClient = {
+                              clientid: node.static_node?.clientid ?? '',
+                              description: '',
+                              privatekey: node.static_node?.privatekey ?? '',
+                              publickey: node.static_node?.publickey ?? '',
+                              network: networkId ?? '',
+                              address: node.static_node?.address ?? '',
+                              address6: node.static_node?.address6 ?? '',
+                              ingressgatewayid: node.static_node?.ingressgatewayid ?? '',
+                              ingressgatewayendpoint: node.static_node?.ingressgatewayendpoint ?? '',
+                              lastmodified: node.lastmodified ?? 0,
+                              enabled: node.static_node?.enabled ?? false,
+                              ownerid: node.static_node?.ownerid ?? '',
+                              internal_ip_addr: '',
+                              internal_ip_addr6: '',
+                              dns: node.static_node?.dns ?? '',
+                              extraallowedips: node.static_node?.extraallowedips ?? [],
+                              postup: node.static_node?.postup,
+                              postdown: node.static_node?.postdown,
+                              tags: node.static_node.tags,
+                            };
+                            toggleClientStatus(clientData, !node.static_node?.enabled);
+                          },
+                        },
+                        {
                           key: 'view',
                           label: (
                             <Typography.Text
@@ -2530,7 +2561,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                           onClick: () => {
                             const clientData: ExternalClient = {
                               clientid: node.static_node?.clientid ?? '',
-                              description: '', // Empty string as it's required but not in static node
+                              description: '',
                               privatekey: node.static_node?.privatekey ?? '',
                               publickey: node.static_node?.publickey ?? '',
                               network: networkId ?? '',
@@ -2541,8 +2572,8 @@ export default function NetworkDetailsPage(props: PageProps) {
                               lastmodified: node.lastmodified ?? 0,
                               enabled: node.static_node?.enabled ?? false,
                               ownerid: node.static_node?.ownerid ?? '',
-                              internal_ip_addr: '', // Empty string as it's required but not in static node
-                              internal_ip_addr6: '', // Empty string as it's required but not in static node
+                              internal_ip_addr: '',
+                              internal_ip_addr6: '',
                               dns: node.static_node?.dns ?? '',
                               extraallowedips: node.static_node?.extraallowedips ?? [],
                               postup: node.static_node?.postup,
