@@ -41,7 +41,7 @@
     "class-variance-authority": "^0.7.0",
     "classnames": "^2.3.2",
     "clsx": "^2.1.1",
-    "cmdk": "^1.0.0",
+    "cmdk": "^1.0.4",
     "dayjs": "^1.11.12",
     "framer-motion": "^11.11.9",
     "graphology": "^0.25.4",
