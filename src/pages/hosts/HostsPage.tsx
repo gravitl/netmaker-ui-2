@@ -112,18 +112,18 @@ export default function HostsPage(props: PageProps) {
   const refreshHostKeys = useCallback(
     (host: Host) => {
       Modal.confirm({
-        title: 'Refresh host keys',
-        content: `Are you sure you want to refresh this host's (${host.name}) keys?`,
+        title: 'Refresh device keys',
+        content: `Are you sure you want to refresh this device's (${host.name}) keys?`,
         onOk: async () => {
           try {
             await HostsService.refreshHostKeys(host.id);
             notify.success({
-              message: 'Host keys refreshing...',
-              description: 'Host key pairs are refreshing. This may take a while.',
+              message: 'Device keys refreshing...',
+              description: 'Device key pairs are refreshing. This may take a while.',
             });
           } catch (err) {
             notify.error({
-              message: 'Failed to refresh host keys',
+              message: 'Failed to refresh device keys',
               description: extractErrorMsg(err as any),
             });
           }
@@ -136,18 +136,18 @@ export default function HostsPage(props: PageProps) {
   const requestHostPull = useCallback(
     (host: Host) => {
       Modal.confirm({
-        title: 'Synchronise host',
-        content: `This will trigger the host (${host.name}) to pull latest network(s) state from the server. Proceed?`,
+        title: 'Synchronise device',
+        content: `This will trigger the device (${host.name}) to pull latest network(s) state from the server. Proceed?`,
         onOk: async () => {
           try {
             await HostsService.requestHostPull(host.id);
             notify.success({
-              message: 'Host is syncing...',
-              description: `Host pull has been initiated for ${host.name}. This may take a while.`,
+              message: 'Device is syncing...',
+              description: `Device pull has been initiated for ${host.name}. This may take a while.`,
             });
           } catch (err) {
             notify.error({
-              message: 'Failed to synchronise host',
+              message: 'Failed to synchronise device',
               description: extractErrorMsg(err as any),
             });
           }
@@ -161,15 +161,15 @@ export default function HostsPage(props: PageProps) {
     async (host: Host) => {
       Modal.confirm({
         title: 'Toggle defaultness',
-        content: `Are you sure you want to turn ${!host.isdefault ? 'on' : 'off'} defaultness for this host?`,
+        content: `Are you sure you want to turn ${!host.isdefault ? 'on' : 'off'} defaultness for this device?`,
         onOk: async () => {
           try {
             const newHost = (await HostsService.updateHost(host.id, { ...host, isdefault: !host.isdefault })).data;
-            notify.success({ message: `Host ${host.id} updated` });
+            notify.success({ message: `Device ${host.id} updated` });
             storeUpdateHost(host.id, newHost);
           } catch (err) {
             notify.error({
-              message: 'Failed to update host',
+              message: 'Failed to update device',
               description: extractErrorMsg(err as any),
             });
           }
@@ -191,7 +191,7 @@ export default function HostsPage(props: PageProps) {
       const assocNodes = store.nodes.filter((node) => node.hostid === host.id);
 
       Modal.confirm({
-        title: 'Delete host',
+        title: 'Delete device',
         content: (
           <>
             <Row>
@@ -230,19 +230,19 @@ export default function HostsPage(props: PageProps) {
 
   const refreshAllHostKeys = useCallback(() => {
     Modal.confirm({
-      title: 'Refresh all device keys',
-      content: 'Are you sure you want to refresh all device keys?',
+      title: 'Refresh all devices keys',
+      content: 'Are you sure you want to refresh all devices keys?',
       onOk: async () => {
         try {
           setIsRefreshingHosts(true);
           await HostsService.refreshAllHostsKeys();
           notify.success({
-            message: 'Device keys refreshing...',
+            message: 'Devices keys refreshing...',
             description: 'Device key pairs are refreshing. This may take a while.',
           });
         } catch (err) {
           notify.error({
-            message: 'Failed to refresh device keys',
+            message: 'Failed to refresh devices keys',
             description: extractErrorMsg(err as any),
           });
         } finally {
@@ -473,7 +473,7 @@ export default function HostsPage(props: PageProps) {
                   },
                   {
                     key: 'refresh',
-                    label: 'Refresh Host Keys',
+                    label: 'Refresh Device Keys',
                     onClick: (ev) => {
                       ev.domEvent.stopPropagation();
                       refreshHostKeys(host);
@@ -585,7 +585,7 @@ export default function HostsPage(props: PageProps) {
                           onEditHost(host);
                         }}
                       >
-                        Edit Host
+                        Edit Device
                       </Typography.Text>
                     ),
                   },
@@ -827,10 +827,10 @@ export default function HostsPage(props: PageProps) {
       title: 'Devices',
       description: (
         <>
-          These are your devices: servers, devices, VM&quot;s, containers, laptops, and more. You can get information
-          about your devices on the table. Clicking on the host name will show extra host details. The ellipsis button
-          at the end of row shows additional operations such as making a host the default , editing its settings,
-          upgrading its version, deleting the host
+          Devices are your servers, devices, VM&quot;s, containers, laptops, and more can all be Devices. You can get
+          information about your devices on the table. Clicking on the device name will show extra device details. The
+          ellipsis button at the end of row shows additional operations such as making a device the default , editing
+          its settings, upgrading its version, deleting the device
         </>
       ),
       target: () => hostsTableRef.current,
@@ -838,16 +838,16 @@ export default function HostsPage(props: PageProps) {
     {
       title: 'Network Access Management',
       description:
-        'You can view the networks that the host is connected to and connect or disconnect the host from a network.',
+        'You can view the networks that the device is connected to and connect or disconnect the device from a network.',
       target: () => networkAccessManagementTabRef.current,
     },
     {
       title: 'Network Access Manangement - Devices',
       description: (
         <>
-          You can view host information and once you select a host, you can view the networks that the host is connected
-          to and connect or disconnect the host from a network on the right side, On the end of the row you can click
-          the ellipsis button to make the host the default, edit its settings
+          You can view device information and once you select a device, you can view the networks that the device is
+          connected to and connect or disconnect the device from a network on the right side, On the end of the row you
+          can click the ellipsis button to make the device the default, edit its settings
         </>
       ),
       target: () => networkAccessManagementTabHostsTableRef.current,
@@ -858,34 +858,34 @@ export default function HostsPage(props: PageProps) {
       target: () => networkAccessManagementTabNetworksTableRef.current,
     },
     {
-      title: 'Refresh Host Keys',
+      title: 'Refresh Device Keys',
       description: 'Refresh all devices keys',
       target: () => refreshHostKeysButtonRef.current,
     },
     {
-      title: 'Connect a Host',
-      description: 'You can connect a host by clicking on the button',
+      title: 'Connect a Device',
+      description: 'You can connect a device by clicking on the button',
       target: () => connectHostButtonRef.current,
     },
     {
-      title: 'Connect a Host - Enrollment Keys',
+      title: 'Connect a Device - Enrollment Keys',
       description: (
         <>
-          You can create an enrollment key which defines the networks a host has access to or you can pick an existing
+          You can create an enrollment key which defines the networks a device has access to or you can pick an existing
           enrollment key
         </>
       ),
       target: () => connectHostModalEnrollmentKeysTabRef.current,
     },
     {
-      title: 'Connect a Host - Select OS',
+      title: 'Connect a Device - Select OS',
       description: (
-        <>You can select the OS of the host that you want to connect and follow the netclient install instructions</>
+        <>You can select the OS of the device that you want to connect and follow the netclient install instructions</>
       ),
       target: () => connectHostModalSelectOSTabRef.current,
     },
     {
-      title: 'Connect a Host - Join a Network',
+      title: 'Connect a Device - Join a Network',
       description: <>You can join a network by running the command on the terminal</>,
       target: () => connectHostModalJoinNetworkTabRef.current,
     },
@@ -959,7 +959,7 @@ export default function HostsPage(props: PageProps) {
               </Col>
               <Col xs={24} xl={(24 * 1) / 3} style={{ position: 'relative' }}>
                 <Card className="header-card" style={{ height: '20rem', position: 'absolute', width: '100%' }}>
-                  <Typography.Title level={3}>Add a Host</Typography.Title>
+                  <Typography.Title level={3}>Add a Device</Typography.Title>
                   <Typography.Text>
                     Start creating your network by adding devices on your platform. Servers, VM’s, your laptop, and more
                     are all fair game.
@@ -967,7 +967,7 @@ export default function HostsPage(props: PageProps) {
                   <Row style={{ marginTop: 'auto' }}>
                     <Col>
                       <Button type="primary" size="large" onClick={() => setIsAddNewHostModalOpen(true)}>
-                        <PlusOutlined /> Connect a Host
+                        <PlusOutlined /> Connect a Device
                       </Button>
                     </Col>
                   </Row>
@@ -1010,10 +1010,10 @@ export default function HostsPage(props: PageProps) {
               <Col xs={24} xl={7}>
                 <Card>
                   <Typography.Title level={4} style={{ marginTop: '0px' }}>
-                    Add host directly
+                    Add device directly
                   </Typography.Title>
                   <Typography.Text>
-                    If a host is already registered with the server, you can add it into any network directly from the
+                    If a device is already registered with the server, you can add it into any network directly from the
                     dashboard. Simply go to Network Access Management tab under the{' '}
                     <Link to={resolveAppRoute(AppRoutes.HOSTS_ROUTE)}>Devices page</Link>.
                   </Typography.Text>

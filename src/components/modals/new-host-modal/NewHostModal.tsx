@@ -191,7 +191,7 @@ export default function NewHostModal({
 
   return (
     <Modal
-      title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Add a new host</span>}
+      title={<span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Add a new device</span>}
       open={isOpen}
       className="CustomModal NewHostModal"
       onCancel={(ev) => {
@@ -213,7 +213,7 @@ export default function NewHostModal({
                     if (isOnLastStep) {
                       if (selectedOs !== 'mobile') {
                         notify.success({
-                          message: 'Host added successfully',
+                          message: 'Device added successfully',
                           description: 'It might take a moment to reflect...',
                         });
                       }
@@ -332,13 +332,13 @@ export default function NewHostModal({
                 <Alert
                   style={{ marginBottom: '1rem' }}
                   type="warning"
-                  message={`This enrollment key is for a relay node named ${relayNode.name}. Your host will automatically be relayed`}
+                  message={`This enrollment key is for a relay node named ${relayNode.name}. Your device will automatically be relayed`}
                   showIcon
                 />
               )}
               <Card>
                 <p>
-                  Connect host to network(s){' '}
+                  Connect device to network(s){' '}
                   <span style={{ fontWeight: 'bold' }}>{selectedEnrollmentKey?.networks.join(', ')}</span> via key{' '}
                   <span style={{ fontWeight: 'bold' }}>&quot;{selectedEnrollmentKey?.tags.join(', ')}&quot;</span>{' '}
                   <Button type="link" size="small" onClick={() => setCurrentStep(0)}>
@@ -467,7 +467,7 @@ export default function NewHostModal({
                         <br />
                         <br />
                         <Typography.Text>
-                          If you prefer to continue adding the Windows host to the mesh network, you can download the
+                          If you prefer to continue adding the Windows device to the mesh network, you can download the
                           installer below
                         </Typography.Text>
                         <br />
@@ -682,7 +682,7 @@ export default function NewHostModal({
                         </Typography.Text>
                       </li>
                     </ol>
-                    <small>Note: It might take a few minutes for the host to show up in the network(s)</small>
+                    <small>Note: It might take a few minutes for the device to show up in the network(s)</small>
                   </div>
                 )}
 
@@ -774,7 +774,7 @@ export default function NewHostModal({
                         </pre>
                       </li>
                     </ul>
-                    <small>Note: It might take a few minutes for the host to show up in the network(s)</small>
+                    <small>Note: It might take a few minutes for the device to show up in the network(s)</small>
                   </div>
                 )}
               </Card>
