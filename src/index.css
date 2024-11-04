@@ -22,6 +22,18 @@
   vertical-align: 0;
 }
 
+.ant-btn-icon {
+  position: relative;
+  top: 50%;
+  transform: translate(0, -50%);
+}
+
+.react-sigma-control button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 :root {
   /*White*/
   --color-white: #ffffff;
