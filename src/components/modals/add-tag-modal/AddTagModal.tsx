@@ -152,11 +152,15 @@ export default function AddTagModal({ isOpen, nodes, networkId, onCancel, onCrea
                 Grouped Devices
               </FormLabel>
               <MultiSelect
-                options={nodes.map((node) => ({
-                  label: (node.is_static ? node.static_node.clientid : node.name) || '',
-                  value: deduceNodeId(node),
-                  icon: node.is_static ? FileIcon : ServerIcon,
-                }))}
+                options={nodes
+                  .toSorted((a, b) =>
+                    (a?.name || a.static_node.clientid).localeCompare(b?.name || b.static_node.clientid),
+                  )
+                  .map((node) => ({
+                    label: (node.is_static ? node.static_node.clientid : node.name) || '',
+                    value: deduceNodeId(node),
+                    icon: node.is_static ? FileIcon : ServerIcon,
+                  }))}
                 onValueChange={(vals) => {
                   setSelectedNodes(
                     vals.map(

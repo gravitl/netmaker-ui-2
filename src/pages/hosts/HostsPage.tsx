@@ -201,7 +201,7 @@ export default function HostsPage(props: PageProps) {
               {assocNodes.length > 0 && (
                 <Col xs={24}>
                   <Typography.Text color="warning">Device will be removed from the following networks:</Typography.Text>
-                  <ul>
+                  <ul className="list-disc list-inside">
                     {assocNodes.map((node) => (
                       <li key={node.id}>{node.network}</li>
                     ))}
@@ -952,17 +952,17 @@ export default function HostsPage(props: PageProps) {
                   Devices
                 </Typography.Title>
                 <Typography.Text style={{ color: 'white ' }}>
-                  Devices are your servers, VM&apos;s, containers, laptops, and more can all be Devices. Windows, Linux,
-                  Mac, and FreeBSD are all supported. Register a Device with your server and add them to networks to
-                  give them secure access to other devices and resources.
+                  Devices can be added to your network on this page. Servers, VM&apos;s, containers, laptops, and more
+                  can all be added. Windows, Linux, Mac are all supported. Register a device with your server and add
+                  them to networks to give them secure access to other devices and resources.
                 </Typography.Text>
               </Col>
               <Col xs={24} xl={(24 * 1) / 3} style={{ position: 'relative' }}>
                 <Card className="header-card" style={{ height: '20rem', position: 'absolute', width: '100%' }}>
                   <Typography.Title level={3}>Add a Device</Typography.Title>
                   <Typography.Text>
-                    Start creating your network by adding controllable devices on your platform. Servers, VM’s, your
-                    laptop, and more are all fair game.
+                    Start creating your network by adding devices on your platform. Servers, VM’s, your laptop, and more
+                    are all fair game.
                   </Typography.Text>
                   <Row style={{ marginTop: 'auto' }}>
                     <Col>
@@ -1084,7 +1084,7 @@ export default function HostsPage(props: PageProps) {
                 </Button>
 
                 <Button
-                  title="Go to Devices documentation"
+                  title="Go to devices documentation"
                   size="large"
                   href={HOST_DOCS_URL}
                   target="_blank"

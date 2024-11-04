@@ -182,6 +182,11 @@ export default function AddNetworkModal({
                   </Tooltip>
                 </Col>
                 <Col>
+                  {isIpv4Val && (
+                    <span title="Generate a random address range" onClick={() => autoFillDetails('ipv4')}>
+                      <ShuffleIcon color={themeToken.colorTextSecondary} size="1rem" className="inline mr-2" />
+                    </span>
+                  )}
                   <Form.Item name="isipv4" noStyle valuePropName="checked" data-nmui-intercom="add-network-form_isipv4">
                     <Switch />
                   </Form.Item>
@@ -218,14 +223,7 @@ export default function AddNetworkModal({
                         },
                       ]}
                     >
-                      <Input
-                        placeholder="Enter address CIDR (eg: 100.64.1.0/24)"
-                        suffix={
-                          <span title="Generate a random address range" onClick={() => autoFillDetails('ipv4')}>
-                            <ShuffleIcon color={themeToken.colorTextSecondary} opacity={0.8} size="1rem" />
-                          </span>
-                        }
-                      />
+                      <Input placeholder="Enter address CIDR (eg: 100.64.1.0/24)" />
                     </Form.Item>
                   </Col>
                 </Row>
@@ -252,6 +250,11 @@ export default function AddNetworkModal({
                   </Tooltip>
                 </Col>
                 <Col>
+                  {isIpv6Val && (
+                    <span title="Generate a random address range" onClick={() => autoFillDetails('ipv6')}>
+                      <ShuffleIcon color={themeToken.colorTextSecondary} size="1rem" className="inline mr-2" />
+                    </span>
+                  )}
                   <Form.Item name="isipv6" noStyle valuePropName="checked" data-nmui-intercom="add-network-form_isipv6">
                     <Switch />
                   </Form.Item>
@@ -288,14 +291,7 @@ export default function AddNetworkModal({
                         },
                       ]}
                     >
-                      <Input
-                        placeholder="Enter address CIDR (eg: fd3c:49b3:973f:ee87::/64)"
-                        suffix={
-                          <span title="Generate a random address range" onClick={() => autoFillDetails('ipv6')}>
-                            <ShuffleIcon color={themeToken.colorTextSecondary} opacity={0.8} size="1rem" />
-                          </span>
-                        }
-                      />
+                      <Input placeholder="Enter address CIDR (eg: fd3c:49b3:973f:ee87::/64)" />
                     </Form.Item>
                   </Col>
                 </Row>

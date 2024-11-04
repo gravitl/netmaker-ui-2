@@ -30,7 +30,6 @@ import { AxiosError } from 'axios';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { PageProps } from '../../models/Page';
-
 import './HostDetailsPage.scss';
 import { resolveAppRoute, useQuery } from '@/utils/RouteUtils';
 import NodeStatus from '@/components/ui/Status';
@@ -118,7 +117,7 @@ export default function HostDetailsPage(props: PageProps) {
     // load from store
     const host = store.hosts.find((h) => h.id === hostId);
     if (!host) {
-      notify.error({ message: `Host ${hostId} not found` });
+      notify.error({ message: `Device ${hostId} not found` });
       navigate(resolveAppRoute(AppRoutes.HOSTS_ROUTE));
       return;
     }
@@ -130,7 +129,7 @@ export default function HostDetailsPage(props: PageProps) {
   const onHostDelete = useCallback(async () => {
     try {
       if (!hostId) {
-        throw new Error('Host not found');
+        throw new Error('Device not found');
       }
       await HostsService.deleteHost(hostId, true);
       notify.success({ message: `Device ${host?.name} deleted` });
