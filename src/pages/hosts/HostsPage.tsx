@@ -196,12 +196,12 @@ export default function HostsPage(props: PageProps) {
           <>
             <Row>
               <Col xs={24}>
-                <Typography.Text>Are you sure you want to delete this host {host.name}?</Typography.Text>
+                <Typography.Text>Are you sure you want to delete this device {host.name}?</Typography.Text>
               </Col>
               {assocNodes.length > 0 && (
                 <Col xs={24}>
-                  <Typography.Text color="warning">Host will be removed from the following networks:</Typography.Text>
-                  <ul>
+                  <Typography.Text color="warning">Device will be removed from the following networks:</Typography.Text>
+                  <ul className="list-disc list-inside">
                     {assocNodes.map((node) => (
                       <li key={node.id}>{node.network}</li>
                     ))}
@@ -215,10 +215,10 @@ export default function HostsPage(props: PageProps) {
           try {
             await HostsService.deleteHost(host.id, true);
             storeDeleteHost(host.id);
-            notify.success({ message: `Host ${host.name} deleted` });
+            notify.success({ message: `Device ${host.name} deleted` });
           } catch (err) {
             notify.error({
-              message: 'Failed to delete host',
+              message: 'Failed to delete device',
               description: extractErrorMsg(err as any),
             });
           }
@@ -230,19 +230,19 @@ export default function HostsPage(props: PageProps) {
 
   const refreshAllHostKeys = useCallback(() => {
     Modal.confirm({
-      title: 'Refresh all hosts keys',
-      content: 'Are you sure you want to refresh all hosts keys?',
+      title: 'Refresh all device keys',
+      content: 'Are you sure you want to refresh all device keys?',
       onOk: async () => {
         try {
           setIsRefreshingHosts(true);
           await HostsService.refreshAllHostsKeys();
           notify.success({
-            message: 'Hosts keys refreshing...',
-            description: 'Host key pairs are refreshing. This may take a while.',
+            message: 'Device keys refreshing...',
+            description: 'Device key pairs are refreshing. This may take a while.',
           });
         } catch (err) {
           notify.error({
-            message: 'Failed to refresh hosts keys',
+            message: 'Failed to refresh device keys',
             description: extractErrorMsg(err as any),
           });
         } finally {
@@ -255,13 +255,14 @@ export default function HostsPage(props: PageProps) {
   const confirmUpgradeClient = useCallback(
     async (host: Host) => {
       Modal.confirm({
-        title: 'Upgrade host version',
+        title: 'Upgrade device version',
         content: (
           <>
             <Row>
               <Col xs={24}>
                 <Typography.Text>
-                  Are you sure you want to upgrade the version of the host {host.name} to {store.serverConfig?.Version}
+                  Are you sure you want to upgrade the version of the device {host.name} to{' '}
+                  {store.serverConfig?.Version}
                 </Typography.Text>
               </Col>
             </Row>
@@ -480,9 +481,9 @@ export default function HostsPage(props: PageProps) {
                   },
                   {
                     key: 'edit',
-                    label: 'Edit Host',
+                    label: 'Edit Device',
                     disabled: isManagedHost(host.name),
-                    tooltip: isManagedHost(host.name) ? 'Managed hosts cannot be edited' : undefined,
+                    tooltip: isManagedHost(host.name) ? 'Managed devices cannot be edited' : undefined,
                     onClick: (ev) => {
                       ev.domEvent.stopPropagation();
                       onEditHost(host);
@@ -499,10 +500,10 @@ export default function HostsPage(props: PageProps) {
                   },
                   {
                     key: 'delete',
-                    label: 'Delete Host',
+                    label: 'Delete Device',
                     danger: true,
                     disabled: isManagedHost(host.name),
-                    tooltip: isManagedHost(host.name) ? 'Managed hosts cannot be deleted' : undefined,
+                    tooltip: isManagedHost(host.name) ? 'Managed devices cannot be deleted' : undefined,
                     onClick: (ev) => {
                       ev.domEvent.stopPropagation();
                       confirmDeleteHost(host);
@@ -612,7 +613,7 @@ export default function HostsPage(props: PageProps) {
       },
       selectedHost
         ? {
-            title: 'Host Network IP',
+            title: 'Device Network IP',
             dataIndex: 'addressrange',
             key: 'hostnetworkip',
             render: (_: any, network: Network) => {
@@ -662,7 +663,7 @@ export default function HostsPage(props: PageProps) {
                   checked={isConnected}
                   onChange={() => {
                     Modal.confirm({
-                      title: `${isConnected ? 'Disconnect' : 'Connect'} host ${selectedHost.name} ${
+                      title: `${isConnected ? 'Disconnect' : 'Connect'} device ${selectedHost.name} ${
                         isConnected ? 'from' : 'to'
                       } ${network.netid}`,
                       async onOk() {
@@ -673,14 +674,14 @@ export default function HostsPage(props: PageProps) {
                             isConnected ? 'leave' : 'join',
                           );
                           notify.success({
-                            message: `Host successfully ${
+                            message: `Device successfully ${
                               isConnected ? 'removed from' : 'added to'
                             } network. It might take a while to reflect`,
                             description: '',
                           });
                         } catch (err) {
                           notify.error({
-                            message: `Failed to ${isConnected ? 'remove' : 'add'} host ${
+                            message: `Failed to ${isConnected ? 'remove' : 'add'} device ${
                               isConnected ? 'from' : 'to'
                             } network`,
                           });
@@ -732,7 +733,7 @@ export default function HostsPage(props: PageProps) {
               <Row style={{ width: '100%' }}>
                 <Col xs={24}>
                   <Typography.Title style={{ marginTop: '0px' }} level={5}>
-                    Hosts
+                    Devices
                   </Typography.Title>
                 </Col>
               </Row>
@@ -823,13 +824,13 @@ export default function HostsPage(props: PageProps) {
 
   const hostsTourSteps: TourProps['steps'] = [
     {
-      title: 'Hosts',
+      title: 'Devices',
       description: (
         <>
-          Hosts are your devices. Servers, devices, VM&quot;s, containers, laptops, and more can all be Hosts. You can
-          get information about your hosts on the table. Clicking on the host name will show extra host details. The
-          ellipsis button at the end of row shows additional operations such as making a host the default , editing its
-          settings, upgrading its version, deleting the host
+          These are your devices: servers, devices, VM&quot;s, containers, laptops, and more. You can get information
+          about your devices on the table. Clicking on the host name will show extra host details. The ellipsis button
+          at the end of row shows additional operations such as making a host the default , editing its settings,
+          upgrading its version, deleting the host
         </>
       ),
       target: () => hostsTableRef.current,
@@ -841,7 +842,7 @@ export default function HostsPage(props: PageProps) {
       target: () => networkAccessManagementTabRef.current,
     },
     {
-      title: 'Network Access Manangement - Hosts',
+      title: 'Network Access Manangement - Devices',
       description: (
         <>
           You can view host information and once you select a host, you can view the networks that the host is connected
@@ -858,7 +859,7 @@ export default function HostsPage(props: PageProps) {
     },
     {
       title: 'Refresh Host Keys',
-      description: 'Refresh all hosts keys',
+      description: 'Refresh all devices keys',
       target: () => refreshHostKeysButtonRef.current,
     },
     {
@@ -948,20 +949,20 @@ export default function HostsPage(props: PageProps) {
             >
               <Col xs={24} xl={(24 * 2) / 3}>
                 <Typography.Title level={3} style={{ color: 'white ' }}>
-                  Hosts
+                  Devices
                 </Typography.Title>
                 <Typography.Text style={{ color: 'white ' }}>
-                  Hosts are your devices. Servers, devices, VM&apos;s, containers, laptops, and more can all be Hosts.
-                  Windows, Linux, Mac, and FreeBSD are all supported. Register a Host with your server and add them to
-                  networks to give them secure access to other hosts and resources.
+                  Devices can be added to your network on this page. Servers, VM&apos;s, containers, laptops, and more
+                  can all be added. Windows, Linux, Mac are all supported. Register a device with your server and add
+                  them to networks to give them secure access to other devices and resources.
                 </Typography.Text>
               </Col>
               <Col xs={24} xl={(24 * 1) / 3} style={{ position: 'relative' }}>
                 <Card className="header-card" style={{ height: '20rem', position: 'absolute', width: '100%' }}>
                   <Typography.Title level={3}>Add a Host</Typography.Title>
                   <Typography.Text>
-                    Start creating your network by adding controllable devices as “hosts” on your platform. Servers,
-                    VM’s, your laptop, and more are all fair game.
+                    Start creating your network by adding devices on your platform. Servers, VM’s, your laptop, and more
+                    are all fair game.
                   </Typography.Text>
                   <Row style={{ marginTop: 'auto' }}>
                     <Col>
@@ -980,7 +981,7 @@ export default function HostsPage(props: PageProps) {
               gutter={[0, 20]}
             >
               <Col xs={24}>
-                <Typography.Title level={3}>Connect a Host</Typography.Title>
+                <Typography.Title level={3}>Connect a Device</Typography.Title>
               </Col>
 
               <Col xs={24} xl={7} style={{ marginRight: '1rem' }}>
@@ -989,8 +990,8 @@ export default function HostsPage(props: PageProps) {
                     Connect via Enrollment Keys
                   </Typography.Title>
                   <Typography.Text>
-                    Create an enrollment key which defines the networks a host has access to. Then join via cli{' '}
-                    <code>netclient join -t &lt;enrollment key&gt;</code> or the netclient GUI, and the host will join
+                    Create an enrollment key which defines the networks a device has access to. Then join via cli{' '}
+                    <code>netclient join -t &lt;enrollment key&gt;</code> or the netclient GUI, and the device will join
                     all of the defined networks.
                   </Typography.Text>
                 </Card>
@@ -1014,7 +1015,7 @@ export default function HostsPage(props: PageProps) {
                   <Typography.Text>
                     If a host is already registered with the server, you can add it into any network directly from the
                     dashboard. Simply go to Network Access Management tab under the{' '}
-                    <Link to={resolveAppRoute(AppRoutes.HOSTS_ROUTE)}>Hosts page</Link>.
+                    <Link to={resolveAppRoute(AppRoutes.HOSTS_ROUTE)}>Devices page</Link>.
                   </Typography.Text>
                 </Card>
               </Col>
@@ -1033,7 +1034,7 @@ export default function HostsPage(props: PageProps) {
               <Col xs={24} md={6}>
                 <Input
                   size="large"
-                  placeholder="Search hosts"
+                  placeholder="Search devices"
                   style={{ marginBottom: '0.5rem' }}
                   value={searchText}
                   onChange={(ev) => setSearchText(ev.target.value)}
@@ -1069,7 +1070,7 @@ export default function HostsPage(props: PageProps) {
                   loading={isRefreshingHosts}
                   ref={refreshHostKeysButtonRef}
                 >
-                  <ReloadOutlined /> Refresh Hosts Keys
+                  <ReloadOutlined /> Refresh Devices Keys
                 </Button>
 
                 <Button
@@ -1079,11 +1080,11 @@ export default function HostsPage(props: PageProps) {
                   onClick={() => setIsAddNewHostModalOpen(true)}
                   ref={connectHostButtonRef}
                 >
-                  <PlusOutlined /> Connect a host
+                  <PlusOutlined /> Connect a device
                 </Button>
 
                 <Button
-                  title="Go to Hosts documentation"
+                  title="Go to devices documentation"
                   size="large"
                   href={HOST_DOCS_URL}
                   target="_blank"

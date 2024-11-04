@@ -119,6 +119,7 @@ import { ACLRule } from '@/services/dtos/ACLDtos';
 import ACLPage from './acl/ACLPage';
 import { DocumentIcon, PlusIcon, ServerIcon, UserIcon } from '@heroicons/react/24/solid';
 import AddNodeDialog from '@/components/modals/add-node-modal/AddNodeDialog';
+import NodeStatus from '@/components/ui/Status';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -2409,10 +2410,12 @@ export default function NetworkDetailsPage(props: PageProps) {
                       const extendedNode = getExtendedNode(node, store.hostsCommonDetails);
                       if (extendedNode.is_static) {
                         return node.static_node?.enabled ? (
-                          <Tag color="success">Enabled</Tag>
+                          <NodeStatus nodeHealth="healthy" clickable />
                         ) : (
-                          <Tag color="error">Disabled</Tag>
+                          <NodeStatus nodeHealth="disconnected" clickable />
                         );
+                      } else if (!extendedNode.connected) {
+                        return <NodeStatus nodeHealth="disconnected" clickable />;
                       }
                       return getHostHealth(node.hostid, [node]);
                     },
@@ -4462,8 +4465,6 @@ export default function NetworkDetailsPage(props: PageProps) {
                   setIsInitialLoad(true);
                   setActiveTabKey(tabKey);
                 }}
-                className="network-details-tabs"
-                moreIcon={null}
               />
             </Col>
           </Row>

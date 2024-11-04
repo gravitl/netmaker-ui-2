@@ -112,23 +112,29 @@ export function TagManagementPage({ network: networkId, networkNodes }: Readonly
             </HoverCardTrigger>
             {tag.tagged_nodes.length > 0 && (
               <HoverCardContent className="border-none min-w-fit w-fit">
-                <div className="m-2 border rounded bg-bg-default border-stroke-default">
-                  {tag.tagged_nodes.map((node, i) => (
-                    <div key={`node-${i}`} className="p-1 text-sm font-bold break-keep whitespace-nowrap">
-                      {!node.is_static && (
-                        <>
-                          <ComputerIcon size={16} className="inline mr-2" />
-                          {getExtendedNode(node, store.hostsCommonDetails).name}
-                        </>
-                      )}
-                      {node.is_static && (
-                        <>
-                          <FileIcon size={16} className="inline mr-2" />
-                          {node.static_node.clientid}
-                        </>
-                      )}
-                    </div>
-                  ))}
+                <div className="m-2 border rounded bg-bg-default border-stroke-default max-h-80 overflow-y-auto">
+                  {tag.tagged_nodes
+                    .toSorted((a, b) =>
+                      (getExtendedNode(a, store.hostsCommonDetails).name || a.static_node.clientid).localeCompare(
+                        getExtendedNode(b, store.hostsCommonDetails).name || b.static_node.clientid,
+                      ),
+                    )
+                    .map((node, i) => (
+                      <div key={`node-${i}`} className="p-1 text-sm font-bold break-keep whitespace-nowrap">
+                        {!node.is_static && (
+                          <>
+                            <ComputerIcon size={16} className="inline mr-2" />
+                            {getExtendedNode(node, store.hostsCommonDetails).name}
+                          </>
+                        )}
+                        {node.is_static && (
+                          <>
+                            <FileIcon size={16} className="inline mr-2" />
+                            {node.static_node.clientid}
+                          </>
+                        )}
+                      </div>
+                    ))}
                 </div>
               </HoverCardContent>
             )}
