@@ -31,12 +31,12 @@ export default function UpdateHostModal({ isOpen, host, onUpdateHost, onCancel }
     try {
       const formData = await form.validateFields();
       const newHost = (await HostsService.updateHost(host.id, { ...host, ...formData })).data;
-      notify.success({ message: `Host ${host.id} updated` });
+      notify.success({ message: `Device ${host.id} updated` });
       storeUpdateHost(newHost.id, newHost);
       onUpdateHost(newHost);
     } catch (err) {
       notify.error({
-        message: 'Failed to update host',
+        message: 'Failed to update device',
         description: extractErrorMsg(err as any),
       });
     }
@@ -46,7 +46,7 @@ export default function UpdateHostModal({ isOpen, host, onUpdateHost, onCancel }
     <Modal
       title={
         <Typography.Title style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>
-          Update host (ID: {host.id})
+          Update device (ID: {host.id})
         </Typography.Title>
       }
       open={isOpen}
@@ -63,12 +63,12 @@ export default function UpdateHostModal({ isOpen, host, onUpdateHost, onCancel }
         <div className="scrollable-modal-body">
           <div className="CustomModalBody">
             <Form.Item
-              label="Host name"
+              label="Device name"
               name="name"
               rules={[{ required: true }]}
               data-nmui-intercom="update-host-form_name"
             >
-              <Input placeholder="Host name" disabled={isManagedHost(host.name)} />
+              <Input placeholder="Device name" disabled={isManagedHost(host.name)} />
             </Form.Item>
 
             <Form.Item
@@ -145,7 +145,7 @@ export default function UpdateHostModal({ isOpen, host, onUpdateHost, onCancel }
             </Form.Item>
 
             <Form.Item
-              label="Default Host"
+              label="Default Device"
               name="isdefault"
               valuePropName="checked"
               rules={[{ required: true }]}
@@ -172,7 +172,7 @@ export default function UpdateHostModal({ isOpen, host, onUpdateHost, onCancel }
             <Col xs={24} style={{ textAlign: 'right' }}>
               <Form.Item noStyle data-nmui-intercom="update-host-form_submit">
                 <Button type="primary" onClick={updateHost}>
-                  Update Host
+                  Update Device
                 </Button>
               </Form.Item>
             </Col>
