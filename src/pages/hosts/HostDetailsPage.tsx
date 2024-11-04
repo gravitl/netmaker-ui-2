@@ -30,7 +30,6 @@ import { AxiosError } from 'axios';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { PageProps } from '../../models/Page';
-
 import './HostDetailsPage.scss';
 import { resolveAppRoute, useQuery } from '@/utils/RouteUtils';
 import NodeStatus from '@/components/ui/Status';
@@ -118,7 +117,7 @@ export default function HostDetailsPage(props: PageProps) {
     // load from store
     const host = store.hosts.find((h) => h.id === hostId);
     if (!host) {
-      notify.error({ message: `Host ${hostId} not found` });
+      notify.error({ message: `Device ${hostId} not found` });
       navigate(resolveAppRoute(AppRoutes.HOSTS_ROUTE));
       return;
     }
@@ -130,21 +129,21 @@ export default function HostDetailsPage(props: PageProps) {
   const onHostDelete = useCallback(async () => {
     try {
       if (!hostId) {
-        throw new Error('Host not found');
+        throw new Error('Device not found');
       }
       await HostsService.deleteHost(hostId, true);
-      notify.success({ message: `Host ${host?.name} deleted` });
+      notify.success({ message: `Device ${host?.name} deleted` });
       storeDeleteHost(hostId);
       navigate(resolveAppRoute(AppRoutes.HOSTS_ROUTE));
     } catch (err) {
       if (err instanceof AxiosError) {
         notify.error({
-          message: 'Failed to delete host',
+          message: 'Failed to delete device',
           description: extractErrorMsg(err),
         });
       } else {
         notify.error({
-          message: err instanceof Error ? err.message : 'Failed to delete host',
+          message: err instanceof Error ? err.message : 'Failed to delete device',
         });
       }
     }
@@ -155,14 +154,14 @@ export default function HostDetailsPage(props: PageProps) {
     const assocNodes = store.nodes.filter((node) => node.hostid === host.id);
 
     Modal.confirm({
-      title: `Do you want to delete host ${host?.name}?`,
+      title: `Do you want to delete device ${host?.name}?`,
       icon: <ExclamationCircleFilled />,
       content: (
         <>
           <Row>
             {assocNodes.length > 0 && (
               <Col xs={24}>
-                <Typography.Text color="warning">Host will be removed from the following networks:</Typography.Text>
+                <Typography.Text color="warning">Device will be removed from the following networks:</Typography.Text>
                 <ul>
                   {assocNodes.map((node) => (
                     <li key={node.id}>{node.network}</li>
@@ -183,15 +182,15 @@ export default function HostDetailsPage(props: PageProps) {
     if (!host) return;
     Modal.confirm({
       title: 'Toggle defaultness',
-      content: `Are you sure you want to turn ${!host.isdefault ? 'on' : 'off'} defaultness for this host?`,
+      content: `Are you sure you want to turn ${!host.isdefault ? 'on' : 'off'} defaultness for this device?`,
       onOk: async () => {
         try {
           const newHost = (await HostsService.updateHost(host.id, { ...host, isdefault: !host.isdefault })).data;
-          notify.success({ message: `Host ${host.id} updated` });
+          notify.success({ message: `Device ${host.id} updated` });
           storeUpdateHost(host.id, newHost);
         } catch (err) {
           notify.error({
-            message: 'Failed to update host',
+            message: 'Failed to update device',
             description: extractErrorMsg(err as any),
           });
         }
@@ -202,18 +201,18 @@ export default function HostDetailsPage(props: PageProps) {
   const refreshHostKeys = useCallback(() => {
     if (!hostId) return;
     Modal.confirm({
-      title: 'Refresh host keys',
-      content: "Are you sure you want to refresh this host's keys?",
+      title: 'Refresh device keys',
+      content: "Are you sure you want to refresh this device's keys?",
       onOk: async () => {
         try {
           await HostsService.refreshHostKeys(hostId);
           notify.success({
-            message: 'Host keys refreshing...',
-            description: 'Host key pairs are refreshing. This may take a while.',
+            message: 'Device keys refreshing...',
+            description: 'Device key pairs are refreshing. This may take a while.',
           });
         } catch (err) {
           notify.error({
-            message: 'Failed to refresh host keys',
+            message: 'Failed to refresh device keys',
             description: extractErrorMsg(err as any),
           });
         }
@@ -224,18 +223,18 @@ export default function HostDetailsPage(props: PageProps) {
   const requestHostPull = useCallback(() => {
     if (!hostId) return;
     Modal.confirm({
-      title: 'Synchronise host',
-      content: `This will trigger this host to pull latest network(s) state from the server. Proceed?`,
+      title: 'Synchronise device',
+      content: `This will trigger this device to pull latest network(s) state from the server. Proceed?`,
       onOk: async () => {
         try {
           await HostsService.requestHostPull(hostId);
           notify.success({
-            message: 'Host is syncing...',
-            description: `Host pull has been initiated. This may take a while.`,
+            message: 'Device is syncing...',
+            description: `Device pull has been initiated. This may take a while.`,
           });
         } catch (err) {
           notify.error({
-            message: 'Failed to synchronise host',
+            message: 'Failed to synchronise device',
             description: extractErrorMsg(err as any),
           });
         }
@@ -259,7 +258,7 @@ export default function HostDetailsPage(props: PageProps) {
       >
         <Card style={{ width: '50%' }}>
           <Typography.Title level={5} style={{ marginTop: '0rem' }}>
-            Host details
+            Device details
           </Typography.Title>
 
           <Row
@@ -450,7 +449,7 @@ export default function HostDetailsPage(props: PageProps) {
           >
             <Col xs={12}>
               <Typography.Text disabled style={{ color: '#A6A6A6' }}>
-                Default Host
+                Default Device
               </Typography.Text>
             </Col>
             <Col xs={12}>
@@ -566,7 +565,7 @@ export default function HostDetailsPage(props: PageProps) {
         {/* top bar */}
         <Row className="tabbed-page-row-padding">
           <Col xs={24}>
-            <Link to={resolveAppRoute(AppRoutes.HOSTS_ROUTE)}>View All Hosts</Link>
+            <Link to={resolveAppRoute(AppRoutes.HOSTS_ROUTE)}>View All Devices</Link>
             <Row>
               <Col xs={18}>
                 <Typography.Title level={2} style={{ marginTop: '.5rem', marginBottom: '2rem' }}>
@@ -628,7 +627,7 @@ export default function HostDetailsPage(props: PageProps) {
                   }}
                 >
                   <Button type="default" style={{ marginRight: '.5rem' }}>
-                    <SettingOutlined /> Host Settings
+                    <SettingOutlined /> Device Settings
                   </Button>
                 </Dropdown>
               </Col>
