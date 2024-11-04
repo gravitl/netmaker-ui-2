@@ -22,14 +22,6 @@
     }
   }
 
-  .network-details-tabs {
-    .ant-tabs-nav-wrap {
-      overflow-y: hidden;
-      overflow-x: auto;
-      scrollbar-width: thin;
-    }
-  }
-
   .selected-row {
     $bg-color: rgba(128, 107, 282);
     $bg-color-alpha: rgba($bg-color, 0.1);
