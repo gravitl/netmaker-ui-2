@@ -165,6 +165,8 @@ export default function GroupsPage({
                   {
                     key: 'delete',
                     danger: true,
+                    disabled: group.default,
+                    title: group.default ? 'Cannot delete a default group' : '',
                     label: (
                       <>
                         <DeleteOutlined /> Delete
@@ -258,9 +260,9 @@ export default function GroupsPage({
           <Row className="mb-4">
             <Col xs={24} md={16}>
               <Typography className="secondary text-xl text-text-secondary">
-                Groups help manage users in clusters, such as Admins, Offshore, etc.
+                Groups help manage users within specific categories, such as Admins, Developers, and QA.
                 <br />
-                Create groups to categorize users and assign roles to define permissions effectively.
+                Create groups to organize users and assign roles to clearly define permissions.
               </Typography>
             </Col>
             <Col xs={24} md={8} style={{ textAlign: 'right' }}>
