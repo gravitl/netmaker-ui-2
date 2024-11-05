@@ -34,6 +34,7 @@ import VersionUpgradeModal from '@/components/modals/version-upgrade-modal/Versi
 import { lt } from 'semver';
 import { isAdminUserOrRole } from '@/utils/UserMgmtUtils';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
+import RacModal from '@/components/modals/rac-modal/RacModal';
 
 const { Content, Sider } = Layout;
 
@@ -62,6 +63,7 @@ export default function MainLayout() {
   const [isVersionUpgradeModalOpen, setIsVersionUpgradeModalOpen] = useState(false);
   const [latestNetmakerVersion, setLatestNetmakerVersion] = useState('');
   const [canUpgrade, setCanUpgrade] = useState(false);
+  const [isRacModalOpen, setIsRacModalOpen] = useState(false);
 
   const recentNetworks = useMemo(
     // TODO: implement most recent ranking
@@ -196,7 +198,7 @@ export default function MainLayout() {
         icon: React.createElement(DownloadOutlined),
         label: 'Download RAC',
         onClick: () => {
-          window.open(ExternalLinks.RAC_DOWNLOAD_LINK, '_blank');
+          setIsRacModalOpen(true);
         },
       },
       {
@@ -724,6 +726,7 @@ export default function MainLayout() {
           onCancel={() => setIsVersionUpgradeModalOpen(false)}
         />
       )}
+      <RacModal isOpen={isRacModalOpen} onClose={() => setIsRacModalOpen(false)} />
     </AppErrorBoundary>
   );
 }

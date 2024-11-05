@@ -40,6 +40,7 @@ import { useBranding, useServerLicense } from '@/utils/Utils';
 import QuickSetupModal from '@/components/modals/quick-setup-modal/QuickSetupModal';
 import { Network } from '@/models/Network';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
+import RacModal from '@/components/modals/rac-modal/RacModal';
 
 export type TourType =
   | 'relays'
@@ -69,6 +70,7 @@ export default function DashboardPage(props: PageProps) {
   const [isQuickSetupModalOpen, setIsQuickSetupModalOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [notify, notifyCtx] = notification.useNotification();
+  const [isRacModalOpen, setIsRacModalOpen] = useState(false);
 
   const jumpToTourPage = (tourType: TourType, netId?: string) => {
     if (store.networks.length === 0) {
@@ -246,7 +248,7 @@ export default function DashboardPage(props: PageProps) {
                   <PlusOutlined /> Add endpoint
                 </Button>
                 <span style={{ borderLeft: '1px solid #303030', height: '24px', margin: '0 4px' }} />
-                <Button onClick={() => window.open(ExternalLinks.RAC_DOWNLOAD_LINK, '_blank')}>
+                <Button onClick={() => setIsRacModalOpen(true)}>
                   <DesktopOutlined /> Desktop Client
                 </Button>
                 <Tooltip title="Docs">
@@ -498,6 +500,7 @@ export default function DashboardPage(props: PageProps) {
         handleUpgrade={() => true}
         jumpToTourStep={jumpToTourPage}
       />
+      <RacModal isOpen={isRacModalOpen} onClose={() => setIsRacModalOpen(false)} />
       {notifyCtx}
     </Layout.Content>
   );
