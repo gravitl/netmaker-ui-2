@@ -155,7 +155,10 @@ function getUserInvites() {
 function userInviteSignup(inviteCode: string, dto: UserInviteReqDto) {
   return axiosService.post<void>(
     `${ApiRoutes.USERS_INVITE_SIGNUP}?email=${dto.username}&invite_code=${encodeURIComponent(inviteCode)}`,
-    dto,
+    {
+      ...dto,
+      username: decodeURIComponent(dto.username || ''),
+    },
   );
 }
 
