@@ -10,7 +10,7 @@ const RacDownloadBanner = () => {
   useEffect(() => {
     const storedValue = localStorage.getItem(NMUI_SHOW_RAC_BANNER_LOCALSTORAGE_KEY);
     if (storedValue !== null) {
-      setShowBanner(JSON.parse(storedValue));
+      setShowBanner(JSON.parse(storedValue || 'false'));
     }
   }, []);
 
@@ -26,7 +26,7 @@ const RacDownloadBanner = () => {
       <span className="flex items-center justify-center w-12 h-10 border rounded-lg border-stroke-default">
         <DownloadOutlined />
       </span>
-      <div className="flex flex-col w-full gap-2">
+      <div className="flex flex-col w-full gap-2 h-full">
         <h3 className="text-text-primary text-base-semibold">Get Connected with RAC</h3>
         <p className="text-base text-text-secondary">
           Download the Remote Access Client (RAC) to securely connect to your Netmaker network from any device. <br />

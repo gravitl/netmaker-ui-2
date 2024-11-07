@@ -2181,7 +2181,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       <div className="network-hosts-tab-content" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
         <Row justify="space-between" align="middle" style={{ marginBottom: '1rem', width: '100%' }}>
           {isServerEE && <RacDownloadBanner />}
-          <div className="inline-flex flex-col w-full gap-4 md:flex-row">
+          <div className="flex flex-col w-full gap-4 md:flex-row">
             <div className="inline-flex flex-col flex-grow gap-4 md:flex-row">
               <Input
                 size="large"
@@ -2847,37 +2847,6 @@ export default function NetworkDetailsPage(props: PageProps) {
             <Row style={{ width: '100%' }}>
               {isServerEE && (
                 <Row style={{ width: '100%' }}>
-                  {/* <Col
-                    style={{
-                      marginBottom: '1rem',
-                      background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
-                      padding: '1rem',
-                      width: '100%',
-                      display: 'flex',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <span>
-                      Introducing the Remote Access Client (RAC) - a graphical user interface (GUI) tool designed for
-                      convenient connectivity to a Netmaker network. RAC is particularly well-suited for offsite
-                      machines requiring access to a Netmaker network and is compatible with Windows, Mac, Linux and
-                      mobile (Android, iOS) operating systems.
-                    </span>
-                    <Button
-                      // href={ExternalLinks.RAC_DOWNLOAD_DOCS_LINK}
-                      onClick={() => setIsDownloadRemoteAccessClientModalOpen(true)}
-                      target="_blank"
-                      rel="noreferrer"
-                      type="primary"
-                      style={{
-                        marginLeft: 'auto',
-                      }}
-                      ref={remoteAccessTabDownloadClientRef}
-                    >
-                      {' '}
-                      Download RAC
-                    </Button>
-                  </Col> */}
                   <RacDownloadBanner />
                 </Row>
               )}
@@ -3641,6 +3610,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       )
     );
   }, [networkId, notify, hostsTabContainerAddHostsRef, setAddPolicyModal]);
+
   const getGraphContent = useCallback(() => {
     const containerHeight = '78vh';
 
@@ -3678,7 +3648,7 @@ export default function NetworkDetailsPage(props: PageProps) {
               <NetworkGraph
                 network={network}
                 hosts={networkHosts}
-                nodes={networkNodes}
+                nodes={networkNodes.filter((node) => !node.is_static && !node.is_user_node)}
                 acl={originalAcls}
                 clients={clients}
               />

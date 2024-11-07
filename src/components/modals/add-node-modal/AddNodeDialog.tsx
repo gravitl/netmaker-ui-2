@@ -15,9 +15,8 @@ import {
 } from '@heroicons/react/24/solid';
 import { getNetclientDownloadLink, getRACDownloadLink } from '@/utils/RouteUtils';
 import { useStore } from '@/store/store';
-import { EnrollmentKey } from '@/models/EnrollmentKey';
 import { Row, Col, QRCode, Typography } from 'antd';
-import { useBranding } from '@/utils/Utils';
+import { useBranding, useServerLicense } from '@/utils/Utils';
 import { useTheme } from 'antd-style';
 import { Link } from 'react-router-dom';
 import windowsIconSrc from '../../../../public/icons/windows.svg';
@@ -181,8 +180,8 @@ const NetclientSection: React.FC<{
               >
                 {option.iconSrc ? (
                   <img src={option.iconSrc} alt={`${option.name} icon`} className="w-4 h-4" />
-                ) : option.iconSrc ? (
-                  <option className="flex-shrink-0 w-4 h-4 text-text-primary" />
+                ) : option.icon ? (
+                  <option.icon className="flex-shrink-0 w-4 h-4 text-text-primary" />
                 ) : null}
                 <span className="whitespace-nowrap">{option.name}</span>
               </button>
@@ -487,6 +486,7 @@ const AddNodeDialog: React.FC<{
   networkId: string;
   onCreateClient: () => any;
 }> = ({ isOpen, onClose, networkId, onCreateClient }) => {
+  const { isServerEE } = useServerLicense();
   const [method, setMethod] = useState('Netclient');
   const [netclientOS, setNetclientOS] = useState('Windows');
   const [RACOS, setRACOS] = useState('Windows');
@@ -806,21 +806,25 @@ sudo dnf install remote-client
       description: 'Easiest way to install a node locally in just a few simple steps.',
     },
     { name: 'Config files', icon: DocumentIcon, description: 'Connect various devices using simple client configs..' },
-    {
-      name: 'User Access',
-      icon: UserIcon,
-      description:
-        'Connect from various devices using Remote Access Client. Active devices will be displayed in Active Users tab.',
-    },
-  ];
+  ].concat(
+    isServerEE
+      ? [
+          {
+            name: 'User Access',
+            icon: UserIcon,
+            description:
+              'Connect from various devices using Remote Access Client. Active devices will be displayed in Active Users tab.',
+          },
+        ]
+      : [],
+  );
 
   const netclientOSOptions = [
     { name: 'Windows', iconSrc: windowsIconSrc },
     { name: 'Mac', iconSrc: macIconSrc },
     { name: 'Linux', iconSrc: linuxIconSrc },
     { name: 'Docker', iconSrc: dockerIconSrc },
-    { name: 'Mobile', icon: DevicePhoneMobileIcon },
-  ];
+  ].concat(isServerEE ? [{ name: 'Mobile', icon: DevicePhoneMobileIcon } as any] : []);
 
   const RACOsptions = [
     { name: 'Windows', iconSrc: windowsIconSrc },
