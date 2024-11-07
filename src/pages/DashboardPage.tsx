@@ -4,7 +4,6 @@ import {
   Card,
   Carousel,
   Col,
-  Dropdown,
   Input,
   Layout,
   Row,
@@ -18,9 +17,7 @@ import {
 import {
   ArrowRightOutlined,
   DesktopOutlined,
-  DownOutlined,
   GlobalOutlined,
-  LaptopOutlined,
   PlusOutlined,
   QuestionCircleOutlined,
   ReloadOutlined,
@@ -33,14 +30,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import AddNetworkModal from '@/components/modals/add-network-modal/AddNetworkModal';
 import { useEffect, useMemo, useState } from 'react';
 import { useStore } from '@/store/store';
-import { getAmuiUrl, getLicenseDashboardUrl, getNetworkRoute, resolveAppRoute } from '@/utils/RouteUtils';
+import { getAmuiUrl, getNetworkRoute, resolveAppRoute } from '@/utils/RouteUtils';
 import NewHostModal from '@/components/modals/new-host-modal/NewHostModal';
 import { isSaasBuild } from '@/services/BaseService';
 import { useBranding, useServerLicense } from '@/utils/Utils';
 import QuickSetupModal from '@/components/modals/quick-setup-modal/QuickSetupModal';
 import { Network } from '@/models/Network';
-import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 import RacModal from '@/components/modals/rac-modal/RacModal';
+import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 
 export type TourType =
   | 'relays'
@@ -209,7 +206,7 @@ export default function DashboardPage(props: PageProps) {
             <Col xs={24} lg={9} xl={12}>
               {showUpgradeAlert && (
                 <Alert
-                  message="You are on the free plan"
+                  message="Try Netmaker Pro"
                   type="warning"
                   action={
                     <Button
@@ -217,8 +214,7 @@ export default function DashboardPage(props: PageProps) {
                       onClick={() => {
                         window.location = isSaasBuild
                           ? (getAmuiUrl('upgrade') as any)
-                          : (getLicenseDashboardUrl() as any);
-                        // setIsUpgradeModalOpen(true);
+                          : ExternalLinks.PRO_UPGRADE_DOCS_LINK;
                       }}
                     >
                       <span style={{ textDecoration: 'underline', color: '#D4B106' }}>Upgrade now</span>
