@@ -40,7 +40,7 @@ export interface UsecaseQuestions {
   key: UsecaseQuestionKey;
   question: string;
   question2?: string;
-  answers: string[];
+  answers: string[] | ((props: { isServerEE: boolean }) => string[]);
   answers2?: string[];
   selectedAnswer?: string | string[];
   selectedAnswer2?: string | string[];
@@ -86,8 +86,8 @@ export const PrimaryUsecaseQuestions: UsecaseQuestions[] = [
   {
     key: 'primary_usecase',
     question: 'What are you trying to do?',
-    answers: ['remote_access', 'internet_gateway', 'connect_to_site'],
-    // selectedAnswer: 'Remote Access',
+    answers: ({ isServerEE }) =>
+      isServerEE ? ['remote_access', 'internet_gateway', 'connect_to_site'] : ['internet_gateway', 'connect_to_site'],
     type: 'radio',
     descriptionTitle: 'Welcome to Guided Setup',
     description: `This opinionated setup process will help get your use case configured in as few steps as possible. 

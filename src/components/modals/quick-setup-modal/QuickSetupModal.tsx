@@ -172,6 +172,21 @@ export default function QuickSetupModal(props: QuickSetupModalProps) {
   const [isUsersLoading, setIsUsersLoading] = useState(false);
   const [isAddNewUserModalOpen, setIsAddNewUserModalOpen] = useState(false);
 
+  useEffect(() => {
+    const questions = UsecaseQuestionsAll.map((question) => ({
+      ...question,
+      answers: typeof question.answers === 'function' ? question.answers({ isServerEE }) : question.answers,
+    }));
+    setUserQuestions(questions);
+
+    if (currentQuestion.key === 'primary_usecase') {
+      const primaryQuestion = questions.find((q) => q.key === 'primary_usecase');
+      if (primaryQuestion) {
+        setCurrentQuestion(primaryQuestion);
+      }
+    }
+  }, [isServerEE]);
+
   const [form] = Form.useForm<RangesFormFields>();
 
   const networkNodes = useMemo(
@@ -1138,7 +1153,12 @@ export default function QuickSetupModal(props: QuickSetupModalProps) {
       currentQuestion.subDescription &&
       typeof currentQuestion.selectedAnswer === 'string'
     ) {
-      const descriptionIndex = currentQuestion.answers.findIndex((answer) => answer === currentQuestion.selectedAnswer);
+      const answersArray =
+        typeof currentQuestion.answers === 'function'
+          ? currentQuestion.answers({ isServerEE })
+          : currentQuestion.answers;
+
+      const descriptionIndex = answersArray.findIndex((answer: string) => answer === currentQuestion.selectedAnswer);
       return currentQuestion.subDescription[descriptionIndex];
     }
     return currentQuestion.description;
@@ -1148,6 +1168,7 @@ export default function QuickSetupModal(props: QuickSetupModalProps) {
     currentQuestion.selectedAnswer,
     currentQuestion.subDescription,
     currentQuestion.type,
+    isServerEE,
   ]);
 
   const nextButtonText = useMemo(() => {
@@ -1262,18 +1283,20 @@ export default function QuickSetupModal(props: QuickSetupModalProps) {
                 {alertIfUsecaseIsSetupAlreadyForNetwork}
                 <div>
                   <Typography.Title level={4}>{currentQuestion.question}</Typography.Title>
-
                   {currentQuestion && currentQuestion.type === 'radio' && (
                     <Radio.Group onChange={onChange} value={currentQuestion.selectedAnswer}>
                       <Space direction="vertical">
-                        {currentQuestion.answers.map((answer, i) => (
+                        {(typeof currentQuestion.answers === 'function'
+                          ? currentQuestion.answers({ isServerEE })
+                          : currentQuestion.answers
+                        ).map((answer: string, i: number) => (
                           <Radio value={answer} key={i} disabled={answer === 'internet_gateway' && !isServerEE}>
                             {UsecaseKeyStringToTextMap[answer] ?? answer}
                           </Radio>
                         ))}
                       </Space>
                     </Radio.Group>
-                  )}
+                  )}{' '}
                 </div>
 
                 {currentQuestion && currentQuestion.type === 'select' && (
