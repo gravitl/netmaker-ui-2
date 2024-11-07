@@ -14,12 +14,14 @@ export default function NodeStatus(props: StatusProps) {
   const getTextColor = () => {
     switch (props.nodeHealth) {
       case 'healthy':
+      case 'enabled':
         return '#07C98D';
       case 'warning':
         return '#C98C07';
       case 'error':
         return '#E32C08';
       case 'disconnected':
+      case 'disabled':
         return '#D4D4D4';
       case 'unknown':
         return '#D4D4D4';
@@ -31,12 +33,14 @@ export default function NodeStatus(props: StatusProps) {
   const getBgColor = () => {
     switch (props.nodeHealth) {
       case 'healthy':
+      case 'enabled':
         return '#07C98D1A';
       case 'warning':
         return '#C98C071A';
       case 'error':
         return '#E32C081A';
       case 'disconnected':
+      case 'disabled':
         return '#D4D4D41A';
       case 'unknown':
         return '#D4D4D41A';
@@ -48,10 +52,14 @@ export default function NodeStatus(props: StatusProps) {
   const getStatusText = (infoModalTitle = false) => {
     switch (props.nodeHealth) {
       case 'healthy':
+      case 'enabled':
         return infoModalTitle ? (
           <span className="inline-flex justify-center">
-            <CircleCheckIcon className="text-green-600 inline-block mr-2" /> Node Connected
+            <CircleCheckIcon className="text-green-600 inline-block mr-2" /> Node{' '}
+            {props.nodeHealth === 'enabled' ? ' Enabled' : ' Connected'}
           </span>
+        ) : props.nodeHealth === 'enabled' ? (
+          'Enabled'
         ) : (
           'Connected'
         );
@@ -72,10 +80,14 @@ export default function NodeStatus(props: StatusProps) {
           'Error'
         );
       case 'disconnected':
+      case 'disabled':
         return infoModalTitle ? (
           <span className="inline-flex justify-center">
-            <CircleSlashIcon className="text-neutral-600 inline-block mr-2" /> Node Disconnected
+            <CircleSlashIcon className="text-neutral-600 inline-block mr-2" /> Node{' '}
+            {props.nodeHealth === 'disabled' ? ' Disabled' : ' Disconnected'}
           </span>
+        ) : props.nodeHealth === 'disabled' ? (
+          'Disabled'
         ) : (
           'Disconnected'
         );

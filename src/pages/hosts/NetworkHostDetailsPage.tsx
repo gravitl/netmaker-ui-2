@@ -757,7 +757,12 @@ export default function NetworkHostDetailsPage(props: PageProps) {
               <Col xs={18}>
                 <Typography.Title level={2} style={{ marginTop: '.5rem', marginBottom: '2rem' }}>
                   {host?.name ?? '...'}
-                  {node?.pendingdelete === false && <span style={{ marginLeft: '1rem' }}>{getHostHealth()}</span>}
+
+                  {node?.pendingdelete === false && (
+                    <Typography.Text type="secondary" style={{ marginLeft: '1rem' }}>
+                      {getHostHealth()}
+                    </Typography.Text>
+                  )}
                   {node?.pendingdelete !== false && (
                     <span style={{ marginLeft: '1rem' }}>
                       <Badge status="processing" color="red" text="Removing..." />
