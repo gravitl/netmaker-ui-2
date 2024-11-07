@@ -13,7 +13,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '@/components/shadcn/Input';
 import { Button } from '@/components/shadcn/Button';
-import { FileIcon, ServerIcon } from 'lucide-react';
 import { MultiSelect } from '@/components/shadcn/MultiSelect';
 import { ExtendedNode, Node } from '@/models/Node';
 import { TagsService } from '@/services/TagsService';
@@ -24,6 +23,7 @@ import { useCallback, useState } from 'react';
 import { NULL_NODE } from '@/constants/Types';
 import { deduceNodeId } from '@/utils/NodeUtils';
 import { useStore } from '@/store/store';
+import { DocumentIcon, ServerIcon } from '@heroicons/react/24/solid';
 
 interface UpdateTagModalProps {
   isOpen: boolean;
@@ -92,7 +92,7 @@ export default function UpdateTagModal({ isOpen, tag, nodes, onCancel, onUpdateT
         }}
       >
         {/* <DialogClose>
-          <XCircleIcon className="w-6 h-6 text-text-secondary rounded-full p-2" />
+          <XCircleIcon className="w-6 h-6 p-2 rounded-full text-text-secondary" />
           hello
         </DialogClose> */}
         <DialogHeader>
@@ -145,7 +145,7 @@ export default function UpdateTagModal({ isOpen, tag, nodes, onCancel, onUpdateT
                 )}
               />
               <FormLabel
-                className="text-base-semibold inline-block"
+                className="inline-block text-base-semibold"
                 style={{
                   marginTop: '2rem',
                   marginBottom: '1rem',
@@ -162,7 +162,7 @@ export default function UpdateTagModal({ isOpen, tag, nodes, onCancel, onUpdateT
                   .map((node) => ({
                     label: (node.is_static ? node.static_node.clientid : node.name) || '',
                     value: deduceNodeId(node),
-                    icon: node.is_static ? FileIcon : ServerIcon,
+                    icon: node.is_static ? DocumentIcon : ServerIcon,
                   }))}
                 onValueChange={(vals) => {
                   console.log(vals);
