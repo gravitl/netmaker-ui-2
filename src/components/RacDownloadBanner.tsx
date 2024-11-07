@@ -23,18 +23,18 @@ const RacDownloadBanner = () => {
   if (!showBanner) return null;
 
   return (
-    <div className="flex items-start w-full gap-4 p-5 mb-6 border rounded-xl bg-bg-contrastDefault border-stroke-default">
+    <div className="flex w-full gap-4 p-5 mb-6 border rounded-xl bg-bg-contrastDefault border-stroke-default">
       <span className="flex items-center justify-center w-12 h-10 border rounded-lg border-stroke-default">
         <DownloadOutlined />
       </span>
-      <div className="flex flex-col w-full gap-2 h-full">
+      <div className="flex flex-col w-full h-full gap-2">
         <h3 className="text-text-primary text-base-semibold">Get Connected with RAC</h3>
         <p className="text-base text-text-secondary">
           Download the Remote Access Client (RAC) to securely connect to your Netmaker network from any device. <br />
           Compatible with Windows, Mac, Linux, Android, and iOS.
         </p>
       </div>
-      <div className="flex flex-col items-end justify-between h-full">
+      <div className="flex flex-col items-end justify-between ">
         <CloseCircleFilled onClick={handleClose} style={{ cursor: 'pointer' }} />
         <Button
           onClick={() => setIsRacModalOpen(true)}
