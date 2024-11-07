@@ -108,10 +108,10 @@ export default function CreateUserGroupPage(props: PageProps) {
                 ...rowData.network_roles
                   .map((role) => ({ label: role.name || role.roleId, value: role.roleId }))
                   .sort((a, b) => a.label.localeCompare(b.label)),
-                {
-                  label: '+ Create a new role',
-                  value: 'create-new-role',
-                },
+                // {
+                //   label: '+ Create a new role',
+                //   value: 'create-new-role',
+                // },
                 { label: 'n/a', value: '' },
               ]}
               onSelect={(opt) => {
