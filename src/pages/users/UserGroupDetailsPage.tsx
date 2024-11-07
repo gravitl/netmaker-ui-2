@@ -426,12 +426,26 @@ export default function UserGroupDetailsPage(props: PageProps) {
           }}
         >
           <Col xs={12}>
-            <Button type="default" size="large" danger onClick={confirmDeleteGroup}>
+            <Button
+              type="default"
+              size="large"
+              danger
+              onClick={confirmDeleteGroup}
+              disabled={group?.default}
+              title={group?.default ? 'Cannot delete a default group' : ''}
+            >
               <DeleteOutlined /> Delete Group
             </Button>
           </Col>
           <Col xs={12} style={{ textAlign: 'end' }}>
-            <Button type="primary" size="large" loading={isSubmitting} onClick={updateGroup}>
+            <Button
+              type="primary"
+              size="large"
+              loading={isSubmitting}
+              onClick={updateGroup}
+              disabled={group?.default}
+              title={group?.default ? 'Cannot update a default group' : ''}
+            >
               <EditOutlined /> Update Group
             </Button>
           </Col>
