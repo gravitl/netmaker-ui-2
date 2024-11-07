@@ -26,7 +26,7 @@ const RacDownloadBanner = () => {
   if (!showBanner || !isServerEE) return null;
 
   return (
-    <div className="flex items-start w-full gap-4 p-5 mb-6 border rounded-xl bg-bg-contrastDefault border-stroke-default">
+    <div className="flex w-full gap-4 p-5 mb-6 border rounded-xl bg-bg-contrastDefault border-stroke-default">
       <span className="flex items-center justify-center w-12 h-10 border rounded-lg border-stroke-default">
         <DownloadOutlined />
       </span>
@@ -37,7 +37,7 @@ const RacDownloadBanner = () => {
           Compatible with Windows, Mac, Linux, Android, and iOS.
         </p>
       </div>
-      <div className="flex flex-col items-end justify-between h-full">
+      <div className="flex flex-col items-end justify-between ">
         <CloseCircleFilled onClick={handleClose} style={{ cursor: 'pointer' }} />
         <Button
           onClick={() => setIsRacModalOpen(true)}

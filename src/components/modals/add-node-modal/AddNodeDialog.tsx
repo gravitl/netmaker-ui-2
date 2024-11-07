@@ -849,8 +849,8 @@ sudo dnf install remote-client
     {
       Mobile: [
         {
-          title: 'Download and launch the Remote Access Client app.',
-          description: 'Choose your CPU architecture.',
+          title: 'Install our remote access client for mobile devices',
+          description: `Easily connect to your ${branding.productName} network with our mobile application.`,
         },
         ...(isSaasBuild
           ? [

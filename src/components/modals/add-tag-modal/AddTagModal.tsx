@@ -6,6 +6,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/shadcn/Dialog';
+import { DocumentIcon, ServerIcon } from '@heroicons/react/24/solid';
+
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/shadcn/Form';
 import { Tag } from '@/models/Tags';
 import { z } from 'zod';
@@ -22,7 +24,6 @@ import { notification } from 'antd';
 import { useCallback, useState } from 'react';
 import { NULL_NODE } from '@/constants/Types';
 import { deduceNodeId } from '@/utils/NodeUtils';
-import { FileIcon, ServerIcon } from 'lucide-react';
 import { useStore } from '@/store/store';
 
 interface AddTagModalProps {
@@ -93,7 +94,7 @@ export default function AddTagModal({ isOpen, nodes, networkId, onCancel, onCrea
         }}
       >
         {/* <DialogClose>
-          <XCircleIcon className="w-6 h-6 text-text-secondary rounded-full p-2" />
+          <XCircleIcon className="w-6 h-6 p-2 rounded-full text-text-secondary" />
           hello
         </DialogClose> */}
         <DialogHeader>
@@ -142,7 +143,7 @@ export default function AddTagModal({ isOpen, nodes, networkId, onCancel, onCrea
                 )}
               />
               <FormLabel
-                className="text-base-semibold inline-block"
+                className="inline-block text-base-semibold"
                 style={{
                   marginTop: '2rem',
                   marginBottom: '1rem',
@@ -159,7 +160,7 @@ export default function AddTagModal({ isOpen, nodes, networkId, onCancel, onCrea
                   .map((node) => ({
                     label: (node.is_static ? node.static_node.clientid : node.name) || '',
                     value: deduceNodeId(node),
-                    icon: node.is_static ? FileIcon : ServerIcon,
+                    icon: node.is_static ? DocumentIcon : ServerIcon,
                   }))}
                 onValueChange={(vals) => {
                   setSelectedNodes(

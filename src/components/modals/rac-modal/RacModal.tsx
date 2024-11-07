@@ -15,6 +15,7 @@ import macIconSrc from '../../../../public/icons/apple.svg';
 import linuxIconSrc from '../../../../public/icons/linux.svg';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 import { isSaasBuild } from '@/services/BaseService';
+import { useBranding } from '@/utils/Utils';
 
 const CopyableCodeTag = ({ code }: { code: string }) => {
   const [isCopied, setIsCopied] = useState(false);
@@ -246,6 +247,7 @@ const RacModal: React.FC<{
 }> = ({ isOpen, onClose }) => {
   const [RACOS, setRACOS] = useState('Windows');
   const store = useStore();
+  const branding = useBranding();
 
   const RACOSSteps = [
     {
@@ -459,8 +461,8 @@ sudo dnf install remote-client
     {
       Mobile: [
         {
-          title: 'Download and launch the Remote Access Client app.',
-          description: 'Choose your CPU architecture.',
+          title: 'Install our remote access client for mobile devices',
+          description: `Easily connect to your ${branding.productName} network with our mobile application.`,
         },
         ...(isSaasBuild
           ? [
