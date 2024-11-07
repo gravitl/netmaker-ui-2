@@ -3,8 +3,11 @@ import { CloseCircleFilled, DownloadOutlined } from '@ant-design/icons';
 import { Button } from 'antd';
 import { NMUI_SHOW_RAC_BANNER_LOCALSTORAGE_KEY } from '@/services/BaseService';
 import RacModal from './modals/rac-modal/RacModal';
+import { useServerLicense } from '@/utils/Utils';
 
 const RacDownloadBanner = () => {
+  const { isServerEE } = useServerLicense();
+
   const [showBanner, setShowBanner] = useState(true);
   const [isRacModalOpen, setIsRacModalOpen] = useState(false);
 
@@ -20,14 +23,14 @@ const RacDownloadBanner = () => {
     localStorage.setItem(NMUI_SHOW_RAC_BANNER_LOCALSTORAGE_KEY, JSON.stringify(false));
   };
 
-  if (!showBanner) return null;
+  if (!showBanner || !isServerEE) return null;
 
   return (
     <div className="flex items-start w-full gap-4 p-5 mb-6 border rounded-xl bg-bg-contrastDefault border-stroke-default">
       <span className="flex items-center justify-center w-12 h-10 border rounded-lg border-stroke-default">
         <DownloadOutlined />
       </span>
-      <div className="flex flex-col w-full gap-2 h-full">
+      <div className="flex flex-col w-full h-full gap-2">
         <h3 className="text-text-primary text-base-semibold">Get Connected with RAC</h3>
         <p className="text-base text-text-secondary">
           Download the Remote Access Client (RAC) to securely connect to your Netmaker network from any device. <br />

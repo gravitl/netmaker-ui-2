@@ -246,9 +246,13 @@ export default function DashboardPage(props: PageProps) {
                   <PlusOutlined /> Add endpoint
                 </Button>
                 <span style={{ borderLeft: '1px solid #303030', height: '24px', margin: '0 4px' }} />
-                <Button onClick={() => setIsRacModalOpen(true)}>
-                  <DesktopOutlined /> Desktop Client
-                </Button>
+                {isServerEE && (
+                  <>
+                    <Button onClick={() => setIsRacModalOpen(true)}>
+                      <DesktopOutlined /> Desktop Client
+                    </Button>
+                  </>
+                )}
                 <Tooltip title="Docs">
                   <QuestionCircleOutlined
                     style={{ cursor: 'pointer', fontSize: '1.2rem' }}

@@ -252,13 +252,13 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [activeNodeFilter, setActiveNodeFilter] = useState('Netclient');
 
   const filters = useMemo(
-    () => [
-      { name: 'All', icon: null },
-      { name: 'Netclient', icon: ServerIcon },
-      { name: 'Config files', icon: DocumentIcon },
-      { name: 'Active Users', icon: UserIcon },
-    ],
-    [],
+    () =>
+      [
+        { name: 'All', icon: null },
+        { name: 'Netclient', icon: ServerIcon },
+        { name: 'Config files', icon: DocumentIcon },
+      ].concat(isServerEE ? [{ name: 'Active Users', icon: UserIcon }] : []),
+    [isServerEE],
   );
 
   // const getNodeIcon = (node) => {

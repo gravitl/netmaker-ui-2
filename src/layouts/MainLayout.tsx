@@ -188,10 +188,10 @@ export default function MainLayout() {
     [recentNetworks, userHasFullAccess],
   );
 
-  const bottomMenuItems: MenuProps['items'] = useMemo(
-    () => [
+  const bottomMenuItems: MenuProps['items'] = useMemo(() => {
+    const menuItems: MenuProps['items'] = [
       {
-        type: 'divider',
+        type: 'divider' as const,
       },
       {
         key: 'download-rac',
@@ -202,7 +202,7 @@ export default function MainLayout() {
         },
       },
       {
-        type: 'divider',
+        type: 'divider' as const,
       },
       {
         key: 'user-menu',
@@ -210,6 +210,7 @@ export default function MainLayout() {
         label: store.username,
         children: [
           {
+            key: 'theme-switch',
             style: {
               paddingLeft: isSidebarCollapsed ? '.2rem' : '1rem',
               paddingRight: isSidebarCollapsed ? '.2rem' : '1rem',
@@ -237,6 +238,7 @@ export default function MainLayout() {
             ),
           },
           {
+            key: 'language-select',
             style: {
               paddingLeft: isSidebarCollapsed ? '.2rem' : '1rem',
               paddingRight: isSidebarCollapsed ? '.2rem' : '1rem',
@@ -284,6 +286,7 @@ export default function MainLayout() {
             ),
           },
           {
+            key: 'profile',
             style: {
               paddingLeft: isSidebarCollapsed ? '.2rem' : '1rem',
               paddingRight: isSidebarCollapsed ? '.2rem' : '1rem',
@@ -311,6 +314,7 @@ export default function MainLayout() {
             ),
           },
           {
+            key: 'logout',
             style: {
               paddingLeft: isSidebarCollapsed ? '.2rem' : '1rem',
               paddingRight: isSidebarCollapsed ? '.2rem' : '1rem',
@@ -336,9 +340,23 @@ export default function MainLayout() {
           },
         ],
       },
-    ],
-    [store.username, isSidebarCollapsed, currentTheme, i18n.language, navigate, setCurrentTheme, storeLogout],
-  );
+    ];
+
+    if (!isServerEE) {
+      return menuItems.filter((item) => {
+        if (!item) return false;
+        const isDivider = 'type' in item && item.type === 'divider';
+        if (isDivider) {
+          const index = menuItems.indexOf(item);
+          return index > 2;
+        }
+        const isDownloadRac = 'key' in item && item.key === 'download-rac';
+        return !isDownloadRac;
+      });
+    }
+
+    return menuItems;
+  }, [store.username, isSidebarCollapsed, currentTheme, i18n, navigate, setCurrentTheme, storeLogout, isServerEE]);
 
   const getActiveSideNavKeys = useCallback(() => {
     if (location.pathname === resolveAppRoute(AppRoutes.NETWORKS_ROUTE)) {
