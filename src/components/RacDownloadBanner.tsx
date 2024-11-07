@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 import { CloseCircleFilled, DownloadOutlined } from '@ant-design/icons';
 import { Button } from 'antd';
 import { NMUI_SHOW_RAC_BANNER_LOCALSTORAGE_KEY } from '@/services/BaseService';
+import RacModal from './modals/rac-modal/RacModal';
 
 const RacDownloadBanner = () => {
   const [showBanner, setShowBanner] = useState(true);
+  const [isRacModalOpen, setIsRacModalOpen] = useState(false);
 
   useEffect(() => {
     const storedValue = localStorage.getItem(NMUI_SHOW_RAC_BANNER_LOCALSTORAGE_KEY);
@@ -36,7 +37,7 @@ const RacDownloadBanner = () => {
       <div className="flex flex-col items-end justify-between h-full">
         <CloseCircleFilled onClick={handleClose} style={{ cursor: 'pointer' }} />
         <Button
-          href={ExternalLinks.RAC_DOWNLOAD_LINK}
+          onClick={() => setIsRacModalOpen(true)}
           target="_blank"
           rel="noreferrer"
           type="primary"
@@ -49,6 +50,7 @@ const RacDownloadBanner = () => {
           Download RAC
         </Button>
       </div>
+      <RacModal isOpen={isRacModalOpen} onClose={() => setIsRacModalOpen(false)} />
     </div>
   );
 };

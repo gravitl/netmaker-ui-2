@@ -2311,7 +2311,13 @@ export default function NetworkDetailsPage(props: PageProps) {
                             ) : (
                               <ServerIcon className="w-4 h-4 shrink-0 text-text-primary" />
                             )}
-                            <span>{node.is_static ? node.static_node?.clientid : hostName}</span>
+                            <span>
+                              {node.is_user_node
+                                ? node.static_node?.ownerid
+                                : node.is_static
+                                  ? node.static_node?.clientid
+                                  : hostName}
+                            </span>
                           </Link>
                           {node.pendingdelete && (
                             <Badge style={{ marginLeft: '1rem' }} status="processing" color="red" text="Removing..." />
