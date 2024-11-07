@@ -2417,9 +2417,9 @@ export default function NetworkDetailsPage(props: PageProps) {
                       const extendedNode = getExtendedNode(node, store.hostsCommonDetails);
                       if (extendedNode.is_static) {
                         return node.static_node?.enabled ? (
-                          <NodeStatus nodeHealth="healthy" clickable />
+                          <NodeStatus nodeHealth="enabled" clickable />
                         ) : (
-                          <NodeStatus nodeHealth="disconnected" clickable />
+                          <NodeStatus nodeHealth="disabled" clickable />
                         );
                       } else if (!extendedNode.connected) {
                         return <NodeStatus nodeHealth="disconnected" clickable />;

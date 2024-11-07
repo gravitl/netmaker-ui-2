@@ -570,7 +570,7 @@ export default function HostDetailsPage(props: PageProps) {
               <Col xs={18}>
                 <Typography.Title level={2} style={{ marginTop: '.5rem', marginBottom: '2rem' }}>
                   {host?.name ?? '...'}
-                  <span style={{ marginLeft: '1rem' }}>{getHostHealth()}</span>
+                  <Typography.Text style={{ marginLeft: '1rem' }}>{getHostHealth()}</Typography.Text>
                 </Typography.Title>
               </Col>
               <Col xs={6} style={{ textAlign: 'right' }}>
