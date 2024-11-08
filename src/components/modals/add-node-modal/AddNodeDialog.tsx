@@ -595,7 +595,7 @@ const AddNodeDialog: React.FC<{
       Linux: [
         {
           title: 'First, select your linux version and install with this command',
-          Code: 'wget -O netclient https://fileserver.netmaker.io/releases/download/v0.25.0/netclient-linux-amd64 && chmod +x ./netclient && sudo ./netclient install',
+          Code: 'wget -O netclient https://fileserver.netmaker.io/releases/download/latest/netclient-linux-amd64 && chmod +x ./netclient && sudo ./netclient install',
         },
         {
           title: 'Join with this command',
