@@ -12,6 +12,7 @@ on:
           - 'v0.24.2'
           - 'v0.24.3'
           - 'v0.25.0'
+          - 'v0.26.0'
       environment:
         description: 'Environment to deploy to'
         required: true
