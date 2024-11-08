@@ -25,6 +25,7 @@ import { isSaasBuild } from '@/services/BaseService';
 import { ServerConfigService } from '@/services/ServerConfigService';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { useBranding } from '@/utils/Utils';
+import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 
 interface ServerMalfunctionModalProps {
   isOpen: boolean;
@@ -72,6 +73,10 @@ export default function ServerMalfunctionModal({ isOpen, onCancel }: ServerMalfu
             {t('error.checkbillingsetting')}{' '}
             <a href={getLicenseDashboardUrl()} rel="noreferrer" referrerPolicy="no-referrer" target="_blank">
               {t('common.licensedashboard')}
+            </a>
+            . To (re)configure your Pro setup,{' '}
+            <a href={ExternalLinks.PRO_UPGRADE_DOCS_LINK} rel="noreferrer" referrerPolicy="no-referrer" target="_blank">
+              visit this link
             </a>
             . Also check your Netmaker server logs for detailed information.
           </>
