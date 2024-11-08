@@ -1,4 +1,4 @@
-FROM node:18-alpine3.17 AS build
+FROM node:18-bookworm-slim AS build
 
 # LABELS
 LABEL \
