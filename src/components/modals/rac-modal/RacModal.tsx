@@ -129,7 +129,7 @@ const ActiveUsersSection: React.FC<{
           {RACOSSteps.filter((step) => step[RACOsSelected]).map((step) =>
             step[RACOsSelected].map((instruction: any, index: number) => (
               <div key={index} className="flex w-full gap-3">
-                <h5 className="flex items-center justify-center w-6 h-6 border rounded-full text-sm-semibold text-text-secondary bg-bg-hover border-stroke-default">
+                <h5 className="flex items-center justify-center w-6 h-6 border rounded-full text-sm-semibold text-text-primary bg-bg-hover border-stroke-default">
                   {index + 1}
                 </h5>
                 <div className="flex flex-col items-start w-full gap-2">
