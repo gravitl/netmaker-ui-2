@@ -140,7 +140,9 @@ function App() {
   }, [getUpdates, hasFetchedServerConfig, storeFetchServerConfig, storeIsLoggedIn]);
 
   useEffect(() => {
-    if (isIntercomReady) {
+    const ALLOWED_DOMAINS = ['app.netmaker.io'];
+    const hostname = window.location.hostname;
+    if (isIntercomReady && ALLOWED_DOMAINS.includes(hostname)) {
       intercomBoot({
         userId: `${store.amuiUserId}_${store.tenantId}`,
       });
