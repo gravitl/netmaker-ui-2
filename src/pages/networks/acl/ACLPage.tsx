@@ -386,7 +386,7 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, reloa
           }}
           networkId={networkId}
           selectedPolicy={selectedEditPolicy}
-          fetchACLRules={fetchACLRules}
+          fetchACLRules={() => fetchACLRules()}
           reloadACL={reloadACL}
           notify={notify}
         />

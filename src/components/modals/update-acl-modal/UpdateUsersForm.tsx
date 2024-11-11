@@ -51,6 +51,7 @@ interface UpdateUsersFormProps {
   onClose?: () => void;
   selectedPolicy: ACLRule;
   reloadACL: () => void;
+  fetchACLRules: () => void;
   notify: NotificationInstance;
 }
 
@@ -398,7 +399,14 @@ const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
   );
 };
 
-const UpdateUsersForm: React.FC<UpdateUsersFormProps> = ({ networkId, onClose, selectedPolicy, reloadACL, notify }) => {
+const UpdateUsersForm: React.FC<UpdateUsersFormProps> = ({
+  networkId,
+  onClose,
+  selectedPolicy,
+  reloadACL,
+  notify,
+  fetchACLRules,
+}) => {
   const [isPolicyEnabled, setIsPolicyEnabled] = useState(selectedPolicy.enabled);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -545,6 +553,7 @@ const UpdateUsersForm: React.FC<UpdateUsersFormProps> = ({ networkId, onClose, s
 
       await ACLService.updateACLRule(updatedPolicy, networkId);
       notify.success({ message: 'Policy updated successfully' });
+      fetchACLRules?.();
       reloadACL();
       onClose?.();
     } catch (err) {

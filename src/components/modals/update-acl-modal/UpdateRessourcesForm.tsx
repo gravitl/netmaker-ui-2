@@ -35,6 +35,7 @@ interface UpdateResourcesFormProps {
   onClose?: () => void;
   selectedPolicy: ACLRule;
   reloadACL: () => void;
+  fetchACLRules: () => void;
   notify: NotificationInstance;
 }
 
@@ -223,6 +224,7 @@ const UpdateResourcesForm: React.FC<UpdateResourcesFormProps> = ({
   selectedPolicy,
   reloadACL,
   notify,
+  fetchACLRules,
 }) => {
   const [isPolicyEnabled, setIsPolicyEnabled] = useState(selectedPolicy.enabled);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -320,6 +322,7 @@ const UpdateResourcesForm: React.FC<UpdateResourcesFormProps> = ({
 
       await ACLService.updateACLRule(updatedPolicy, networkId);
       notify.success({ message: 'Policy updated successfully' });
+      fetchACLRules?.();
       reloadACL();
       onClose?.();
     } catch (err) {
