@@ -111,7 +111,7 @@ import DownloadRemotesAccessClientModal from '@/components/modals/remote-access-
 import SetNetworkFailoverModal from '@/components/modals/set-network-failover-modal/SetNetworkFailoverModal';
 import { TourType } from '../DashboardPage';
 import { WaypointsIcon } from 'lucide-react';
-import { isAdminUserOrRole } from '@/utils/UserMgmtUtils';
+import { hasNetworkAdminPriviledges } from '@/utils/UserMgmtUtils';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 import RacDownloadBanner from '@/components/RacDownloadBanner';
 import { TagManagementPage } from './tag-management/TagManagementPage';
@@ -1255,11 +1255,15 @@ export default function NetworkDetailsPage(props: PageProps) {
                   {
                     key: 'edit',
                     label: (
-                      <Typography.Text disabled={!isAdminUserOrRole(store.user!) && store.username !== client.ownerid}>
+                      <Typography.Text
+                        disabled={
+                          !hasNetworkAdminPriviledges(store.user!, networkId) && store.username !== client.ownerid
+                        }
+                      >
                         <EditOutlined /> Edit
                       </Typography.Text>
                     ),
-                    disabled: !isAdminUserOrRole(store.user!) && store.username !== client.ownerid,
+                    disabled: !hasNetworkAdminPriviledges(store.user!, networkId) && store.username !== client.ownerid,
                     onClick: () => {
                       setTargetClient(client);
                       setIsUpdateClientModalOpen(true);
@@ -1268,11 +1272,15 @@ export default function NetworkDetailsPage(props: PageProps) {
                   {
                     key: 'view',
                     label: (
-                      <Typography.Text disabled={!isAdminUserOrRole(store.user!) && store.username !== client.ownerid}>
+                      <Typography.Text
+                        disabled={
+                          !hasNetworkAdminPriviledges(store.user!, networkId) && store.username !== client.ownerid
+                        }
+                      >
                         <EyeOutlined /> View Config
                       </Typography.Text>
                     ),
-                    disabled: !isAdminUserOrRole(store.user!) && store.username !== client.ownerid,
+                    disabled: !hasNetworkAdminPriviledges(store.user!, networkId) && store.username !== client.ownerid,
                     onClick: () => {
                       setTargetClient(client);
                       setIsClientConfigModalOpen(true);
@@ -1286,7 +1294,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                         <DeleteOutlined /> Delete
                       </>
                     ),
-                    disabled: !isAdminUserOrRole(store.user!) && store.username !== client.ownerid,
+                    disabled: !hasNetworkAdminPriviledges(store.user!, networkId) && store.username !== client.ownerid,
                     onClick: () => {
                       confirmDeleteClient(client);
                     },
@@ -1301,6 +1309,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       },
     ],
     [
+      networkId,
       confirmDeleteClient,
       networkNodes,
       openClientDetails,
@@ -2343,6 +2352,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                       return hostNameA?.localeCompare(hostNameB ?? '') ?? 0;
                     },
                     defaultSortOrder: 'ascend',
+                    key: 'id',
                   },
                   {
                     title: 'Private Address',
@@ -2457,12 +2467,17 @@ export default function NetworkDetailsPage(props: PageProps) {
                           key: 'edit',
                           label: (
                             <Typography.Text
-                              disabled={!isAdminUserOrRole(store.user!) && store.username !== node.static_node?.ownerid}
+                              disabled={
+                                !hasNetworkAdminPriviledges(store.user!, networkId) &&
+                                store.username !== node.static_node?.ownerid
+                              }
                             >
                               <EditOutlined /> Edit
                             </Typography.Text>
                           ),
-                          disabled: !isAdminUserOrRole(store.user!) && store.username !== node.static_node?.ownerid,
+                          disabled:
+                            !hasNetworkAdminPriviledges(store.user!, networkId) &&
+                            store.username !== node.static_node?.ownerid,
                           onClick: () => {
                             const clientData: ExternalClient = {
                               clientid: node.static_node?.clientid ?? '',
@@ -2493,7 +2508,9 @@ export default function NetworkDetailsPage(props: PageProps) {
                           key: 'toggle',
                           icon: node.static_node?.enabled ? <StopOutlined /> : <PlayCircleOutlined />,
                           label: node.static_node?.enabled ? 'Disable' : 'Enable',
-                          disabled: !isAdminUserOrRole(store.user!) && store.username !== node.static_node?.ownerid,
+                          disabled:
+                            !hasNetworkAdminPriviledges(store.user!, networkId) &&
+                            store.username !== node.static_node?.ownerid,
                           onClick: () => {
                             const clientData: ExternalClient = {
                               clientid: node.static_node?.clientid ?? '',
@@ -2523,12 +2540,17 @@ export default function NetworkDetailsPage(props: PageProps) {
                           key: 'view',
                           label: (
                             <Typography.Text
-                              disabled={!isAdminUserOrRole(store.user!) && store.username !== node.static_node?.ownerid}
+                              disabled={
+                                !hasNetworkAdminPriviledges(store.user!, networkId) &&
+                                store.username !== node.static_node?.ownerid
+                              }
                             >
                               <EyeOutlined /> View Config
                             </Typography.Text>
                           ),
-                          disabled: !isAdminUserOrRole(store.user!) && store.username !== node.static_node?.ownerid,
+                          disabled:
+                            !hasNetworkAdminPriviledges(store.user!, networkId) &&
+                            store.username !== node.static_node?.ownerid,
                           onClick: () => {
                             const clientData: ExternalClient = {
                               clientid: node.static_node?.clientid ?? '',
@@ -2563,7 +2585,9 @@ export default function NetworkDetailsPage(props: PageProps) {
                               <DeleteOutlined /> Delete
                             </>
                           ),
-                          disabled: !isAdminUserOrRole(store.user!) && store.username !== node.static_node?.ownerid,
+                          disabled:
+                            !hasNetworkAdminPriviledges(store.user!, networkId) &&
+                            store.username !== node.static_node?.ownerid,
                           onClick: () => {
                             const clientData: ExternalClient = {
                               clientid: node.static_node?.clientid ?? '',
@@ -2638,6 +2662,10 @@ export default function NetworkDetailsPage(props: PageProps) {
                     },
                   },
                 ]}
+                pagination={{
+                  pageSize: 20,
+                  hideOnSinglePage: true,
+                }}
               />
             </div>
           </Col>
@@ -3593,9 +3621,9 @@ export default function NetworkDetailsPage(props: PageProps) {
     }
   }, [networkId, notify]);
 
-  useEffect(() => {
-    fetchACLRules();
-  }, [fetchACLRules]);
+  // useEffect(() => {
+  //   fetchACLRules();
+  // }, [fetchACLRules]);
 
   const reloadACL = async () => {
     setIsRefreshingNetwork(true);
@@ -3899,7 +3927,7 @@ export default function NetworkDetailsPage(props: PageProps) {
             <Skeleton active />
           ),
       });
-      if (store.userPlatformRole && isAdminUserOrRole(store.userPlatformRole)) {
+      if (hasNetworkAdminPriviledges(store.user!, networkId)) {
         tabs.splice(5, 0, {
           key: 'tag-mgmt',
           label: <Typography.Text>Tag Management</Typography.Text>,
@@ -3943,7 +3971,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     isAddInternetGatewayModalOpen,
     networkNodes,
     staticNetworkNodes,
-    store.userPlatformRole,
+    store.user,
   ]);
 
   const loadMetrics = useCallback(async () => {
@@ -3996,6 +4024,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     loadNetworkDnses();
     loadAcls();
     loadClients();
+    fetchACLRules();
 
     if (isServerEE) {
       loadMetrics();
@@ -4013,6 +4042,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     navigate,
     notify,
     loadMetrics,
+    fetchACLRules,
   ]);
 
   // const onNetworkFormEdit = useCallback(async () => {
@@ -4339,19 +4369,19 @@ export default function NetworkDetailsPage(props: PageProps) {
     }
   }, [isTourOpen]);
 
-  useEffect(() => {
-    const fetchACLRules = async () => {
-      try {
-        if (!networkId) return;
-        const aclRulesResponse = (await ACLService.getACLRules(networkId)).data.Response;
-        setAclRules(aclRulesResponse);
-      } catch (error) {
-        console.error('Failed to fetch ACL rules:', error);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchACLRules = async () => {
+  //     try {
+  //       if (!networkId) return;
+  //       const aclRulesResponse = (await ACLService.getACLRules(networkId)).data.Response;
+  //       setAclRules(aclRulesResponse);
+  //     } catch (error) {
+  //       console.error('Failed to fetch ACL rules:', error);
+  //     }
+  //   };
 
-    fetchACLRules();
-  }, [networkId]);
+  //   fetchACLRules();
+  // }, [networkId]);
 
   useEffect(() => {
     loadNetwork();
