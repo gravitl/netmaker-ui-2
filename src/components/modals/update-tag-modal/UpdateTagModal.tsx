@@ -156,6 +156,7 @@ export default function UpdateTagModal({ isOpen, tag, nodes, onCancel, onUpdateT
               </FormLabel>
               <MultiSelect
                 options={nodes
+                  .filter((n) => !n.is_user_node)
                   .toSorted((a, b) =>
                     (a?.name || a.static_node.clientid).localeCompare(b?.name || b.static_node.clientid),
                   )

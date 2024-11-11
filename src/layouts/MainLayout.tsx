@@ -693,7 +693,14 @@ export default function MainLayout() {
                     type="warning"
                     showIcon
                     style={{ border: 'none', height: '3rem', fontSize: '1rem', color: '#D4B106' }}
-                    message={getTrialDaysRemainingText}
+                    message={
+                      <span>
+                        {getTrialDaysRemainingText}{' '}
+                        <a href={ExternalLinks.PRO_UPGRADE_DOCS_LINK} target="_blank" rel="noreferrer">
+                          Click here for info on how to setup pro license.
+                        </a>
+                      </span>
+                    }
                   />
                 </Col>
               </Row>

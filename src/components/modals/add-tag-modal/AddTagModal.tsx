@@ -154,6 +154,7 @@ export default function AddTagModal({ isOpen, nodes, networkId, onCancel, onCrea
               </FormLabel>
               <MultiSelect
                 options={nodes
+                  .filter((n) => !n.is_user_node)
                   .toSorted((a, b) =>
                     (a?.name || a.static_node.clientid).localeCompare(b?.name || b.static_node.clientid),
                   )
