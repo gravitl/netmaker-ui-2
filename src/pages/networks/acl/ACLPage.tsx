@@ -1,5 +1,5 @@
 import { SearchOutlined, MoreOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import { ComputerDesktopIcon, TagIcon, UserIcon, UsersIcon } from '@heroicons/react/24/solid';
+import { ComputerDesktopIcon, EllipsisHorizontalIcon, TagIcon, UserIcon, UsersIcon } from '@heroicons/react/24/solid';
 import { Button, Dropdown, Input, Table, Tag, Tooltip, Switch, Modal, Col } from 'antd';
 import { NotificationInstance } from 'antd/es/notification/interface';
 import { useCallback, useEffect, useState } from 'react';
@@ -354,9 +354,11 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, reloa
                 }}
                 disabled={rule.default}
               >
-                <MoreOutlined
-                  className={`${rule.default ? 'text-text-disabled cursor-not-allowed opacity-30' : 'cursor-pointer'}`}
-                />
+                <div
+                  className={`${rule.default ? 'text-text-disabled cursor-not-allowed opacity-30' : 'cursor-pointer'} rounded-md p-1/2 shrink-0 outline outline-stroke-default bg-bg-default hover:bg-bg-hover `}
+                >
+                  <EllipsisHorizontalIcon className="w-6 h-6 text-text-primary" />
+                </div>
               </Dropdown>
             ),
           },

@@ -26,7 +26,7 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/shad
 import { getExtendedNode } from '@/utils/NodeUtils';
 import { useStore } from '@/store/store';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
-import { DocumentIcon, ServerIcon } from '@heroicons/react/24/solid';
+import { DocumentIcon, EllipsisHorizontalIcon, ServerIcon } from '@heroicons/react/24/solid';
 
 interface TagManagementPageProps {
   network: Network['netid'];
@@ -183,7 +183,11 @@ export function TagManagementPage({ network: networkId, networkNodes }: Readonly
           >
             <AntdButton
               type="text"
-              icon={<MoreOutlined />}
+              icon={
+                <div className="rounded-md p-1/2 shrink-0 outline outline-stroke-default bg-bg-default hover:bg-bg-hover ">
+                  <EllipsisHorizontalIcon className="w-6 h-6 text-text-primary" />
+                </div>
+              }
               onClick={(ev) => {
                 ev.stopPropagation();
               }}

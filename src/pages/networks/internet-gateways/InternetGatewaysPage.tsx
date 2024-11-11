@@ -14,6 +14,7 @@ import {
   QuestionCircleOutlined,
   SearchOutlined,
 } from '@ant-design/icons';
+import { EllipsisHorizontalIcon } from '@heroicons/react/24/solid';
 import { Button, Card, Col, Dropdown, Input, Modal, Row, Table, TableColumnProps, Tooltip, Typography } from 'antd';
 import useNotification from 'antd/es/notification/useNotification';
 import { RefObject, useCallback, useEffect, useMemo, useState } from 'react';
@@ -234,7 +235,14 @@ export function InternetGatewaysPage({
                 ],
               }}
             >
-              <Button type="text" icon={<MoreOutlined />} />
+              <Button
+                type="text"
+                icon={
+                  <div className="rounded-md p-1/2 shrink-0 outline outline-stroke-default bg-bg-default hover:bg-bg-hover ">
+                    <EllipsisHorizontalIcon className="w-6 h-6 text-text-primary" />
+                  </div>
+                }
+              />
             </Dropdown>
           );
         },
@@ -290,7 +298,14 @@ export function InternetGatewaysPage({
                 ],
               }}
             >
-              <Button type="text" icon={<MoreOutlined />} />
+              <Button
+                type="text"
+                icon={
+                  <div className="rounded-md p-1/2 shrink-0 outline outline-stroke-default bg-bg-default hover:bg-bg-hover ">
+                    <EllipsisHorizontalIcon className="w-6 h-6 text-text-primary" />
+                  </div>
+                }
+              />
             </Dropdown>
           );
         },
