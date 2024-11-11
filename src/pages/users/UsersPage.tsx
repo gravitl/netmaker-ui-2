@@ -50,6 +50,7 @@ import InviteUserModal from '@/components/modals/invite-user-modal/InviteUserMod
 import { useNavigate } from 'react-router-dom';
 import { AppRoutes } from '@/routes';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
+import { EllipsisHorizontalIcon } from '@heroicons/react/24/solid';
 
 const USERS_DOCS_URL = 'https://docs.netmaker.io/docs/features/users-management-pro';
 
@@ -465,7 +466,14 @@ export default function UsersPage(props: PageProps) {
                 })(),
               }}
             >
-              <Button type="text" icon={<MoreOutlined />} />
+              <Button
+                type="text"
+                icon={
+                  <div className="rounded-md p-1/2 shrink-0 outline outline-stroke-default bg-bg-default hover:bg-bg-hover ">
+                    <EllipsisHorizontalIcon className="w-6 h-6 text-text-primary" />
+                  </div>
+                }
+              />
             </Dropdown>
           );
         },
@@ -861,7 +869,7 @@ export default function UsersPage(props: PageProps) {
       <>
         <Row className="mb-4">
           <Col xs={24} md={16}>
-            <Typography className="secondary text-xl text-text-secondary">
+            <Typography className="text-xl secondary text-text-secondary">
               Identify users and control access to the platform.
               <br />
               Create users, assign roles, and organize them into groups to manage access levels effectively.
@@ -984,7 +992,7 @@ export default function UsersPage(props: PageProps) {
       <>
         <Row className="mb-4">
           <Col xs={24} md={16}>
-            <Typography className="secondary text-xl text-text-secondary">
+            <Typography className="text-xl secondary text-text-secondary">
               User invitations allow you to add users to your network or server via email.
               <br />
               Simply enter the user&apos;s email address, and they&apos;ll receive a link to join your network.
@@ -1084,7 +1092,7 @@ export default function UsersPage(props: PageProps) {
       <>
         <Row className="mb-4">
           <Col xs={24} md={16}>
-            <Typography className="secondary text-xl text-text-secondary">
+            <Typography className="text-xl secondary text-text-secondary">
               Pending users are individuals who initiated signup through the web UI or RAC and are awaiting approval to
               join your network or server.
               <br />

@@ -13,6 +13,7 @@ import {
   QuestionCircleOutlined,
   SearchOutlined,
 } from '@ant-design/icons';
+import { EllipsisHorizontalIcon } from '@heroicons/react/24/solid';
 import {
   Button,
   Card,
@@ -160,7 +161,14 @@ export default function RolesPage({
                 ],
               }}
             >
-              <Button type="text" icon={<MoreOutlined />} />
+              <Button
+                type="text"
+                icon={
+                  <div className="rounded-md p-1/2 shrink-0 outline outline-stroke-default bg-bg-default hover:bg-bg-hover ">
+                    <EllipsisHorizontalIcon className="w-6 h-6 text-text-primary" />
+                  </div>
+                }
+              />
             </Dropdown>
           );
         },

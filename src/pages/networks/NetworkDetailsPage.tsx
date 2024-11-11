@@ -118,7 +118,7 @@ import { TagManagementPage } from './tag-management/TagManagementPage';
 import { ACLService } from '@/services/ACLService';
 import { ACLRule } from '@/services/dtos/ACLDtos';
 import ACLPage from './acl/ACLPage';
-import { DocumentIcon, PlusIcon, ServerIcon, UserIcon } from '@heroicons/react/24/solid';
+import { DocumentIcon, EllipsisHorizontalIcon, PlusIcon, ServerIcon, UserIcon } from '@heroicons/react/24/solid';
 import AddNodeDialog from '@/components/modals/add-node-modal/AddNodeDialog';
 import NodeStatus from '@/components/ui/Status';
 
@@ -1048,7 +1048,15 @@ export default function NetworkDetailsPage(props: PageProps) {
                   items: getGatewayDropdownOptions(gateway),
                 }}
               >
-                <Button type="text" icon={<MoreOutlined />} ref={remoteAccessAddOrRemoveUsersRef} />
+                <Button
+                  type="text"
+                  icon={
+                    <div className="rounded-md p-1/2 shrink-0 outline outline-stroke-default bg-bg-default hover:bg-bg-hover ">
+                      <EllipsisHorizontalIcon className="w-6 h-6 text-text-primary" />
+                    </div>
+                  }
+                  ref={remoteAccessAddOrRemoveUsersRef}
+                />
               </Dropdown>
             </Flex>
           );
@@ -1128,7 +1136,14 @@ export default function NetworkDetailsPage(props: PageProps) {
                 ] as MenuProps['items'],
               }}
             >
-              <Button type="text" icon={<MoreOutlined />} />
+              <Button
+                type="text"
+                icon={
+                  <div className="rounded-md p-1/2 shrink-0 outline outline-stroke-default bg-bg-default hover:bg-bg-hover ">
+                    <EllipsisHorizontalIcon className="w-6 h-6 text-text-primary" />
+                  </div>
+                }
+              />
             </Dropdown>
           );
         },
@@ -1172,7 +1187,14 @@ export default function NetworkDetailsPage(props: PageProps) {
                 ] as MenuProps['items'],
               }}
             >
-              <Button type="text" icon={<MoreOutlined />} />
+              <Button
+                type="text"
+                icon={
+                  <div className="rounded-md p-1/2 shrink-0 outline outline-stroke-default bg-bg-default hover:bg-bg-hover ">
+                    <EllipsisHorizontalIcon className="w-6 h-6 text-text-primary" />
+                  </div>
+                }
+              />
             </Dropdown>
           );
         },
@@ -1302,7 +1324,14 @@ export default function NetworkDetailsPage(props: PageProps) {
                 ] as MenuProps['items'],
               }}
             >
-              <Button type="text" icon={<MoreOutlined />} />
+              <Button
+                type="text"
+                icon={
+                  <div className="rounded-md p-1/2 shrink-0 outline outline-stroke-default bg-bg-default hover:bg-bg-hover ">
+                    <EllipsisHorizontalIcon className="w-6 h-6 text-text-primary" />
+                  </div>
+                }
+              />
             </Dropdown>
           );
         },
@@ -1376,7 +1405,14 @@ export default function NetworkDetailsPage(props: PageProps) {
                 ] as MenuProps['items'],
               }}
             >
-              <Button type="text" icon={<MoreOutlined />} />
+              <Button
+                type="text"
+                icon={
+                  <div className="rounded-md p-1/2 shrink-0 outline outline-stroke-default bg-bg-default hover:bg-bg-hover ">
+                    <EllipsisHorizontalIcon className="w-6 h-6 text-text-primary" />
+                  </div>
+                }
+              />
             </Dropdown>
           );
         },
@@ -1432,7 +1468,14 @@ export default function NetworkDetailsPage(props: PageProps) {
                 ] as MenuProps['items'],
               }}
             >
-              <Button type="text" icon={<MoreOutlined />} />
+              <Button
+                type="text"
+                icon={
+                  <div className="rounded-md p-1/2 shrink-0 outline outline-stroke-default bg-bg-default hover:bg-bg-hover ">
+                    <EllipsisHorizontalIcon className="w-6 h-6 text-text-primary" />
+                  </div>
+                }
+              />
             </Dropdown>
           );
         },
@@ -2656,7 +2699,9 @@ export default function NetworkDetailsPage(props: PageProps) {
                             items: extendedNode.is_static ? staticNodeMenu : regularNodeMenu,
                           }}
                         >
-                          <MoreOutlined />
+                          <div className="rounded-md p-1/2 shrink-0 outline outline-stroke-default bg-bg-default hover:bg-bg-hover ">
+                            <EllipsisHorizontalIcon className="w-6 h-6 text-text-primary" />
+                          </div>
                         </Dropdown>
                       );
                     },
@@ -2779,7 +2824,9 @@ export default function NetworkDetailsPage(props: PageProps) {
                           ] as MenuProps['items'],
                         }}
                       >
-                        <MoreOutlined />
+                        <div className="rounded-md p-1/2 shrink-0 outline outline-stroke-default bg-bg-default hover:bg-bg-hover ">
+                          <EllipsisHorizontalIcon className="w-6 h-6 text-text-primary" />
+                        </div>
                       </Dropdown>
                     ),
                   },
