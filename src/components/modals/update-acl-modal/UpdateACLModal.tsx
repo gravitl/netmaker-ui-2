@@ -62,6 +62,7 @@ const UpdateACLModal: React.FC<UpdateACLModalProps> = ({
                 <UpdateUsersForm
                   networkId={networkId}
                   onClose={onClose}
+                  fetchACLRules={fetchACLRules}
                   selectedPolicy={selectedPolicy}
                   reloadACL={reloadACL}
                   notify={notify}
@@ -69,6 +70,7 @@ const UpdateACLModal: React.FC<UpdateACLModalProps> = ({
               ) : selectedPolicy?.policy_type === 'device-policy' ? (
                 <UpdateRessourcesForm
                   networkId={networkId}
+                  fetchACLRules={fetchACLRules}
                   onClose={onClose}
                   selectedPolicy={selectedPolicy}
                   reloadACL={reloadACL}
