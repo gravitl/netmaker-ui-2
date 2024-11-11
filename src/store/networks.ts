@@ -7,6 +7,7 @@ export interface INetworkSlice {
   // state
   networks: NetworkStat[];
   isFetchingNetworks: boolean;
+  selectedNetwork: string | null;
 
   // actions
   fetchNetworks: () => Promise<void>;
@@ -15,11 +16,13 @@ export interface INetworkSlice {
   removeNetwork: (networkId: Network['netid']) => void;
   // updateNetwork: (networkId: Network['netid'], newNetwork: Network) => void;
   deleteNetwork: (networkId: Network['netid']) => void;
+  setSelectedNetwork: (networkId: string) => void;
 }
 
 const createNetworkSlice: StateCreator<INetworkSlice, [], [], INetworkSlice> = (set, get) => ({
   networks: [],
   isFetchingNetworks: false,
+  selectedNetwork: null,
 
   async fetchNetworks() {
     try {
@@ -30,6 +33,12 @@ const createNetworkSlice: StateCreator<INetworkSlice, [], [], INetworkSlice> = (
         networks: nets.map((ns) => ({ ...convertNetworkPayloadToUiNetwork(ns), hosts: 0 })),
         isFetchingNetworks: false,
       }));
+
+      // Set default selectedNetwork to the first network's netid if available
+      const firstNetwork = nets[0];
+      if (firstNetwork) {
+        set({ selectedNetwork: firstNetwork.netid });
+      }
     } catch (err) {
       console.error(err);
       set(() => ({ isFetchingNetworks: false }));
@@ -54,6 +63,11 @@ const createNetworkSlice: StateCreator<INetworkSlice, [], [], INetworkSlice> = (
   // },
   deleteNetwork(networkId) {
     set((state) => ({ networks: state.networks.filter((network) => network.netid !== networkId) }));
+  },
+
+  setSelectedNetwork(networkId) {
+    // Directly store only the networkId
+    set({ selectedNetwork: networkId });
   },
 });
 

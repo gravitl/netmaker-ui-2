@@ -1,0 +1,42 @@
+.NodesPage {
+  .table-wrapper {
+    overflow-x: auto;
+    margin-bottom: 1rem;
+  }
+
+  .ant-btn {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .search-section {
+    margin-bottom: 1rem;
+  }
+
+  .filter-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .status-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .node-name {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    .icon {
+      flex-shrink: 0;
+    }
+  }
+
+  .actions-cell {
+    text-align: right;
+    white-space: nowrap;
+  }
+}

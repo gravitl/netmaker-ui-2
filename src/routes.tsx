@@ -7,6 +7,9 @@ import NewHostPage from './pages/hosts/NewHostPage';
 import NetworksPage from './pages/networks/NetworksPage';
 import LoginPage from './pages/auth/LoginPage';
 import NetworkDetailsPage from './pages/networks/NetworkDetailsPage';
+import RemoteAccessPage from './pages/networks/remote-access/RemoteAccessPage';
+import EgressPage from './pages/networks/egress/EgressPage';
+import NodesPage from './pages/networks/nodes/NodesPage';
 import EnrollmentKeysPage from './pages/enrollment-keys/EnrollmentKeysPage';
 import HostsPage from './pages/hosts/HostsPage';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -26,6 +29,7 @@ import ProfilePage from './pages/users/ProfilePage';
 import { useStore } from './store/store';
 import { useEffect, useState } from 'react';
 import { getNetworkRoute, resolveAppRoute } from './utils/RouteUtils';
+import ACLPage from './pages/networks/acl/ACLPage';
 
 export const AppRoutes = {
   INDEX_ROUTE: '/',
@@ -39,6 +43,10 @@ export const AppRoutes = {
   NETWORK_HOST_ROUTE: '/networks/:networkId/hosts/:hostId',
   NETWORKS_ROUTE: '/networks',
   NETWORK_DETAILS_ROUTE: '/networks/:networkId',
+  NETWORK_REMOTE_ACCESS_ROUTE: '/networks/:networkId/remote-access',
+  NETWORK_EGRESS_ROUTE: '/networks/:networkId/egress',
+  NETWORK_NODES_ROUTE: '/networks/:networkId/nodes',
+  NETWORK_ACL: '/networks/:networkId/acl',
   CLIENTS_ROUTE: '/clients',
   ENROLLMENT_KEYS_ROUTE: '/enrollment-keys',
   USERS_ROUTE: '/users',
@@ -87,7 +95,7 @@ const RedirectToFirstNetwork = () => {
     };
 
     fetchNetworks();
-  }, []);
+  }, [store]);
 
   if (isLoading) {
     return null;
@@ -140,6 +148,30 @@ const routes: RouteObject[] = [
       ...generateRoutePair(
         AppRoutes.NETWORK_DETAILS_ROUTE.split('/').slice(1).join('/'),
         <NetworkDetailsPage isFullScreen />,
+      ),
+      ...generateRoutePair(
+        AppRoutes.NETWORK_REMOTE_ACCESS_ROUTE.split('/').slice(1).join('/'),
+        <ProtectedRoute>
+          <RemoteAccessPage />
+        </ProtectedRoute>,
+      ),
+      ...generateRoutePair(
+        AppRoutes.NETWORK_EGRESS_ROUTE.split('/').slice(1).join('/'),
+        <ProtectedRoute>
+          <EgressPage />
+        </ProtectedRoute>,
+      ),
+      ...generateRoutePair(
+        AppRoutes.NETWORK_NODES_ROUTE.split('/').slice(1).join('/'),
+        <ProtectedRoute>
+          <NodesPage />
+        </ProtectedRoute>,
+      ),
+      ...generateRoutePair(
+        AppRoutes.NETWORK_ACL.split('/').slice(1).join('/'),
+        <ProtectedRoute>
+          <ACLPage />
+        </ProtectedRoute>,
       ),
       ...generateRoutePair(
         AppRoutes.NETWORK_HOST_ROUTE.split('/').slice(1).join('/'),

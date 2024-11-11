@@ -3605,16 +3605,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   };
 
   const getACLsContent = useCallback(() => {
-    return (
-      networkId && (
-        <ACLPage
-          networkId={networkId}
-          notify={notify}
-          hostsTabContainerAddHostsRef={hostsTabContainerAddHostsRef}
-          reloadACL={reloadACL}
-        />
-      )
-    );
+    return networkId && <ACLPage />;
   }, [networkId, notify, hostsTabContainerAddHostsRef, setAddPolicyModal]);
 
   const getGraphContent = useCallback(() => {

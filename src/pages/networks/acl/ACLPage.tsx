@@ -1,8 +1,8 @@
 import { SearchOutlined, MoreOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { ComputerDesktopIcon, TagIcon, UserIcon, UsersIcon } from '@heroicons/react/24/solid';
-import { Button, Dropdown, Input, Table, Tag, Tooltip, Switch, Modal, Col } from 'antd';
+import { Button, Dropdown, Input, Table, Tag, Tooltip, Switch, Modal, Col, notification, Layout } from 'antd';
 import { NotificationInstance } from 'antd/es/notification/interface';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { AxiosError } from 'axios';
 import { ACLRule, DestinationTypeValue, SourceTypeValue } from '@/services/dtos/ACLDtos';
 import { ACLService } from '@/services/ACLService';
@@ -15,15 +15,16 @@ import { User, UserGroup } from '@/models/User';
 import { useServerLicense } from '@/utils/Utils';
 import { Tag as TagType } from '@/models/Tags';
 import { TagsService } from '@/services/TagsService';
+import { useParams } from 'react-router-dom';
+import { useStore } from '@/store/store';
 
-interface ACLPageProps {
-  networkId: string;
-  notify: NotificationInstance;
-  hostsTabContainerAddHostsRef: React.RefObject<HTMLButtonElement>;
-  reloadACL: () => void;
-}
+export const ACLPage = () => {
+  const { selectedNetwork } = useStore((state) => ({
+    selectedNetwork: state.selectedNetwork,
+  }));
+  const networkId = selectedNetwork;
+  const [notify, notifyCtx] = notification.useNotification();
 
-export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, reloadACL }: ACLPageProps) => {
   const [aclRules, setAclRules] = useState<ACLRule[]>([]);
   const [searchHost, setSearchHost] = useState('');
   const [policyType, setPolicyType] = useState('All');
@@ -34,6 +35,9 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, reloa
   const [groupsList, setGroupsList] = useState<UserGroup[]>([]);
   const { isServerEE } = useServerLicense();
   const [tagsList, setTagsList] = useState<TagType[]>([]);
+  const [isRefreshingNetwork, setIsRefreshingNetwork] = useState(false);
+
+  const hostsTabContainerAddHostsRef = useRef(null);
 
   const fetchACLRules = useCallback(async () => {
     try {
@@ -49,6 +53,17 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, reloa
   }, [networkId, notify]);
 
   useEffect(() => {
+    fetchACLRules();
+  }, [fetchACLRules]);
+
+  const reloadACL = async () => {
+    setIsRefreshingNetwork(true);
+    fetchACLRules();
+
+    setIsRefreshingNetwork(false);
+  };
+
+  useEffect(() => {
     const fetchUsers = async () => {
       try {
         const response = await UsersService.getUsers();
@@ -61,6 +76,7 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, reloa
 
     const fetchTags = async () => {
       try {
+        if (!networkId) return;
         const tags = (await TagsService.getTagsPerNetwork(networkId)).data.Response;
         setTagsList(tags);
       } catch (error) {
@@ -77,8 +93,9 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, reloa
             return false;
           }
           return (
-            Object.keys(group.network_roles).includes(networkId) ||
-            Object.keys(group.network_roles).includes('all_networks')
+            networkId !== null &&
+            (Object.keys(group.network_roles).includes(networkId) ||
+              Object.keys(group.network_roles).includes('all_networks'))
           );
         });
         setGroupsList(filteredGroups);
@@ -100,6 +117,7 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, reloa
   const togglePolicyStatus = useCallback(
     async (policy: ACLRule) => {
       try {
+        if (!networkId) throw new Error('Network ID is required');
         await ACLService.toggleEnabeledACLRule(policy, !policy.enabled, networkId);
         await fetchACLRules();
         notify.success({
@@ -124,6 +142,7 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, reloa
         content: `Are you sure you want to delete this Policy?`,
         onOk: async () => {
           try {
+            if (!networkId) throw new Error('Network ID is required');
             await ACLService.deleteACLRule(policy.id, networkId);
             await fetchACLRules();
             notify.success({ message: 'Policy deleted successfully' });
@@ -163,233 +182,235 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, reloa
   ];
 
   return (
-    <div className="flex flex-col w-full gap-6">
-      <div className="flex items-start w-full gap-4 p-5 mb-2 border border-stroke-default rounded-xl bg-bg-contrastDefault ">
-        <div className="flex flex-col w-full gap-2">
-          <h3 className="text-text-primary text-base-semibold">Introducing the New Access Control System</h3>
-          <p className="text-base text-text-secondary">
-            Coming soon to replace the current Access Control system. Built to make access management easier and more
-            secure.
-          </p>
-        </div>
-      </div>
-      <div className="flex flex-col justify-between w-full gap-4 md:flex-row">
-        <div className="flex flex-col gap-3 md:flex-row">
-          <Input
-            size="large"
-            placeholder="Search policies"
-            value={searchHost}
-            onChange={(ev) => setSearchHost(ev.target.value)}
-            prefix={<SearchOutlined />}
-            allowClear
-            className="w-[300px]"
-          />
-
-          <div className="flex gap-2 px-4 pb-2 -mx-4 overflow-x-auto sm:mx-0 sm:px-0 sm:overflow-x-visible">
-            {policyFilter.map((filter) => (
-              <button
-                key={filter.name}
-                onClick={() => setPolicyType(filter.name)}
-                className={`flex items-center gap-2 px-3 py-2 rounded text-sm transition-colors duration-200 flex-shrink-0 ${
-                  policyType === filter.name
-                    ? 'bg-button-secondary-fill-default text-text-primary'
-                    : 'bg-transparent text-text-secondary hover:bg-button-secondary-fill-hover'
-                }`}
-              >
-                {filter.icon && <filter.icon className="flex-shrink-0 w-4 h-4" />}
-                <span className="whitespace-nowrap">{filter.name}</span>
-              </button>
-            ))}
+    <Layout.Content style={{ padding: 24 }}>
+      <div className="flex flex-col w-full gap-6">
+        <div className="flex items-start w-full gap-4 p-5 mb-2 border border-stroke-default rounded-xl bg-bg-contrastDefault ">
+          <div className="flex flex-col w-full gap-2">
+            <h3 className="text-text-primary text-base-semibold">Introducing the New Access Control System</h3>
+            <p className="text-base text-text-secondary">
+              Coming soon to replace the current Access Control system. Built to make access management easier and more
+              secure.
+            </p>
           </div>
         </div>
+        <div className="flex flex-col justify-between w-full gap-4 md:flex-row">
+          <div className="flex flex-col gap-3 md:flex-row">
+            <Input
+              size="large"
+              placeholder="Search policies"
+              value={searchHost}
+              onChange={(ev) => setSearchHost(ev.target.value)}
+              prefix={<SearchOutlined />}
+              allowClear
+              className="w-[300px]"
+            />
 
-        <Button
-          type="primary"
-          className="w-full sm:w-[170px]"
-          onClick={() => setAddPolicyModal(true)}
-          ref={hostsTabContainerAddHostsRef}
-        >
-          <span>Add Policy</span>
-        </Button>
-      </div>
-      <Table
-        scroll={{ x: true }}
-        columns={[
-          {
-            title: 'Policy Name',
-            dataIndex: 'name',
-            sorter: (a: ACLRule, b: ACLRule) => a.name.localeCompare(b.name),
-            defaultSortOrder: 'ascend',
-          },
-          {
-            title: 'Type',
-            dataIndex: 'policy_type',
-            render: (policyType: string) => (
-              <div className="flex items-center gap-2 text-sm-semibold">
-                <span>
-                  {policyType === 'device-policy' ? (
-                    <ComputerDesktopIcon className="w-4 h-4 shrink-0" />
-                  ) : (
-                    <UsersIcon className="w-4 h-4 shrink-0" />
-                  )}
-                </span>
-                <span>{policyType === 'device-policy' ? 'Resources' : 'Users'}</span>
-              </div>
-            ),
-          },
-          {
-            title: 'Source',
-            render: (_, rule: ACLRule) => (
-              <>
-                {rule.src_type.map((type: SourceTypeValue, index) => {
-                  let displayValue = type.value;
-                  let Icon = UserIcon;
+            <div className="flex gap-2 px-4 pb-2 -mx-4 overflow-x-auto sm:mx-0 sm:px-0 sm:overflow-x-visible">
+              {policyFilter.map((filter) => (
+                <button
+                  key={filter.name}
+                  onClick={() => setPolicyType(filter.name)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded text-sm transition-colors duration-200 flex-shrink-0 ${
+                    policyType === filter.name
+                      ? 'bg-button-secondary-fill-default text-text-primary'
+                      : 'bg-transparent text-text-secondary hover:bg-button-secondary-fill-hover'
+                  }`}
+                >
+                  {filter.icon && <filter.icon className="flex-shrink-0 w-4 h-4" />}
+                  <span className="whitespace-nowrap">{filter.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
 
-                  if (type.value === '*') {
-                    displayValue =
-                      type.id === 'user'
-                        ? 'All Users'
-                        : type.id === 'user-group'
-                          ? 'All Groups'
-                          : type.id === 'tag'
-                            ? 'All Resources'
-                            : type.value;
+          <Button
+            type="primary"
+            className="w-full sm:w-[170px]"
+            onClick={() => setAddPolicyModal(true)}
+            ref={hostsTabContainerAddHostsRef}
+          >
+            <span>Add Policy</span>
+          </Button>
+        </div>
+        <Table
+          scroll={{ x: true }}
+          columns={[
+            {
+              title: 'Policy Name',
+              dataIndex: 'name',
+              sorter: (a: ACLRule, b: ACLRule) => a.name.localeCompare(b.name),
+              defaultSortOrder: 'ascend',
+            },
+            {
+              title: 'Type',
+              dataIndex: 'policy_type',
+              render: (policyType: string) => (
+                <div className="flex items-center gap-2 text-sm-semibold">
+                  <span>
+                    {policyType === 'device-policy' ? (
+                      <ComputerDesktopIcon className="w-4 h-4 shrink-0" />
+                    ) : (
+                      <UsersIcon className="w-4 h-4 shrink-0" />
+                    )}
+                  </span>
+                  <span>{policyType === 'device-policy' ? 'Resources' : 'Users'}</span>
+                </div>
+              ),
+            },
+            {
+              title: 'Source',
+              render: (_, rule: ACLRule) => (
+                <>
+                  {rule.src_type.map((type: SourceTypeValue, index) => {
+                    let displayValue = type.value;
+                    let Icon = UserIcon;
 
-                    Icon = type.id === 'user' ? UserIcon : type.id === 'user-group' ? UsersIcon : TagIcon;
-                  } else if (type.id === 'user-group') {
-                    const group = groupsList.find((g) => g.id === type.value);
-                    displayValue = group?.name || type.value;
-                    Icon = UsersIcon;
-                  } else if (type.id === 'tag') {
-                    const tag = tagsList.find((t) => t.id === type.value);
-                    displayValue = tag?.tag_name || type.value;
-                    Icon = TagIcon;
-                  } else if (type.id === 'user') {
-                    Icon = UserIcon;
-                  }
+                    if (type.value === '*') {
+                      displayValue =
+                        type.id === 'user'
+                          ? 'All Users'
+                          : type.id === 'user-group'
+                            ? 'All Groups'
+                            : type.id === 'tag'
+                              ? 'All Resources'
+                              : type.value;
 
-                  return (
-                    <Tooltip key={index} title={displayValue}>
-                      <Tag>
-                        <div className="flex items-center gap-1">
-                          <Icon className="w-3 h-3 shrink-0" />
-                          <span>{displayValue}</span>
-                        </div>
-                      </Tag>
-                    </Tooltip>
-                  );
-                })}
-              </>
-            ),
-          },
-          {
-            title: 'Direction',
-            render: () => <img src={arrowBidirectional} alt="Bidirectional" className="self-center w-32" />,
-          },
-          {
-            title: 'Destination',
-            render: (_, rule: ACLRule) => (
-              <>
-                {rule.dst_type.map((type: DestinationTypeValue, index) => {
-                  let displayValue = type.value;
+                      Icon = type.id === 'user' ? UserIcon : type.id === 'user-group' ? UsersIcon : TagIcon;
+                    } else if (type.id === 'user-group') {
+                      const group = groupsList.find((g) => g.id === type.value);
+                      displayValue = group?.name || type.value;
+                      Icon = UsersIcon;
+                    } else if (type.id === 'tag') {
+                      const tag = tagsList.find((t) => t.id === type.value);
+                      displayValue = tag?.tag_name || type.value;
+                      Icon = TagIcon;
+                    } else if (type.id === 'user') {
+                      Icon = UserIcon;
+                    }
 
-                  if (type.value === '*') {
-                    displayValue = 'All Resources';
-                  } else {
-                    const tag = tagsList.find((t) => t.id === type.value);
-                    displayValue = tag?.tag_name || type.value;
-                  }
+                    return (
+                      <Tooltip key={index} title={displayValue}>
+                        <Tag>
+                          <div className="flex items-center gap-1">
+                            <Icon className="w-3 h-3 shrink-0" />
+                            <span>{displayValue}</span>
+                          </div>
+                        </Tag>
+                      </Tooltip>
+                    );
+                  })}
+                </>
+              ),
+            },
+            {
+              title: 'Direction',
+              render: () => <img src={arrowBidirectional} alt="Bidirectional" className="self-center w-32" />,
+            },
+            {
+              title: 'Destination',
+              render: (_, rule: ACLRule) => (
+                <>
+                  {rule.dst_type.map((type: DestinationTypeValue, index) => {
+                    let displayValue = type.value;
 
-                  return (
-                    <Tooltip key={index} title={displayValue}>
-                      <Tag>
-                        <div className="flex items-center gap-1">
-                          <TagIcon className="w-3 h-3 shrink-0" />
-                          <span>{displayValue}</span>
-                        </div>
-                      </Tag>
-                    </Tooltip>
-                  );
-                })}
-              </>
-            ),
-          },
-          {
-            title: 'Active',
-            dataIndex: 'enabled',
-            render: (enabled: boolean, record: ACLRule) => (
-              <Switch
-                checked={enabled}
-                onChange={(checked) => togglePolicyStatus({ ...record, enabled: !checked })}
-                size="small"
-              />
-            ),
-          },
-          {
-            width: '1rem',
-            align: 'right',
-            render: (_, rule: ACLRule) => (
-              <Dropdown
-                menu={{
-                  items: [
-                    {
-                      key: 'edit',
-                      label: 'Edit',
-                      icon: <EditOutlined />,
-                      onClick: () => {
-                        setSelectedEditPolicy(rule);
-                        setIsEditPolicyModalOpen(true);
-                      },
-                      disabled: rule.default,
-                    },
-                    {
-                      key: 'remove',
-                      label: 'Remove',
-                      icon: <DeleteOutlined />,
-                      danger: true,
-                      onClick: () => confirmDeletePolicy(rule),
-                      disabled: rule.default,
-                    },
-                  ],
-                }}
-                disabled={rule.default}
-              >
-                <MoreOutlined
-                  className={`${rule.default ? 'text-text-disabled cursor-not-allowed opacity-30' : 'cursor-pointer'}`}
+                    if (type.value === '*') {
+                      displayValue = 'All Resources';
+                    } else {
+                      const tag = tagsList.find((t) => t.id === type.value);
+                      displayValue = tag?.tag_name || type.value;
+                    }
+
+                    return (
+                      <Tooltip key={index} title={displayValue}>
+                        <Tag>
+                          <div className="flex items-center gap-1">
+                            <TagIcon className="w-3 h-3 shrink-0" />
+                            <span>{displayValue}</span>
+                          </div>
+                        </Tag>
+                      </Tooltip>
+                    );
+                  })}
+                </>
+              ),
+            },
+            {
+              title: 'Active',
+              dataIndex: 'enabled',
+              render: (enabled: boolean, record: ACLRule) => (
+                <Switch
+                  checked={enabled}
+                  onChange={(checked) => togglePolicyStatus({ ...record, enabled: !checked })}
+                  size="small"
                 />
-              </Dropdown>
-            ),
-          },
-        ]}
-        dataSource={filteredACLRules}
-        rowKey="id"
-        size="small"
-      />
-      <AddACLModal
-        isOpen={addPolicyModal}
-        networkId={networkId}
-        onClose={() => {
-          setAddPolicyModal(false);
-        }}
-        fetchACLRules={() => fetchACLRules()}
-        reloadACL={reloadACL}
-        notify={notify}
-      />
-      {networkId && (
-        <UpdateACLModal
-          isOpen={isEditPolicyModalOpen}
+              ),
+            },
+            {
+              width: '1rem',
+              align: 'right',
+              render: (_, rule: ACLRule) => (
+                <Dropdown
+                  menu={{
+                    items: [
+                      {
+                        key: 'edit',
+                        label: 'Edit',
+                        icon: <EditOutlined />,
+                        onClick: () => {
+                          setSelectedEditPolicy(rule);
+                          setIsEditPolicyModalOpen(true);
+                        },
+                        disabled: rule.default,
+                      },
+                      {
+                        key: 'remove',
+                        label: 'Remove',
+                        icon: <DeleteOutlined />,
+                        danger: true,
+                        onClick: () => confirmDeletePolicy(rule),
+                        disabled: rule.default,
+                      },
+                    ],
+                  }}
+                  disabled={rule.default}
+                >
+                  <MoreOutlined
+                    className={`${rule.default ? 'text-text-disabled cursor-not-allowed opacity-30' : 'cursor-pointer'}`}
+                  />
+                </Dropdown>
+              ),
+            },
+          ]}
+          dataSource={filteredACLRules}
+          rowKey="id"
+          size="small"
+        />
+        <AddACLModal
+          isOpen={addPolicyModal}
+          networkId={networkId || ''}
           onClose={() => {
-            setIsEditPolicyModalOpen(false);
-            setSelectedEditPolicy(null);
+            setAddPolicyModal(false);
           }}
-          networkId={networkId}
-          selectedPolicy={selectedEditPolicy}
-          fetchACLRules={fetchACLRules}
+          fetchACLRules={() => fetchACLRules()}
           reloadACL={reloadACL}
           notify={notify}
         />
-      )}
-    </div>
+        {networkId && (
+          <UpdateACLModal
+            isOpen={isEditPolicyModalOpen}
+            onClose={() => {
+              setIsEditPolicyModalOpen(false);
+              setSelectedEditPolicy(null);
+            }}
+            networkId={networkId}
+            selectedPolicy={selectedEditPolicy}
+            fetchACLRules={fetchACLRules}
+            reloadACL={reloadACL}
+            notify={notify}
+          />
+        )}
+      </div>
+    </Layout.Content>
   );
 };
 
