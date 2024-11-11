@@ -6,7 +6,7 @@ import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { NodesService } from '@/services/NodesService';
 import { ExternalClient } from '@/models/ExternalClient';
 import { useStore } from '@/store/store';
-import { isAdminUserOrRole } from '@/utils/UserMgmtUtils';
+import { hasNetworkAdminPriviledges } from '@/utils/UserMgmtUtils';
 
 interface ClientDetailsModalProps {
   isOpen: boolean;
@@ -151,7 +151,7 @@ export default function ClientDetailsModal({
           <Col xs={24}>
             <Button
               onClick={onViewConfig}
-              disabled={!isAdminUserOrRole(store.user!) && store.username !== client.ownerid}
+              disabled={!hasNetworkAdminPriviledges(store.user!, client.network) && store.username !== client.ownerid}
             >
               <EyeOutlined /> View/Download config
             </Button>
