@@ -281,7 +281,7 @@ export default function AddClientModal({
                     <Row
                       style={{ border: `1px solid ${themeToken.colorBorder}`, padding: '.5rem', borderRadius: '8px' }}
                     >
-                      <Col span={6}>{selectedGateway?.name ?? ''}</Col>
+                      <Col span={11}>{selectedGateway?.name ?? ''}</Col>
                       <Col span={6}>
                         {([] as Array<string>)
                           .concat(selectedGateway.address || [], selectedGateway.address6 || [])
@@ -291,11 +291,11 @@ export default function AddClientModal({
                         {selectedGateway.isingressgateway && <Badge status="success" text="Gateway" />}
                         {!selectedGateway.isingressgateway && <Badge status="error" text="Not a Gateway" />}
                       </Col>
-                      <Col span={5}>
+                      {/* <Col span={5}>
                         {_.isEqual(selectedGateway, preferredGateway)
                           ? initialPreferredGatewayHealth
                           : getNodeConnectivity(selectedGateway)}
-                      </Col>
+                      </Col> */}
                       <Col span={1} style={{ textAlign: 'right' }}>
                         <Button
                           danger
