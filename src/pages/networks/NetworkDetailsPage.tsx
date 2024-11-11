@@ -250,6 +250,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [isSetNetworkFailoverModalOpen, setIsSetNetworkFailoverModalOpen] = useState(false);
   const [isAddInternetGatewayModalOpen, setIsAddInternetGatewayModalOpen] = useState(false);
   const [activeNodeFilter, setActiveNodeFilter] = useState('Netclient');
+  const { aclVersion, setAclVersion } = useStore();
 
   const filters = useMemo(
     () =>
@@ -3454,16 +3455,13 @@ export default function NetworkDetailsPage(props: PageProps) {
     return (
       <>
         {isServerEE && (
-          <div className="flex items-start w-full gap-4 p-5 mb-6 border border-stroke-default rounded-xl bg-bg-contrastDefault ">
+          <div className="flex items-end w-full gap-4 p-5 mb-6 border border-stroke-default rounded-xl bg-bg-contrastDefault ">
             <div className="flex flex-col w-full gap-2">
               <h3 className="text-text-primary text-base-semibold">Introducing the New Access Control System</h3>
-              <p className="text-base text-text-secondary">
-                Coming soon to replace the current Access Control system. Built to make access management easier and
-                more secure.
-              </p>
+              <p className="text-base text-text-secondary">Built to make access management easier and more secure.</p>
             </div>
-            <Button type="primary" onClick={() => setActiveTabKey('acl')}>
-              Try new ACLs
+            <Button type="primary" onClick={() => setAclVersion(2)}>
+              Try new ACL
             </Button>{' '}
           </div>
         )}
@@ -3672,12 +3670,11 @@ export default function NetworkDetailsPage(props: PageProps) {
   //   fetchACLRules();
   // }, [fetchACLRules]);
 
-  const reloadACL = async () => {
+  const reloadACL = useCallback(async () => {
     setIsRefreshingNetwork(true);
-    fetchACLRules();
-
+    await fetchACLRules();
     setIsRefreshingNetwork(false);
-  };
+  }, [fetchACLRules]);
 
   const getACLsContent = useCallback(() => {
     return (
@@ -3690,7 +3687,7 @@ export default function NetworkDetailsPage(props: PageProps) {
         />
       )
     );
-  }, [networkId, notify, hostsTabContainerAddHostsRef, setAddPolicyModal]);
+  }, [networkId, notify, hostsTabContainerAddHostsRef, setAclVersion, reloadACL]);
 
   const getGraphContent = useCallback(() => {
     const containerHeight = '78vh';
@@ -3903,23 +3900,28 @@ export default function NetworkDetailsPage(props: PageProps) {
         label: `Egress (${egresses.length})`,
         children: network && !isRefreshingNetwork ? getEgressContent() : <Skeleton active />,
       },
-      {
-        key: 'access-control',
-        label: `Access Control`,
-        children: network && !isRefreshingNetwork ? getAclsContent() : <Skeleton active />,
-      },
+
       isServerEE
         ? {
             key: 'acl',
             label: (
               <Typography.Text>
-                ACL{' '}
-                <span className="ml-2 px-2 py-0.5 text-white bg-button-primary-fill-default rounded-full text-xs">
-                  Beta
-                </span>
+                Access Control{' '}
+                {isServerEE && (
+                  <span className="ml-2 px-2 py-0.5 text-white bg-button-primary-fill-default rounded-full text-xs">
+                    Beta
+                  </span>
+                )}
               </Typography.Text>
             ),
-            children: network && !isRefreshingNetwork ? getACLsContent() : <Skeleton active />,
+            children:
+              network && !isRefreshingNetwork && aclVersion === 1 ? (
+                getAclsContent()
+              ) : network && !isRefreshingNetwork && aclVersion === 2 ? (
+                getACLsContent()
+              ) : (
+                <Skeleton active />
+              ),
           }
         : ({} as never),
       !isSaasBuild

@@ -7,6 +7,7 @@ export interface INetworkSlice {
   // state
   networks: NetworkStat[];
   isFetchingNetworks: boolean;
+  aclVersion: 1 | 2;
 
   // actions
   fetchNetworks: () => Promise<void>;
@@ -15,11 +16,13 @@ export interface INetworkSlice {
   removeNetwork: (networkId: Network['netid']) => void;
   // updateNetwork: (networkId: Network['netid'], newNetwork: Network) => void;
   deleteNetwork: (networkId: Network['netid']) => void;
+  setAclVersion: (version: 1 | 2) => void;
 }
 
 const createNetworkSlice: StateCreator<INetworkSlice, [], [], INetworkSlice> = (set, get) => ({
   networks: [],
   isFetchingNetworks: false,
+  aclVersion: 1,
 
   async fetchNetworks() {
     try {
@@ -54,6 +57,9 @@ const createNetworkSlice: StateCreator<INetworkSlice, [], [], INetworkSlice> = (
   // },
   deleteNetwork(networkId) {
     set((state) => ({ networks: state.networks.filter((network) => network.netid !== networkId) }));
+  },
+  setAclVersion(version: 1 | 2) {
+    set(() => ({ aclVersion: version }));
   },
 });
 

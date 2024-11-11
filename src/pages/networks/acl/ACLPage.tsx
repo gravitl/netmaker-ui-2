@@ -15,6 +15,7 @@ import { User, UserGroup } from '@/models/User';
 import { useServerLicense } from '@/utils/Utils';
 import { Tag as TagType } from '@/models/Tags';
 import { TagsService } from '@/services/TagsService';
+import { useStore } from '@/store/store';
 
 interface ACLPageProps {
   networkId: string;
@@ -34,6 +35,8 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, reloa
   const [groupsList, setGroupsList] = useState<UserGroup[]>([]);
   const { isServerEE } = useServerLicense();
   const [tagsList, setTagsList] = useState<TagType[]>([]);
+
+  const { aclVersion, setAclVersion } = useStore();
 
   const fetchACLRules = useCallback(async () => {
     try {
@@ -164,13 +167,16 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, reloa
 
   return (
     <div className="flex flex-col w-full gap-6">
-      <div className="flex items-start w-full gap-4 p-5 mb-2 border border-stroke-default rounded-xl bg-bg-contrastDefault ">
+      <div className="flex items-end w-full gap-4 p-5 mb-6 border border-stroke-default rounded-xl bg-bg-contrastDefault ">
         <div className="flex flex-col w-full gap-2">
           <h3 className="text-text-primary text-base-semibold">Introducing the New Access Control System</h3>
-          <p className="text-base text-text-secondary">
-            Coming soon to replace the current Access Control system. Built to make access management easier and more
-            secure.
-          </p>
+          <p className="text-base text-text-secondary">Built to make access management easier and more secure.</p>
+        </div>
+        <div className="flex items-center gap-4">
+          <p className="text-sm text-text-secondary whitespace-nowrap">Not sure?</p>
+          <Button type="primary" onClick={() => setAclVersion(1)}>
+            Revert to old ACL
+          </Button>{' '}
         </div>
       </div>
       <div className="flex flex-col justify-between w-full gap-4 md:flex-row">
