@@ -19,7 +19,7 @@ import { TagsService } from '@/services/TagsService';
 import { Network } from '@/models/Network';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { notification } from 'antd';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { NULL_NODE } from '@/constants/Types';
 import { deduceNodeId } from '@/utils/NodeUtils';
 import { useStore } from '@/store/store';
@@ -46,7 +46,7 @@ export default function UpdateTagModal({ isOpen, tag, nodes, onCancel, onUpdateT
     defaultValues: tag,
   });
 
-  const [selectedNodes, setSelectedNodes] = useState<Node[]>([]);
+  const [selectedNodes, setSelectedNodes] = useState<Node[]>(tag.tagged_nodes ?? []);
 
   const resetModal = useCallback(() => {
     form.reset();
@@ -166,7 +166,6 @@ export default function UpdateTagModal({ isOpen, tag, nodes, onCancel, onUpdateT
                     icon: node.is_static ? DocumentIcon : ServerIcon,
                   }))}
                 onValueChange={(vals) => {
-                  console.log(vals);
                   setSelectedNodes(
                     vals.map(
                       (val) => nodes.find((node) => node.id === val || node.static_node.clientid === val) ?? NULL_NODE,
