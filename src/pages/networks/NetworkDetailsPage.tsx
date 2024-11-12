@@ -3456,8 +3456,13 @@ export default function NetworkDetailsPage(props: PageProps) {
       <>
         {isServerEE && (
           <div className="flex items-end w-full gap-4 p-5 mb-6 border border-stroke-default rounded-xl bg-bg-contrastDefault ">
-            <div className="flex flex-col w-full gap-2">
-              <h3 className="text-text-primary text-base-semibold">Introducing the New Access Control System</h3>
+            <div className="flex flex-col items-start w-full gap-2">
+              <div className="flex items-center">
+                <h3 className="text-text-primary text-base-semibold">Introducing the New Access Control System</h3>
+                <span className="ml-2 px-2 py-0.5 text-white bg-button-primary-fill-default rounded-full text-xs">
+                  Beta
+                </span>
+              </div>
               <p className="text-base text-text-secondary">Built to make access management easier and more secure.</p>
             </div>
             <Button type="primary" onClick={() => setAclVersion(2)}>
@@ -3904,16 +3909,7 @@ export default function NetworkDetailsPage(props: PageProps) {
       isServerEE
         ? {
             key: 'acl',
-            label: (
-              <Typography.Text>
-                Access Control{' '}
-                {isServerEE && (
-                  <span className="ml-2 px-2 py-0.5 text-white bg-button-primary-fill-default rounded-full text-xs">
-                    Beta
-                  </span>
-                )}
-              </Typography.Text>
-            ),
+            label: <Typography.Text>Access Control </Typography.Text>,
             children:
               network && !isRefreshingNetwork && aclVersion === 1 ? (
                 getAclsContent()
