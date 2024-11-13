@@ -3,6 +3,7 @@ import { TenantConfig } from '../models/ServerConfig';
 import { User, UserRole } from '@/models/User';
 import {
   NMUI_ACCESS_TOKEN_LOCALSTORAGE_KEY,
+  NMUI_ACL_VERSION,
   NMUI_AMUI_USER_ID_LOCALSTORAGE_KEY,
   NMUI_BASE_URL_LOCALSTORAGE_KEY,
   NMUI_TENANT_ID_LOCALSTORAGE_KEY,
@@ -71,6 +72,7 @@ const createAuthSlice: StateCreator<IAuthSlice, [], [], IAuthSlice> = (set, get)
     window?.localStorage?.removeItem(NMUI_AMUI_USER_ID_LOCALSTORAGE_KEY);
     window?.localStorage?.removeItem(NMUI_USER_LOCALSTORAGE_KEY);
     window?.localStorage?.removeItem(NMUI_USER_PLATFORM_ROLE_LOCALSTORAGE_KEY);
+    window?.localStorage?.removeItem(NMUI_ACL_VERSION);
     // TODO: consider using localStorage.clear()
     // window?.localStorage?.clear();
   },
