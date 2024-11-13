@@ -2,7 +2,6 @@ import { NetworksService } from '@/services/NetworksService';
 import { convertNetworkPayloadToUiNetwork } from '@/utils/NetworkUtils';
 import { StateCreator } from 'zustand';
 import { Network, NetworkStat } from '../models/Network';
-import { NMUI_ACL_VERSION } from '@/services/BaseService';
 
 export interface INetworkSlice {
   // state
@@ -17,7 +16,6 @@ export interface INetworkSlice {
   removeNetwork: (networkId: Network['netid']) => void;
   // updateNetwork: (networkId: Network['netid'], newNetwork: Network) => void;
   deleteNetwork: (networkId: Network['netid']) => void;
-  setAclVersion: (version: 1 | 2) => void;
 }
 
 const createNetworkSlice: StateCreator<INetworkSlice, [], [], INetworkSlice> = (set, get) => ({
@@ -57,10 +55,6 @@ const createNetworkSlice: StateCreator<INetworkSlice, [], [], INetworkSlice> = (
   // },
   deleteNetwork(networkId) {
     set((state) => ({ networks: state.networks.filter((network) => network.netid !== networkId) }));
-  },
-  setAclVersion(version: 1 | 2) {
-    window?.localStorage?.setItem(NMUI_ACL_VERSION, version.toString());
-    set(() => ({ aclVersion: version }));
   },
 });
 

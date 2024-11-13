@@ -29,15 +29,7 @@ export interface IAuthSlice {
 
   // methods
   isLoggedIn: () => boolean;
-  setStore: (
-    config: Partial<
-      TenantConfig & {
-        user: User | null;
-        userPlatformRole: UserRole | null;
-        aclVersion?: 1 | 2;
-      }
-    >,
-  ) => void;
+  setStore: (config: Partial<TenantConfig & { user: User; userPlatformRole: UserRole }>) => void;
   logout: () => void;
 }
 
