@@ -111,6 +111,10 @@ export default function AddEgressModal({
       {
         title: 'Endpoint',
         dataIndex: 'endpointip',
+        render(_, egress) {
+          const addrs = ([] as Array<string>).concat(egress.endpointip || [], egress.endpointipv6 || []).join(', ');
+          return <Typography.Text title={addrs}>{`${addrs}`}</Typography.Text>;
+        },
       },
       {
         title: 'Firewall',
@@ -256,7 +260,9 @@ export default function AddEgressModal({
                     <Col span={6}>
                       {selectedEgress?.address ?? ''} {selectedEgress?.address6 ?? ''}
                     </Col>
-                    <Col span={5}>{selectedEgress?.endpointip ?? ''}</Col>
+                    <Col span={5}>
+                      {selectedEgress?.endpointip ?? ''} {selectedEgress?.endpointipv6 ?? ''}
+                    </Col>
                     <Col span={3}>{selectedEgress.firewallinuse}</Col>
                     <Col span={3}>{getNodeConnectivity(selectedEgress)}</Col>
                     <Col span={1} style={{ textAlign: 'right' }}>
