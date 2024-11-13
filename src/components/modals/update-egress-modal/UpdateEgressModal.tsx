@@ -150,7 +150,9 @@ export default function UpdateEgressModal({
                     <Col span={6}>
                       {extendedEgress?.address ?? ''} {extendedEgress?.address6 ?? ''}
                     </Col>
-                    <Col span={6}>{extendedEgress?.endpointip ?? ''}</Col>
+                    <Col span={6}>
+                      {extendedEgress?.endpointip ?? ''} {extendedEgress?.endpointipv6 ?? ''}
+                    </Col>
                     <Col span={5}>{initialEgressHealth}</Col>
                   </Row>
                 </>

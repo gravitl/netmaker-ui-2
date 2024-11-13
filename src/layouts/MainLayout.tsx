@@ -487,6 +487,7 @@ export default function MainLayout() {
             top: 0,
             bottom: 0,
             borderRight: `1px solid ${themeToken.colorBorder}`,
+            zIndex: 1000,
           }}
           zeroWidthTriggerStyle={{
             border: `2px solid ${store.currentTheme === 'dark' ? branding.primaryColorDark : branding.primaryColorLight}`,
