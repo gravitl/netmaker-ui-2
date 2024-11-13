@@ -57,6 +57,7 @@ export interface TenantConfig {
   amuiAuthToken?: string;
   amuiUserId?: string;
   isNewTenant?: boolean;
+  aclVersion?: 1 | 2;
 }
 
 export interface ServerStatus {

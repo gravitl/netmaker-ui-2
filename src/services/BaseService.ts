@@ -22,6 +22,7 @@ export const NMUI_AMUI_USER_ID_LOCALSTORAGE_KEY = 'nmui-amuiuid-lsk';
 export const NMUI_USER_LOCALSTORAGE_KEY = 'nmui-u-lsk';
 export const NMUI_USER_PLATFORM_ROLE_LOCALSTORAGE_KEY = 'nmui-upr-lsk';
 export const NMUI_SHOW_RAC_BANNER_LOCALSTORAGE_KEY = 'nmui-show-rac-banner';
+export const NMUI_ACL_VERSION = 'nmui-acl-version';
 
 // function to resolve the particular SaaS tenant's backend URL, ...
 export async function setupTenantConfig(): Promise<void> {
@@ -34,6 +35,7 @@ export async function setupTenantConfig(): Promise<void> {
       username: window?.localStorage?.getItem(NMUI_USERNAME_LOCALSTORAGE_KEY) ?? '',
       user: JSON.parse(window?.localStorage?.getItem(NMUI_USER_LOCALSTORAGE_KEY) ?? 'null'),
       userPlatformRole: JSON.parse(window?.localStorage?.getItem(NMUI_USER_PLATFORM_ROLE_LOCALSTORAGE_KEY) ?? 'null'),
+      aclVersion: Number(window?.localStorage?.getItem(NMUI_ACL_VERSION) ?? '1') as 1 | 2,
     });
     axiosService.defaults.baseURL = resolvedBaseUrl;
     return;
@@ -113,6 +115,7 @@ export async function setupTenantConfig(): Promise<void> {
     user: user || JSON.parse(window?.localStorage?.getItem(NMUI_USER_LOCALSTORAGE_KEY) ?? '{}'),
     userPlatformRole:
       userPlatformRole || JSON.parse(window?.localStorage?.getItem(NMUI_USER_PLATFORM_ROLE_LOCALSTORAGE_KEY) ?? '{}'),
+    aclVersion: Number(window?.localStorage?.getItem(NMUI_ACL_VERSION) ?? '1') as 1 | 2,
   });
 }
 

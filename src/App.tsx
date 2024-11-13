@@ -215,6 +215,12 @@ function App() {
     };
   }, [store.serverStatus.isHealthy]);
 
+  useEffect(() => {
+    setTimeout(() => {
+      store.setAclVersion(isServerEE ? store.aclVersion : 1);
+    }, 1000);
+  }, [isServerEE]);
+
   return (
     <div className={`App ${isDarkMode ? 'dark' : ''}`}>
       {' '}
