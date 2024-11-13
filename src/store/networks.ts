@@ -2,6 +2,7 @@ import { NetworksService } from '@/services/NetworksService';
 import { convertNetworkPayloadToUiNetwork } from '@/utils/NetworkUtils';
 import { StateCreator } from 'zustand';
 import { Network, NetworkStat } from '../models/Network';
+import { NMUI_ACL_VERSION } from '@/services/BaseService';
 
 export interface INetworkSlice {
   // state
@@ -23,7 +24,6 @@ const createNetworkSlice: StateCreator<INetworkSlice, [], [], INetworkSlice> = (
   networks: [],
   isFetchingNetworks: false,
   aclVersion: 1,
-
   async fetchNetworks() {
     try {
       set(() => ({ isFetchingNetworks: true }));
@@ -59,6 +59,7 @@ const createNetworkSlice: StateCreator<INetworkSlice, [], [], INetworkSlice> = (
     set((state) => ({ networks: state.networks.filter((network) => network.netid !== networkId) }));
   },
   setAclVersion(version: 1 | 2) {
+    window?.localStorage?.setItem(NMUI_ACL_VERSION, version.toString());
     set(() => ({ aclVersion: version }));
   },
 });
