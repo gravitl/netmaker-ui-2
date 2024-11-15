@@ -110,7 +110,7 @@ import QuickSetupModal from '@/components/modals/quick-setup-modal/QuickSetupMod
 import DownloadRemotesAccessClientModal from '@/components/modals/remote-access-client-modal/DownloadRemoteAccessClientModal';
 import SetNetworkFailoverModal from '@/components/modals/set-network-failover-modal/SetNetworkFailoverModal';
 import { TourType } from '../DashboardPage';
-import { WaypointsIcon } from 'lucide-react';
+import { ChevronsUpDown, WaypointsIcon } from 'lucide-react';
 import { hasNetworkAdminPriviledges } from '@/utils/UserMgmtUtils';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 import RacDownloadBanner from '@/components/RacDownloadBanner';
@@ -118,9 +118,20 @@ import { TagManagementPage } from './tag-management/TagManagementPage';
 import { ACLService } from '@/services/ACLService';
 import { ACLRule } from '@/services/dtos/ACLDtos';
 import ACLPage from './acl/ACLPage';
-import { DocumentIcon, EllipsisHorizontalIcon, PlusIcon, ServerIcon, UserIcon } from '@heroicons/react/24/solid';
+import {
+  Cog6ToothIcon,
+  DocumentIcon,
+  EllipsisHorizontalIcon,
+  InformationCircleIcon,
+  PlusIcon,
+  ServerIcon,
+  UserIcon,
+} from '@heroicons/react/24/solid';
 import AddNodeDialog from '@/components/modals/add-node-modal/AddNodeDialog';
 import NodeStatus from '@/components/ui/Status';
+import { HubsFilterCombobox } from '@/components/ui/HubsFilterCombobox';
+import { Button as PButton } from '@/components/shadcn/Button';
+import { HubsCombobox } from '@/components/ui/HubsCombobox';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -250,6 +261,8 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [isSetNetworkFailoverModalOpen, setIsSetNetworkFailoverModalOpen] = useState(false);
   const [isAddInternetGatewayModalOpen, setIsAddInternetGatewayModalOpen] = useState(false);
   const [activeNodeFilter, setActiveNodeFilter] = useState('Netclient');
+  const [hubFilter, setHubFilter] = useState('all-nodes');
+
   const { aclVersion, setAclVersion } = useStore();
 
   const filters = useMemo(
@@ -358,8 +371,6 @@ export default function NetworkDetailsPage(props: PageProps) {
   );
   const staticNetworkNodes: Node[] = useMemo(() => store.nodes.filter((node) => node.is_static), [store.nodes]);
 
-  //useeffect clg networkNodes
-
   const filteredNetworkNodes = useMemo<ExtendedNode[]>(() => {
     const filtered = networkNodes.filter((node) => {
       const nodeString =
@@ -368,7 +379,7 @@ export default function NetworkDetailsPage(props: PageProps) {
 
       if (!matchesSearch) return false;
 
-      const shouldInclude = (() => {
+      const matchesNodeType = (() => {
         switch (activeNodeFilter) {
           case 'Netclient':
             return !node.is_static && !node.is_user_node;
@@ -383,12 +394,29 @@ export default function NetworkDetailsPage(props: PageProps) {
         }
       })();
 
-      return shouldInclude;
+      if (!matchesNodeType) return false;
+
+      const matchesHubFilter = (() => {
+        const extendedNode = getExtendedNode(node, store.hostsCommonDetails);
+
+        switch (hubFilter) {
+          case 'hubs':
+            return node.isingressgateway || node.isrelay;
+          case 'has-hub-assigned': {
+            const hasHub = !!extendedNode.static_node?.ingressgatewayid;
+            return hasHub;
+          }
+          case 'all-nodes':
+          default:
+            return true;
+        }
+      })();
+
+      return matchesHubFilter;
     });
 
     return filtered;
-  }, [searchHost, networkNodes, activeNodeFilter]);
-
+  }, [searchHost, networkNodes, activeNodeFilter, hubFilter, store.hostsCommonDetails]);
   const internetGatewaysCount = useMemo(() => {
     return networkNodes.filter((node) => node.isinternetgateway).length;
   }, [networkNodes]);
@@ -2261,6 +2289,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   </button>
                 ))}
               </div>
+              <HubsFilterCombobox onChange={setHubFilter} />
             </div>
             <div className="flex gap-2">
               <Button
@@ -2323,55 +2352,64 @@ export default function NetworkDetailsPage(props: PageProps) {
                       const hostName = getExtendedNode(node, store.hostsCommonDetails).name;
                       return (
                         <>
-                          <Link
-                            to={node.is_static ? '#' : getNetworkHostRoute(node.hostid, node.network)}
-                            title={`Network Host ID: ${node.is_static ? node.static_node.clientid : node.id}`}
-                            className="inline-flex items-center gap-2"
-                            onClick={(e) => {
-                              if (node.is_static) {
-                                e.preventDefault();
-                                const clientData: ExternalClient = {
-                                  clientid: node.static_node?.clientid ?? '',
-                                  description: '',
-                                  privatekey: node.static_node?.privatekey ?? '',
-                                  publickey: node.static_node?.publickey ?? '',
-                                  network: networkId ?? '',
-                                  address: node.static_node?.address ?? '',
-                                  address6: node.static_node?.address6 ?? '',
-                                  ingressgatewayid: node.static_node?.ingressgatewayid ?? '',
-                                  ingressgatewayendpoint: node.static_node?.ingressgatewayendpoint ?? '',
-                                  lastmodified: node.lastmodified ?? 0,
-                                  enabled: node.static_node?.enabled ?? false,
-                                  ownerid: node.static_node?.ownerid ?? '',
-                                  internal_ip_addr: '',
-                                  internal_ip_addr6: '',
-                                  dns: node.static_node?.dns ?? '',
-                                  extraallowedips: node.static_node?.extraallowedips ?? [],
-                                  postup: node.static_node?.postup,
-                                  postdown: node.static_node?.postdown,
-                                  tags: node.static_node?.tags ?? {},
-                                };
-                                setTargetClient(clientData);
-                                setIsClientDetailsModalOpen(true);
-                              }
-                            }}
-                          >
-                            {getExtendedNode(node, store.hostsCommonDetails).is_static &&
-                            !getExtendedNode(node, store.hostsCommonDetails).is_user_node ? (
-                              <DocumentIcon className="w-4 h-4 shrink-0 text-text-primary" />
-                            ) : getExtendedNode(node, store.hostsCommonDetails).is_user_node ? (
-                              <UserIcon className="w-4 h-4 shrink-0 text-text-primary" />
-                            ) : (
-                              <ServerIcon className="w-4 h-4 shrink-0 text-text-primary" />
+                          <div className="flex gap-2">
+                            <Link
+                              to={node.is_static ? '#' : getNetworkHostRoute(node.hostid, node.network)}
+                              title={`Network Host ID: ${node.is_static ? node.static_node.clientid : node.id}`}
+                              className="inline-flex items-center gap-2"
+                              onClick={(e) => {
+                                if (node.is_static) {
+                                  e.preventDefault();
+                                  const clientData: ExternalClient = {
+                                    clientid: node.static_node?.clientid ?? '',
+                                    description: '',
+                                    privatekey: node.static_node?.privatekey ?? '',
+                                    publickey: node.static_node?.publickey ?? '',
+                                    network: networkId ?? '',
+                                    address: node.static_node?.address ?? '',
+                                    address6: node.static_node?.address6 ?? '',
+                                    ingressgatewayid: node.static_node?.ingressgatewayid ?? '',
+                                    ingressgatewayendpoint: node.static_node?.ingressgatewayendpoint ?? '',
+                                    lastmodified: node.lastmodified ?? 0,
+                                    enabled: node.static_node?.enabled ?? false,
+                                    ownerid: node.static_node?.ownerid ?? '',
+                                    internal_ip_addr: '',
+                                    internal_ip_addr6: '',
+                                    dns: node.static_node?.dns ?? '',
+                                    extraallowedips: node.static_node?.extraallowedips ?? [],
+                                    postup: node.static_node?.postup,
+                                    postdown: node.static_node?.postdown,
+                                    tags: node.static_node?.tags ?? {},
+                                  };
+                                  setTargetClient(clientData);
+                                  setIsClientDetailsModalOpen(true);
+                                }
+                              }}
+                            >
+                              {getExtendedNode(node, store.hostsCommonDetails).is_static &&
+                              !getExtendedNode(node, store.hostsCommonDetails).is_user_node ? (
+                                <DocumentIcon className="w-4 h-4 shrink-0 text-text-primary" />
+                              ) : getExtendedNode(node, store.hostsCommonDetails).is_user_node ? (
+                                <UserIcon className="w-4 h-4 shrink-0 text-text-primary" />
+                              ) : (
+                                <ServerIcon className="w-4 h-4 shrink-0 text-text-primary" />
+                              )}
+                              <span>
+                                {node.is_user_node
+                                  ? node.static_node?.ownerid
+                                  : node.is_static
+                                    ? node.static_node?.clientid
+                                    : hostName}
+                              </span>
+                            </Link>
+                            {node.isingressgateway && (
+                              <Tooltip title="This node can be used as a Hub for other nodes.">
+                                <div className="flex items-center justify-center px-3 rounded-full py-1/2 bg-button-primary-fill-default text-button-primary-text-default text-sm-semibold">
+                                  Hub
+                                </div>
+                              </Tooltip>
                             )}
-                            <span>
-                              {node.is_user_node
-                                ? node.static_node?.ownerid
-                                : node.is_static
-                                  ? node.static_node?.clientid
-                                  : hostName}
-                            </span>
-                          </Link>
+                          </div>
                           {node.pendingdelete && (
                             <Badge style={{ marginLeft: '1rem' }} status="processing" color="red" text="Removing..." />
                           )}
@@ -2430,22 +2468,72 @@ export default function NetworkDetailsPage(props: PageProps) {
                     },
                   },
                   {
-                    title: 'Gateway',
+                    title: (
+                      <div className="flex items-center">
+                        <span>Hub</span>
+                        <Tooltip title="Hubs are specialized nodes that manage network connections">
+                          <InformationCircleIcon className="w-4 ml-2" />
+                        </Tooltip>
+                      </div>
+                    ),
                     render(_, node) {
                       const extendedNode = getExtendedNode(node, store.hostsCommonDetails);
                       const gatewayId = extendedNode.static_node?.ingressgatewayendpoint;
+                      const gatewayNode = networkNodes.find((n) => n.id === node.static_node?.ingressgatewayid);
+                      const gatewayName = gatewayNode ? gatewayNode.name : 'gatewayId';
                       if (extendedNode.is_static && extendedNode.static_node && gatewayId) {
-                        const gatewayNode = networkNodes.find((n) => n.id === node.static_node?.ingressgatewayid);
-                        const gatewayName = gatewayNode ? gatewayNode.name : 'gatewayId';
-
                         return (
-                          <span className="flex items-center gap-2">
-                            <ServerIcon className="w-4 h-4 shrink-0 text-text-primary" />
-                            <span className="w-full break-words">{gatewayName}</span>
-                          </span>
+                          <div className="flex items-center gap-2 ">
+                            <Tooltip
+                              title={
+                                node.is_user_node
+                                  ? 'Cannot change hub for user nodes'
+                                  : 'Cannot change hub for config files'
+                              }
+                            >
+                              <div className="inline-block cursor-not-allowed">
+                                <PButton
+                                  variant="default"
+                                  role="combobox"
+                                  aria-expanded={false}
+                                  className="w-[200px] justify-between "
+                                  disabled={node.is_static}
+                                >
+                                  <ServerIcon className="w-4 h-4 shrink-0 text-text-primary" />
+                                  {gatewayName}
+                                  <ChevronsUpDown className="w-4 h-4 ml-2 opacity-50 shrink-0" />
+                                </PButton>
+                              </div>
+                            </Tooltip>
+                            <Button
+                              type="text"
+                              icon={<Cog6ToothIcon className="w-4 h-4 m-auto text-text-primary" />}
+                              onClick={() => {
+                                if (gatewayNode) {
+                                  setSelectedGateway(gatewayNode);
+                                  setIsUpdateGatewayModalOpen(true);
+                                }
+                              }}
+                            />
+                          </div>
                         );
                       } else {
-                        return '-';
+                        return (
+                          <div className="flex items-center gap-2">
+                            <HubsCombobox gateways={clientGateways} node={node} networkId={networkId ?? ''} />
+                            <Button
+                              type="text"
+                              icon={<Cog6ToothIcon className="w-4 h-4 m-auto text-text-primary" />}
+                              className="flex items-center justify-center"
+                              onClick={() => {
+                                if (gatewayNode) {
+                                  setSelectedGateway(gatewayNode);
+                                  setIsUpdateGatewayModalOpen(true);
+                                }
+                              }}
+                            />
+                          </div>
+                        );
                       }
                     },
                   },

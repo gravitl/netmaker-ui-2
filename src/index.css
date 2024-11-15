@@ -104,7 +104,7 @@
   --color-bg-contrast-default: var(--color-white);
   --color-bg-contrast-hover: var(--color-neutral-50);
 
-  --color-stroke-default: var(--color-neutral-700);
+  --color-stroke-default: var(--color-neutral-300);
 
   --color-text-primary: var(--color-neutral-800);
   --color-text-secondary: var(--color-neutral-400);
@@ -149,7 +149,7 @@
   --color-bg-contrast-default-dark: var(--color-neutral-900);
   --color-bg-contrast-hover-dark: var(--color-neutral-850);
 
-  --color-stroke-default-dark: var(--color-neutral-700);
+  --color-stroke-default-dark: var(--color-neutral-750);
 
   --color-text-primary-dark: var(--color-neutral-200);
   --color-text-secondary-dark: var(--color-neutral-500);
