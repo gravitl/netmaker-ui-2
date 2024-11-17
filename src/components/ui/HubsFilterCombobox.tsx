@@ -31,11 +31,11 @@ export function HubsFilterCombobox({ onChange }: { onChange: (value: string) => 
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button variant="default" role="combobox" aria-expanded={open} className="w-[200px] justify-between">
-          {value ? hubsFilter.find((framework) => framework.value === value)?.label : 'Select hub filter...'}
+          {hubsFilter.find((framework) => framework.value === value)?.label}
           <ChevronsUpDown className="w-4 h-4 ml-2 opacity-50 shrink-0" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] bg-bg-contrastDefault  text-text-primary p-0 ">
+      <PopoverContent className="w-[200px] bg-bg-contrastDefault text-text-primary p-0">
         <Command>
           <CommandList>
             <CommandGroup>
@@ -44,9 +44,8 @@ export function HubsFilterCombobox({ onChange }: { onChange: (value: string) => 
                   key={hubFilter.value}
                   value={hubFilter.value}
                   onSelect={(currentValue) => {
-                    const newValue = currentValue === value ? '' : currentValue;
-                    setValue(newValue);
-                    onChange(newValue);
+                    setValue(currentValue);
+                    onChange(currentValue);
                     setOpen(false);
                   }}
                 >

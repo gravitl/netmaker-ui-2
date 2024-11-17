@@ -371,6 +371,9 @@ export default function NetworkDetailsPage(props: PageProps) {
   );
   const staticNetworkNodes: Node[] = useMemo(() => store.nodes.filter((node) => node.is_static), [store.nodes]);
 
+  const isHub = (node: ExtendedNode) => {
+    return node.isingressgateway && node.isrelay;
+  };
   const filteredNetworkNodes = useMemo<ExtendedNode[]>(() => {
     const filtered = networkNodes.filter((node) => {
       const nodeString =
@@ -401,9 +404,9 @@ export default function NetworkDetailsPage(props: PageProps) {
 
         switch (hubFilter) {
           case 'hubs':
-            return node.isingressgateway || node.isrelay;
+            return isHub(node);
           case 'has-hub-assigned': {
-            const hasHub = !!extendedNode.static_node?.ingressgatewayid;
+            const hasHub = !!extendedNode.static_node?.ingressgatewayid || !extendedNode.isrelay;
             return hasHub;
           }
           case 'all-nodes':
@@ -2257,13 +2260,82 @@ export default function NetworkDetailsPage(props: PageProps) {
     );
   }, [network, form, isEditingNetwork, themeToken.colorBorder, isIpv4Watch, isIpv6Watch]);
 
+  const createHub = async (node: ExtendedNode) => {
+    try {
+      if (!node.isingressgateway && networkId) {
+        await NodesService.createIngressNode(node.id, networkId, {
+          extclientdns: '',
+          is_internet_gw: false,
+          metadata: '',
+          mtu: 1420,
+          persistentkeepalive: 20,
+        });
+      }
+
+      if (!node.isrelay && networkId) {
+        await NodesService.createRelay(node.id, networkId, {
+          netid: networkId,
+          nodeid: node.id,
+          relayaddrs: [],
+        });
+      }
+      await store.fetchNodes();
+
+      notify.success({ message: `Hub set successfully` });
+    } catch (err) {
+      notify.error({
+        message: 'Failed to set hub',
+        description: extractErrorMsg(err as any),
+      });
+    }
+  };
+
+  const deleteHub = async (node: ExtendedNode) => {
+    Modal.confirm({
+      title: `Unset hub ${node.name}`,
+      content: (
+        <>
+          Are you sure you want to unset this node from acting as a hub?
+          <br />
+          Any attached nodes be disconnected and any config file using this hub will be deleted.
+        </>
+      ),
+      onOk: async () => {
+        try {
+          if (networkId && node.isingressgateway) {
+            await NodesService.deleteIngressNode(node.id, networkId);
+          }
+          if (networkId && node.isrelay) {
+            await NodesService.deleteRelay(node.id, networkId);
+          }
+
+          store.updateNode(node.id, {
+            ...node,
+            isingressgateway: false,
+            relaynodes: [],
+            isrelay: false,
+          });
+
+          store.fetchNodes();
+
+          notify.success({ message: 'Hub unset successfully' });
+        } catch (err) {
+          notify.error({
+            message: 'Failed to unset hub',
+            description: extractErrorMsg(err as any),
+          });
+        }
+      },
+    });
+  };
+
   const getHostsContent = useCallback(() => {
     return (
       <div className="network-hosts-tab-content" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
         <Row justify="space-between" align="middle" style={{ marginBottom: '1rem', width: '100%' }}>
           {isServerEE && <RacDownloadBanner />}
           <div className="flex flex-col w-full gap-4 md:flex-row">
-            <div className="inline-flex flex-col flex-grow gap-4 md:flex-row">
+            <div className="inline-flex flex-col flex-wrap flex-grow gap-4 md:flex-row">
               <Input
                 size="large"
                 placeholder="Search nodes"
@@ -2352,7 +2424,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                       const hostName = getExtendedNode(node, store.hostsCommonDetails).name;
                       return (
                         <>
-                          <div className="flex gap-2">
+                          <div className="inline-flex gap-2 ">
                             <Link
                               to={node.is_static ? '#' : getNetworkHostRoute(node.hostid, node.network)}
                               title={`Network Host ID: ${node.is_static ? node.static_node.clientid : node.id}`}
@@ -2402,9 +2474,9 @@ export default function NetworkDetailsPage(props: PageProps) {
                                     : hostName}
                               </span>
                             </Link>
-                            {node.isingressgateway && (
+                            {isHub(node) && (
                               <Tooltip title="This node can be used as a Hub for other nodes.">
-                                <div className="flex items-center justify-center px-3 rounded-full py-1/2 bg-button-primary-fill-default text-button-primary-text-default text-sm-semibold">
+                                <div className="inline-flex items-center justify-center h-6 px-3 rounded-full py-1/2 bg-button-primary-fill-default text-button-primary-text-default text-sm-semibold">
                                   Hub
                                 </div>
                               </Tooltip>
@@ -2479,11 +2551,13 @@ export default function NetworkDetailsPage(props: PageProps) {
                     render(_, node) {
                       const extendedNode = getExtendedNode(node, store.hostsCommonDetails);
                       const gatewayId = extendedNode.static_node?.ingressgatewayendpoint;
-                      const gatewayNode = networkNodes.find((n) => n.id === node.static_node?.ingressgatewayid);
+                      const gatewayNode = networkNodes.find(
+                        (n) => n.id === node.static_node?.ingressgatewayid || node.relayedby === n.id,
+                      );
                       const gatewayName = gatewayNode ? gatewayNode.name : 'gatewayId';
                       if (extendedNode.is_static && extendedNode.static_node && gatewayId) {
                         return (
-                          <div className="flex items-center gap-2 ">
+                          <div className="flex items-center w-full gap-2 ">
                             <Tooltip
                               title={
                                 node.is_user_node
@@ -2491,12 +2565,12 @@ export default function NetworkDetailsPage(props: PageProps) {
                                   : 'Cannot change hub for config files'
                               }
                             >
-                              <div className="inline-block cursor-not-allowed">
+                              <div className="inline-block w-full cursor-not-allowed">
                                 <PButton
                                   variant="default"
                                   role="combobox"
                                   aria-expanded={false}
-                                  className="w-[200px] justify-between "
+                                  className="justify-between w-full "
                                   disabled={node.is_static}
                                 >
                                   <ServerIcon className="w-4 h-4 shrink-0 text-text-primary" />
@@ -2505,33 +2579,46 @@ export default function NetworkDetailsPage(props: PageProps) {
                                 </PButton>
                               </div>
                             </Tooltip>
-                            <Button
-                              type="text"
-                              icon={<Cog6ToothIcon className="w-4 h-4 m-auto text-text-primary" />}
-                              onClick={() => {
-                                if (gatewayNode) {
-                                  setSelectedGateway(gatewayNode);
-                                  setIsUpdateGatewayModalOpen(true);
-                                }
-                              }}
-                            />
+                            <Tooltip title="Configure this hub">
+                              <Button
+                                type="text"
+                                icon={<Cog6ToothIcon className="w-4 h-4 m-auto text-text-primary" />}
+                                onClick={() => {
+                                  if (gatewayNode) {
+                                    setSelectedGateway(gatewayNode);
+                                    setIsUpdateGatewayModalOpen(true);
+                                  }
+                                }}
+                                disabled={isHub(node)}
+                              />
+                            </Tooltip>
                           </div>
                         );
                       } else {
                         return (
                           <div className="flex items-center gap-2">
-                            <HubsCombobox gateways={clientGateways} node={node} networkId={networkId ?? ''} />
-                            <Button
-                              type="text"
-                              icon={<Cog6ToothIcon className="w-4 h-4 m-auto text-text-primary" />}
-                              className="flex items-center justify-center"
-                              onClick={() => {
-                                if (gatewayNode) {
-                                  setSelectedGateway(gatewayNode);
-                                  setIsUpdateGatewayModalOpen(true);
-                                }
-                              }}
-                            />
+                            <HubsCombobox hubs={clientGateways} node={node} networkId={networkId ?? ''} />
+                            {!node.isrelayed ||
+                              (!isHub(node) && (
+                                <Tooltip title="Configure this hub">
+                                  <Button
+                                    type="text"
+                                    icon={
+                                      <Cog6ToothIcon
+                                        className={`w-4 h-4 m-auto text-text-primary ${isHub(node) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                      />
+                                    }
+                                    className="flex items-center justify-center"
+                                    onClick={() => {
+                                      if (gatewayNode) {
+                                        setSelectedGateway(gatewayNode);
+                                        setIsUpdateGatewayModalOpen(true);
+                                      }
+                                    }}
+                                    disabled={isHub(node)}
+                                  />
+                                </Tooltip>
+                              ))}
                           </div>
                         );
                       }
@@ -2763,6 +2850,23 @@ export default function NetworkDetailsPage(props: PageProps) {
                                   ? 'Stop this host as acting as the network failover'
                                   : 'Make this the network failover host. Any existing failover host will be replaced.',
                                 onClick: () => confirmNodeFailoverStatusChange(node, !node.is_fail_over),
+                              },
+                            ]
+                          : []),
+                        {
+                          key: 'hub',
+                          label: !isHub(node) ? 'Set as Hub' : 'Unset as Hub',
+                          onClick: () => (isHub(node) ? deleteHub(node) : createHub(node)),
+                        },
+                        ...(isHub(node)
+                          ? [
+                              {
+                                key: 'configure-hub',
+                                label: 'Configure Hub',
+                                onClick: () => {
+                                  setSelectedGateway(node);
+                                  setIsUpdateGatewayModalOpen(true);
+                                },
                               },
                             ]
                           : []),
