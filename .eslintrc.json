@@ -31,6 +31,10 @@
     "@typescript-eslint/no-use-before-define": ["error"],
     "react/jsx-filename-extension": ["warn", { "extensions": [".tsx"] }],
     "react-hooks/rules-of-hooks": "error",
-    "react-hooks/exhaustive-deps": "warn"
+    "react-hooks/exhaustive-deps": "warn",
+    "react/prop-types": "warn",
+    "react/require-default-props": "warn",
+    "react/jsx-props-no-spreading": "warn",
+    "react/display-name": "warn"
   }
 }
