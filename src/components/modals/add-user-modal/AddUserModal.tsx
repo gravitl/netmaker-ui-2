@@ -77,6 +77,12 @@ export default function AddUserModal({
   const [isLoadingPlatformRoles, setIsLoadingPlatformRoles] = useState(true);
 
   const palVal: UserRoleId = Form.useWatch('platform_role_id', form);
+  const groupsVal = Form.useWatch('user-groups', form);
+
+  const isGlobalRoleGroupSelected = useMemo(
+    () => (groupsVal?.includes('global-network-admin-grp') || groupsVal?.includes('global-network-user-grp')) ?? false,
+    [groupsVal],
+  );
 
   const networkRolesTableData = useMemo<NetworkRolesTableData[]>(() => {
     const roles = networkRoles
@@ -247,13 +253,21 @@ export default function AddUserModal({
                   value: g.id,
                   label: g.name,
                   title: g.meta_data,
+                  disabled: isGlobalRoleGroupSelected && g.id !== groupsVal[0],
                 }))}
+              onChange={(groups: Array<UserGroup['id']>) => {
+                if (groups.find((g) => g === 'global-network-admin-grp')) {
+                  form.setFieldValue('user-groups', ['global-network-admin-grp']);
+                } else if (groups.find((g) => g === 'global-network-user-grp')) {
+                  form.setFieldValue('user-groups', ['global-network-user-grp']);
+                }
+              }}
             />
           </Form.Item>
         </Col>
       </Row>
     );
-  }, [filteredGroups]);
+  }, [filteredGroups, form, groupsVal, isGlobalRoleGroupSelected]);
 
   const getCustomRolesContent = useCallback(() => {
     return (
