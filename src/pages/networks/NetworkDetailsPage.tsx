@@ -129,9 +129,9 @@ import {
 } from '@heroicons/react/24/solid';
 import AddNodeDialog from '@/components/modals/add-node-modal/AddNodeDialog';
 import NodeStatus from '@/components/ui/Status';
-import { HubsFilterCombobox } from '@/components/ui/HubsFilterCombobox';
+import { GatewaysFilterCombobox } from '@/components/ui/GatewayFilterCombobox';
 import { Button as PButton } from '@/components/shadcn/Button';
-import { HubsCombobox } from '@/components/ui/HubsCombobox';
+import { GatewaysCombobox } from '@/components/ui/GatewayCombobox';
 
 interface ExternalRoutesTableData {
   node: ExtendedNode;
@@ -261,7 +261,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   const [isSetNetworkFailoverModalOpen, setIsSetNetworkFailoverModalOpen] = useState(false);
   const [isAddInternetGatewayModalOpen, setIsAddInternetGatewayModalOpen] = useState(false);
   const [activeNodeFilter, setActiveNodeFilter] = useState('Netclient');
-  const [hubFilter, setHubFilter] = useState('all-nodes');
+  const [gatewayFilter, setGatewayFilter] = useState('all-nodes');
 
   const { aclVersion, setAclVersion } = useStore();
 
@@ -371,7 +371,7 @@ export default function NetworkDetailsPage(props: PageProps) {
   );
   const staticNetworkNodes: Node[] = useMemo(() => store.nodes.filter((node) => node.is_static), [store.nodes]);
 
-  const isHub = (node: ExtendedNode) => {
+  const isGateway = (node: ExtendedNode) => {
     return node.isingressgateway && node.isrelay;
   };
   const filteredNetworkNodes = useMemo<ExtendedNode[]>(() => {
@@ -399,15 +399,15 @@ export default function NetworkDetailsPage(props: PageProps) {
 
       if (!matchesNodeType) return false;
 
-      const matchesHubFilter = (() => {
+      const matchesGatewayFilter = (() => {
         const extendedNode = getExtendedNode(node, store.hostsCommonDetails);
 
-        switch (hubFilter) {
-          case 'hubs':
-            return isHub(node);
-          case 'has-hub-assigned': {
-            const hasHub = !!extendedNode.static_node?.ingressgatewayid || !extendedNode.isrelay;
-            return hasHub;
+        switch (gatewayFilter) {
+          case 'gateways':
+            return isGateway(node);
+          case 'has-gateway-assigned': {
+            const hasGateway = !!extendedNode.static_node?.ingressgatewayid || !extendedNode.isrelay;
+            return hasGateway;
           }
           case 'all-nodes':
           default:
@@ -415,11 +415,11 @@ export default function NetworkDetailsPage(props: PageProps) {
         }
       })();
 
-      return matchesHubFilter;
+      return matchesGatewayFilter;
     });
 
     return filtered;
-  }, [searchHost, networkNodes, activeNodeFilter, hubFilter, store.hostsCommonDetails]);
+  }, [searchHost, networkNodes, activeNodeFilter, gatewayFilter, store.hostsCommonDetails]);
   const internetGatewaysCount = useMemo(() => {
     return networkNodes.filter((node) => node.isinternetgateway).length;
   }, [networkNodes]);
@@ -2260,7 +2260,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     );
   }, [network, form, isEditingNetwork, themeToken.colorBorder, isIpv4Watch, isIpv6Watch]);
 
-  const createHub = async (node: ExtendedNode) => {
+  const createGateway = async (node: ExtendedNode) => {
     try {
       if (!node.isingressgateway && networkId) {
         await NodesService.createIngressNode(node.id, networkId, {
@@ -2281,23 +2281,23 @@ export default function NetworkDetailsPage(props: PageProps) {
       }
       await store.fetchNodes();
 
-      notify.success({ message: `Hub set successfully` });
+      notify.success({ message: `Gateway set successfully` });
     } catch (err) {
       notify.error({
-        message: 'Failed to set hub',
+        message: 'Failed to set gateway',
         description: extractErrorMsg(err as any),
       });
     }
   };
 
-  const deleteHub = async (node: ExtendedNode) => {
+  const deleteGateway = async (node: ExtendedNode) => {
     Modal.confirm({
-      title: `Unset hub ${node.name}`,
+      title: `Unset gateway ${node.name}`,
       content: (
         <>
-          Are you sure you want to unset this node from acting as a hub?
+          Are you sure you want to unset this node from acting as a gateway?
           <br />
-          Any attached nodes be disconnected and any config file using this hub will be deleted.
+          Any attached nodes be disconnected and any config file using this gateway will be deleted.
         </>
       ),
       onOk: async () => {
@@ -2318,10 +2318,10 @@ export default function NetworkDetailsPage(props: PageProps) {
 
           store.fetchNodes();
 
-          notify.success({ message: 'Hub unset successfully' });
+          notify.success({ message: 'Gateway unset successfully' });
         } catch (err) {
           notify.error({
-            message: 'Failed to unset hub',
+            message: 'Failed to unset gateway',
             description: extractErrorMsg(err as any),
           });
         }
@@ -2361,7 +2361,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   </button>
                 ))}
               </div>
-              <HubsFilterCombobox onChange={setHubFilter} />
+              <GatewaysFilterCombobox onChange={setGatewayFilter} />
             </div>
             <div className="flex gap-2">
               <Button
@@ -2474,10 +2474,10 @@ export default function NetworkDetailsPage(props: PageProps) {
                                     : hostName}
                               </span>
                             </Link>
-                            {isHub(node) && (
-                              <Tooltip title="This node can be used as a Hub for other nodes.">
+                            {isGateway(node) && (
+                              <Tooltip title="This node can be used as a gateway for other nodes.">
                                 <div className="inline-flex items-center justify-center h-6 px-3 rounded-full py-1/2 bg-button-primary-fill-default text-button-primary-text-default text-sm-semibold">
-                                  Hub
+                                  Gateway
                                 </div>
                               </Tooltip>
                             )}
@@ -2542,8 +2542,8 @@ export default function NetworkDetailsPage(props: PageProps) {
                   {
                     title: (
                       <div className="flex items-center">
-                        <span>Hub</span>
-                        <Tooltip title="Hubs are specialized nodes that manage network connections">
+                        <span>Gateway</span>
+                        <Tooltip title="Gateways are specialized nodes that manage network connections">
                           <InformationCircleIcon className="w-4 ml-2" />
                         </Tooltip>
                       </div>
@@ -2561,8 +2561,8 @@ export default function NetworkDetailsPage(props: PageProps) {
                             <Tooltip
                               title={
                                 node.is_user_node
-                                  ? 'Cannot change hub for user nodes'
-                                  : 'Cannot change hub for config files'
+                                  ? 'Cannot change gateway for user nodes'
+                                  : 'Cannot change gateway for config files'
                               }
                             >
                               <div className="inline-block w-full cursor-not-allowed">
@@ -2579,7 +2579,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                                 </PButton>
                               </div>
                             </Tooltip>
-                            <Tooltip title="Configure this hub">
+                            <Tooltip title="Configure this gateway">
                               <Button
                                 type="text"
                                 icon={<Cog6ToothIcon className="w-4 h-4 m-auto text-text-primary" />}
@@ -2589,7 +2589,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                                     setIsUpdateGatewayModalOpen(true);
                                   }
                                 }}
-                                disabled={isHub(node)}
+                                disabled={isGateway(node)}
                               />
                             </Tooltip>
                           </div>
@@ -2597,15 +2597,15 @@ export default function NetworkDetailsPage(props: PageProps) {
                       } else {
                         return (
                           <div className="flex items-center gap-2">
-                            <HubsCombobox hubs={clientGateways} node={node} networkId={networkId ?? ''} />
+                            <GatewaysCombobox gateways={clientGateways} node={node} networkId={networkId ?? ''} />
                             {!node.isrelayed ||
-                              (!isHub(node) && (
-                                <Tooltip title="Configure this hub">
+                              (!isGateway(node) && (
+                                <Tooltip title="Configure this gateway">
                                   <Button
                                     type="text"
                                     icon={
                                       <Cog6ToothIcon
-                                        className={`w-4 h-4 m-auto text-text-primary ${isHub(node) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                        className={`w-4 h-4 m-auto text-text-primary ${isGateway(node) ? 'opacity-50 cursor-not-allowed' : ''}`}
                                       />
                                     }
                                     className="flex items-center justify-center"
@@ -2615,7 +2615,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                                         setIsUpdateGatewayModalOpen(true);
                                       }
                                     }}
-                                    disabled={isHub(node)}
+                                    disabled={isGateway(node)}
                                   />
                                 </Tooltip>
                               ))}
@@ -2854,15 +2854,15 @@ export default function NetworkDetailsPage(props: PageProps) {
                             ]
                           : []),
                         {
-                          key: 'hub',
-                          label: !isHub(node) ? 'Set as Hub' : 'Unset as Hub',
-                          onClick: () => (isHub(node) ? deleteHub(node) : createHub(node)),
+                          key: 'gateway',
+                          label: !isGateway(node) ? 'Set as gateway' : 'Unset as gateway',
+                          onClick: () => (isGateway(node) ? deleteGateway(node) : createGateway(node)),
                         },
-                        ...(isHub(node)
+                        ...(isGateway(node)
                           ? [
                               {
-                                key: 'configure-hub',
-                                label: 'Configure Hub',
+                                key: 'configure-gateway',
+                                label: 'Configure Gateway',
                                 onClick: () => {
                                   setSelectedGateway(node);
                                   setIsUpdateGatewayModalOpen(true);

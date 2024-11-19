@@ -8,22 +8,22 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { cn } from '@/utils/Types';
 import { CheckCircleIcon } from '@heroicons/react/24/solid';
 
-const hubsFilter = [
+const gatewaysFilter = [
   {
     value: 'all-nodes',
     label: 'All Nodes',
   },
   {
-    value: 'hubs',
-    label: 'Hubs',
+    value: 'gateways',
+    label: 'Gateways',
   },
   {
-    value: 'has-hub-assigned',
-    label: 'Has Hub Assigned',
+    value: 'has-gateway-assigned',
+    label: 'Has Gateway Assigned',
   },
 ];
 
-export function HubsFilterCombobox({ onChange }: { onChange: (value: string) => void }) {
+export function GatewaysFilterCombobox({ onChange }: { onChange: (value: string) => void }) {
   const [open, setOpen] = React.useState(false);
   const [value, setValue] = React.useState('all-nodes');
 
@@ -31,7 +31,7 @@ export function HubsFilterCombobox({ onChange }: { onChange: (value: string) => 
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button variant="default" role="combobox" aria-expanded={open} className="w-[200px] justify-between">
-          {hubsFilter.find((framework) => framework.value === value)?.label}
+          {gatewaysFilter.find((framework) => framework.value === value)?.label}
           <ChevronsUpDown className="w-4 h-4 ml-2 opacity-50 shrink-0" />
         </Button>
       </PopoverTrigger>
@@ -39,10 +39,10 @@ export function HubsFilterCombobox({ onChange }: { onChange: (value: string) => 
         <Command>
           <CommandList>
             <CommandGroup>
-              {hubsFilter.map((hubFilter) => (
+              {gatewaysFilter.map((gatewayFilter) => (
                 <CommandItem
-                  key={hubFilter.value}
-                  value={hubFilter.value}
+                  key={gatewayFilter.value}
+                  value={gatewayFilter.value}
                   onSelect={(currentValue) => {
                     setValue(currentValue);
                     onChange(currentValue);
@@ -50,9 +50,9 @@ export function HubsFilterCombobox({ onChange }: { onChange: (value: string) => 
                   }}
                 >
                   <CheckCircleIcon
-                    className={cn('mr-2 h-4 w-4', value === hubFilter.value ? 'opacity-100' : 'opacity-0')}
+                    className={cn('mr-2 h-4 w-4', value === gatewayFilter.value ? 'opacity-100' : 'opacity-0')}
                   />
-                  {hubFilter.label}
+                  {gatewayFilter.label}
                 </CommandItem>
               ))}
             </CommandGroup>
