@@ -16,6 +16,7 @@ import { Network } from '@/models/Network';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { Tag } from '@/models/Tags';
 import { NotificationInstance } from 'antd/es/notification/interface';
+import arrowBidirectional from '@/assets/arrow-bidirectional.svg';
 
 interface Item {
   id: string;
@@ -377,7 +378,7 @@ const UpdateResourcesForm: React.FC<UpdateResourcesFormProps> = ({
 
           <div className="flex flex-col items-center justify-center w-2/3 gap-2">
             <img
-              src="/arrow-bidirectional.svg"
+              src={arrowBidirectional}
               className="w-full px-4 py-2 text-sm border rounded-lg bg-bg-default border-stroke-default"
               alt="Bidirectional arrow"
             />
