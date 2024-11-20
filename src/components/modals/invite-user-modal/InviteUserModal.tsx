@@ -100,6 +100,13 @@ export default function InviteUserModal({
   const userGroupsVal = Form.useWatch('user-groups', form);
   const palVal = Form.useWatch('platform_role_id', form);
 
+  const isGlobalRoleGroupSelected = useMemo(
+    () =>
+      (userGroupsVal?.includes('global-network-admin-grp') || userGroupsVal?.includes('global-network-user-grp')) ??
+      false,
+    [userGroupsVal],
+  );
+
   const resetModal = () => {
     setCurrentStep(0);
     form.resetFields();
@@ -315,13 +322,21 @@ export default function InviteUserModal({
                   value: g.id,
                   label: g.name || g.id,
                   title: g.meta_data,
+                  disabled: isGlobalRoleGroupSelected && g.id !== userGroupsVal[0],
                 }))}
+              onChange={(groups: Array<UserGroup['id']>) => {
+                if (groups.find((g) => g === 'global-network-admin-grp')) {
+                  form.setFieldValue('user-groups', ['global-network-admin-grp']);
+                } else if (groups.find((g) => g === 'global-network-user-grp')) {
+                  form.setFieldValue('user-groups', ['global-network-user-grp']);
+                }
+              }}
             />
           </Form.Item>
         </Col>
       </Row>
     );
-  }, [filteredGroups]);
+  }, [filteredGroups, form, isGlobalRoleGroupSelected, userGroupsVal]);
 
   const getCustomRolesContent = useCallback(() => {
     return (
