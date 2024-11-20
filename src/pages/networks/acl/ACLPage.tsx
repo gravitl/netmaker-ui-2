@@ -7,7 +7,7 @@ import { AxiosError } from 'axios';
 import { ACLRule, DestinationTypeValue, SourceTypeValue } from '@/services/dtos/ACLDtos';
 import { ACLService } from '@/services/ACLService';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
-import arrowBidirectional from '../../../../public/arrow-bidirectional.svg';
+import arrowBidirectional from '@/assets/arrow-bidirectional.svg';
 import UpdateACLModal from '@/components/modals/update-acl-modal/UpdateACLModal';
 import AddACLModal from '@/components/modals/add-acl-modal/AddACLModal';
 import { UsersService } from '@/services/UsersService';
