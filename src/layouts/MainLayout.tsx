@@ -468,11 +468,43 @@ export default function MainLayout() {
     checkLatestVersion();
   }, [storeFetchNetworks]);
 
+  const [isSidebarComponentCollapsed, setIsSidebarComponentCollapsed] = useState(false);
+
   return (
     <AppErrorBoundary key={location.pathname}>
       <Layout hasSider>
-        <Sidebar />
-
+        <Sider
+          collapsible={false}
+          collapsed={isSidebarCollapsed}
+          onCollapse={(isCollapsed) => {
+            setIsSidebarCollapsed(isCollapsed);
+            store.setIsSidebarCollapsed(isCollapsed);
+          }}
+          collapsedWidth={isSmallScreen ? 0 : SIDE_NAV_COLLAPSED_WIDTH}
+          theme="light"
+          width={isSidebarComponentCollapsed ? '5rem' : '14rem'}
+          style={{
+            height: '100vh',
+            position: isSmallScreen ? 'fixed' : 'sticky',
+            left: 0,
+            top: 0,
+            bottom: 0,
+            borderRight: `1px solid ${themeToken.colorBorder}`,
+            zIndex: 1000,
+          }}
+          breakpoint="md"
+          onBreakpoint={(broken: boolean) => {
+            setIsSmallScreen(broken);
+          }}
+          zeroWidthTriggerStyle={{
+            backgroundColor: 'transparent',
+          }}
+        >
+          <Sidebar
+            isSidebarCollapsed={isSidebarComponentCollapsed}
+            setIsSidebarCollapsed={setIsSidebarComponentCollapsed}
+          />
+        </Sider>
         {/* main content */}
         <Layout
           className="site-layout"

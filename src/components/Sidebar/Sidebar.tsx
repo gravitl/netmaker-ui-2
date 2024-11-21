@@ -14,8 +14,6 @@ import {
   ArrowsRightLeftIcon as ArrowsRightLeftIconSolid,
   ShieldCheckIcon as ShieldCheckIconSolid,
   ChartBarSquareIcon as ChartBarSquareIconSolid,
-  Bars3Icon,
-  XMarkIcon,
 } from '@heroicons/react/20/solid';
 
 import {
@@ -42,16 +40,20 @@ import NetworkDropdown from './components/NetworkDropdown';
 import AccountDropdown from './components/AccountDropdown';
 import { useStore } from '@/store/store';
 import AddNetworkModal from '../modals/add-network-modal/AddNetworkModal';
-import { getAmuiTenantsUrl, getNetworkPageRoute, isNetworkPage, NetworkPage } from '@/utils/RouteUtils';
+import { getNetworkPageRoute, isNetworkPage, NetworkPage } from '@/utils/RouteUtils';
 
-const Sidebar = () => {
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+const Sidebar = ({
+  isSidebarCollapsed,
+  setIsSidebarCollapsed,
+}: {
+  isSidebarCollapsed: boolean;
+  setIsSidebarCollapsed: (isCollapsed: boolean) => void;
+}) => {
   const [isTenantCollapsed, setIsTenantCollapsed] = useState(false);
   const [selectedMenu, setSelectedMenu] = useState('');
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
   const [isNetworkDropdownOpen, setIsNetworkDropdownOpen] = useState(false);
   const [isAddNetworkModalOpen, setIsAddNetworkModalOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const autoFillButtonRef = useRef(null);
   const networkNameInputRef = useRef(null);
@@ -59,26 +61,10 @@ const Sidebar = () => {
   const ipv6InputRef = useRef(null);
   const defaultAclInputRef = useRef(null);
   const submitButtonRef = useRef(null);
-  const sidebarRef = useRef<HTMLDivElement | null>(null);
 
   const store = useStore();
   const location = useLocation();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (sidebarRef.current && !sidebarRef.current.contains(event.target as Node)) {
-        setIsMobileMenuOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  useEffect(() => {
-    setIsMobileMenuOpen(false);
-  }, [location]);
 
   const menuItems = useMemo(
     () => [
@@ -190,6 +176,7 @@ const Sidebar = () => {
       {
         key: 'info',
         // title: 'Analytics', // TODO: bring back after merging info and metrics
+
         title: 'Info',
         iconSolid: <ChartBarSquareIconSolid className="size-6" />,
         iconOutline: <ChartBarSquareIconOutline className="size-6" />,
@@ -209,8 +196,6 @@ const Sidebar = () => {
 
   const handleMenuClick = (key: string) => {
     setSelectedMenu(key);
-    setIsMobileMenuOpen(false);
-
     // TODO: change to use route from array instead
     if (isNetworkPage(key)) {
       navigate(getNetworkPageRoute(key as NetworkPage, store.activeNetwork));
@@ -222,99 +207,70 @@ const Sidebar = () => {
   };
 
   return (
-    <>
-      {/* Mobile Menu Button */}
-      <button
-        className="fixed z-50 p-2 rounded-lg top-4 right-4 bg-bg-contrastDefault md:hidden"
-        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-      >
-        {isMobileMenuOpen ? (
-          <XMarkIcon className="size-6 text-text-primary" />
-        ) : (
-          <Bars3Icon className="size-6 text-text-primary" />
-        )}
-      </button>
-
-      {/* Overlay for mobile */}
-      {isMobileMenuOpen && <div className="fixed inset-0 z-30 bg-black bg-opacity-50 md:hidden" />}
-
-      <div
-        ref={sidebarRef}
-        className={`fixed md:sticky top-0 left-0 z-40 flex flex-col justify-between h-screen pb-2 bg-bg-contrastDefault transition-all duration-300 
-          ${isSidebarCollapsed ? 'w-20' : 'w-56'}
-          ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
-      >
-        <div>
-          <LogoBlock isSidebarCollapsed={isSidebarCollapsed} onToggleCollapse={toggleSidebarCollapse} />
-          <div
-            className="flex gap-4 py-3 pl-5 pr-4 cursor-pointer text-text-secondary hover:bg-bg-contrastHover"
-            onClick={() => setIsTenantCollapsed(!isTenantCollapsed)}
-          >
-            <ChevronUpIcon className={`size-6 ${isTenantCollapsed ? 'transform rotate-180' : ''}`} />
-            {!isSidebarCollapsed && (
-              <div className="flex flex-col w-full py-0.5 gap-1">
-                <span className="text-text-primary text-sm-semibold">Tenant</span>
-                <span className="text-sm">Starter</span>
-              </div>
-            )}
-            {!isSidebarCollapsed && <ArrowTopRightOnSquareIcon className="size-6 hover:text-text-primary" />}
-          </div>
-          {!isTenantCollapsed && (
-            <div>
-              {menuItems.map(({ key, title, iconSolid, iconOutline, route }) => (
-                <Link to={route} key={title}>
-                  <MenuRow
-                    title={title}
-                    icon={selectedMenu === key ? iconSolid : iconOutline}
-                    selected={selectedMenu === key}
-                    onClick={() => handleMenuClick(key)}
-                    isSidebarCollapsed={isSidebarCollapsed}
-                  />
-                </Link>
-              ))}
+    <div
+      className={`sticky top-0 flex flex-col justify-between h-screen pb-2 bg-bg-contrastDefault transition-all duration-300 
+         ${isSidebarCollapsed ? 'w-20' : 'w-56'}`}
+    >
+      <div>
+        <LogoBlock isSidebarCollapsed={isSidebarCollapsed} onToggleCollapse={toggleSidebarCollapse} />
+        <div
+          className="flex gap-4 py-3 pl-5 pr-4 cursor-pointer text-text-secondary hover:bg-bg-contrastHover"
+          onClick={() => setIsTenantCollapsed(!isTenantCollapsed)}
+        >
+          <ChevronUpIcon className={`size-6 ${isTenantCollapsed ? 'transform rotate-180' : ''}`} />
+          {!isSidebarCollapsed && (
+            <div className="flex flex-col w-full py-0.5 gap-1">
+              <span className="text-text-primary text-sm-semibold">Tenant</span>
+              <span className="text-sm">Starter</span>
             </div>
           )}
-          <div className="mt-4">
-            {networkMenuItems.map(({ key, title, iconSolid, iconOutline, route, rightIcon }) => {
-              if (title === 'Networks') {
-                return (
-                  <div key={title} className="relative">
-                    <MenuRow
-                      title={title}
-                      subtitle={store.activeNetwork || ''}
-                      icon={selectedMenu === key ? iconSolid : iconOutline}
-                      selected={selectedMenu === key}
-                      onClick={() => {
-                        handleMenuClick(key);
-                        setIsNetworkDropdownOpen(!isNetworkDropdownOpen);
-                      }}
-                      rightIcon="ellipsis"
-                      isSidebarCollapsed={isSidebarCollapsed}
-                    />
-                    <NetworkDropdown
-                      isOpen={isNetworkDropdownOpen}
-                      onClose={() => setIsNetworkDropdownOpen(false)}
-                      setIsAddNetworkModalOpen={setIsAddNetworkModalOpen}
-                      isSidebarCollapsed={isSidebarCollapsed}
-                    />
-                  </div>
-                );
-              }
-
-              return route ? (
-                <Link to={route} key={title}>
+          {!isSidebarCollapsed && <ArrowTopRightOnSquareIcon className="size-6 hover:text-text-primary" />}
+        </div>
+        {!isTenantCollapsed && (
+          <div>
+            {menuItems.map(({ key, title, iconSolid, iconOutline, route }) => (
+              <Link to={route} key={title}>
+                <MenuRow
+                  title={title}
+                  icon={selectedMenu === key ? iconSolid : iconOutline}
+                  selected={selectedMenu === key}
+                  onClick={() => handleMenuClick(key)}
+                  isSidebarCollapsed={isSidebarCollapsed}
+                />
+              </Link>
+            ))}
+          </div>
+        )}
+        <div className="mt-4">
+          {networkMenuItems.map(({ key, title, iconSolid, iconOutline, route, rightIcon }) => {
+            if (title === 'Networks') {
+              return (
+                <div key={title} className="relative">
                   <MenuRow
                     title={title}
+                    subtitle={store.activeNetwork || ''}
                     icon={selectedMenu === key ? iconSolid : iconOutline}
                     selected={selectedMenu === key}
-                    onClick={() => handleMenuClick(key)}
-                    rightIcon={rightIcon as 'ellipsis' | 'plus' | undefined}
+                    onClick={() => {
+                      handleMenuClick(key);
+                      setIsNetworkDropdownOpen(!isNetworkDropdownOpen);
+                    }}
+                    rightIcon="ellipsis"
                     isSidebarCollapsed={isSidebarCollapsed}
                   />
-                </Link>
-              ) : (
+                  <NetworkDropdown
+                    isOpen={isNetworkDropdownOpen}
+                    onClose={() => setIsNetworkDropdownOpen(false)}
+                    setIsAddNetworkModalOpen={setIsAddNetworkModalOpen}
+                    isSidebarCollapsed={isSidebarCollapsed}
+                  />
+                </div>
+              );
+            }
+
+            return route ? (
+              <Link to={route} key={title}>
                 <MenuRow
-                  key={key}
                   title={title}
                   icon={selectedMenu === key ? iconSolid : iconOutline}
                   selected={selectedMenu === key}
@@ -322,39 +278,49 @@ const Sidebar = () => {
                   rightIcon={rightIcon as 'ellipsis' | 'plus' | undefined}
                   isSidebarCollapsed={isSidebarCollapsed}
                 />
-              );
-            })}
-          </div>
+              </Link>
+            ) : (
+              <MenuRow
+                key={key}
+                title={title}
+                icon={selectedMenu === key ? iconSolid : iconOutline}
+                selected={selectedMenu === key}
+                onClick={() => handleMenuClick(key)}
+                rightIcon={rightIcon as 'ellipsis' | 'plus' | undefined}
+                isSidebarCollapsed={isSidebarCollapsed}
+              />
+            );
+          })}
         </div>
-        <div className="relative">
-          <MenuRow
-            title={store.username as string}
-            icon={<UserCircleIcon className="size-6" />}
-            rightIcon="ellipsis"
-            isSidebarCollapsed={isSidebarCollapsed}
-            onClick={() => setIsAccountDropdownOpen(!isAccountDropdownOpen)}
-          />
-          <AccountDropdown
-            isOpen={isAccountDropdownOpen}
-            onClose={() => setIsAccountDropdownOpen(false)}
-            isSidebarCollapsed={isSidebarCollapsed}
-          />
-        </div>
-        <AddNetworkModal
-          isOpen={isAddNetworkModalOpen}
-          onCreateNetwork={() => {
-            setIsAddNetworkModalOpen(false);
-          }}
-          onCancel={() => setIsAddNetworkModalOpen(false)}
-          autoFillButtonRef={autoFillButtonRef}
-          networkNameInputRef={networkNameInputRef}
-          ipv4InputRef={ipv4InputRef}
-          ipv6InputRef={ipv6InputRef}
-          defaultAclInputRef={defaultAclInputRef}
-          submitButtonRef={submitButtonRef}
+      </div>
+      <div className="relative">
+        <MenuRow
+          title={store.username as string}
+          icon={<UserCircleIcon className="size-6" />}
+          rightIcon="ellipsis"
+          isSidebarCollapsed={isSidebarCollapsed}
+          onClick={() => setIsAccountDropdownOpen(!isAccountDropdownOpen)}
+        />
+        <AccountDropdown
+          isOpen={isAccountDropdownOpen}
+          onClose={() => setIsAccountDropdownOpen(false)}
+          isSidebarCollapsed={isSidebarCollapsed}
         />
       </div>
-    </>
+      <AddNetworkModal
+        isOpen={isAddNetworkModalOpen}
+        onCreateNetwork={() => {
+          setIsAddNetworkModalOpen(false);
+        }}
+        onCancel={() => setIsAddNetworkModalOpen(false)}
+        autoFillButtonRef={autoFillButtonRef}
+        networkNameInputRef={networkNameInputRef}
+        ipv4InputRef={ipv4InputRef}
+        ipv6InputRef={ipv6InputRef}
+        defaultAclInputRef={defaultAclInputRef}
+        submitButtonRef={submitButtonRef}
+      />
+    </div>
   );
 };
 
