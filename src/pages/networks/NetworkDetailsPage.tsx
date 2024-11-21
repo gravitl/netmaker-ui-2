@@ -406,7 +406,7 @@ export default function NetworkDetailsPage(props: PageProps) {
           case 'gateways':
             return isGateway(node);
           case 'has-gateway-assigned': {
-            const hasGateway = !!extendedNode.static_node?.ingressgatewayid || !extendedNode.isrelay;
+            const hasGateway = !!extendedNode.static_node?.ingressgatewayid || !!extendedNode.relayedby;
             return hasGateway;
           }
           case 'all-nodes':
@@ -2597,7 +2597,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                       } else {
                         return (
                           <div className="flex items-center gap-2">
-                            <GatewaysCombobox gateways={clientGateways} node={node} networkId={networkId ?? ''} />
+                            <GatewaysCombobox gateways={relays} node={node} networkId={networkId ?? ''} />
                             {!node.isrelayed ||
                               (!isGateway(node) && (
                                 <Tooltip title="Configure this gateway">
