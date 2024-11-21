@@ -16,6 +16,7 @@ import { useServerLicense } from '@/utils/Utils';
 import { Tag as TagType } from '@/models/Tags';
 import { TagsService } from '@/services/TagsService';
 import { useStore } from '@/store/store';
+import { ACLFiltersCombobox } from '@/components/ui/ACLFilterCombobox';
 
 interface ACLPageProps {
   networkId: string;
@@ -28,6 +29,7 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, reloa
   const [aclRules, setAclRules] = useState<ACLRule[]>([]);
   const [searchHost, setSearchHost] = useState('');
   const [policyType, setPolicyType] = useState('All');
+  const [activeFilter, setActiveFilter] = useState('all-policies');
   const [isEditPolicyModalOpen, setIsEditPolicyModalOpen] = useState(false);
   const [selectedEditPolicy, setSelectedEditPolicy] = useState<ACLRule | null>(null);
   const [addPolicyModal, setAddPolicyModal] = useState(false);
@@ -152,13 +154,21 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, reloa
     } else if (policyType === 'Users') {
       matchesPolicyType = rule.policy_type !== 'device-policy';
     }
-    return matchesSearch && matchesPolicyType;
+
+    let matchesActiveFilter = true;
+    if (activeFilter === 'active-policies') {
+      matchesActiveFilter = rule.enabled === true;
+    } else if (activeFilter === 'inactive-policies') {
+      matchesActiveFilter = rule.enabled === false;
+    }
+
+    return matchesSearch && matchesPolicyType && matchesActiveFilter;
   });
 
   useEffect(() => {
     fetchACLRules();
   }, [fetchACLRules]);
-
+  console.log('filteredACLRules', filteredACLRules);
   const policyFilter = [
     { name: 'All' },
     { name: 'Resources', icon: ComputerDesktopIcon },
@@ -211,6 +221,7 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, reloa
                 <span className="whitespace-nowrap">{filter.name}</span>
               </button>
             ))}
+            <ACLFiltersCombobox onChange={(value) => setActiveFilter(value)} />
           </div>
         </div>
 
@@ -247,6 +258,20 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, reloa
                 <span>{policyType === 'device-policy' ? 'Resources' : 'Users'}</span>
               </div>
             ),
+          },
+          {
+            title: 'Service',
+            render: () => <span>SSH</span>,
+          },
+          {
+            title: 'Protocol',
+            dataIndex: 'Proto',
+            render: (proto: string | null) => <span>{proto}</span>,
+          },
+          {
+            title: 'Port',
+            dataIndex: 'Port',
+            render: (port: string | null) => <span>{port || 'All'}</span>,
           },
           {
             title: 'Source',
