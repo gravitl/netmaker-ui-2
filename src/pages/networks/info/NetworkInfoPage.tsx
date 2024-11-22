@@ -97,12 +97,12 @@ export default function NetworkInfoPage({ isFullScreen }: NetworkInfoPageProps) 
       .map((node) => hostsMap.get(node.hostid) ?? NULL_HOST);
   }, [networkId, store.hosts, store.nodes]);
 
-  // useEffect(() => {
-  //   if (isInitialLoad) {
-  //     loadMetrics();
-  //     setIsInitialLoad(false);
-  //   }
-  // }, [isInitialLoad, loadMetrics]);
+  useEffect(() => {
+    if (!isLoadingNetwork) {
+      form.setFieldsValue(network ?? {});
+    }
+    setIsInitialLoad(false);
+  }, [form, isInitialLoad, isLoadingNetwork, network]);
 
   return (
     <div className="NetworkInfoPage" style={{ position: 'relative', height: '100%', padding: isFullScreen ? 0 : 24 }}>
@@ -161,7 +161,7 @@ export default function NetworkInfoPage({ isFullScreen }: NetworkInfoPageProps) 
                           style={{ marginBottom: '0px' }}
                           data-nmui-intercom="network-details-form_addressrange"
                         >
-                          <Input placeholder="Enter address CIDR (eg: 192.168.1.0/24)" disabled={!isEditingNetwork} />
+                          <Input placeholder="Enter address CIDR (eg: 100.64.1.0/24)" disabled={!isEditingNetwork} />
                         </Form.Item>
                       </Col>
                     </Row>
@@ -201,7 +201,7 @@ export default function NetworkInfoPage({ isFullScreen }: NetworkInfoPageProps) 
                           data-nmui-intercom="network-details-form_addressrange6"
                         >
                           <Input
-                            placeholder="Enter address CIDR (eg: 2002::1234:abcd:ffff:c0a8:101/64)"
+                            placeholder="Enter address CIDR (eg: fd::1234:abcd:ffff:c0a8:101/64)"
                             disabled={!isEditingNetwork}
                           />
                         </Form.Item>

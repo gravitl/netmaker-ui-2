@@ -3,7 +3,7 @@ import { StateCreator } from 'zustand';
 import { AvailableThemes } from '../models/AvailableThemes';
 import { ServerConfigService } from '@/services/ServerConfigService';
 import { SIDE_NAV_EXPANDED_WIDTH } from '@/layouts/MainLayout';
-import { NMUI_ACL_VERSION } from '@/services/BaseService';
+import { NMUI_ACL_VERSION, NMUI_ACTIVE_NETWORK_ID } from '@/services/BaseService';
 import { Network } from '@/models/Network';
 
 export interface IAppSlice {
@@ -72,7 +72,11 @@ const createAppSlice: StateCreator<IAppSlice, [], [], IAppSlice> = (set) => ({
       set(() => ({ aclVersion: 1 }));
     }
   },
-  setActiveNetwork: (networkId) => set(() => ({ activeNetwork: networkId })),
+  setActiveNetwork: (networkId) =>
+    set(() => {
+      window?.localStorage?.setItem(NMUI_ACTIVE_NETWORK_ID, networkId);
+      return { activeNetwork: networkId };
+    }),
 });
 
 export const AppSlice = {

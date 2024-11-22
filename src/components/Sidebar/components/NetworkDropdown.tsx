@@ -40,8 +40,7 @@ export default function NetworkDropdown({
             selected={false}
             onClick={() => {
               store.setActiveNetwork(network.netid);
-              navigate(getNetworkPageRoute('acls', network.netid));
-              // navigate(getNetworkPageRoute('nodes', network.netid));
+              navigate(getNetworkPageRoute('nodes', network.netid));
               // navigate(getNetworkRoute(network));
               onClose();
             }}

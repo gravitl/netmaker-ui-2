@@ -25,7 +25,7 @@ import PlatformRoleDetailsPage from './pages/users/PlatformRoleDetailsPage';
 import ProfilePage from './pages/users/ProfilePage';
 import { useStore } from './store/store';
 import { useEffect, useState } from 'react';
-import { getNetworkRoute, resolveAppRoute } from './utils/RouteUtils';
+import { getNetworkPageRoute, getNetworkRoute, resolveAppRoute } from './utils/RouteUtils';
 import NetworkNodesPage from './pages/networks/nodes/NetworkNodesPage';
 import NetworkRemoteAccessPage from './pages/networks/remote-access/NetworkRemoteAccessPage';
 import NetworkRelaysPage from './pages/networks/relays/NetworkRelaysPage';
@@ -119,7 +119,7 @@ const RedirectToFirstNetwork = () => {
   }
   if (store.networks.length > 0) {
     store.setActiveNetwork(store.networks[0].netid);
-    return <Navigate to={getNetworkRoute(store.networks[0].netid)} replace />;
+    return <Navigate to={getNetworkPageRoute('nodes', store.networks[0].netid)} replace />;
   }
 
   return <Navigate to={resolveAppRoute('/dashboard')} replace />;

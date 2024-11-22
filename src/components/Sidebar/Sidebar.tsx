@@ -40,7 +40,9 @@ import NetworkDropdown from './components/NetworkDropdown';
 import AccountDropdown from './components/AccountDropdown';
 import { useStore } from '@/store/store';
 import AddNetworkModal from '../modals/add-network-modal/AddNetworkModal';
-import { getNetworkPageRoute, isNetworkPage, NetworkPage } from '@/utils/RouteUtils';
+import { getAmuiUrl, getNetworkPageRoute, isNetworkPage, NetworkPage } from '@/utils/RouteUtils';
+import { useServerLicense } from '@/utils/Utils';
+import UpgradeModal from '../modals/upgrade-modal/UpgradeModal';
 
 const Sidebar = ({
   isSidebarCollapsed,
@@ -49,11 +51,13 @@ const Sidebar = ({
   isSidebarCollapsed: boolean;
   setIsSidebarCollapsed: (isCollapsed: boolean) => void;
 }) => {
+  const { isServerEE } = useServerLicense();
   const [isTenantCollapsed, setIsTenantCollapsed] = useState(false);
   const [selectedMenu, setSelectedMenu] = useState('');
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
   const [isNetworkDropdownOpen, setIsNetworkDropdownOpen] = useState(false);
   const [isAddNetworkModalOpen, setIsAddNetworkModalOpen] = useState(false);
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
 
   const autoFillButtonRef = useRef(null);
   const networkNameInputRef = useRef(null);
@@ -186,13 +190,23 @@ const Sidebar = ({
     [],
   );
 
+  const licenseType = useMemo(() => {
+    if (!isServerEE)
+      return (
+        <span title="Click to upgrade" className="underline" onClick={() => setIsUpgradeModalOpen(true)}>
+          CE License
+        </span>
+      );
+    return 'Pro License';
+  }, [isServerEE]);
+
   useEffect(() => {
     const currentPath = location.pathname;
     const currentMenuItem = [...menuItems, ...networkMenuItems].find((item) => item.route === currentPath);
     if (currentMenuItem) {
       setSelectedMenu(currentMenuItem.title);
     }
-  }, [location, menuItems, networkMenuItems]);
+  }, [location.pathname, menuItems, networkMenuItems]);
 
   const handleMenuClick = (key: string) => {
     setSelectedMenu(key);
@@ -214,17 +228,27 @@ const Sidebar = ({
       <div>
         <LogoBlock isSidebarCollapsed={isSidebarCollapsed} onToggleCollapse={toggleSidebarCollapse} />
         <div
-          className="flex gap-4 py-3 pl-5 pr-4 cursor-pointer text-text-secondary hover:bg-bg-contrastHover"
+          className="flex gap-4 py-3 pl-5 pr-4 cursor-pointer text-text-secondary hover:bg-bg-contrastHover justify-center"
           onClick={() => setIsTenantCollapsed(!isTenantCollapsed)}
         >
-          <ChevronUpIcon className={`size-6 ${isTenantCollapsed ? 'transform rotate-180' : ''}`} />
+          <ChevronUpIcon className={`size-6 ${isTenantCollapsed ? 'transform rotate-180 text-center' : ''}`} />
           {!isSidebarCollapsed && (
             <div className="flex flex-col w-full py-0.5 gap-1">
               <span className="text-text-primary text-sm-semibold">Tenant</span>
-              <span className="text-sm">Starter</span>
+              <span className="text-sm">{licenseType}</span>
             </div>
           )}
-          {!isSidebarCollapsed && <ArrowTopRightOnSquareIcon className="size-6 hover:text-text-primary" />}
+          {!isSidebarCollapsed && (
+            <ArrowTopRightOnSquareIcon
+              onClick={(ev) => {
+                ev.stopPropagation();
+                if (!window) return;
+                window.location = getAmuiUrl() as any;
+              }}
+              className="size-6 hover:text-text-primary"
+              title="Manage Tenant"
+            />
+          )}
         </div>
         {!isTenantCollapsed && (
           <div>
@@ -271,6 +295,7 @@ const Sidebar = ({
             return route ? (
               <Link to={route} key={title}>
                 <MenuRow
+                  key={key}
                   title={title}
                   icon={selectedMenu === key ? iconSolid : iconOutline}
                   selected={selectedMenu === key}
@@ -319,6 +344,13 @@ const Sidebar = ({
         ipv6InputRef={ipv6InputRef}
         defaultAclInputRef={defaultAclInputRef}
         submitButtonRef={submitButtonRef}
+      />
+      <UpgradeModal
+        isOpen={isUpgradeModalOpen}
+        onCancel={() => setIsUpgradeModalOpen(false)}
+        onUpgrade={() => {
+          setIsUpgradeModalOpen(false);
+        }}
       />
     </div>
   );

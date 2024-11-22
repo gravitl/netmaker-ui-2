@@ -76,7 +76,9 @@ export default function AddHostsToNetworkModal({
   return (
     <Modal
       title={
-        <span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Add Hosts to network {network?.netid ?? ''}</span>
+        <span style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>
+          Add Hosts to network <em>{store.activeNetwork || network?.netid || ''}</em>
+        </span>
       }
       open={isOpen}
       onCancel={(ev) => {

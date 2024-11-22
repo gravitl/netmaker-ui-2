@@ -7,7 +7,7 @@ import { ExtClientAcls, ExternalClient } from '@/models/ExternalClient';
 import { ACL_ALLOWED, ACL_DENIED, AclStatus, ACL_UNDEFINED } from '@/models/Acl';
 import { CloseOutlined, FieldTimeOutlined } from '@ant-design/icons';
 import { MetricCategories, UptimeNodeMetrics } from '@/models/Metrics';
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useState } from 'react';
 import {
   DEFAULT_BRANDING_CONFIG,
   METRIC_LATENCY_DANGER_THRESHOLD,
@@ -20,6 +20,8 @@ import { isSaasBuild } from '@/services/BaseService';
 import { NetworkUsecaseString } from '@/store/networkusecase';
 import NodeStatus from '@/components/ui/Status';
 import { Network } from '@/models/Network';
+import { NetworksService } from '@/services/NetworksService';
+import { convertNetworkPayloadToUiNetwork } from './NetworkUtils';
 
 export type NetworkUsecaseMap = {
   [key in NetworkUsecaseString]: string;
@@ -554,6 +556,21 @@ export function useGetActiveNetwork(networkId?: Network['netid']): {
   const [network, setNetwork] = useState<Network | null>(null);
   const [isLoadingNetwork, setIsLoadingNetwork] = useState(true);
 
+  const loadAndSetNetwork = useCallback(async (networkId: Network['netid']) => {
+    try {
+      const net = (await NetworksService.getNetworksWithStats()).data.Response.find((n) => n.netid === networkId);
+      if (!net) {
+        throw 'Network not found';
+      }
+      setNetwork(convertNetworkPayloadToUiNetwork(net));
+    } catch (err) {
+      console.error('Failed to load network', err);
+      setNetwork(null);
+    } finally {
+      setIsLoadingNetwork(false);
+    }
+  }, []);
+
   useEffect(() => {
     const resolvedNetworkId = networkId || store.activeNetwork;
 
@@ -567,13 +584,10 @@ export function useGetActiveNetwork(networkId?: Network['netid']): {
     if (activeNetwork) {
       setNetwork(activeNetwork);
       setIsLoadingNetwork(false);
-    } else {
-      console.log('Network not found in store');
-      setIsLoadingNetwork(false);
-      setNetwork(null);
       return;
     }
-  }, [networkId, store.activeNetwork, store.networks]);
+    loadAndSetNetwork(resolvedNetworkId);
+  }, [loadAndSetNetwork, networkId, store.activeNetwork, store.networks]);
 
   return { network, isLoadingNetwork };
 }
