@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { notification, Switch, Button } from 'antd';
+import { notification, Switch, Button, Select, Input, InputNumber } from 'antd';
 import { useForm, Controller } from 'react-hook-form';
 import {
   UsersIcon,
@@ -15,13 +15,15 @@ import { ACLService } from '@/services/ACLService';
 import { TagsService } from '@/services/TagsService';
 import { User, UserGroup } from '@/models/User';
 import { Tag } from '@/models/Tags';
-import { CreateACLRuleDto, SourceTypeValue, DestinationTypeValue } from '@/services/dtos/ACLDtos';
+import { CreateACLRuleDto, SourceTypeValue, DestinationTypeValue, ProtocolType } from '@/services/dtos/ACLDtos';
 import { Network } from '@/models/Network';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { NotificationInstance } from 'antd/es/notification/interface';
 import { Link } from 'react-router-dom';
 import { useServerLicense } from '@/utils/Utils';
 import arrowBidirectional from '@/assets/arrow-bidirectional.svg';
+import arrowLeft from '@/assets/arrow-l.svg';
+import arrowRight from '@/assets/arrow-r.svg';
 
 interface Item {
   id: string;
@@ -55,10 +57,19 @@ interface UsersFormProps {
   notify: NotificationInstance;
 }
 
+interface ACLType {
+  name: string;
+  allowed_protocols: number[];
+  port_range: number;
+  allow_port_setting: boolean;
+}
+
 interface FormValues {
   name: string;
   source: Item[];
   destination: Item[];
+  service: string;
+  port: number;
 }
 
 const SelectDropdown: React.FC<SelectDropdownProps> = ({
@@ -378,6 +389,9 @@ const UsersForm: React.FC<UsersFormProps> = ({ networkId, onClose, fetchACLRules
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [direction, setDirection] = useState<0 | 1>(0);
+  const [aclTypes, setAclTypes] = useState<ACLType[]>([]);
+  const [selectedService, setSelectedService] = useState<ACLType | null>(null);
 
   const { isServerEE } = useServerLicense();
 
@@ -387,11 +401,14 @@ const UsersForm: React.FC<UsersFormProps> = ({ networkId, onClose, fetchACLRules
     control,
     formState: { errors },
     reset,
+    setValue,
   } = useForm<FormValues>({
     defaultValues: {
       name: '',
       source: [],
       destination: [],
+      service: '',
+      port: 1,
     },
   });
 
@@ -442,6 +459,35 @@ const UsersForm: React.FC<UsersFormProps> = ({ networkId, onClose, fetchACLRules
     fetchTags();
   }, [networkId, isServerEE]);
 
+  const fetchACLTypes = useCallback(async () => {
+    try {
+      if (!networkId) return;
+
+      const response = await ACLService.getACLTypes();
+      const types = response?.data?.Response?.ProtocolTypes || [];
+      if (Array.isArray(types)) {
+        setAclTypes(types);
+        const firstService = types[0];
+        setValue('service', firstService.name);
+        setValue('port', firstService.port_range);
+        setSelectedService(firstService);
+      } else {
+        console.error('ProtocolTypes is not an array:', types);
+        setAclTypes([]);
+      }
+    } catch (error) {
+      console.error('Error fetching ACL types:', error);
+      notify.error({
+        message: 'Failed to fetch ACL types',
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
+      });
+      setAclTypes([]);
+    }
+  }, [networkId, notify]);
+  useEffect(() => {
+    fetchACLTypes();
+  }, [fetchACLTypes]);
+
   const convertSourceItemsToTypeValues = useCallback((items: Item[]): SourceTypeValue[] => {
     return items.map((item) => ({
       id: item.type === 'user' ? 'user' : 'user-group',
@@ -457,7 +503,7 @@ const UsersForm: React.FC<UsersFormProps> = ({ networkId, onClose, fetchACLRules
   }, []);
 
   const onSubmit = async (values: FormValues) => {
-    if (!values.name || !values.source.length || !values.destination.length) {
+    if (!values.name || !values.source.length || !values.destination.length || !values.service) {
       notify.error({
         message: 'Validation Error',
         description: 'Please fill in all required fields',
@@ -476,10 +522,13 @@ const UsersForm: React.FC<UsersFormProps> = ({ networkId, onClose, fetchACLRules
         policy_type: 'user-policy',
         src_type: convertSourceItemsToTypeValues(values.source),
         dst_type: values.destination.map(convertDestinationItemToTypeValue),
-        allowed_traffic_direction: 1,
+        allowed_traffic_direction: direction,
         enabled: isPolicyEnabled,
+        protocol: values.service,
+        ports: Number(values.port),
       };
 
+      console.log(payload);
       await ACLService.createACLRule(payload, networkId);
       notify.success({ message: `User policy created` });
       reset();
@@ -494,6 +543,21 @@ const UsersForm: React.FC<UsersFormProps> = ({ networkId, onClose, fetchACLRules
       });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleServiceChange = (serviceName: string) => {
+    const service = aclTypes.find((type) => type.name === serviceName);
+    setSelectedService(service || null);
+
+    if (service) {
+      if (serviceName === 'Custom') {
+        setValue('port', 1);
+      } else {
+        setValue('port', service.port_range);
+      }
+    } else {
+      setValue('port', 1);
     }
   };
 
@@ -521,6 +585,62 @@ const UsersForm: React.FC<UsersFormProps> = ({ networkId, onClose, fetchACLRules
           {errors.name && <span className="text-sm text-red-500">Rule name is required</span>}
         </div>
 
+        <div className="flex gap-4 mb-4">
+          <div className="flex flex-col flex-1 gap-2">
+            <label htmlFor="service" className="block text-sm font-semibold text-text-primary">
+              Service
+            </label>
+            <Controller
+              name="service"
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <Select
+                  {...field}
+                  className="w-full"
+                  placeholder="Select a service"
+                  options={aclTypes.map((type) => ({ label: type.name, value: type.name }))}
+                  onChange={(value) => {
+                    field.onChange(value);
+                    handleServiceChange(value);
+                  }}
+                />
+              )}
+            />
+            {errors.service && <span className="text-sm text-red-500">Service is required</span>}
+          </div>{' '}
+          <div className="flex flex-col w-32 gap-2">
+            <label htmlFor="port" className="block text-sm font-semibold text-text-primary">
+              Port
+            </label>
+            <Controller
+              name="port"
+              control={control}
+              rules={{
+                required: true,
+                validate: (value) => {
+                  if (selectedService?.allow_port_setting) {
+                    return value >= 1 && value <= 65535;
+                  }
+                  return true;
+                },
+              }}
+              render={({ field: { onChange, value } }) => (
+                <InputNumber
+                  onChange={(val) => onChange(val)}
+                  value={value}
+                  disabled={!selectedService?.allow_port_setting}
+                  placeholder="Port"
+                  min={1}
+                  max={65535}
+                  className="w-full"
+                />
+              )}
+            />
+            {errors.port && <span className="text-sm text-red-500">Invalid port number</span>}
+          </div>
+        </div>
+
         <div className="flex w-full gap-7">
           <div className="w-full">
             <div className="flex flex-col w-full gap-2">
@@ -545,10 +665,13 @@ const UsersForm: React.FC<UsersFormProps> = ({ networkId, onClose, fetchACLRules
           </div>
 
           <div className="flex flex-col items-center justify-center w-2/3 gap-2">
+            <img src={arrowRight} className="w-full " alt="Right arrow" />
+
             <img
-              src={arrowBidirectional}
-              className="w-full px-4 py-2 text-sm border rounded-lg bg-bg-default border-stroke-default"
-              alt="Bidirectional arrow"
+              onClick={() => setDirection(direction === 0 ? 1 : 0)}
+              src={arrowLeft}
+              className={`w-full cursor-pointer ${direction === 0 ? 'opacity-30' : ''}`}
+              alt="Left arrow"
             />
           </div>
 

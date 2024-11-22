@@ -17,6 +17,8 @@ import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { Tag } from '@/models/Tags';
 import { NotificationInstance } from 'antd/es/notification/interface';
 import arrowBidirectional from '@/assets/arrow-bidirectional.svg';
+import arrowLeft from '@/assets/arrow-l.svg';
+import arrowRight from '@/assets/arrow-r.svg';
 
 interface Item {
   id: string;
@@ -231,6 +233,7 @@ const UpdateResourcesForm: React.FC<UpdateResourcesFormProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [tagsList, setTagsList] = useState<Tag[]>([]);
+  const [direction, setDirection] = useState<0 | 1>(selectedPolicy.allowed_traffic_direction);
 
   const {
     register,
@@ -319,6 +322,7 @@ const UpdateResourcesForm: React.FC<UpdateResourcesFormProps> = ({
         src_type: srcType,
         dst_type: dstType,
         enabled: isPolicyEnabled,
+        allowed_traffic_direction: direction,
       };
 
       await ACLService.updateACLRule(updatedPolicy, networkId);
@@ -377,11 +381,13 @@ const UpdateResourcesForm: React.FC<UpdateResourcesFormProps> = ({
           </div>
 
           <div className="flex flex-col items-center justify-center w-2/3 gap-2">
+            <img src={arrowRight} className="w-full " alt="Right arrow" />
             <img
-              src={arrowBidirectional}
-              className="w-full px-4 py-2 text-sm border rounded-lg bg-bg-default border-stroke-default"
-              alt="Bidirectional arrow"
-            />
+              onClick={() => setDirection(direction === 0 ? 1 : 0)}
+              src={arrowLeft}
+              className={`w-full cursor-pointer ${direction === 0 ? 'opacity-30' : ''}`}
+              alt="Left arrow"
+            />{' '}
           </div>
 
           <div className="w-full">

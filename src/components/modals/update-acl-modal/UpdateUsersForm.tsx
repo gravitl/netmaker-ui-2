@@ -22,6 +22,8 @@ import { NotificationInstance } from 'antd/es/notification/interface';
 import { Link } from 'react-router-dom';
 import { useServerLicense } from '@/utils/Utils';
 import arrowBidirectional from '@/assets/arrow-bidirectional.svg';
+import arrowLeft from '@/assets/arrow-l.svg';
+import arrowRight from '@/assets/arrow-r.svg';
 
 interface Item {
   id: string;
@@ -414,6 +416,7 @@ const UpdateUsersForm: React.FC<UpdateUsersFormProps> = ({
   const [usersList, setUsersList] = useState<User[]>([]);
   const [groupsList, setGroupsList] = useState<UserGroup[]>([]);
   const [tagsList, setTagsList] = useState<Tag[]>([]);
+  const [direction, setDirection] = useState<0 | 1>(selectedPolicy.allowed_traffic_direction);
 
   const { isServerEE } = useServerLicense();
 
@@ -512,7 +515,6 @@ const UpdateUsersForm: React.FC<UpdateUsersFormProps> = ({
 
     fetchUsers();
     isServerEE && fetchGroups();
-    console.log(isServerEE);
     fetchTags();
   }, [networkId, isServerEE]);
 
@@ -529,6 +531,10 @@ const UpdateUsersForm: React.FC<UpdateUsersFormProps> = ({
       value: item.id,
     };
   }, []);
+
+  useEffect(() => {
+    console.log('before', selectedPolicy);
+  }, [selectedPolicy]);
 
   const onSubmit = async (values: FormValues) => {
     try {
@@ -550,7 +556,9 @@ const UpdateUsersForm: React.FC<UpdateUsersFormProps> = ({
         src_type: convertSourceItemsToTypeValues(values.source),
         dst_type: values.destination.map(convertDestinationItemToTypeValue),
         enabled: isPolicyEnabled,
+        allowed_traffic_direction: direction,
       };
+      console.log('after', updatedPolicy);
 
       await ACLService.updateACLRule(updatedPolicy, networkId);
       notify.success({ message: 'Policy updated successfully' });
@@ -610,11 +618,13 @@ const UpdateUsersForm: React.FC<UpdateUsersFormProps> = ({
           </div>
 
           <div className="flex flex-col items-center justify-center w-2/3 gap-2">
+            <img src={arrowRight} className="w-full " alt="Right arrow" />
             <img
-              src={arrowBidirectional}
-              className="w-full px-4 py-2 text-sm border rounded-lg bg-bg-default border-stroke-default"
-              alt="Bidirectional arrow"
-            />
+              onClick={() => setDirection(direction === 0 ? 1 : 0)}
+              src={arrowLeft}
+              className={`w-full cursor-pointer ${direction === 0 ? 'opacity-30' : ''}`}
+              alt="Left arrow"
+            />{' '}
           </div>
 
           <div className="w-full">

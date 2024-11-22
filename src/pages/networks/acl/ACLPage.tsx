@@ -17,6 +17,8 @@ import { Tag as TagType } from '@/models/Tags';
 import { TagsService } from '@/services/TagsService';
 import { useStore } from '@/store/store';
 import { ACLFiltersCombobox } from '@/components/ui/ACLFilterCombobox';
+import biArrow from '@/assets/bi-arrow.svg';
+import uniArrow from '@/assets/uni-arrow.svg';
 
 interface ACLPageProps {
   networkId: string;
@@ -168,7 +170,21 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, reloa
   useEffect(() => {
     fetchACLRules();
   }, [fetchACLRules]);
-  console.log('filteredACLRules', filteredACLRules);
+
+  const fetchACLTypes = useCallback(async () => {
+    try {
+      if (!networkId) return;
+      const aclTypesResponse = (await ACLService.getACLTypes()).data.Response;
+    } catch (error) {
+      notify.error({
+        message: 'Failed to fetch ACL rules',
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
+      });
+    }
+  }, [networkId, notify]);
+
+  fetchACLTypes();
+
   const policyFilter = [
     { name: 'All' },
     { name: 'Resources', icon: ComputerDesktopIcon },
@@ -265,12 +281,12 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, reloa
           },
           {
             title: 'Protocol',
-            dataIndex: 'Proto',
+            dataIndex: 'protocol',
             render: (proto: string | null) => <span>{proto}</span>,
           },
           {
             title: 'Port',
-            dataIndex: 'Port',
+            dataIndex: 'ports',
             render: (port: string | null) => <span>{port || 'All'}</span>,
           },
           {
@@ -320,7 +336,15 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, reloa
           },
           {
             title: 'Direction',
-            render: () => <img src={arrowBidirectional} alt="Bidirectional" className="self-center w-32" />,
+            render: (_, rule: ACLRule) => (
+              <>
+                {rule.allowed_traffic_direction === 0 ? (
+                  <img src={uniArrow} className="w-full " alt="Uni arrow" />
+                ) : (
+                  <img src={biArrow} className="w-full " alt="Bi arrow" />
+                )}
+              </>
+            ),
           },
           {
             title: 'Destination',
