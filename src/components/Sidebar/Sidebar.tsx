@@ -95,22 +95,17 @@ const Sidebar = ({
 
   const getMenuKeyFromPath = useCallback(
     (path: string) => {
-      // Handle network-specific pages
       const networkPageMatch = path.match(/\/networks\/([^/]+)\/([^/]+)/);
       if (networkPageMatch) {
-        // networkPageMatch[2] will be the page name (nodes, hosts, etc.)
         const pageName = networkPageMatch[2];
-        // Check if this is a subpage and map it to its parent menu item
         return subpageToMenuMap[pageName] || pageName;
       }
 
-      // Handle specific host page
       const hostPageMatch = path.match(/\/networks\/([^/]+)\/hosts\/([^/]+)/);
       if (hostPageMatch) {
-        return 'nodes'; // Map to nodes menu
+        return 'nodes';
       }
 
-      // Handle root level pages
       if (path === AppRoutes.DASHBOARD_ROUTE) return 'dashboard';
       if (path === AppRoutes.HOSTS_ROUTE) return 'devices';
       if (path === AppRoutes.USERS_ROUTE) return 'users';
@@ -214,7 +209,6 @@ const Sidebar = ({
         iconOutline: <InboxStackIconOutline className="size-5" />,
         route: null,
       },
-
       {
         key: 'analytics',
         title: 'Analytics',
@@ -252,26 +246,30 @@ const Sidebar = ({
       navigate(getNetworkPageRoute(key as NetworkPage, store.activeNetwork));
     }
   };
+
   const toggleSidebarCollapse = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
   };
 
   return (
     <div
-      className={`sticky top-0 flex flex-col justify-between  pb-2 bg-bg-contrastDefault h-full transition-all duration-300 
+      className={`sticky top-0 flex flex-col h-screen bg-bg-contrastDefault transition-all duration-300 
          ${isSidebarCollapsed ? 'w-20' : 'w-64'}`}
     >
+      {/* Top fixed section */}
       <div>
         <LogoBlock isSidebarCollapsed={isSidebarCollapsed} onToggleCollapse={toggleSidebarCollapse} />
         <div
-          className={`flex justify-center gap-2 py-3 pl-2 ${isSidebarCollapsed ? 'pr-2' : 'pr-4'} cursor-pointer hover:bg-bg-contrastHover`}
+          className={`flex justify-center gap-2 py-3 pl-2 ${
+            isSidebarCollapsed ? 'pr-2' : 'pr-4'
+          } cursor-pointer hover:bg-bg-contrastHover`}
           onClick={() => setIsTenantCollapsed(!isTenantCollapsed)}
         >
           <ChevronUpIcon className={`size-5 ${isTenantCollapsed ? 'transform rotate-180 text-center' : ''}`} />
           {!isSidebarCollapsed && (
             <div className="flex flex-col w-full py-0.5 gap-1">
               <div className="flex gap-2 text-text-primary">
-                <span className=" text-sm-semibold">Tenant</span>
+                <span className="text-sm-semibold">Tenant</span>
                 {!isSidebarCollapsed && (
                   <ArrowTopRightOnSquareIcon
                     onClick={(ev) => {
@@ -279,7 +277,7 @@ const Sidebar = ({
                       if (!window) return;
                       window.location = getAmuiUrl() as any;
                     }}
-                    className="size-4 "
+                    className="size-4"
                     title="Manage Tenant"
                   />
                 )}
@@ -303,28 +301,18 @@ const Sidebar = ({
             ))}
           </div>
         )}
-        <div className="flex flex-col mt-4 ">
-          <NetworkSelector
-            isSidebarCollapsed={isSidebarCollapsed}
-            onAddNetwork={() => setIsAddNetworkModalOpen(true)}
-          />
-          <div className={` ${isSidebarCollapsed ? 'px-2' : 'pl-4 pr-2 '}`}>
-            <div
-              className={`flex flex-col gap-2 pt-2  ${isSidebarCollapsed ? '' : 'border-stroke-default border-l pl-2'}`}
-            >
-              {networkMenuItems.map(({ key, title, iconSolid, iconOutline, route }) => {
-                return route ? (
-                  <Link to={route} key={title}>
-                    <MenuRow
-                      key={key}
-                      title={title}
-                      icon={selectedMenu === key ? iconSolid : iconOutline}
-                      selected={selectedMenu === key}
-                      onClick={() => handleMenuClick(key)}
-                      isSidebarCollapsed={isSidebarCollapsed}
-                    />
-                  </Link>
-                ) : (
+      </div>
+
+      {/* Middle scrollable section */}
+      <div className="flex flex-col flex-1 min-h-0 mt-4">
+        <NetworkSelector isSidebarCollapsed={isSidebarCollapsed} onAddNetwork={() => setIsAddNetworkModalOpen(true)} />
+        <div className={`flex-1 overflow-y-auto ${isSidebarCollapsed ? 'px-2' : 'pl-4 pr-2'}`}>
+          <div
+            className={`flex flex-col gap-2 pt-2 ${isSidebarCollapsed ? '' : 'border-stroke-default border-l pl-2'}`}
+          >
+            {networkMenuItems.map(({ key, title, iconSolid, iconOutline, route }) => {
+              return route ? (
+                <Link to={route} key={title}>
                   <MenuRow
                     key={key}
                     title={title}
@@ -333,13 +321,24 @@ const Sidebar = ({
                     onClick={() => handleMenuClick(key)}
                     isSidebarCollapsed={isSidebarCollapsed}
                   />
-                );
-              })}
-            </div>
+                </Link>
+              ) : (
+                <MenuRow
+                  key={key}
+                  title={title}
+                  icon={selectedMenu === key ? iconSolid : iconOutline}
+                  selected={selectedMenu === key}
+                  onClick={() => handleMenuClick(key)}
+                  isSidebarCollapsed={isSidebarCollapsed}
+                />
+              );
+            })}
           </div>
         </div>
       </div>
-      <div className="relative px-2">
+
+      {/* Bottom fixed section */}
+      <div className="relative px-2 py-2 mt-auto border-t shadow-lg border-stroke-default">
         <MenuRow
           title={store.username as string}
           icon={<UserCircleIcon className="size-5" />}
@@ -353,6 +352,7 @@ const Sidebar = ({
           isSidebarCollapsed={isSidebarCollapsed}
         />
       </div>
+
       <AddNetworkModal
         isOpen={isAddNetworkModalOpen}
         onCreateNetwork={() => {

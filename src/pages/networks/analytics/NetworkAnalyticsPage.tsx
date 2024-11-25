@@ -7,10 +7,12 @@ import PageLayout from '@/layouts/PageLayout';
 import NetworkMetricsPage from '../metrics/NetworkMetricsPage';
 import NetworkInfoPage from '../info/NetworkInfoPage';
 import { useQuery } from '@/utils/RouteUtils';
+import NetworkGraphPage from '../graph/NetworkGraphPage';
 
 export const AnalyticsPageTabs = {
   metricsTabKey: 'metrics',
   infoTabKey: 'info',
+  graphTabKey: 'graph',
 };
 
 const defaultTabKey = AnalyticsPageTabs.metricsTabKey;
@@ -33,6 +35,11 @@ const NetworkAnalyticsPage = () => {
         key: AnalyticsPageTabs.infoTabKey,
         label: 'Network Info',
         children: <NetworkInfoPage networkId={resolvedNetworkId} isFullScreen={true} />,
+      },
+      {
+        key: AnalyticsPageTabs.graphTabKey,
+        label: 'Graph',
+        children: <NetworkGraphPage networkId={resolvedNetworkId} isFullScreen={true} />,
       },
     ];
   }, [resolvedNetworkId]);

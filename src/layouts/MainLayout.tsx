@@ -490,7 +490,7 @@ export default function MainLayout() {
             top: 0,
             bottom: 0,
             borderRight: `1px solid ${themeToken.colorBorder}`,
-            zIndex: 0,
+            zIndex: 1000,
           }}
           breakpoint="md"
           onBreakpoint={(broken: boolean) => {

@@ -114,51 +114,45 @@ export default function NetworkGraphPage({ isFullScreen }: NetworkGraphPageProps
 
   return (
     <div className="NetworkGraphPage" style={{ position: 'relative', height: '100%', padding: isFullScreen ? 0 : 24 }}>
-      <div className={`${isFullScreen ? 'page-padding' : ''}`}>
-        <Row style={{ marginBottom: '1rem', width: '100%' }}>
-          <Col>
-            <Typography.Title level={2}>Graph</Typography.Title>
-          </Col>
-        </Row>
-        <Row style={{ width: '100%' }}>
-          <Col xs={24} style={{ width: '100%', height: containerHeight }}>
-            <Skeleton loading={isLoadingNetwork} active>
-              {!!network && (
-                <SigmaContainer
-                  id={NETWORK_GRAPH_SIGMA_CONTAINER_ID}
-                  settings={{
-                    nodeProgramClasses: { image: getNodeImageProgram() },
-                  }}
-                  style={{
-                    backgroundColor: themeToken.colorBgContainer,
-                    position: 'relative',
-                  }}
-                >
-                  <NetworkGraph
-                    network={network}
-                    hosts={networkHosts}
-                    nodes={networkNodes}
-                    acl={originalAcls}
-                    clients={clients}
-                  />
-                  <ControlsContainer position={'top-left'}>
-                    <ZoomControl />
-                    <FullScreenControl />
-                  </ControlsContainer>
-                  <ControlsContainer position={'top-left'} className="search-container">
-                    <SearchControl />
-                  </ControlsContainer>
-                </SigmaContainer>
-              )}
-              {!network && (
-                <div className="flex items-center justify-center h-full">
-                  <Typography.Text type="secondary">Failed to load network. Please refresh</Typography.Text>
-                </div>
-              )}
-            </Skeleton>
-          </Col>
-        </Row>
-      </div>
+      <Row style={{ width: '100%' }}>
+        <Col xs={24} style={{ width: '100%', height: containerHeight }}>
+          <Skeleton loading={isLoadingNetwork} active>
+            {!!network && (
+              <SigmaContainer
+                id={NETWORK_GRAPH_SIGMA_CONTAINER_ID}
+                settings={{
+                  nodeProgramClasses: { image: getNodeImageProgram() },
+                }}
+                style={{
+                  backgroundColor: themeToken.colorBgContainer,
+                  position: 'relative',
+                  height: '100%',
+                }}
+              >
+                <NetworkGraph
+                  network={network}
+                  hosts={networkHosts}
+                  nodes={networkNodes}
+                  acl={originalAcls}
+                  clients={clients}
+                />
+                <ControlsContainer position={'top-left'}>
+                  <ZoomControl />
+                  <FullScreenControl />
+                </ControlsContainer>
+                <ControlsContainer position={'top-left'} className="search-container">
+                  <SearchControl />
+                </ControlsContainer>
+              </SigmaContainer>
+            )}
+            {!network && (
+              <div className="flex items-center justify-center h-full">
+                <Typography.Text type="secondary">Failed to load network. Please refresh</Typography.Text>
+              </div>
+            )}
+          </Skeleton>
+        </Col>
+      </Row>
 
       {/* misc */}
       {notifyCtx}
