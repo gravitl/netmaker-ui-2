@@ -107,8 +107,8 @@
   /* Global Variables - Light Theme (Default) */
   --color-bg-default: var(--color-neutral-100);
   --color-bg-hover: var(--color-neutral-150);
-  --color-bg-contrast-default: var(--color-white);
-  --color-bg-contrast-hover: var(--color-neutral-50);
+  --color-bg-contrast-default: var(--color-neutral-150);
+  --color-bg-contrast-hover: var(--color-neutral-200);
   --color-bg-contrast-active: var(--color-neutral-300);
 
   --color-stroke-default: var(--color-neutral-300);
