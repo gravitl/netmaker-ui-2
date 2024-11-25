@@ -474,9 +474,9 @@ export default function NetworkMetricsPage({ isFullScreen }: NetworkMetricsPageP
               <DownloadOutlined />
               Download Metrics
             </Button> */}
-          <Button onClick={() => alert('Not implemented')} icon={<InfoCircleOutlined />}>
+          {/* <Button onClick={() => alert('Not implemented')} icon={<InfoCircleOutlined />}>
             Take Tour
-          </Button>
+          </Button> */}
         </Col>
 
         <Col xs={24} style={{ paddingTop: '1rem' }}>

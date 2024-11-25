@@ -360,13 +360,13 @@ export default function NetworkRelaysPage({ isFullScreen }: NetworkRelaysPage) {
                 >
                   <PlusOutlined /> Create Relay
                 </Button>
-                <Button
+                {/* <Button
                   style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
                   onClick={() => alert('Not implemented')}
                   icon={<InfoCircleOutlined />}
                 >
                   Tour Relays
-                </Button>
+                </Button> */}
                 <Button
                   title="Go to relays documentation"
                   style={{ marginLeft: '1rem', marginBottom: '.5rem' }}

@@ -600,13 +600,13 @@ export default function NetworkRemoteAccessPage({ isFullScreen }: RemoteAccessPa
                   >
                     <PlusOutlined /> Create Gateway
                   </Button>
-                  <Button
+                  {/* <Button
                     style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
                     onClick={() => alert('Tour not implemented')}
                     icon={<InfoCircleOutlined />}
                   >
                     Take Tour
-                  </Button>
+                  </Button> */}
                   <Button
                     title="Go to remote access gateways documentation"
                     style={{ marginLeft: '1rem', marginBottom: '.5rem' }}

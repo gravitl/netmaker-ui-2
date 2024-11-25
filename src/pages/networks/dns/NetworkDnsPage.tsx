@@ -210,13 +210,13 @@ export default function NetworkDnsPage({ isFullScreen }: NetworkDnsPageProps) {
             >
               <PlusOutlined /> Add DNS
             </Button>
-            <Button
+            {/* <Button
               style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
               onClick={() => alert('not implemented')}
               icon={<InfoCircleOutlined />}
             >
               Take Tour
-            </Button>
+            </Button> */}
             <Button
               title="Go to DNS documentation"
               style={{ marginLeft: '1rem', marginBottom: '.5rem' }}

@@ -380,13 +380,13 @@ export default function NetworkEgressPage({ isFullScreen }: NetworkEgressPagePro
                 >
                   <PlusOutlined /> Create Egress
                 </Button>
-                <Button
+                {/* <Button
                   style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
                   onClick={() => alert('Not implemented yet')}
                   icon={<InfoCircleOutlined />}
                 >
                   Take Tour
-                </Button>
+                </Button> */}
                 <Button
                   title="Go to egress documentation"
                   style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
