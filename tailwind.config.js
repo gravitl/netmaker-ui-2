@@ -48,6 +48,7 @@ export default {
           hover: 'var(--color-bg-hover)',
           contrastDefault: 'var(--color-bg-contrast-default)',
           contrastHover: 'var(--color-bg-contrast-hover)',
+          contrastActive: 'var(--color-bg-contrast-active)',
         },
 
         stroke: {

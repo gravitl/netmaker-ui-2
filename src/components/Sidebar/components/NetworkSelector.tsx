@@ -46,8 +46,8 @@ const NetworkSelector: React.FC<NetworkSelectorProps> = ({ isSidebarCollapsed = 
         className={`flex items-center cursor-pointer transition-colors duration-150
           ${
             isSidebarCollapsed
-              ? 'justify-center p-2 hover:bg-bg-contrastHover rounded-md'
-              : 'gap-2 px-3 py-2 w-fit rounded-lg bg-bg-contrastHover'
+              ? 'justify-center p-2  rounded-md'
+              : 'gap-2 px-3 py-2 w-fit rounded-lg bg-bg-contrastActive'
           }`}
         onClick={() => setIsOpen(!isOpen)}
       >

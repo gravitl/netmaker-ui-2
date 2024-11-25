@@ -482,7 +482,7 @@ export default function MainLayout() {
           }}
           collapsedWidth={isSmallScreen ? 0 : SIDE_NAV_COLLAPSED_WIDTH}
           theme="light"
-          width={isSidebarComponentCollapsed ? '5rem' : '14rem'}
+          width={isSidebarComponentCollapsed ? '5rem' : '256px'}
           style={{
             height: '100vh',
             position: isSmallScreen ? 'fixed' : 'sticky',

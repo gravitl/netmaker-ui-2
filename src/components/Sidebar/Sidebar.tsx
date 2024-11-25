@@ -259,7 +259,7 @@ const Sidebar = ({
   return (
     <div
       className={`sticky top-0 flex flex-col justify-between  pb-2 bg-bg-contrastDefault h-full transition-all duration-300 
-         ${isSidebarCollapsed ? 'w-20' : 'w-56'}`}
+         ${isSidebarCollapsed ? 'w-20' : 'w-64'}`}
     >
       <div>
         <LogoBlock isSidebarCollapsed={isSidebarCollapsed} onToggleCollapse={toggleSidebarCollapse} />
