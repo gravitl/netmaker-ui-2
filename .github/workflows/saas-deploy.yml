@@ -35,7 +35,7 @@ jobs:
       - name: 'Checkout to branch: ${{ github.event.inputs.branch }}'
         uses: actions/checkout@v4
         with:
-          ref: release-${{ github.event.inputs.branch }}
+          ref: ${{ github.event.inputs.branch }}
 
       - name: Set release tag
         run: |
