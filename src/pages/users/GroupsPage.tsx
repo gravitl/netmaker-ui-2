@@ -267,7 +267,7 @@ export default function GroupsPage({
         <>
           <Row className="mb-4">
             <Col xs={24} md={16}>
-              <p className="text-base text-text-tertiary">
+              <p className="text-base text-text-secondary">
                 Groups help manage users within specific categories, such as Admins, Developers, and QA.
                 <br />
                 Create groups to organize users and assign roles to clearly define permissions.

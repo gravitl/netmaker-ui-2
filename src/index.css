@@ -116,8 +116,7 @@
   --color-stroke-error: var(--color-critical);
 
   --color-text-primary: var(--color-neutral-950);
-  --color-text-secondary: var(--color-neutral-800);
-  --color-text-tertiary: var(--color-neutral-600);
+  --color-text-secondary: var(--color-neutral-600);
   --color-text-disabled: var(--color-neutral-400);
   --color-text-success: var(--color-success);
   --color-text-critical: var(--color-critical);
@@ -168,8 +167,7 @@
   --color-stroke-error-dark: var(--color-critical);
 
   --color-text-primary-dark: var(--color-neutral-50);
-  --color-text-secondary-dark: var(--color-neutral-200);
-  --color-text-tertiary-dark: var(--color-neutral-400);
+  --color-text-secondary-dark: var(--color-neutral-400);
   --color-text-disabled-dark: var(--color-neutral-500);
   --color-text-success-dark: var(--color-success);
   --color-text-critical-dark: var(--color-critical);
@@ -250,7 +248,6 @@
 
   --color-text-primary: var(--color-text-primary-dark);
   --color-text-secondary: var(--color-text-secondary-dark);
-  --color-text-tertiary: var(--color-text-tertiary-dark);
   --color-text-disabled: var(--color-text-disabled-dark);
   --color-text-success: var(--color-text-success-dark);
   --color-text-critical: var(--color-text-critical-dark);

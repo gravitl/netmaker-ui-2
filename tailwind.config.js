@@ -60,7 +60,6 @@ export default {
         text: {
           primary: 'var(--color-text-primary)',
           secondary: 'var(--color-text-secondary)',
-          tertiary: 'var(--color-text-tertiary)',
           disabled: 'var(--color-text-disabled)',
           success: 'var(--color-text-success)',
           critical: 'var(--color-text-critical)',

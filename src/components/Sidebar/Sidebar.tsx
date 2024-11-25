@@ -284,7 +284,7 @@ const Sidebar = ({
                   />
                 )}
               </div>
-              <span className="text-sm text-text-tertiary">{licenseType}</span>
+              <span className="text-sm text-text-secondary">{licenseType}</span>
             </div>
           )}
         </div>

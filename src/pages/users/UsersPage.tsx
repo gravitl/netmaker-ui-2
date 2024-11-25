@@ -870,7 +870,7 @@ export default function UsersPage(props: PageProps) {
       <>
         <Row className="mb-4">
           <Col xs={24} md={16}>
-            <p className="text-base text-text-tertiary">
+            <p className="text-base text-text-secondary">
               Identify users and control access to the platform.
               <br />
               Create users, assign roles, and organize them into groups to manage access levels effectively.
@@ -993,7 +993,7 @@ export default function UsersPage(props: PageProps) {
       <>
         <Row className="mb-4">
           <Col xs={24} md={16}>
-            <p className="text-base text-text-tertiary">
+            <p className="text-base text-text-secondary">
               User invitations allow you to add users to your network or server via email.
               <br />
               Simply enter the user&apos;s email address, and they&apos;ll receive a link to join your network.
@@ -1093,7 +1093,7 @@ export default function UsersPage(props: PageProps) {
       <>
         <Row className="mb-4">
           <Col xs={24} md={16}>
-            <p className="text-base text-text-tertiary">
+            <p className="text-base text-text-secondary">
               Pending users are individuals who initiated signup through the web UI or RAC and are awaiting approval to
               join your network or server.
               <br />

@@ -18,7 +18,7 @@ const PageLayout = ({ title, description, icon, children, isFullScreen = false, 
             {icon}
             <h1 className="text-lg font-semibold">{title}</h1>
           </div>
-          {description && <p className="text-base text-text-tertiary">{description}</p>}
+          {description && <p className="text-base text-text-secondary">{description}</p>}
         </div>
         {children}
       </div>

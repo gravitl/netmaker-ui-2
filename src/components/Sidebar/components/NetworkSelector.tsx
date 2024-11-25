@@ -80,7 +80,7 @@ const NetworkSelector: React.FC<NetworkSelectorProps> = ({ isSidebarCollapsed = 
 
           <div className="flex flex-col gap-2 p-2">
             {/* Optional heading for collapsed state */}
-            <div className="px-4 mb-1 text-sm text-text-tertiary">Networks</div>
+            <div className="px-4 mb-1 text-sm text-text-secondary">Networks</div>
 
             {networks?.map((network) => (
               <div
