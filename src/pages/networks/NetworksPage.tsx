@@ -87,10 +87,9 @@ export default function NetworksPage(props: PageProps) {
       defaultSortOrder: 'ascend',
       render: (netId) => (
         <Link
-          to={'#'}
+          to={AppRoutes.NETWORK_NODES_ROUTE.replace(':networkId', netId)}
           onClick={() => {
             store.setActiveNetwork(netId);
-            navigate(getNetworkPageRoute('nodes', netId));
           }}
           className="text-button-primary-fill-default"
         >

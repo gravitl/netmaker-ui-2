@@ -128,7 +128,10 @@ export default function DashboardPage(props: PageProps) {
       render: (netId) => (
         <Link
           className="text-button-primary-fill-default"
-          to={`${resolveAppRoute(AppRoutes.NETWORKS_ROUTE)}/${encodeURIComponent(netId)}`}
+          to={AppRoutes.NETWORK_NODES_ROUTE.replace(':networkId', netId)}
+          onClick={() => {
+            store.setActiveNetwork(netId);
+          }}
         >
           {netId}
         </Link>

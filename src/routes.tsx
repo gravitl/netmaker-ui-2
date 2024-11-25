@@ -167,7 +167,7 @@ const routes: RouteObject[] = [
       ...generateRoutePair(AppRoutes.NETWORKS_ROUTE.split('/').slice(1).join('/'), <NetworksPage isFullScreen />),
       ...generateRoutePair(
         AppRoutes.NETWORK_DETAILS_ROUTE.split('/').slice(1).join('/'),
-        <NetworkDetailsPage isFullScreen />,
+        <Navigate to={`nodes`} replace />, // This will append 'nodes' to the current URL
       ),
       ...generateRoutePair(
         AppRoutes.NETWORK_HOST_ROUTE.split('/').slice(1).join('/'),
