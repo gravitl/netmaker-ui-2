@@ -19,7 +19,7 @@ import { TagsService } from '@/services/TagsService';
 import { Network } from '@/models/Network';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { notification } from 'antd';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { NULL_NODE } from '@/constants/Types';
 import { deduceNodeId } from '@/utils/NodeUtils';
 import { useStore } from '@/store/store';
@@ -157,9 +157,16 @@ export default function UpdateTagModal({ isOpen, tag, nodes, onCancel, onUpdateT
               <MultiSelect
                 options={nodes
                   .filter((n) => !n.is_user_node)
-                  .toSorted((a, b) =>
-                    (a?.name || a.static_node.clientid).localeCompare(b?.name || b.static_node.clientid),
-                  )
+                  .toSorted((a, b) => {
+                    const initialSelectedNodeIds = (tag?.tagged_nodes ?? []).map((n) => deduceNodeId(n));
+                    const aSelected = initialSelectedNodeIds.includes(deduceNodeId(a));
+                    const bSelected = initialSelectedNodeIds.includes(deduceNodeId(b));
+
+                    if (aSelected && !bSelected) return -1;
+                    if (!aSelected && bSelected) return 1;
+
+                    return (a?.name || a.static_node.clientid).localeCompare(b?.name || b.static_node.clientid);
+                  })
                   .map((node) => ({
                     label: (node.is_static ? node.static_node.clientid : node.name) || '',
                     value: deduceNodeId(node),
