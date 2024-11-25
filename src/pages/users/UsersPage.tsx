@@ -124,6 +124,7 @@ export default function UsersPage(props: PageProps) {
   const pendingUsersDenyAllUsersButtonRef = useRef(null);
   const pendingUsersSearchInputRef = useRef(null);
   const reloadPendingUsersButtonRef = useRef(null);
+  const addUserButtonContainerRef = useRef(null);
 
   const loadUsers = useCallback(
     async (showLoading = true) => {
@@ -677,7 +678,7 @@ export default function UsersPage(props: PageProps) {
       {
         title: 'Add a User',
         description: 'Click here to add a user either by creating a new user or inviting a user',
-        target: () => addUserButtonRef.current,
+        target: () => addUserButtonContainerRef.current,
         placement: 'bottom',
         onNext: () => {
           setIsAddUserModalOpen(true);
@@ -918,54 +919,67 @@ export default function UsersPage(props: PageProps) {
               <ReloadOutlined /> Reload users
             </Button>
             {isSaasBuild && (
-              <Button
-                size="large"
-                type="primary"
-                style={{ display: 'inline', marginRight: '0.5rem' }}
-                onClick={onInviteUser}
-              >
-                <PlusOutlined /> Invite User(s)
-              </Button>
+              <div ref={addUserButtonContainerRef}>
+                <Button
+                  size="large"
+                  type="primary"
+                  style={{ display: 'inline', marginRight: '0.5rem' }}
+                  onClick={onInviteUser}
+                  ref={addUserButtonRef}
+                >
+                  <PlusOutlined /> Invite User(s)
+                </Button>
+              </div>
             )}
             {!isSaasBuild && (
               <>
                 {isServerEE && (
-                  <Dropdown
-                    placement="bottomRight"
-                    menu={{
-                      items: [
-                        {
-                          key: 'invite',
-                          label: 'Invite a User',
-                          onClick: onInviteUser,
-                        },
-                        {
-                          key: 'add',
-                          label: 'Create a User',
-                          onClick: onAddUser,
-                        },
-                      ],
-                    }}
-                  >
-                    <Button size="large" type="primary" style={{ display: 'inline', marginRight: '0.5rem' }}>
-                      <PlusOutlined /> Add a User
-                    </Button>
-                  </Dropdown>
+                  <div ref={addUserButtonContainerRef}>
+                    <Dropdown
+                      placement="bottomRight"
+                      menu={{
+                        items: [
+                          {
+                            key: 'invite',
+                            label: 'Invite a User',
+                            onClick: onInviteUser,
+                          },
+                          {
+                            key: 'add',
+                            label: 'Create a User',
+                            onClick: onAddUser,
+                          },
+                        ],
+                      }}
+                    >
+                      <Button
+                        size="large"
+                        type="primary"
+                        style={{ display: 'inline', marginRight: '0.5rem' }}
+                        ref={addUserButtonRef}
+                      >
+                        <PlusOutlined /> Add a User
+                      </Button>
+                    </Dropdown>
+                  </div>
                 )}
                 {!isServerEE && (
-                  <Button
-                    size="large"
-                    type="primary"
-                    style={{ display: 'inline', marginRight: '0.5rem' }}
-                    onClick={onAddUser}
-                  >
-                    <PlusOutlined /> Create a User
-                  </Button>
+                  <div ref={addUserButtonContainerRef}>
+                    <Button
+                      size="large"
+                      type="primary"
+                      style={{ display: 'inline', marginRight: '0.5rem' }}
+                      onClick={onAddUser}
+                      ref={addUserButtonRef}
+                    >
+                      <PlusOutlined /> Create a User
+                    </Button>
+                  </div>
                 )}
               </>
             )}
           </Col>
-        </Row>
+        </Row>{' '}
         <Row className="" style={{ marginTop: '1rem' }}>
           <Col xs={24}>
             <div className="table-wrapper">
