@@ -1,5 +1,5 @@
 import { EllipsisVerticalIcon, PlusIcon } from '@heroicons/react/20/solid';
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 type MenuRowProps = {
   title: string;
@@ -25,10 +25,23 @@ const MenuRow: React.FC<MenuRowProps> = ({
   danger,
 }) => {
   const [showTooltip, setShowTooltip] = useState(false);
+  const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (showTooltip && menuRef.current) {
+      const rect = menuRef.current.getBoundingClientRect();
+      setTooltipPosition({
+        top: rect.top + rect.height / 2,
+        left: rect.right,
+      });
+    }
+  }, [showTooltip]);
 
   return (
     <div className="relative w-full">
       <div
+        ref={menuRef}
         className={`flex items-center w-full gap-2 rounded-md px-3 py-2 cursor-pointer 
           ${selected && !danger ? 'bg-bg-contrastActive text-text-primary ' : ' text-text-secondary hover:bg-bg-contrastHover '} 
           ${isSidebarCollapsed ? 'justify-center' : ''} ${danger ? 'text-text-critical hover:text-text-critical ' : ''}`}
@@ -60,11 +73,15 @@ const MenuRow: React.FC<MenuRowProps> = ({
       </div>
 
       {isSidebarCollapsed && showTooltip && (
-        <div className="absolute z-50 -translate-y-1/2 left-16 top-1/2">
-          <div className="relative">
-            {/* Arrow */}
+        <div
+          className="fixed z-50"
+          style={{
+            top: tooltipPosition.top,
+            left: tooltipPosition.left,
+          }}
+        >
+          <div className="relative -translate-y-1/2">
             <div className="absolute w-2 h-2 rotate-45 -translate-y-1/2 top-1/2 -left-1 bg-bg-hover" />
-            {/* Tooltip content */}
             <div className="px-3 py-2 text-sm rounded bg-bg-hover text-text-primary whitespace-nowrap">
               {title}
               <br />

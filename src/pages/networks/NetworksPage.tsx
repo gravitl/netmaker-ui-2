@@ -27,6 +27,8 @@ import './NetworksPage.scss';
 import { getNetworkPageRoute, getNetworkRoute, resolveAppRoute } from '@/utils/RouteUtils';
 import { NetworksService } from '@/services/NetworksService';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
+import PageLayout from '@/layouts/PageLayout';
+import { GlobeAltIcon } from '@heroicons/react/24/solid';
 
 export default function NetworksPage(props: PageProps) {
   const store = useStore();
@@ -256,23 +258,27 @@ export default function NetworksPage(props: PageProps) {
   }, [loadNetworks]);
 
   return (
-    <Layout.Content
-      className="NetworksPage"
-      style={{ position: 'relative', height: '100%', padding: props.isFullScreen ? 0 : 24 }}
+    <PageLayout
+      title="Networks"
+      isFullScreen
+      description={
+        <>
+          Create and manage secure overlay networks across multiple locations and environments.
+          <br />
+          Connect distributed devices into unified, private networks with centralized control.
+        </>
+      }
+      icon={<GlobeAltIcon className=" size-5" />}
     >
-      <Skeleton loading={store.isFetchingNetworks} active title={true} className="page-padding">
+      <Skeleton loading={store.isFetchingNetworks} active title={true}>
         {networks.length === 0 && (
           <>
             <Row
-              className="page-padding"
               style={{
                 background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
               }}
             >
               <Col xs={24} xl={(24 * 2) / 3}>
-                <Typography.Title level={3} style={{ color: 'white ' }}>
-                  Networks
-                </Typography.Title>
                 <Typography.Text style={{ color: 'white ' }}>
                   A network is how your hosts and clients communicate. Each machine gets a private IP address within the
                   defined subnet and communicates securely with all the other devices in the network. The network is
@@ -362,13 +368,7 @@ export default function NetworksPage(props: PageProps) {
         )}
         {networks.length > 0 && (
           <>
-            <Row className="page-row-padding">
-              <Col xs={24}>
-                <Typography.Title level={3}>Networks</Typography.Title>
-              </Col>
-            </Row>
-
-            <Row className="page-row-padding" justify="space-between">
+            <Row justify="space-between">
               <Col xs={24} md={8}>
                 <Input
                   size="large"
@@ -404,9 +404,9 @@ export default function NetworksPage(props: PageProps) {
               </Col>
             </Row>
 
-            <Row className="page-row-padding" justify="space-between">
+            <Row justify="space-between">
               <Col xs={24}>
-                <div className="table-wrapper">
+                <div className="table-wrapper mt-7">
                   <Table
                     columns={tableColumns}
                     dataSource={filteredNetworks}
@@ -455,6 +455,6 @@ export default function NetworksPage(props: PageProps) {
       />
 
       {notifyCtx}
-    </Layout.Content>
+    </PageLayout>
   );
 }

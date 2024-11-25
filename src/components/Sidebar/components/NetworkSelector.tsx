@@ -1,20 +1,21 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useStore } from '@/store/store';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { ChevronDownIcon } from '@heroicons/react/20/solid';
 import { GlobeAltIcon } from '@heroicons/react/24/outline';
+import { CheckIcon, PlusIcon } from '@heroicons/react/24/solid';
 import { getNetworkPageRoute } from '@/utils/RouteUtils';
-import { CheckBadgeIcon, CheckCircleIcon, CheckIcon, PlusIcon } from '@heroicons/react/24/solid';
 
 interface NetworkSelectorProps {
   isSidebarCollapsed?: boolean;
-  onAddNetwork: () => void;
+  onAddNetwork?: () => void;
 }
 
 const NetworkSelector: React.FC<NetworkSelectorProps> = ({ isSidebarCollapsed = false, onAddNetwork }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
   const store = useStore();
 
   const networks = store.networks;
@@ -35,12 +36,24 @@ const NetworkSelector: React.FC<NetworkSelectorProps> = ({ isSidebarCollapsed = 
 
   const handleNetworkSelect = (networkId: string) => {
     store.setActiveNetwork(networkId);
-    navigate(getNetworkPageRoute('nodes', networkId));
+
+    // Check if current route is a network route
+    const networkRouteMatch = location.pathname.match(/\/networks\/[^/]+/);
+
+    if (networkRouteMatch) {
+      // If we're already in a network route, just replace the network ID
+      const newPath = location.pathname.replace(/\/networks\/[^/]+/, `/networks/${networkId}`);
+      navigate(newPath);
+    } else {
+      // If we're not in a network route, go to the nodes page
+      navigate(getNetworkPageRoute('nodes', networkId));
+    }
+
     setIsOpen(false);
   };
 
   return (
-    <div ref={menuRef} className="relative px-2">
+    <div ref={menuRef} className="relative px-2 ">
       {/* Network Selection Button */}
       <div
         className={`flex items-center cursor-pointer transition-colors duration-150
@@ -66,7 +79,7 @@ const NetworkSelector: React.FC<NetworkSelectorProps> = ({ isSidebarCollapsed = 
       {/* Dropdown Menu */}
       {isOpen && (
         <div
-          className={`absolute mt-2 overflow-hidden rounded-lg shadow-xl z-50 bg-bg-contrastDefault
+          className={`absolute mt-2 overflow-hidden rounded-lg shadow-xl z-50 bg-bg-contrastDefault min-w-60
             ${
               isSidebarCollapsed
                 ? 'left-16 w-48' // When collapsed, position to the right of the button

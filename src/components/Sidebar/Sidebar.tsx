@@ -183,7 +183,7 @@ const Sidebar = ({
       },
       {
         key: 'internet-gateways',
-        title: 'Gateways',
+        title: 'Internet Gateways',
         iconSolid: <ArrowsRightLeftIconSolid className="size-5" />,
         iconOutline: <ArrowsRightLeftIconOutline className="size-5" />,
         route: null,
