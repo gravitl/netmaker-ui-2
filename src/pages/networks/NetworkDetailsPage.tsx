@@ -315,7 +315,10 @@ export default function NetworkDetailsPage(props: PageProps) {
   const networkNodes = useMemo(
     () =>
       store.nodes
-        .map((node) => getExtendedNode(node, store.hostsCommonDetails))
+        .map((node) => ({
+          ...getExtendedNode(node, store.hostsCommonDetails),
+          tableId: node.id,
+        }))
         .filter((node) => node.network === networkId),
     [store.nodes, store.hostsCommonDetails, networkId],
   );
@@ -2334,7 +2337,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                   },
                 ]}
                 dataSource={filteredNetworkNodes}
-                rowKey="id"
+                rowKey="tableId"
                 size="small"
                 ref={hostsTabContainerTableRef}
               />
