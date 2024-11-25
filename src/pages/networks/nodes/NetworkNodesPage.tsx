@@ -8,6 +8,7 @@ import UpdateNodeModal from '@/components/modals/update-node-modal/UpdateNodeMod
 import RacDownloadBanner from '@/components/RacDownloadBanner';
 import NodeStatus from '@/components/ui/Status';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
+import PageLayout from '@/layouts/PageLayout';
 import { NodeAclContainer } from '@/models/Acl';
 import { ExternalClient } from '@/models/ExternalClient';
 import { ExtendedNode, Node } from '@/models/Node';
@@ -34,6 +35,7 @@ import {
   DeleteOutlined,
 } from '@ant-design/icons';
 import { DocumentIcon, EllipsisHorizontalIcon, PlusIcon, ServerIcon, UserIcon } from '@heroicons/react/24/solid';
+import { ComputerDesktopIcon } from '@heroicons/react/24/solid';
 import {
   Alert,
   Badge,
@@ -389,496 +391,500 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
   );
 
   return (
-    <div className="NetworkNodesPage" style={{ position: 'relative', height: '100%', padding: isFullScreen ? 0 : 24 }}>
-      <div className={`${isFullScreen ? 'page-padding' : ''}`}>
-        <Row style={{ marginBottom: '1rem', width: '100%' }}>
-          <Col>
-            <Typography.Title level={2}>Network Nodes</Typography.Title>
-          </Col>
-        </Row>
-        <Row justify="space-between" align="middle" style={{ marginBottom: '1rem', width: '100%' }}>
-          {isServerEE && <RacDownloadBanner />}
-          <div className="flex flex-col w-full gap-4 md:flex-row">
-            <div className="inline-flex flex-col flex-grow gap-4 md:flex-row">
-              <Input
-                size="large"
-                placeholder="Search nodes"
-                value={searchHost}
-                onChange={(ev) => setSearchHost(ev.target.value)}
-                prefix={<SearchOutlined />}
-                allowClear
-                style={{ maxWidth: '240px', height: '40px' }}
-              />
-              <div className="flex flex-wrap gap-2">
-                {filters.map((filter) => (
-                  <button
-                    key={filter.name}
-                    onClick={() => setActiveNodeFilter(filter.name)}
-                    className={`flex items-center gap-2 px-3 py-2 rounded text-sm transition-colors duration-200 ${
-                      activeNodeFilter === filter.name
-                        ? 'bg-button-secondary-fill-default text-text-primary'
-                        : 'bg-transparent text-text-secondary hover:bg-button-secondary-fill-hover'
-                    }`}
-                  >
-                    {filter.icon && <filter.icon className="flex-shrink-0 w-4 h-4" />}
-                    <span className="whitespace-nowrap">{filter.name}</span>
-                  </button>
-                ))}
-              </div>
+    <PageLayout
+      title="Nodes"
+      isFullScreen
+      description={
+        <>
+          Deploy and monitor network nodes to extend your infrastructure&apos;s reach and capability.
+          <br />
+          Manage node configurations, health status, and performance metrics in real-time.
+        </>
+      }
+      icon={<ComputerDesktopIcon className=" size-5" />}
+    >
+      <Row justify="space-between" align="middle" style={{ marginBottom: '1rem', width: '100%' }}>
+        {isServerEE && <RacDownloadBanner />}
+        <div className="flex flex-col w-full gap-4 md:flex-row">
+          <div className="inline-flex flex-col flex-grow gap-4 md:flex-row">
+            <Input
+              size="large"
+              placeholder="Search nodes"
+              value={searchHost}
+              onChange={(ev) => setSearchHost(ev.target.value)}
+              prefix={<SearchOutlined />}
+              allowClear
+              style={{ maxWidth: '240px', height: '40px' }}
+            />
+            <div className="flex flex-wrap gap-2">
+              {filters.map((filter) => (
+                <button
+                  key={filter.name}
+                  onClick={() => setActiveNodeFilter(filter.name)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded text-sm transition-colors duration-200 ${
+                    activeNodeFilter === filter.name
+                      ? 'bg-button-secondary-fill-default text-text-primary'
+                      : 'bg-transparent text-text-secondary hover:bg-button-secondary-fill-hover'
+                  }`}
+                >
+                  {filter.icon && <filter.icon className="flex-shrink-0 w-4 h-4" />}
+                  <span className="whitespace-nowrap">{filter.name}</span>
+                </button>
+              ))}
             </div>
-            <div className="flex gap-2">
-              <Button
-                type="primary"
-                className="flex items-center justify-center gap-1 px-4 py-2"
-                onClick={() => setIsAddNewHostModalOpen(true)}
-              >
-                <PlusIcon className="w-5 h-5" /> <span>Add Node</span>
-              </Button>
-              <Button
-                title="Go to HOSTS documentation"
-                className="flex items-center justify-center"
-                href={ExternalLinks.HOSTS_DOCS_URL}
-                target="_blank"
-                icon={<QuestionCircleOutlined />}
-              />
-            </div>
-          </div>{' '}
-          <Col xs={24} style={{ paddingTop: '1rem' }}>
-            {checkIfManagedHostIsLoading && (
-              <Alert
-                message="Managed host creation in progress (estimated completion time: 5 - 10 minutes)."
-                type="info"
-                showIcon
-                icon={<LoadingOutlined />}
-                style={{ marginBottom: '1rem' }}
-              />
-            )}
-            {isServerEE && networkNodes.length > 0 && !isFailoverNodePresentInNetwork && (
-              <Alert
-                message="There's no failover host present in the network. Set one for redundancy, in case of failure."
-                type="warning"
-                showIcon
-                icon={<WarningOutlined />}
-                style={{ marginBottom: '1rem' }}
-                action={
-                  <Button
-                    type="dashed"
-                    onClick={() => {
-                      setIsSetNetworkFailoverModalOpen(true);
-                    }}
-                  >
-                    Set Failover Host
-                  </Button>
-                }
-              />
-            )}
-            <div className="table-wrapper">
-              <Table
-                rowKey="tableId"
-                scroll={{ x: true }}
-                dataSource={filteredNetworkNodes}
-                size="small"
-                columns={[
-                  {
-                    title: 'Node name',
-                    render: (_, node) => {
-                      const hostName = getExtendedNode(node, store.hostsCommonDetails).name;
-                      return (
-                        <>
-                          <Link
-                            to={node.is_static ? '#' : getNetworkHostRoute(node.hostid, node.network)}
-                            title={`Network Host ID: ${node.is_static ? node.static_node.clientid : node.id}`}
-                            className="inline-flex items-center gap-2"
-                            onClick={(e) => {
-                              if (node.is_static) {
-                                e.preventDefault();
-                                const clientData: ExternalClient = {
-                                  clientid: node.static_node?.clientid ?? '',
-                                  description: '',
-                                  privatekey: node.static_node?.privatekey ?? '',
-                                  publickey: node.static_node?.publickey ?? '',
-                                  network: networkId ?? '',
-                                  address: node.static_node?.address ?? '',
-                                  address6: node.static_node?.address6 ?? '',
-                                  ingressgatewayid: node.static_node?.ingressgatewayid ?? '',
-                                  ingressgatewayendpoint: node.static_node?.ingressgatewayendpoint ?? '',
-                                  lastmodified: node.lastmodified ?? 0,
-                                  enabled: node.static_node?.enabled ?? false,
-                                  ownerid: node.static_node?.ownerid ?? '',
-                                  internal_ip_addr: '',
-                                  internal_ip_addr6: '',
-                                  dns: node.static_node?.dns ?? '',
-                                  extraallowedips: node.static_node?.extraallowedips ?? [],
-                                  postup: node.static_node?.postup,
-                                  postdown: node.static_node?.postdown,
-                                  tags: node.static_node?.tags ?? {},
-                                };
-                                setTargetClient(clientData);
-                                setIsClientDetailsModalOpen(true);
-                              }
-                            }}
-                          >
-                            {getExtendedNode(node, store.hostsCommonDetails).is_static &&
-                            !getExtendedNode(node, store.hostsCommonDetails).is_user_node ? (
-                              <DocumentIcon className="w-4 h-4 shrink-0 text-text-primary" />
-                            ) : getExtendedNode(node, store.hostsCommonDetails).is_user_node ? (
-                              <UserIcon className="w-4 h-4 shrink-0 text-text-primary" />
-                            ) : (
-                              <ServerIcon className="w-4 h-4 shrink-0 text-text-primary" />
-                            )}
-                            <span>
-                              {node.is_user_node
-                                ? node.static_node?.ownerid
-                                : node.is_static
-                                  ? node.static_node?.clientid
-                                  : hostName}
-                            </span>
-                          </Link>
-                          {node.pendingdelete && (
-                            <Badge style={{ marginLeft: '1rem' }} status="processing" color="red" text="Removing..." />
-                          )}
-                          {isServerEE && node.is_fail_over && (
-                            <Tooltip title="This host is acting as the network's failover host">
-                              <WaypointsIcon
-                                style={{ marginLeft: '.5rem', marginBottom: '.5rem', display: 'inline' }}
-                                color={
-                                  store.currentTheme === 'dark' ? branding.primaryColorDark : branding.primaryColorLight
-                                }
-                                size="1.2rem"
-                                strokeWidth={1.5}
-                              />
-                            </Tooltip>
-                          )}
-                        </>
-                      );
-                    },
-                    sorter: (a, b) => {
-                      const hostNameA = getExtendedNode(a, store.hostsCommonDetails).name;
-                      const hostNameB = getExtendedNode(b, store.hostsCommonDetails).name;
-                      return hostNameA?.localeCompare(hostNameB ?? '') ?? 0;
-                    },
-                    defaultSortOrder: 'ascend',
-                    key: 'id',
-                  },
-                  {
-                    title: 'Private Address',
-                    render: (_, node) => {
-                      if (node.is_static) {
-                        if (node.static_node?.address !== '') {
-                          return node.static_node?.address;
-                        } else {
-                          return node.static_node?.address6;
-                        }
-                      } else {
-                        if (node.address !== '') {
-                          return node.address;
-                        } else {
-                          return node.address6;
-                        }
-                      }
-                      return '';
-                    },
-                  },
-                  {
-                    title: 'Public Address',
-                    render: (_, node) => {
-                      const extendedNode = getExtendedNode(node, store.hostsCommonDetails);
-                      // Prefer IPv4 if it exists and isn't empty
-                      if (extendedNode?.endpointip !== '') {
-                        return extendedNode.endpointip;
-                      }
-                      // Fall back to IPv6 if IPv4 is empty
-                      return extendedNode?.endpointipv6 || '';
-                    },
-                  },
-                  {
-                    title: 'Gateway',
-                    render(_, node) {
-                      const extendedNode = getExtendedNode(node, store.hostsCommonDetails);
-                      const gatewayId = extendedNode.static_node?.ingressgatewayendpoint;
-                      if (extendedNode.is_static && extendedNode.static_node && gatewayId) {
-                        const gatewayNode = networkNodes.find((n) => n.id === node.static_node?.ingressgatewayid);
-                        const gatewayName = gatewayNode ? gatewayNode.name : 'gatewayId';
-
-                        return (
-                          <span className="flex items-center gap-2">
-                            <ServerIcon className="w-4 h-4 shrink-0 text-text-primary" />
-                            <span className="w-full break-words">{gatewayName}</span>
-                          </span>
-                        );
-                      } else {
-                        return '-';
-                      }
-                    },
-                  },
-                  {
-                    title: 'Egress',
-                    render(_, node) {
-                      const extendedNode = getExtendedNode(node, store.hostsCommonDetails);
-                      if (extendedNode.is_static && extendedNode.static_node) {
-                        const allowedIPs = extendedNode.static_node.extraallowedips;
-                        if (Array.isArray(allowedIPs) && allowedIPs.length > 0) {
-                          return allowedIPs.join(', ');
-                        } else {
-                          return '-';
-                        }
-                      } else {
-                        return '-';
-                      }
-                    },
-                  },
-                  {
-                    title: 'Status',
-                    render(_, node) {
-                      const extendedNode = getExtendedNode(node, store.hostsCommonDetails);
-                      if (extendedNode.is_static) {
-                        return node.static_node?.enabled ? (
-                          <NodeStatus nodeHealth="enabled" clickable />
-                        ) : (
-                          <NodeStatus nodeHealth="disabled" clickable />
-                        );
-                      } else if (!extendedNode.connected) {
-                        return <NodeStatus nodeHealth="disconnected" clickable />;
-                      }
-                      return getHostHealth(node.hostid, [node]);
-                    },
-                    filters: [
-                      {
-                        text: 'Healthy',
-                        value: HOST_HEALTH_STATUS.healthy,
-                      },
-                      {
-                        text: 'Warning',
-                        value: HOST_HEALTH_STATUS.warning,
-                      },
-                      {
-                        text: 'Error',
-                        value: HOST_HEALTH_STATUS.error,
-                      },
-                      {
-                        text: 'Unknown',
-                        value: HOST_HEALTH_STATUS.unknown,
-                      },
-                    ],
-                    onFilter: (value: React.Key | boolean, record: any) => filterByHostHealthStatus(value, record),
-                  },
-                  {
-                    width: '1rem',
-                    align: 'right',
-                    render(_: boolean, node) {
-                      const extendedNode = getExtendedNode(node, store.hostsCommonDetails);
-
-                      const staticNodeMenu = [
-                        {
-                          key: 'edit',
-                          label: (
-                            <Typography.Text
-                              disabled={
-                                !hasNetworkAdminPriviledges(store.user!, networkId) &&
-                                store.username !== node.static_node?.ownerid
-                              }
-                            >
-                              <EditOutlined /> Edit
-                            </Typography.Text>
-                          ),
-                          disabled:
-                            !hasNetworkAdminPriviledges(store.user!, networkId) &&
-                            store.username !== node.static_node?.ownerid,
-                          onClick: () => {
-                            const clientData: ExternalClient = {
-                              clientid: node.static_node?.clientid ?? '',
-                              description: '',
-                              privatekey: node.static_node?.privatekey ?? '',
-                              publickey: node.static_node?.publickey ?? '',
-                              network: networkId ?? '',
-                              address: node.static_node?.address ?? '',
-                              address6: node.static_node?.address6 ?? '',
-                              ingressgatewayid: node.static_node?.ingressgatewayid ?? '',
-                              ingressgatewayendpoint: node.static_node?.ingressgatewayendpoint ?? '',
-                              lastmodified: node.lastmodified ?? 0,
-                              enabled: node.static_node?.enabled ?? false,
-                              ownerid: node.static_node?.ownerid ?? '',
-                              internal_ip_addr: '',
-                              internal_ip_addr6: '',
-                              dns: node.static_node?.dns ?? '',
-                              extraallowedips: node.static_node?.extraallowedips ?? [],
-                              postup: node.static_node?.postup,
-                              postdown: node.static_node?.postdown,
-                              tags: node.static_node.tags,
-                            };
-                            setTargetClient(clientData);
-                            setIsUpdateClientModalOpen(true);
-                          },
-                        },
-                        {
-                          key: 'toggle',
-                          icon: node.static_node?.enabled ? <StopOutlined /> : <PlayCircleOutlined />,
-                          label: node.static_node?.enabled ? 'Disable' : 'Enable',
-                          disabled:
-                            !hasNetworkAdminPriviledges(store.user!, networkId) &&
-                            store.username !== node.static_node?.ownerid,
-                          onClick: () => {
-                            const clientData: ExternalClient = {
-                              clientid: node.static_node?.clientid ?? '',
-                              description: '',
-                              privatekey: node.static_node?.privatekey ?? '',
-                              publickey: node.static_node?.publickey ?? '',
-                              network: networkId ?? '',
-                              address: node.static_node?.address ?? '',
-                              address6: node.static_node?.address6 ?? '',
-                              ingressgatewayid: node.static_node?.ingressgatewayid ?? '',
-                              ingressgatewayendpoint: node.static_node?.ingressgatewayendpoint ?? '',
-                              lastmodified: node.lastmodified ?? 0,
-                              enabled: node.static_node?.enabled ?? false,
-                              ownerid: node.static_node?.ownerid ?? '',
-                              internal_ip_addr: '',
-                              internal_ip_addr6: '',
-                              dns: node.static_node?.dns ?? '',
-                              extraallowedips: node.static_node?.extraallowedips ?? [],
-                              postup: node.static_node?.postup,
-                              postdown: node.static_node?.postdown,
-                              tags: node.static_node.tags,
-                            };
-                            toggleClientStatus(clientData, !node.static_node?.enabled);
-                          },
-                        },
-                        {
-                          key: 'view',
-                          label: (
-                            <Typography.Text
-                              disabled={
-                                !hasNetworkAdminPriviledges(store.user!, networkId) &&
-                                store.username !== node.static_node?.ownerid
-                              }
-                            >
-                              <EyeOutlined /> View Config
-                            </Typography.Text>
-                          ),
-                          disabled:
-                            !hasNetworkAdminPriviledges(store.user!, networkId) &&
-                            store.username !== node.static_node?.ownerid,
-                          onClick: () => {
-                            const clientData: ExternalClient = {
-                              clientid: node.static_node?.clientid ?? '',
-                              description: '',
-                              privatekey: node.static_node?.privatekey ?? '',
-                              publickey: node.static_node?.publickey ?? '',
-                              network: networkId ?? '',
-                              address: node.static_node?.address ?? '',
-                              address6: node.static_node?.address6 ?? '',
-                              ingressgatewayid: node.static_node?.ingressgatewayid ?? '',
-                              ingressgatewayendpoint: node.static_node?.ingressgatewayendpoint ?? '',
-                              lastmodified: node.lastmodified ?? 0,
-                              enabled: node.static_node?.enabled ?? false,
-                              ownerid: node.static_node?.ownerid ?? '',
-                              internal_ip_addr: '',
-                              internal_ip_addr6: '',
-                              dns: node.static_node?.dns ?? '',
-                              extraallowedips: node.static_node?.extraallowedips ?? [],
-                              postup: node.static_node?.postup,
-                              postdown: node.static_node?.postdown,
-                              tags: node.static_node.tags,
-                            };
-                            setTargetClient(clientData);
-                            setIsClientConfigModalOpen(true);
-                          },
-                        },
-                        {
-                          key: 'delete',
-                          danger: true,
-                          label: (
-                            <>
-                              <DeleteOutlined /> Delete
-                            </>
-                          ),
-                          disabled:
-                            !hasNetworkAdminPriviledges(store.user!, networkId) &&
-                            store.username !== node.static_node?.ownerid,
-                          onClick: () => {
-                            const clientData: ExternalClient = {
-                              clientid: node.static_node?.clientid ?? '',
-                              description: '',
-                              privatekey: node.static_node?.privatekey ?? '',
-                              publickey: node.static_node?.publickey ?? '',
-                              network: networkId ?? '',
-                              address: node.static_node?.address ?? '',
-                              address6: node.static_node?.address6 ?? '',
-                              ingressgatewayid: node.static_node?.ingressgatewayid ?? '',
-                              ingressgatewayendpoint: node.static_node?.ingressgatewayendpoint ?? '',
-                              lastmodified: node.lastmodified ?? 0,
-                              enabled: node.static_node?.enabled ?? false,
-                              ownerid: node.static_node?.ownerid ?? '',
-                              internal_ip_addr: '',
-                              internal_ip_addr6: '',
-                              dns: node.static_node?.dns ?? '',
-                              extraallowedips: node.static_node?.extraallowedips ?? [],
-                              postup: node.static_node?.postup,
-                              postdown: node.static_node?.postdown,
-                              tags: node.static_node.tags,
-                            };
-                            confirmDeleteClient(clientData);
-                          },
-                        },
-                      ] as MenuProps['items'];
-                      const regularNodeMenu = [
-                        {
-                          key: 'edit',
-                          label: 'Edit',
-                          disabled: node.pendingdelete !== false,
-                          title: node.pendingdelete !== false ? 'Host is being removed from network' : '',
-                          onClick: () => editNode(node),
-                        },
-                        ...(isServerEE
-                          ? [
-                              {
-                                key: 'failover',
-                                label: node.is_fail_over ? 'Unset as failover' : 'Set as failover',
-                                title: node.is_fail_over
-                                  ? 'Stop this host as acting as the network failover'
-                                  : 'Make this the network failover host. Any existing failover host will be replaced.',
-                                onClick: () => confirmNodeFailoverStatusChange(node, !node.is_fail_over),
-                              },
-                            ]
-                          : []),
-                        {
-                          key: 'disconnect',
-                          label: node.connected ? 'Disconnect host' : 'Connect host',
-                          disabled: node.pendingdelete !== false,
-                          title: node.pendingdelete !== false ? 'Host is being disconnected from network' : '',
-                          onClick: () =>
-                            disconnectNodeFromNetwork(!node.connected, getExtendedNode(node, store.hostsCommonDetails)),
-                        },
-                        {
-                          key: 'remove',
-                          label: 'Remove from network',
-                          danger: true,
-                          onClick: () => removeNodeFromNetwork(false, getExtendedNode(node, store.hostsCommonDetails)),
-                        },
-                      ];
-
-                      return (
-                        <Dropdown
-                          menu={{
-                            items: extendedNode.is_static ? staticNodeMenu : regularNodeMenu,
+          </div>
+          <div className="flex gap-2">
+            <Button
+              type="primary"
+              className="flex items-center justify-center gap-1 px-4 py-2"
+              onClick={() => setIsAddNewHostModalOpen(true)}
+            >
+              <PlusIcon className="w-5 h-5" /> <span>Add Node</span>
+            </Button>
+            <Button
+              title="Go to HOSTS documentation"
+              className="flex items-center justify-center"
+              href={ExternalLinks.HOSTS_DOCS_URL}
+              target="_blank"
+              icon={<QuestionCircleOutlined />}
+            />
+          </div>
+        </div>{' '}
+        <Col xs={24} style={{ paddingTop: '1rem' }}>
+          {checkIfManagedHostIsLoading && (
+            <Alert
+              message="Managed host creation in progress (estimated completion time: 5 - 10 minutes)."
+              type="info"
+              showIcon
+              icon={<LoadingOutlined />}
+              style={{ marginBottom: '1rem' }}
+            />
+          )}
+          {isServerEE && networkNodes.length > 0 && !isFailoverNodePresentInNetwork && (
+            <Alert
+              message="There's no failover host present in the network. Set one for redundancy, in case of failure."
+              type="warning"
+              showIcon
+              icon={<WarningOutlined />}
+              style={{ marginBottom: '1rem' }}
+              action={
+                <Button
+                  type="dashed"
+                  onClick={() => {
+                    setIsSetNetworkFailoverModalOpen(true);
+                  }}
+                >
+                  Set Failover Host
+                </Button>
+              }
+            />
+          )}
+          <div className="table-wrapper">
+            <Table
+              rowKey="tableId"
+              scroll={{ x: true }}
+              dataSource={filteredNetworkNodes}
+              size="small"
+              columns={[
+                {
+                  title: 'Node name',
+                  render: (_, node) => {
+                    const hostName = getExtendedNode(node, store.hostsCommonDetails).name;
+                    return (
+                      <>
+                        <Link
+                          to={node.is_static ? '#' : getNetworkHostRoute(node.hostid, node.network)}
+                          title={`Network Host ID: ${node.is_static ? node.static_node.clientid : node.id}`}
+                          className="inline-flex items-center gap-2"
+                          onClick={(e) => {
+                            if (node.is_static) {
+                              e.preventDefault();
+                              const clientData: ExternalClient = {
+                                clientid: node.static_node?.clientid ?? '',
+                                description: '',
+                                privatekey: node.static_node?.privatekey ?? '',
+                                publickey: node.static_node?.publickey ?? '',
+                                network: networkId ?? '',
+                                address: node.static_node?.address ?? '',
+                                address6: node.static_node?.address6 ?? '',
+                                ingressgatewayid: node.static_node?.ingressgatewayid ?? '',
+                                ingressgatewayendpoint: node.static_node?.ingressgatewayendpoint ?? '',
+                                lastmodified: node.lastmodified ?? 0,
+                                enabled: node.static_node?.enabled ?? false,
+                                ownerid: node.static_node?.ownerid ?? '',
+                                internal_ip_addr: '',
+                                internal_ip_addr6: '',
+                                dns: node.static_node?.dns ?? '',
+                                extraallowedips: node.static_node?.extraallowedips ?? [],
+                                postup: node.static_node?.postup,
+                                postdown: node.static_node?.postdown,
+                                tags: node.static_node?.tags ?? {},
+                              };
+                              setTargetClient(clientData);
+                              setIsClientDetailsModalOpen(true);
+                            }
                           }}
                         >
-                          <div className="rounded-md p-1/2 shrink-0 outline outline-stroke-default bg-bg-default hover:bg-bg-hover ">
-                            <EllipsisHorizontalIcon className="w-6 h-6 text-text-primary" />
-                          </div>
-                        </Dropdown>
-                      );
-                    },
+                          {getExtendedNode(node, store.hostsCommonDetails).is_static &&
+                          !getExtendedNode(node, store.hostsCommonDetails).is_user_node ? (
+                            <DocumentIcon className="w-4 h-4 shrink-0 text-text-primary" />
+                          ) : getExtendedNode(node, store.hostsCommonDetails).is_user_node ? (
+                            <UserIcon className="w-4 h-4 shrink-0 text-text-primary" />
+                          ) : (
+                            <ServerIcon className="w-4 h-4 shrink-0 text-text-primary" />
+                          )}
+                          <span>
+                            {node.is_user_node
+                              ? node.static_node?.ownerid
+                              : node.is_static
+                                ? node.static_node?.clientid
+                                : hostName}
+                          </span>
+                        </Link>
+                        {node.pendingdelete && (
+                          <Badge style={{ marginLeft: '1rem' }} status="processing" color="red" text="Removing..." />
+                        )}
+                        {isServerEE && node.is_fail_over && (
+                          <Tooltip title="This host is acting as the network's failover host">
+                            <WaypointsIcon
+                              style={{ marginLeft: '.5rem', marginBottom: '.5rem', display: 'inline' }}
+                              color={
+                                store.currentTheme === 'dark' ? branding.primaryColorDark : branding.primaryColorLight
+                              }
+                              size="1.2rem"
+                              strokeWidth={1.5}
+                            />
+                          </Tooltip>
+                        )}
+                      </>
+                    );
                   },
-                ]}
-                pagination={{
-                  pageSize: 20,
-                  hideOnSinglePage: true,
-                }}
-              />
-            </div>
-          </Col>
-        </Row>
-      </div>
+                  sorter: (a, b) => {
+                    const hostNameA = getExtendedNode(a, store.hostsCommonDetails).name;
+                    const hostNameB = getExtendedNode(b, store.hostsCommonDetails).name;
+                    return hostNameA?.localeCompare(hostNameB ?? '') ?? 0;
+                  },
+                  defaultSortOrder: 'ascend',
+                  key: 'id',
+                },
+                {
+                  title: 'Private Address',
+                  render: (_, node) => {
+                    if (node.is_static) {
+                      if (node.static_node?.address !== '') {
+                        return node.static_node?.address;
+                      } else {
+                        return node.static_node?.address6;
+                      }
+                    } else {
+                      if (node.address !== '') {
+                        return node.address;
+                      } else {
+                        return node.address6;
+                      }
+                    }
+                    return '';
+                  },
+                },
+                {
+                  title: 'Public Address',
+                  render: (_, node) => {
+                    const extendedNode = getExtendedNode(node, store.hostsCommonDetails);
+                    // Prefer IPv4 if it exists and isn't empty
+                    if (extendedNode?.endpointip !== '') {
+                      return extendedNode.endpointip;
+                    }
+                    // Fall back to IPv6 if IPv4 is empty
+                    return extendedNode?.endpointipv6 || '';
+                  },
+                },
+                {
+                  title: 'Gateway',
+                  render(_, node) {
+                    const extendedNode = getExtendedNode(node, store.hostsCommonDetails);
+                    const gatewayId = extendedNode.static_node?.ingressgatewayendpoint;
+                    if (extendedNode.is_static && extendedNode.static_node && gatewayId) {
+                      const gatewayNode = networkNodes.find((n) => n.id === node.static_node?.ingressgatewayid);
+                      const gatewayName = gatewayNode ? gatewayNode.name : 'gatewayId';
+
+                      return (
+                        <span className="flex items-center gap-2">
+                          <ServerIcon className="w-4 h-4 shrink-0 text-text-primary" />
+                          <span className="w-full break-words">{gatewayName}</span>
+                        </span>
+                      );
+                    } else {
+                      return '-';
+                    }
+                  },
+                },
+                {
+                  title: 'Egress',
+                  render(_, node) {
+                    const extendedNode = getExtendedNode(node, store.hostsCommonDetails);
+                    if (extendedNode.is_static && extendedNode.static_node) {
+                      const allowedIPs = extendedNode.static_node.extraallowedips;
+                      if (Array.isArray(allowedIPs) && allowedIPs.length > 0) {
+                        return allowedIPs.join(', ');
+                      } else {
+                        return '-';
+                      }
+                    } else {
+                      return '-';
+                    }
+                  },
+                },
+                {
+                  title: 'Status',
+                  render(_, node) {
+                    const extendedNode = getExtendedNode(node, store.hostsCommonDetails);
+                    if (extendedNode.is_static) {
+                      return node.static_node?.enabled ? (
+                        <NodeStatus nodeHealth="enabled" clickable />
+                      ) : (
+                        <NodeStatus nodeHealth="disabled" clickable />
+                      );
+                    } else if (!extendedNode.connected) {
+                      return <NodeStatus nodeHealth="disconnected" clickable />;
+                    }
+                    return getHostHealth(node.hostid, [node]);
+                  },
+                  filters: [
+                    {
+                      text: 'Healthy',
+                      value: HOST_HEALTH_STATUS.healthy,
+                    },
+                    {
+                      text: 'Warning',
+                      value: HOST_HEALTH_STATUS.warning,
+                    },
+                    {
+                      text: 'Error',
+                      value: HOST_HEALTH_STATUS.error,
+                    },
+                    {
+                      text: 'Unknown',
+                      value: HOST_HEALTH_STATUS.unknown,
+                    },
+                  ],
+                  onFilter: (value: React.Key | boolean, record: any) => filterByHostHealthStatus(value, record),
+                },
+                {
+                  width: '1rem',
+                  align: 'right',
+                  render(_: boolean, node) {
+                    const extendedNode = getExtendedNode(node, store.hostsCommonDetails);
+
+                    const staticNodeMenu = [
+                      {
+                        key: 'edit',
+                        label: (
+                          <Typography.Text
+                            disabled={
+                              !hasNetworkAdminPriviledges(store.user!, networkId) &&
+                              store.username !== node.static_node?.ownerid
+                            }
+                          >
+                            <EditOutlined /> Edit
+                          </Typography.Text>
+                        ),
+                        disabled:
+                          !hasNetworkAdminPriviledges(store.user!, networkId) &&
+                          store.username !== node.static_node?.ownerid,
+                        onClick: () => {
+                          const clientData: ExternalClient = {
+                            clientid: node.static_node?.clientid ?? '',
+                            description: '',
+                            privatekey: node.static_node?.privatekey ?? '',
+                            publickey: node.static_node?.publickey ?? '',
+                            network: networkId ?? '',
+                            address: node.static_node?.address ?? '',
+                            address6: node.static_node?.address6 ?? '',
+                            ingressgatewayid: node.static_node?.ingressgatewayid ?? '',
+                            ingressgatewayendpoint: node.static_node?.ingressgatewayendpoint ?? '',
+                            lastmodified: node.lastmodified ?? 0,
+                            enabled: node.static_node?.enabled ?? false,
+                            ownerid: node.static_node?.ownerid ?? '',
+                            internal_ip_addr: '',
+                            internal_ip_addr6: '',
+                            dns: node.static_node?.dns ?? '',
+                            extraallowedips: node.static_node?.extraallowedips ?? [],
+                            postup: node.static_node?.postup,
+                            postdown: node.static_node?.postdown,
+                            tags: node.static_node.tags,
+                          };
+                          setTargetClient(clientData);
+                          setIsUpdateClientModalOpen(true);
+                        },
+                      },
+                      {
+                        key: 'toggle',
+                        icon: node.static_node?.enabled ? <StopOutlined /> : <PlayCircleOutlined />,
+                        label: node.static_node?.enabled ? 'Disable' : 'Enable',
+                        disabled:
+                          !hasNetworkAdminPriviledges(store.user!, networkId) &&
+                          store.username !== node.static_node?.ownerid,
+                        onClick: () => {
+                          const clientData: ExternalClient = {
+                            clientid: node.static_node?.clientid ?? '',
+                            description: '',
+                            privatekey: node.static_node?.privatekey ?? '',
+                            publickey: node.static_node?.publickey ?? '',
+                            network: networkId ?? '',
+                            address: node.static_node?.address ?? '',
+                            address6: node.static_node?.address6 ?? '',
+                            ingressgatewayid: node.static_node?.ingressgatewayid ?? '',
+                            ingressgatewayendpoint: node.static_node?.ingressgatewayendpoint ?? '',
+                            lastmodified: node.lastmodified ?? 0,
+                            enabled: node.static_node?.enabled ?? false,
+                            ownerid: node.static_node?.ownerid ?? '',
+                            internal_ip_addr: '',
+                            internal_ip_addr6: '',
+                            dns: node.static_node?.dns ?? '',
+                            extraallowedips: node.static_node?.extraallowedips ?? [],
+                            postup: node.static_node?.postup,
+                            postdown: node.static_node?.postdown,
+                            tags: node.static_node.tags,
+                          };
+                          toggleClientStatus(clientData, !node.static_node?.enabled);
+                        },
+                      },
+                      {
+                        key: 'view',
+                        label: (
+                          <Typography.Text
+                            disabled={
+                              !hasNetworkAdminPriviledges(store.user!, networkId) &&
+                              store.username !== node.static_node?.ownerid
+                            }
+                          >
+                            <EyeOutlined /> View Config
+                          </Typography.Text>
+                        ),
+                        disabled:
+                          !hasNetworkAdminPriviledges(store.user!, networkId) &&
+                          store.username !== node.static_node?.ownerid,
+                        onClick: () => {
+                          const clientData: ExternalClient = {
+                            clientid: node.static_node?.clientid ?? '',
+                            description: '',
+                            privatekey: node.static_node?.privatekey ?? '',
+                            publickey: node.static_node?.publickey ?? '',
+                            network: networkId ?? '',
+                            address: node.static_node?.address ?? '',
+                            address6: node.static_node?.address6 ?? '',
+                            ingressgatewayid: node.static_node?.ingressgatewayid ?? '',
+                            ingressgatewayendpoint: node.static_node?.ingressgatewayendpoint ?? '',
+                            lastmodified: node.lastmodified ?? 0,
+                            enabled: node.static_node?.enabled ?? false,
+                            ownerid: node.static_node?.ownerid ?? '',
+                            internal_ip_addr: '',
+                            internal_ip_addr6: '',
+                            dns: node.static_node?.dns ?? '',
+                            extraallowedips: node.static_node?.extraallowedips ?? [],
+                            postup: node.static_node?.postup,
+                            postdown: node.static_node?.postdown,
+                            tags: node.static_node.tags,
+                          };
+                          setTargetClient(clientData);
+                          setIsClientConfigModalOpen(true);
+                        },
+                      },
+                      {
+                        key: 'delete',
+                        danger: true,
+                        label: (
+                          <>
+                            <DeleteOutlined /> Delete
+                          </>
+                        ),
+                        disabled:
+                          !hasNetworkAdminPriviledges(store.user!, networkId) &&
+                          store.username !== node.static_node?.ownerid,
+                        onClick: () => {
+                          const clientData: ExternalClient = {
+                            clientid: node.static_node?.clientid ?? '',
+                            description: '',
+                            privatekey: node.static_node?.privatekey ?? '',
+                            publickey: node.static_node?.publickey ?? '',
+                            network: networkId ?? '',
+                            address: node.static_node?.address ?? '',
+                            address6: node.static_node?.address6 ?? '',
+                            ingressgatewayid: node.static_node?.ingressgatewayid ?? '',
+                            ingressgatewayendpoint: node.static_node?.ingressgatewayendpoint ?? '',
+                            lastmodified: node.lastmodified ?? 0,
+                            enabled: node.static_node?.enabled ?? false,
+                            ownerid: node.static_node?.ownerid ?? '',
+                            internal_ip_addr: '',
+                            internal_ip_addr6: '',
+                            dns: node.static_node?.dns ?? '',
+                            extraallowedips: node.static_node?.extraallowedips ?? [],
+                            postup: node.static_node?.postup,
+                            postdown: node.static_node?.postdown,
+                            tags: node.static_node.tags,
+                          };
+                          confirmDeleteClient(clientData);
+                        },
+                      },
+                    ] as MenuProps['items'];
+                    const regularNodeMenu = [
+                      {
+                        key: 'edit',
+                        label: 'Edit',
+                        disabled: node.pendingdelete !== false,
+                        title: node.pendingdelete !== false ? 'Host is being removed from network' : '',
+                        onClick: () => editNode(node),
+                      },
+                      ...(isServerEE
+                        ? [
+                            {
+                              key: 'failover',
+                              label: node.is_fail_over ? 'Unset as failover' : 'Set as failover',
+                              title: node.is_fail_over
+                                ? 'Stop this host as acting as the network failover'
+                                : 'Make this the network failover host. Any existing failover host will be replaced.',
+                              onClick: () => confirmNodeFailoverStatusChange(node, !node.is_fail_over),
+                            },
+                          ]
+                        : []),
+                      {
+                        key: 'disconnect',
+                        label: node.connected ? 'Disconnect host' : 'Connect host',
+                        disabled: node.pendingdelete !== false,
+                        title: node.pendingdelete !== false ? 'Host is being disconnected from network' : '',
+                        onClick: () =>
+                          disconnectNodeFromNetwork(!node.connected, getExtendedNode(node, store.hostsCommonDetails)),
+                      },
+                      {
+                        key: 'remove',
+                        label: 'Remove from network',
+                        danger: true,
+                        onClick: () => removeNodeFromNetwork(false, getExtendedNode(node, store.hostsCommonDetails)),
+                      },
+                    ];
+
+                    return (
+                      <Dropdown
+                        menu={{
+                          items: extendedNode.is_static ? staticNodeMenu : regularNodeMenu,
+                        }}
+                      >
+                        <div className="rounded-md p-1/2 shrink-0 outline outline-stroke-default bg-bg-default hover:bg-bg-hover ">
+                          <EllipsisHorizontalIcon className="w-6 h-6 text-text-primary" />
+                        </div>
+                      </Dropdown>
+                    );
+                  },
+                },
+              ]}
+              pagination={{
+                pageSize: 20,
+                hideOnSinglePage: true,
+              }}
+            />
+          </div>
+        </Col>
+      </Row>
 
       {/* misc */}
       {notifyCtx}
@@ -947,6 +953,6 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
           onCancel={() => setIsUpdateClientModalOpen(false)}
         />
       )}
-    </div>
+    </PageLayout>
   );
 }

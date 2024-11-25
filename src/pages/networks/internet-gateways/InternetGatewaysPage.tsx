@@ -1,6 +1,7 @@
 import AddInternetGatewayModal from '@/components/modals/add-internet-gateway-modal/AddInternetGatewayModal';
 import UpdateInternetGatewayModal from '@/components/modals/update-internet-gateway-modal/UpdateInternetGatewayModal';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
+import PageLayout from '@/layouts/PageLayout';
 import { Network } from '@/models/Network';
 import { ExtendedNode, Node } from '@/models/Node';
 import { NodesService } from '@/services/NodesService';
@@ -16,7 +17,7 @@ import {
   QuestionCircleOutlined,
   SearchOutlined,
 } from '@ant-design/icons';
-import { EllipsisHorizontalIcon } from '@heroicons/react/24/solid';
+import { ArrowsRightLeftIcon, EllipsisHorizontalIcon } from '@heroicons/react/24/solid';
 import { Button, Card, Col, Dropdown, Input, Modal, Row, Table, TableColumnProps, Tooltip, Typography } from 'antd';
 import useNotification from 'antd/es/notification/useNotification';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -333,172 +334,172 @@ export function NetworkInternetGatewaysPage({
   const isEmpty = networkInternetGateways.length === 0;
 
   return (
-    <div
-      className="NetworkInternetGatewaysPage"
-      style={{ position: 'relative', height: '100%', padding: isFullScreen ? 0 : 24 }}
+    <PageLayout
+      title="Gateways"
+      isFullScreen
+      description={
+        <>
+          Access the internet securely through virtual gateways while masking your true IP address.
+          <br />
+          Route network traffic through designated gateways to bypass restrictions and enhance privacy.
+        </>
+      }
+      icon={<ArrowsRightLeftIcon className=" size-5" />}
     >
-      <div className={`${isFullScreen ? 'page-padding' : ''}`}>
-        <Row style={{ marginBottom: '1rem', width: '100%' }}>
-          <Col>
-            <Typography.Title level={2}>Internet Gateways</Typography.Title>
+      {isEmpty && (
+        <Row
+          className="page-padding"
+          style={{
+            background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
+            width: '100%',
+          }}
+        >
+          <Col xs={24} xl={(24 * 2) / 3}>
+            <Typography.Title level={3} style={{ color: 'white ' }}>
+              Internet Gateways
+            </Typography.Title>
+            <Typography.Text style={{ color: 'white ' }}>
+              Internet Gateways allows Netmaker to work like a normal VPN. A gateway forwards traffic from the connected
+              hosts to the internet and vice versa. Internet gateways can help you to hide your true IP address and
+              bypass geo-restrictions.
+            </Typography.Text>
+          </Col>
+          <Col xs={24} xl={(24 * 1) / 3} style={{ position: 'relative' }}>
+            <Card className="header-card" style={{ position: 'absolute', width: '100%' }}>
+              <Typography.Title level={3}>Setup an Internet Gateway</Typography.Title>
+              <Typography.Text>
+                Setup an internet gateway to access the internet without revealing your true IP address.
+                <br />
+                <br />
+                Internet gateways behave like tradiitonal VPNs and forward traffic from connected hosts to the internet.
+              </Typography.Text>
+              <Row style={{ marginTop: '1rem' }}>
+                <Col>
+                  <Button type="primary" size="large" onClick={() => setIsAddInternetGatewayModalOpen(true)}>
+                    <PlusOutlined /> Create Internet Gateway
+                  </Button>
+                </Col>
+              </Row>
+            </Card>
           </Col>
         </Row>
-        {isEmpty && (
-          <Row
-            className="page-padding"
-            style={{
-              background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
-              width: '100%',
-            }}
-          >
-            <Col xs={24} xl={(24 * 2) / 3}>
-              <Typography.Title level={3} style={{ color: 'white ' }}>
-                Internet Gateways
-              </Typography.Title>
-              <Typography.Text style={{ color: 'white ' }}>
-                Internet Gateways allows Netmaker to work like a normal VPN. A gateway forwards traffic from the
-                connected hosts to the internet and vice versa. Internet gateways can help you to hide your true IP
-                address and bypass geo-restrictions.
-              </Typography.Text>
-            </Col>
-            <Col xs={24} xl={(24 * 1) / 3} style={{ position: 'relative' }}>
-              <Card className="header-card" style={{ position: 'absolute', width: '100%' }}>
-                <Typography.Title level={3}>Setup an Internet Gateway</Typography.Title>
-                <Typography.Text>
-                  Setup an internet gateway to access the internet without revealing your true IP address.
-                  <br />
-                  <br />
-                  Internet gateways behave like tradiitonal VPNs and forward traffic from connected hosts to the
-                  internet.
-                </Typography.Text>
-                <Row style={{ marginTop: '1rem' }}>
-                  <Col>
-                    <Button type="primary" size="large" onClick={() => setIsAddInternetGatewayModalOpen(true)}>
-                      <PlusOutlined /> Create Internet Gateway
-                    </Button>
-                  </Col>
-                </Row>
-              </Card>
-            </Col>
-          </Row>
-        )}
-        {!isEmpty && (
-          <Row style={{ width: '100%' }}>
-            <Col xs={24} xl={12} style={{ marginBottom: '2rem' }}>
-              <Input
-                placeholder="Search gateways"
-                value={searchInternetGateways}
-                onChange={(ev) => setSearchInternetGateways(ev.target.value.trim())}
-                prefix={<SearchOutlined />}
-                style={{ width: '60%' }}
-                allowClear
-              />
-            </Col>
-            <Col xs={24} xl={12} style={{ marginBottom: '2rem' }}>
-              <Input
-                placeholder="Search connected hosts"
-                value={searchConnectedHosts}
-                onChange={(ev) => setSearchConnectedHosts(ev.target.value.trim())}
-                prefix={<SearchOutlined />}
-                style={{ width: '60%' }}
-                allowClear
-              />
-            </Col>
-            <Col xs={24} xl={12}>
-              <Row style={{ width: '100%' }}>
-                <Col xs={24} md={12}>
-                  <Typography.Title style={{ marginTop: '0px' }} level={5}>
-                    Gateways
-                  </Typography.Title>
-                </Col>
-                <Col xs={23} md={11} style={{ textAlign: 'right' }}>
-                  <Button
-                    type="primary"
-                    onClick={() => setIsAddInternetGatewayModalOpen(true)}
-                    className="full-width-button-xs"
-                    style={{ marginBottom: '.5rem' }}
-                  >
-                    <PlusOutlined /> Create Gateway
-                  </Button>
-                  <Button
-                    title="Go to internet gateways documentation"
-                    style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
-                    href={ExternalLinks.INTERNET_GATEWAYS_DOCS_URL}
-                    target="_blank"
-                    referrerPolicy="no-referrer"
-                    icon={<QuestionCircleOutlined />}
-                  />
-                </Col>
-              </Row>
-              <Row style={{ marginTop: '1rem' }}>
-                <Col xs={23}>
-                  <div className="table-wrapper">
-                    <Table
-                      columns={internetGatewaysTableCols}
-                      dataSource={filteredInternetGateways}
-                      rowKey="id"
-                      size="small"
-                      scroll={{ x: true }}
-                      rowClassName={(gateway) => {
-                        return gateway.id === selectedGateway?.id ? 'selected-row' : '';
-                      }}
-                      onRow={(gateway) => {
-                        return {
-                          onClick: () => {
-                            setSelectedGateway(gateway);
-                          },
-                        };
-                      }}
-                      rowSelection={{
-                        type: 'radio',
-                        hideSelectAll: true,
-                        selectedRowKeys: selectedGateway ? [selectedGateway.id] : [],
-                        onSelect: (gateway) => {
+      )}
+      {!isEmpty && (
+        <Row style={{ width: '100%' }}>
+          <Col xs={24} xl={12} style={{ marginBottom: '2rem' }}>
+            <Input
+              placeholder="Search gateways"
+              value={searchInternetGateways}
+              onChange={(ev) => setSearchInternetGateways(ev.target.value.trim())}
+              prefix={<SearchOutlined />}
+              style={{ width: '60%' }}
+              allowClear
+            />
+          </Col>
+          <Col xs={24} xl={12} style={{ marginBottom: '2rem' }}>
+            <Input
+              placeholder="Search connected hosts"
+              value={searchConnectedHosts}
+              onChange={(ev) => setSearchConnectedHosts(ev.target.value.trim())}
+              prefix={<SearchOutlined />}
+              style={{ width: '60%' }}
+              allowClear
+            />
+          </Col>
+          <Col xs={24} xl={12}>
+            <Row style={{ width: '100%' }}>
+              <Col xs={24} md={12}>
+                <Typography.Title style={{ marginTop: '0px' }} level={5}>
+                  Gateways
+                </Typography.Title>
+              </Col>
+              <Col xs={23} md={11} style={{ textAlign: 'right' }}>
+                <Button
+                  type="primary"
+                  onClick={() => setIsAddInternetGatewayModalOpen(true)}
+                  className="full-width-button-xs"
+                  style={{ marginBottom: '.5rem' }}
+                >
+                  <PlusOutlined /> Create Gateway
+                </Button>
+                <Button
+                  title="Go to internet gateways documentation"
+                  style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
+                  href={ExternalLinks.INTERNET_GATEWAYS_DOCS_URL}
+                  target="_blank"
+                  referrerPolicy="no-referrer"
+                  icon={<QuestionCircleOutlined />}
+                />
+              </Col>
+            </Row>
+            <Row style={{ marginTop: '1rem' }}>
+              <Col xs={23}>
+                <div className="table-wrapper">
+                  <Table
+                    columns={internetGatewaysTableCols}
+                    dataSource={filteredInternetGateways}
+                    rowKey="id"
+                    size="small"
+                    scroll={{ x: true }}
+                    rowClassName={(gateway) => {
+                      return gateway.id === selectedGateway?.id ? 'selected-row' : '';
+                    }}
+                    onRow={(gateway) => {
+                      return {
+                        onClick: () => {
                           setSelectedGateway(gateway);
                         },
-                      }}
-                    />
-                  </div>
-                </Col>
-              </Row>
-            </Col>
-            <Col xs={24} xl={12}>
-              <Row style={{ width: '100%' }}>
-                <Col xs={24} md={12}>
-                  <Typography.Title style={{ marginTop: '0px' }} level={5}>
-                    Connected Hosts
-                  </Typography.Title>
-                </Col>
-                <Col xs={24} md={12} style={{ textAlign: 'right' }}>
-                  {selectedGateway && (
-                    <Button
-                      type="primary"
-                      style={{ marginRight: '1rem', marginBottom: '.5rem' }}
-                      onClick={() => setIsUpdateInternetGatewayModalOpen(true)}
-                      className="full-width-button-xs"
-                    >
-                      <EditOutlined /> Update Connected Hosts
-                    </Button>
-                  )}
-                </Col>
-              </Row>
-              <Row style={{ marginTop: '1rem' }}>
-                <Col xs={24}>
-                  <div className="table-wrapper">
-                    <Table
-                      columns={connectedHostsTableCols}
-                      dataSource={filteredConnectedHosts}
-                      rowKey="id"
-                      size="small"
-                      scroll={{ x: true }}
-                    />
-                  </div>
-                </Col>
-              </Row>
-            </Col>
-          </Row>
-        )}
-      </div>
+                      };
+                    }}
+                    rowSelection={{
+                      type: 'radio',
+                      hideSelectAll: true,
+                      selectedRowKeys: selectedGateway ? [selectedGateway.id] : [],
+                      onSelect: (gateway) => {
+                        setSelectedGateway(gateway);
+                      },
+                    }}
+                  />
+                </div>
+              </Col>
+            </Row>
+          </Col>
+          <Col xs={24} xl={12}>
+            <Row style={{ width: '100%' }}>
+              <Col xs={24} md={12}>
+                <Typography.Title style={{ marginTop: '0px' }} level={5}>
+                  Connected Hosts
+                </Typography.Title>
+              </Col>
+              <Col xs={24} md={12} style={{ textAlign: 'right' }}>
+                {selectedGateway && (
+                  <Button
+                    type="primary"
+                    style={{ marginRight: '1rem', marginBottom: '.5rem' }}
+                    onClick={() => setIsUpdateInternetGatewayModalOpen(true)}
+                    className="full-width-button-xs"
+                  >
+                    <EditOutlined /> Update Connected Hosts
+                  </Button>
+                )}
+              </Col>
+            </Row>
+            <Row style={{ marginTop: '1rem' }}>
+              <Col xs={24}>
+                <div className="table-wrapper">
+                  <Table
+                    columns={connectedHostsTableCols}
+                    dataSource={filteredConnectedHosts}
+                    rowKey="id"
+                    size="small"
+                    scroll={{ x: true }}
+                  />
+                </div>
+              </Col>
+            </Row>
+          </Col>
+        </Row>
+      )}
 
       {/* misc */}
       {notifyCtx}
@@ -530,6 +531,6 @@ export function NetworkInternetGatewaysPage({
           }}
         />
       )}
-    </div>
+    </PageLayout>
   );
 }

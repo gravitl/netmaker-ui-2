@@ -20,10 +20,7 @@ export type NetworkPage =
   | 'old-acls'
   | 'tags'
   | 'dns'
-  | 'graph'
-  | 'metrics'
-  | 'info';
-
+  | 'analytics';
 /**
  * Function to check if the page key is a network page
  *
@@ -44,6 +41,7 @@ export function isNetworkPage(key: string): key is NetworkPage {
     'info',
     'tags',
     'old-acls',
+    'analytics',
   ].includes(key);
 }
 
@@ -147,12 +145,8 @@ export function getNetworkPageRoute(page: NetworkPage, networkId?: Network['neti
       return resolveAppRoute(AppRoutes.NETWORK_TAGS_ROUTE.replace(routePlaceholder, currentNetwork));
     case 'dns':
       return resolveAppRoute(AppRoutes.NETWORK_DNS_ROUTE.replace(routePlaceholder, currentNetwork));
-    case 'graph':
-      return resolveAppRoute(AppRoutes.NETWORK_GRAPH_ROUTE.replace(routePlaceholder, currentNetwork));
-    case 'metrics':
-      return resolveAppRoute(AppRoutes.NETWORK_METRICS_ROUTE.replace(routePlaceholder, currentNetwork));
-    case 'info':
-      return resolveAppRoute(AppRoutes.NETWORK_INFO_ROUTE.replace(routePlaceholder, currentNetwork));
+    case 'analytics':
+      return resolveAppRoute(AppRoutes.NETWORK_ANALYTICS_ROUTE.replace(routePlaceholder, currentNetwork));
     default:
       return resolveAppRoute(AppRoutes.ROUTE_404);
   }

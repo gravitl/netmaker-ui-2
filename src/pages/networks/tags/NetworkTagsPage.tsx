@@ -29,11 +29,12 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/shad
 import { getExtendedNode } from '@/utils/NodeUtils';
 import { useStore } from '@/store/store';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
-import { DocumentIcon, EllipsisHorizontalIcon, ServerIcon } from '@heroicons/react/24/solid';
+import { DocumentIcon, EllipsisHorizontalIcon, HashtagIcon, ServerIcon } from '@heroicons/react/24/solid';
 import { NULL_HOST } from '@/constants/Types';
 import { Host } from '@/models/Host';
 import { useServerLicense, useBranding, useGetActiveNetwork } from '@/utils/Utils';
 import { useParams } from 'react-router-dom';
+import PageLayout from '@/layouts/PageLayout';
 
 interface NetworkTagsPageProps {
   isFullScreen?: boolean;
@@ -257,74 +258,59 @@ export function NetworkTagsPage({ isFullScreen }: Readonly<NetworkTagsPageProps>
   }, [loadTags]);
 
   return (
-    <div className="NetworkTagsPage" style={{ position: 'relative', height: '100%', padding: isFullScreen ? 0 : 24 }}>
-      <div className={`${isFullScreen ? 'page-padding' : ''}`}>
-        <Row style={{ marginBottom: '1rem', width: '100%' }}>
-          <Col>
-            <Typography.Title level={2}>Tag Management</Typography.Title>
-          </Col>
-        </Row>
+    <PageLayout
+      title="Tag Manager"
+      isFullScreen
+      description={
+        <>
+          Organize and categorize network resources with a flexible tagging system.
+          <br />
+          Streamline resource management and automate policies based on custom tags.
+        </>
+      }
+      icon={<HashtagIcon className=" size-5" />}
+    >
+      <div className="w-100 columns-2">
+        <Input
+          type="search"
+          placeholder="Search for Tags"
+          className="w-80 border-bg-default bg-bg-default"
+          startIcon={Search}
+          onChange={(ev) => setSearchText(ev.target.value)}
+          value={searchText}
+        />
+        <Button
+          className="bg-button-primary-fill-default text-text-primary light:invert float-end"
+          onClick={() => setIsAddTagModalOpen(true)}
+        >
+          <PlusIcon className="inline mr-2" />
+          Add Tag
+        </Button>
+      </div>
 
-        <div className="w-100">
-          <h3 className="text-2xl font-bold"></h3>
-          <div className="text-right w-50">
-            <AntdButton className="mr-2" href={ExternalLinks.TAGS_DOCS_URL} target="_blank" rel="noreferrer">
-              Docs
-            </AntdButton>
-            {/* <AntdButton>Tour Tag Management</AntdButton> */}
-          </div>
-        </div>
+      <br />
 
-        <div className="mt-4" style={{ maxWidth: '60%' }}>
-          <span className="text-xl text-text-secondary">
-            Organize and categorize your resources efficiently with customizable tags. Apply tags to instances and other
-            assets for improved resource management.
-          </span>
-        </div>
+      <div className="w-100">
+        <Table
+          columns={tableColumns}
+          dataSource={filteredTags}
+          rowKey="id"
+          size="small"
+          loading={isLoadingTags}
+          scroll={{ x: true }}
+          pagination={{ size: 'small', hideOnSinglePage: true, pageSize: 20 }}
+          onRow={(key) => {
+            return {
+              // onClick: () => {
+              //   setSelectedTag(key);
+              //   setIsEditTagModalOpen(true);
+              // },
+            };
+          }}
+        />
 
-        <br />
-
-        <div className="w-100 columns-2">
-          <Input
-            type="search"
-            placeholder="Search for Tags"
-            className="w-80 border-bg-default bg-bg-default"
-            startIcon={Search}
-            onChange={(ev) => setSearchText(ev.target.value)}
-            value={searchText}
-          />
-          <Button
-            className="bg-button-primary-fill-default text-text-primary light:invert float-end"
-            onClick={() => setIsAddTagModalOpen(true)}
-          >
-            <PlusIcon className="inline mr-2" />
-            Add Tag
-          </Button>
-        </div>
-
-        <br />
-
-        <div className="w-100">
-          <Table
-            columns={tableColumns}
-            dataSource={filteredTags}
-            rowKey="id"
-            size="small"
-            loading={isLoadingTags}
-            scroll={{ x: true }}
-            pagination={{ size: 'small', hideOnSinglePage: true, pageSize: 20 }}
-            onRow={(key) => {
-              return {
-                // onClick: () => {
-                //   setSelectedTag(key);
-                //   setIsEditTagModalOpen(true);
-                // },
-              };
-            }}
-          />
-
-          {/* TODO: refactor into tag mgmt table component */}
-          {/* <Table className="bg-bg-contrastDefault">
+        {/* TODO: refactor into tag mgmt table component */}
+        {/* <Table className="bg-bg-contrastDefault">
           <TableHeader>
             <TableRow className="border-b-stroke-default">
               <TableHead className="w-[100px]">ID</TableHead>
@@ -378,7 +364,6 @@ export function NetworkTagsPage({ isFullScreen }: Readonly<NetworkTagsPageProps>
             </TableRow>
           </TableBody>
         </Table> */}
-        </div>
       </div>
 
       {/* misc */}
@@ -409,6 +394,6 @@ export function NetworkTagsPage({ isFullScreen }: Readonly<NetworkTagsPageProps>
           key={`update-tag-${selectedTag.id}`}
         />
       )}
-    </div>
+    </PageLayout>
   );
 }

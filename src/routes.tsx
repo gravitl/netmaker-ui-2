@@ -38,6 +38,7 @@ import NetworkInfoPage from './pages/networks/info/NetworkInfoPage';
 import NetworkAclsPage from './pages/networks/acl/ACLPage';
 import NetworkOldAclsPage from './pages/networks/acl-old/OldAclPage';
 import { NetworkTagsPage } from './pages/networks/tags/NetworkTagsPage';
+import NetworkAnalyticsPage from './pages/networks/analytics/NetworkAnalyticsPage';
 
 export const AppRoutes = {
   INDEX_ROUTE: '/',
@@ -75,6 +76,7 @@ export const AppRoutes = {
   NETWORK_ACLS_ROUTE: '/networks/:networkId/acls',
   NETWORK_OLD_ACLS_ROUTE: '/networks/:networkId/old-acls',
   NETWORK_TAGS_ROUTE: '/networks/:networkId/tags',
+  NETWORK_ANALYTICS_ROUTE: '/networks/:networkId/analytics',
 };
 
 function generateRoutePair(path: string, element: JSX.Element): RouteObject[] {
@@ -291,6 +293,12 @@ const routes: RouteObject[] = [
         AppRoutes.NETWORK_TAGS_ROUTE.split('/').slice(1).join('/'),
         <ProtectedRoute>
           <NetworkTagsPage isFullScreen />
+        </ProtectedRoute>,
+      ),
+      ...generateRoutePair(
+        AppRoutes.NETWORK_ANALYTICS_ROUTE.split('/').slice(1).join('/'),
+        <ProtectedRoute>
+          <NetworkAnalyticsPage />
         </ProtectedRoute>,
       ),
     ],

@@ -39,7 +39,8 @@ import { PageProps } from '../../models/Page';
 import './EnrollmentKeysPage.scss';
 import { useBranding } from '@/utils/Utils';
 import UpdateEnrollmentKeyModal from '@/components/modals/update-enrollment-key-modal/UpdateEnrollmentKeyModal';
-import { EllipsisHorizontalIcon } from '@heroicons/react/24/solid';
+import { EllipsisHorizontalIcon, KeyIcon } from '@heroicons/react/24/solid';
+import PageLayout from '@/layouts/PageLayout';
 
 export default function EnrollmentKeysPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
@@ -276,46 +277,21 @@ export default function EnrollmentKeysPage(props: PageProps) {
   }, [loadEnrollmentKeys]);
 
   return (
-    <Layout.Content
-      className="EnrollmentKeysPage"
-      style={{ position: 'relative', height: '100%', padding: props.isFullScreen ? 0 : 24 }}
+    <PageLayout
+      title="Keys"
+      isFullScreen
+      description={
+        <>
+          Generate and manage cryptographic keys for secure network authentication.
+          <br />
+          Control access credentials and maintain encryption standards across your infrastructure.
+        </>
+      }
+      icon={<KeyIcon className=" size-5" />}
     >
-      <Skeleton loading={isLoadingKeys} active title={true} className="page-padding">
+      <Skeleton loading={isLoadingKeys} active title={true}>
         {keys.length === 0 && (
           <>
-            <Row
-              className="page-padding"
-              style={{
-                background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
-              }}
-            >
-              <Col xs={24} xl={(24 * 2) / 3}>
-                <Typography.Title level={3} style={{ color: 'white ' }}>
-                  Enrollment Keys
-                </Typography.Title>
-                <Typography.Text style={{ color: 'white ' }}>
-                  Enrollment keys allow you to enroll devices with your networks. You can automate enrollment and
-                  control access by defining expiration, number of uses, or making an infinitely usable key.
-                </Typography.Text>
-              </Col>
-              <Col xs={24} xl={(24 * 1) / 3} style={{ position: 'relative' }}>
-                <Card className="header-card" style={{ height: '20rem', position: 'absolute', width: '100%' }}>
-                  <Typography.Title level={3}>Add a Key</Typography.Title>
-                  <Typography.Text>
-                    Use enrollment keys to connect hosts (netclients) to your {branding.productName} networks or
-                    register them to your {branding.productName} server.
-                  </Typography.Text>
-                  <Row style={{ marginTop: 'auto' }}>
-                    <Col>
-                      <Button type="primary" size="large" onClick={() => setIsAddKeyModalOpen(true)}>
-                        <PlusOutlined /> Add a Key
-                      </Button>
-                    </Col>
-                  </Row>
-                </Card>
-              </Col>
-            </Row>
-
             <Row className="card-con" gutter={[0, 20]}>
               <Col xs={24}>
                 <Typography.Title level={3}>Add a Key</Typography.Title>
@@ -357,13 +333,7 @@ export default function EnrollmentKeysPage(props: PageProps) {
         )}
         {keys.length > 0 && (
           <>
-            <Row className="page-row-padding">
-              <Col xs={24}>
-                <Typography.Title level={3}>Enrollment Keys</Typography.Title>
-              </Col>
-            </Row>
-
-            <Row className="page-row-padding" justify="space-between">
+            <Row justify="space-between">
               <Col xs={24} md={8}>
                 <Input
                   size="large"
@@ -404,9 +374,9 @@ export default function EnrollmentKeysPage(props: PageProps) {
               </Col>
             </Row>
 
-            <Row className="page-row-padding" justify="space-between">
+            <Row justify="space-between">
               <Col xs={24}>
-                <div className="table-wrapper">
+                <div className="w-full mt-5">
                   <Table
                     columns={tableColumns}
                     dataSource={filteredKeys}
@@ -476,6 +446,6 @@ export default function EnrollmentKeysPage(props: PageProps) {
         />
       )}
       {notifyCtx}
-    </Layout.Content>
+    </PageLayout>
   );
 }

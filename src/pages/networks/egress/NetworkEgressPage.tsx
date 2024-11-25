@@ -4,6 +4,7 @@ import UpdateEgressModal from '@/components/modals/update-egress-modal/UpdateEgr
 import UpdateRelayModal from '@/components/modals/update-relay-modal/UpdateRelayModal';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 import { NULL_NODE } from '@/constants/Types';
+import PageLayout from '@/layouts/PageLayout';
 import { ExtendedNode, Node } from '@/models/Node';
 import { isSaasBuild } from '@/services/BaseService';
 import { NodesService } from '@/services/NodesService';
@@ -20,6 +21,7 @@ import {
   DeleteOutlined,
   EditOutlined,
 } from '@ant-design/icons';
+import { ArrowUpTrayIcon } from '@heroicons/react/24/solid';
 import {
   Button,
   Card,
@@ -293,176 +295,180 @@ export default function NetworkEgressPage({ isFullScreen }: NetworkEgressPagePro
   const isEmpty = egresses.length === 0;
 
   return (
-    <div className="NetworkEgressPage" style={{ position: 'relative', height: '100%', padding: isFullScreen ? 0 : 24 }}>
-      <div className={`${isFullScreen ? 'page-padding' : ''}`}>
-        <Row style={{ marginBottom: '1rem', width: '100%' }}>
-          <Col>
-            <Typography.Title level={2}>Egress</Typography.Title>
+    <PageLayout
+      title="Egress"
+      isFullScreen
+      description={
+        <>
+          Enable secure communication between your network and external networks via egress gateways.
+          <br />
+          Connect to office networks, data centers, or create VPN tunnels through designated exit points.
+        </>
+      }
+      icon={<ArrowUpTrayIcon className=" size-5" />}
+    >
+      {isEmpty && (
+        <Row
+          className="page-padding"
+          style={{
+            background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
+            width: '100%',
+          }}
+        >
+          <Col xs={24} xl={16}>
+            <Typography.Title level={3} style={{ color: 'white ' }}>
+              Egress
+            </Typography.Title>
+            <Typography.Text style={{ color: 'white ' }}>
+              Enable devices in your network to communicate with other devices outside the network via egress gateways.
+              An office network, home network, data center, or cloud region all become easily accessible via the Egress
+              Gateway. You can even set a machine as an Internet Gateway to create a “traditional” VPN{' '}
+              <a
+                href="https://www.netmaker.io/features/egress"
+                target="_blank"
+                rel="noreferrer"
+                style={{ color: 'inherit', textDecoration: 'underline' }}
+              >
+                (Learn more)
+              </a>
+              .
+            </Typography.Text>
           </Col>
-        </Row>
-        {isEmpty && (
-          <Row
-            className="page-padding"
-            style={{
-              background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
-              width: '100%',
-            }}
-          >
-            <Col xs={24} xl={16}>
-              <Typography.Title level={3} style={{ color: 'white ' }}>
-                Egress
-              </Typography.Title>
-              <Typography.Text style={{ color: 'white ' }}>
-                Enable devices in your network to communicate with other devices outside the network via egress
-                gateways. An office network, home network, data center, or cloud region all become easily accessible via
-                the Egress Gateway. You can even set a machine as an Internet Gateway to create a “traditional” VPN{' '}
-                <a
-                  href="https://www.netmaker.io/features/egress"
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{ color: 'inherit', textDecoration: 'underline' }}
-                >
-                  (Learn more)
-                </a>
-                .
+          <Col xs={24} xl={8} style={{ position: 'relative' }}>
+            <Card className="header-card" style={{ position: 'absolute', width: '100%' }}>
+              <Typography.Title level={3}>Create Egress</Typography.Title>
+              <Typography.Text>
+                Select a device to act as your Egress Gateway. This device must have access to the target network, and
+                must run Linux (for now).
               </Typography.Text>
-            </Col>
-            <Col xs={24} xl={8} style={{ position: 'relative' }}>
-              <Card className="header-card" style={{ position: 'absolute', width: '100%' }}>
-                <Typography.Title level={3}>Create Egress</Typography.Title>
-                <Typography.Text>
-                  Select a device to act as your Egress Gateway. This device must have access to the target network, and
-                  must run Linux (for now).
-                </Typography.Text>
-                <Row style={{ marginTop: '5rem' }}>
-                  <Col>
-                    <Button type="primary" size="large" onClick={() => setIsAddEgressModalOpen(true)}>
-                      <PlusOutlined /> Create Egress
-                    </Button>
-                  </Col>
-                </Row>
-              </Card>
-            </Col>
-          </Row>
-        )}
-
-        {!isEmpty && (
-          <Row style={{ width: '100%' }}>
-            <Col xs={24} style={{ marginBottom: '2rem' }}>
-              <Input
-                placeholder="Search egress"
-                value={searchEgress}
-                onChange={(ev) => setSearchEgress(ev.target.value)}
-                prefix={<SearchOutlined />}
-                style={{ width: '30%', marginBottom: '.5rem' }}
-              />
-            </Col>
-            <Col xl={12} xs={24}>
-              <Row style={{ width: '100%' }}>
-                <Col xs={24} md={12}>
-                  <Typography.Title style={{ marginTop: '0px' }} level={5}>
-                    Egress Gateways
-                  </Typography.Title>
-                </Col>
-                <Col xs={24} md={11} style={{ textAlign: 'right' }}>
-                  <Button
-                    type="primary"
-                    onClick={() => setIsAddEgressModalOpen(true)}
-                    className="full-width-button-xs"
-                    style={{ marginBottom: '.5rem' }}
-                  >
+              <Row style={{ marginTop: '5rem' }}>
+                <Col>
+                  <Button type="primary" size="large" onClick={() => setIsAddEgressModalOpen(true)}>
                     <PlusOutlined /> Create Egress
                   </Button>
-                  <Button
-                    style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
-                    onClick={() => alert('Not implemented yet')}
-                    icon={<InfoCircleOutlined />}
-                  >
-                    Take Tour
-                  </Button>
-                  <Button
-                    title="Go to egress documentation"
-                    style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
-                    href={ExternalLinks.EGRESS_DOCS_URL}
-                    target="_blank"
-                    icon={<QuestionCircleOutlined />}
-                  />
                 </Col>
               </Row>
-              <Row style={{ marginTop: '1rem' }}>
-                <Col xs={23}>
-                  <div className="table-wrapper">
-                    <Table
-                      columns={egressTableCols}
-                      dataSource={filteredEgresses}
-                      rowKey="id"
-                      size="small"
-                      scroll={{ x: true }}
-                      rowClassName={(egress) => {
-                        return egress.id === targetEgress?.id ? 'selected-row' : '';
-                      }}
-                      onRow={(egress) => {
-                        return {
-                          onClick: () => {
-                            setTargetEgress(egress);
-                          },
-                        };
-                      }}
-                      rowSelection={{
-                        type: 'radio',
-                        hideSelectAll: true,
-                        selectedRowKeys: targetEgress ? [targetEgress.id] : [],
-                        onSelect: (record, selected) => {
-                          if (!selected) return;
-                          if (targetEgress?.id === record.id) {
-                            setTargetEgress(null);
-                          } else {
-                            setTargetEgress(record);
-                          }
+            </Card>
+          </Col>
+        </Row>
+      )}
+
+      {!isEmpty && (
+        <Row style={{ width: '100%' }}>
+          <Col xs={24} style={{ marginBottom: '2rem' }}>
+            <Input
+              placeholder="Search egress"
+              value={searchEgress}
+              onChange={(ev) => setSearchEgress(ev.target.value)}
+              prefix={<SearchOutlined />}
+              style={{ width: '30%', marginBottom: '.5rem' }}
+            />
+          </Col>
+          <Col xl={12} xs={24}>
+            <Row style={{ width: '100%' }}>
+              <Col xs={24} md={12}>
+                <Typography.Title style={{ marginTop: '0px' }} level={5}>
+                  Egress Gateways
+                </Typography.Title>
+              </Col>
+              <Col xs={24} md={11} style={{ textAlign: 'right' }}>
+                <Button
+                  type="primary"
+                  onClick={() => setIsAddEgressModalOpen(true)}
+                  className="full-width-button-xs"
+                  style={{ marginBottom: '.5rem' }}
+                >
+                  <PlusOutlined /> Create Egress
+                </Button>
+                <Button
+                  style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
+                  onClick={() => alert('Not implemented yet')}
+                  icon={<InfoCircleOutlined />}
+                >
+                  Take Tour
+                </Button>
+                <Button
+                  title="Go to egress documentation"
+                  style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
+                  href={ExternalLinks.EGRESS_DOCS_URL}
+                  target="_blank"
+                  icon={<QuestionCircleOutlined />}
+                />
+              </Col>
+            </Row>
+            <Row style={{ marginTop: '1rem' }}>
+              <Col xs={23}>
+                <div className="table-wrapper">
+                  <Table
+                    columns={egressTableCols}
+                    dataSource={filteredEgresses}
+                    rowKey="id"
+                    size="small"
+                    scroll={{ x: true }}
+                    rowClassName={(egress) => {
+                      return egress.id === targetEgress?.id ? 'selected-row' : '';
+                    }}
+                    onRow={(egress) => {
+                      return {
+                        onClick: () => {
+                          setTargetEgress(egress);
                         },
-                      }}
-                    />
-                  </div>
-                </Col>
-              </Row>
-            </Col>
-            <Col xl={12} xs={24}>
-              <Row style={{ width: '100%' }}>
-                <Col xs={24} md={12}>
-                  <Typography.Title style={{ marginTop: '0px' }} level={5}>
-                    External routes
-                  </Typography.Title>
-                </Col>
-                <Col xs={24} md={12} style={{ textAlign: 'right' }}>
-                  {targetEgress && (
-                    <Button
-                      type="primary"
-                      style={{ marginRight: '1rem', marginBottom: '.5rem' }}
-                      onClick={() => setIsUpdateEgressModalOpen(true)}
-                      className="full-width-button-xs"
-                    >
-                      <PlusOutlined /> Add external route
-                    </Button>
-                  )}
-                </Col>
-              </Row>
-              <Row style={{ marginTop: '1rem' }}>
-                <Col xs={24}>
-                  <div className="table-wrapper">
-                    <Table
-                      columns={externalRoutesTableCols}
-                      dataSource={filteredExternalRoutes}
-                      rowKey={(range) => `${range.node?.name ?? ''}-${range.range}`}
-                      scroll={{ x: true }}
-                      size="small"
-                    />
-                  </div>
-                </Col>
-              </Row>
-            </Col>
-          </Row>
-        )}
-      </div>
+                      };
+                    }}
+                    rowSelection={{
+                      type: 'radio',
+                      hideSelectAll: true,
+                      selectedRowKeys: targetEgress ? [targetEgress.id] : [],
+                      onSelect: (record, selected) => {
+                        if (!selected) return;
+                        if (targetEgress?.id === record.id) {
+                          setTargetEgress(null);
+                        } else {
+                          setTargetEgress(record);
+                        }
+                      },
+                    }}
+                  />
+                </div>
+              </Col>
+            </Row>
+          </Col>
+          <Col xl={12} xs={24}>
+            <Row style={{ width: '100%' }}>
+              <Col xs={24} md={12}>
+                <Typography.Title style={{ marginTop: '0px' }} level={5}>
+                  External routes
+                </Typography.Title>
+              </Col>
+              <Col xs={24} md={12} style={{ textAlign: 'right' }}>
+                {targetEgress && (
+                  <Button
+                    type="primary"
+                    style={{ marginRight: '1rem', marginBottom: '.5rem' }}
+                    onClick={() => setIsUpdateEgressModalOpen(true)}
+                    className="full-width-button-xs"
+                  >
+                    <PlusOutlined /> Add external route
+                  </Button>
+                )}
+              </Col>
+            </Row>
+            <Row style={{ marginTop: '1rem' }}>
+              <Col xs={24}>
+                <div className="table-wrapper">
+                  <Table
+                    columns={externalRoutesTableCols}
+                    dataSource={filteredExternalRoutes}
+                    rowKey={(range) => `${range.node?.name ?? ''}-${range.range}`}
+                    scroll={{ x: true }}
+                    size="small"
+                  />
+                </div>
+              </Col>
+            </Row>
+          </Col>
+        </Row>
+      )}
 
       {/* misc */}
       {notifyCtx}
@@ -490,6 +496,6 @@ export default function NetworkEgressPage({ isFullScreen }: NetworkEgressPagePro
           onCancel={() => setIsUpdateEgressModalOpen(false)}
         />
       )}
-    </div>
+    </PageLayout>
   );
 }

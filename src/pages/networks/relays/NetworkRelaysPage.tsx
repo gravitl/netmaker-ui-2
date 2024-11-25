@@ -2,6 +2,7 @@ import AddRelayModal from '@/components/modals/add-relay-modal/AddRelayModal';
 import UpdateRelayModal from '@/components/modals/update-relay-modal/UpdateRelayModal';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 import { NULL_NODE } from '@/constants/Types';
+import PageLayout from '@/layouts/PageLayout';
 import { ExtendedNode } from '@/models/Node';
 import { isSaasBuild } from '@/services/BaseService';
 import { NodesService } from '@/services/NodesService';
@@ -18,6 +19,7 @@ import {
   DeleteOutlined,
   EditOutlined,
 } from '@ant-design/icons';
+import { ArrowPathIcon } from '@heroicons/react/24/solid';
 import {
   Button,
   Card,
@@ -273,176 +275,180 @@ export default function NetworkRelaysPage({ isFullScreen }: NetworkRelaysPage) {
   const isEmpty = relays.length === 0;
 
   return (
-    <div className="NetworkRelaysPage" style={{ position: 'relative', height: '100%', padding: isFullScreen ? 0 : 24 }}>
-      <div className={`${isFullScreen ? 'page-padding' : ''}`}>
-        <Row style={{ marginBottom: '1rem', width: '100%' }}>
-          <Col>
-            <Typography.Title level={2}>Relays</Typography.Title>
+    <PageLayout
+      title="Relays"
+      isFullScreen
+      description={
+        <>
+          Enable communication between otherwise unreachable devices using strategic relay points.
+          <br />
+          Configure intelligent traffic routing through designated devices to optimize network connectivity.
+        </>
+      }
+      icon={<ArrowPathIcon className=" size-5" />}
+    >
+      {isEmpty && (
+        <Row
+          className="page-padding"
+          style={{
+            background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
+            width: '100%',
+          }}
+        >
+          <Col xs={24} xl={16}>
+            <Typography.Title level={3} style={{ color: 'white ' }}>
+              Relays
+            </Typography.Title>
+            <Typography.Text style={{ color: 'white ' }}>
+              Enable devices in your network to communicate with othererwise unreachable devices with relays.{' '}
+              {branding.productName} uses Turn servers to automatically route traffic in these scenarios, but sometimes,
+              you’d rather specify which device should be routing the traffic{' '}
+              <a
+                href="https://www.netmaker.io/features/relay"
+                target="_blank"
+                rel="noreferrer"
+                style={{ color: 'inherit', textDecoration: 'underline' }}
+              >
+                (Learn More)
+              </a>
+              .
+            </Typography.Text>
           </Col>
-        </Row>
-        {isEmpty && (
-          <Row
-            className="page-padding"
-            style={{
-              background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
-              width: '100%',
-            }}
-          >
-            <Col xs={24} xl={16}>
-              <Typography.Title level={3} style={{ color: 'white ' }}>
-                Relays
-              </Typography.Title>
-              <Typography.Text style={{ color: 'white ' }}>
-                Enable devices in your network to communicate with othererwise unreachable devices with relays.{' '}
-                {branding.productName} uses Turn servers to automatically route traffic in these scenarios, but
-                sometimes, you’d rather specify which device should be routing the traffic{' '}
-                <a
-                  href="https://www.netmaker.io/features/relay"
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{ color: 'inherit', textDecoration: 'underline' }}
-                >
-                  (Learn More)
-                </a>
-                .
+          <Col xs={24} xl={8} style={{ position: 'relative' }}>
+            <Card className="header-card" style={{ position: 'absolute', width: '100%' }}>
+              <Typography.Title level={3}>Create Relay</Typography.Title>
+              <Typography.Text>
+                Select a device to relay traffic to/from another device. The Relay is typically (but not always)
+                publicly accessible, and in a nearby location to the target device, to minimize latency.
               </Typography.Text>
-            </Col>
-            <Col xs={24} xl={8} style={{ position: 'relative' }}>
-              <Card className="header-card" style={{ position: 'absolute', width: '100%' }}>
-                <Typography.Title level={3}>Create Relay</Typography.Title>
-                <Typography.Text>
-                  Select a device to relay traffic to/from another device. The Relay is typically (but not always)
-                  publicly accessible, and in a nearby location to the target device, to minimize latency.
-                </Typography.Text>
-                <Row style={{ marginTop: '5rem' }}>
-                  <Col>
-                    <Button type="primary" size="large" onClick={() => setIsAddRelayModalOpen(true)}>
-                      <PlusOutlined /> Create Relay
-                    </Button>
-                  </Col>
-                </Row>
-              </Card>
-            </Col>
-          </Row>
-        )}
-
-        {!isEmpty && (
-          <Row style={{ width: '100%' }}>
-            <Col xs={24} style={{ marginBottom: '2rem' }}>
-              <Input
-                placeholder="Search relay"
-                value={searchRelay}
-                onChange={(ev) => setSearchRelay(ev.target.value)}
-                prefix={<SearchOutlined />}
-                style={{ width: '30%' }}
-              />
-            </Col>
-            <Col xs={24} xl={12}>
-              <Row style={{ width: '100%' }}>
-                <Col xs={24} md={12}>
-                  <Typography.Title style={{ marginTop: '0px' }} level={5}>
-                    Relays
-                  </Typography.Title>
-                </Col>
-                <Col xs={24} md={11} style={{ textAlign: 'right' }}>
-                  <Button
-                    type="primary"
-                    onClick={() => setIsAddRelayModalOpen(true)}
-                    className="full-width-button-xs"
-                    style={{ marginBottom: '.5rem' }}
-                  >
+              <Row style={{ marginTop: '5rem' }}>
+                <Col>
+                  <Button type="primary" size="large" onClick={() => setIsAddRelayModalOpen(true)}>
                     <PlusOutlined /> Create Relay
                   </Button>
-                  <Button
-                    style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
-                    onClick={() => alert('Not implemented')}
-                    icon={<InfoCircleOutlined />}
-                  >
-                    Tour Relays
-                  </Button>
-                  <Button
-                    title="Go to relays documentation"
-                    style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
-                    href={ExternalLinks.RELAYS_DOCS_URL}
-                    target="_blank"
-                    icon={<QuestionCircleOutlined />}
-                  />
                 </Col>
               </Row>
-              <Row style={{ marginTop: '1rem' }}>
-                <Col xs={23}>
-                  <div className="table-wrapper">
-                    <Table
-                      columns={relayTableCols}
-                      dataSource={filteredRelays}
-                      rowKey="id"
-                      size="small"
-                      rowClassName={(relay) => {
-                        return relay.id === selectedRelay?.id ? 'selected-row' : '';
-                      }}
-                      onRow={(relay) => {
-                        return {
-                          onClick: () => {
-                            setSelectedRelay(relay);
-                          },
-                        };
-                      }}
-                      scroll={{ x: true }}
-                      rowSelection={{
-                        type: 'radio',
-                        hideSelectAll: true,
-                        selectedRowKeys: selectedRelay ? [selectedRelay.id] : [],
-                        onSelect: (record, selected) => {
-                          if (!selected) return;
-                          if (selectedRelay?.id === record.id) {
-                            setSelectedRelay(null);
-                          } else {
-                            setSelectedRelay(record);
-                          }
+            </Card>
+          </Col>
+        </Row>
+      )}
+
+      {!isEmpty && (
+        <Row style={{ width: '100%' }}>
+          <Col xs={24} style={{ marginBottom: '2rem' }}>
+            <Input
+              placeholder="Search relay"
+              value={searchRelay}
+              onChange={(ev) => setSearchRelay(ev.target.value)}
+              prefix={<SearchOutlined />}
+              style={{ width: '30%' }}
+            />
+          </Col>
+          <Col xs={24} xl={12}>
+            <Row style={{ width: '100%' }}>
+              <Col xs={24} md={12}>
+                <Typography.Title style={{ marginTop: '0px' }} level={5}>
+                  Relays
+                </Typography.Title>
+              </Col>
+              <Col xs={24} md={11} style={{ textAlign: 'right' }}>
+                <Button
+                  type="primary"
+                  onClick={() => setIsAddRelayModalOpen(true)}
+                  className="full-width-button-xs"
+                  style={{ marginBottom: '.5rem' }}
+                >
+                  <PlusOutlined /> Create Relay
+                </Button>
+                <Button
+                  style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
+                  onClick={() => alert('Not implemented')}
+                  icon={<InfoCircleOutlined />}
+                >
+                  Tour Relays
+                </Button>
+                <Button
+                  title="Go to relays documentation"
+                  style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
+                  href={ExternalLinks.RELAYS_DOCS_URL}
+                  target="_blank"
+                  icon={<QuestionCircleOutlined />}
+                />
+              </Col>
+            </Row>
+            <Row style={{ marginTop: '1rem' }}>
+              <Col xs={23}>
+                <div className="table-wrapper">
+                  <Table
+                    columns={relayTableCols}
+                    dataSource={filteredRelays}
+                    rowKey="id"
+                    size="small"
+                    rowClassName={(relay) => {
+                      return relay.id === selectedRelay?.id ? 'selected-row' : '';
+                    }}
+                    onRow={(relay) => {
+                      return {
+                        onClick: () => {
+                          setSelectedRelay(relay);
                         },
-                      }}
-                    />
-                  </div>
-                </Col>
-              </Row>
-            </Col>
-            <Col xs={24} xl={12}>
-              <Row style={{ width: '100%' }}>
-                <Col xs={24} md={12}>
-                  <Typography.Title style={{ marginTop: '0px' }} level={5}>
-                    Relayed Hosts
-                  </Typography.Title>
-                </Col>
-                <Col xs={24} md={12} style={{ textAlign: 'right' }}>
-                  {selectedRelay && (
-                    <Button
-                      type="primary"
-                      style={{ marginRight: '1rem', marginBottom: '.5rem' }}
-                      onClick={() => setIsUpdateRelayModalOpen(true)}
-                      className="full-width-button-xs"
-                    >
-                      <PlusOutlined /> Add relayed host
-                    </Button>
-                  )}
-                </Col>
-              </Row>
-              <Row style={{ marginTop: '1rem' }}>
-                <Col xs={24}>
-                  <div className="table-wrapper">
-                    <Table
-                      columns={relayedTableCols}
-                      dataSource={filteredRelayedNodes}
-                      rowKey="id"
-                      size="small"
-                      scroll={{ x: true }}
-                    />
-                  </div>
-                </Col>
-              </Row>
-            </Col>
-          </Row>
-        )}
-      </div>
+                      };
+                    }}
+                    scroll={{ x: true }}
+                    rowSelection={{
+                      type: 'radio',
+                      hideSelectAll: true,
+                      selectedRowKeys: selectedRelay ? [selectedRelay.id] : [],
+                      onSelect: (record, selected) => {
+                        if (!selected) return;
+                        if (selectedRelay?.id === record.id) {
+                          setSelectedRelay(null);
+                        } else {
+                          setSelectedRelay(record);
+                        }
+                      },
+                    }}
+                  />
+                </div>
+              </Col>
+            </Row>
+          </Col>
+          <Col xs={24} xl={12}>
+            <Row style={{ width: '100%' }}>
+              <Col xs={24} md={12}>
+                <Typography.Title style={{ marginTop: '0px' }} level={5}>
+                  Relayed Hosts
+                </Typography.Title>
+              </Col>
+              <Col xs={24} md={12} style={{ textAlign: 'right' }}>
+                {selectedRelay && (
+                  <Button
+                    type="primary"
+                    style={{ marginRight: '1rem', marginBottom: '.5rem' }}
+                    onClick={() => setIsUpdateRelayModalOpen(true)}
+                    className="full-width-button-xs"
+                  >
+                    <PlusOutlined /> Add relayed host
+                  </Button>
+                )}
+              </Col>
+            </Row>
+            <Row style={{ marginTop: '1rem' }}>
+              <Col xs={24}>
+                <div className="table-wrapper">
+                  <Table
+                    columns={relayedTableCols}
+                    dataSource={filteredRelayedNodes}
+                    rowKey="id"
+                    size="small"
+                    scroll={{ x: true }}
+                  />
+                </div>
+              </Col>
+            </Row>
+          </Col>
+        </Row>
+      )}
 
       {/* misc */}
       {notifyCtx}
@@ -470,6 +476,6 @@ export default function NetworkRelaysPage({ isFullScreen }: NetworkRelaysPage) {
           onCancel={() => setIsUpdateRelayModalOpen(false)}
         />
       )}
-    </div>
+    </PageLayout>
   );
 }

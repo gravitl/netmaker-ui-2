@@ -27,11 +27,11 @@ const MenuRow: React.FC<MenuRowProps> = ({
   const [showTooltip, setShowTooltip] = useState(false);
 
   return (
-    <div className="relative">
+    <div className="relative w-full">
       <div
-        className={`flex items-center w-full gap-4 px-5 py-3 cursor-pointer 
-          ${selected ? 'bg-bg-default text-text-primary' : 'text-text-secondary hover:bg-bg-contrastHover hover:text-text-primary'} 
-          ${isSidebarCollapsed ? 'justify-center' : ''} ${danger ? 'text-red-500 hover:text-red-500' : ''}`}
+        className={`flex items-center w-full gap-2 rounded-md px-3 py-2 cursor-pointer 
+          ${selected ? 'bg-button-plain-fill-default text-button-plain-text-default' : ' text-text-secondary hover:bg-bg-contrastHover '} 
+          ${isSidebarCollapsed ? 'justify-center' : ''} ${danger ? 'text-critical hover:text-critical  bg-opacity-5' : ''}`}
         onClick={onClick}
         onMouseEnter={() => setShowTooltip(true)}
         onMouseLeave={() => setShowTooltip(false)}
@@ -39,19 +39,19 @@ const MenuRow: React.FC<MenuRowProps> = ({
         {icon}
         {!isSidebarCollapsed && (
           <>
-            <p className="flex-grow text-sm truncate">
+            <p className="flex-grow truncate text-sm-semibold">
               {title}
               <br />
-              <span className="text-sm">{subtitle || ''}</span>
+              <span className="text-sm-semibold">{subtitle || ''}</span>
             </p>
             {rightIcon === 'plus' && (
               <div className="ml-auto">
-                <PlusIcon className="size-6" />
+                <PlusIcon className="size-5" />
               </div>
             )}
             {rightIcon === 'ellipsis' && (
               <div className="ml-auto">
-                <EllipsisVerticalIcon className="size-6" />
+                <EllipsisVerticalIcon className="size-5" />
               </div>
             )}
             {children}
@@ -60,7 +60,7 @@ const MenuRow: React.FC<MenuRowProps> = ({
       </div>
 
       {isSidebarCollapsed && showTooltip && (
-        <div className="absolute z-50 -translate-y-1/2 left-20 top-1/2">
+        <div className="absolute z-50 -translate-y-1/2 left-16 top-1/2">
           <div className="relative">
             {/* Arrow */}
             <div className="absolute w-2 h-2 rotate-45 -translate-y-1/2 top-1/2 -left-1 bg-bg-hover" />

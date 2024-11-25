@@ -444,136 +444,124 @@ export default function NetworkMetricsPage({ isFullScreen }: NetworkMetricsPageP
     }
   }, [isInitialLoad, loadMetrics]);
 
-  const containerHeight = '78vh';
-
   return (
-    <div
-      className="NetworkMetricsPage"
-      style={{ position: 'relative', height: '100%', padding: isFullScreen ? 0 : 24 }}
-    >
-      <div className={`${isFullScreen ? 'page-padding' : ''}`}>
-        <Row style={{ marginBottom: '1rem', width: '100%' }}>
-          <Col>
-            <Typography.Title level={2}>Metrics</Typography.Title>
-          </Col>
-        </Row>
-        <Row style={{ width: '100%' }}>
-          <Col xs={16}>
-            <Radio.Group value={currentMetric} onChange={(ev) => setCurrentMetric(ev.target.value)}>
-              <Radio.Button value="connectivity-status" data-nmui-intercom="network-details-metrics_connectivitystatus">
-                Connectivity Status
-              </Radio.Button>
-              <Radio.Button value="latency" data-nmui-intercom="network-details-metrics_latency">
-                Latency
-              </Radio.Button>
-              <Radio.Button value="bytes-sent" data-nmui-intercom="network-details-metrics_bytessent">
-                Bytes Sent
-              </Radio.Button>
-              <Radio.Button value="bytes-received" data-nmui-intercom="network-details-metrics_bytesreceived">
-                Bytes Received
-              </Radio.Button>
-              <Radio.Button value="uptime" data-nmui-intercom="network-details-metrics_uptime">
-                Uptime
-              </Radio.Button>
-              <Radio.Button value="clients" data-nmui-intercom="network-details-metrics_clients">
-                Clients
-              </Radio.Button>
-            </Radio.Group>
-          </Col>
-          <Col xs={8} style={{ textAlign: 'right' }}>
-            {/* <Button type="primary" loading={isDownloadingMetrics} onClick={() => downloadMetrics()}>
+    <div className="relative h-full">
+      <Row style={{ width: '100%' }}>
+        <Col xs={16}>
+          <Radio.Group value={currentMetric} onChange={(ev) => setCurrentMetric(ev.target.value)}>
+            <Radio.Button value="connectivity-status" data-nmui-intercom="network-details-metrics_connectivitystatus">
+              Connectivity Status
+            </Radio.Button>
+            <Radio.Button value="latency" data-nmui-intercom="network-details-metrics_latency">
+              Latency
+            </Radio.Button>
+            <Radio.Button value="bytes-sent" data-nmui-intercom="network-details-metrics_bytessent">
+              Bytes Sent
+            </Radio.Button>
+            <Radio.Button value="bytes-received" data-nmui-intercom="network-details-metrics_bytesreceived">
+              Bytes Received
+            </Radio.Button>
+            <Radio.Button value="uptime" data-nmui-intercom="network-details-metrics_uptime">
+              Uptime
+            </Radio.Button>
+            <Radio.Button value="clients" data-nmui-intercom="network-details-metrics_clients">
+              Clients
+            </Radio.Button>
+          </Radio.Group>
+        </Col>
+        <Col xs={8} style={{ textAlign: 'right' }}>
+          {/* <Button type="primary" loading={isDownloadingMetrics} onClick={() => downloadMetrics()}>
               <DownloadOutlined />
               Download Metrics
             </Button> */}
-            <Button onClick={() => alert('Not implemented')} icon={<InfoCircleOutlined />}>
-              Take Tour
-            </Button>
-          </Col>
+          <Button onClick={() => alert('Not implemented')} icon={<InfoCircleOutlined />}>
+            Take Tour
+          </Button>
+        </Col>
 
-          <Col xs={24} style={{ paddingTop: '1rem' }}>
-            <div className="" style={{ width: '100%', overflow: 'auto' }}>
-              {currentMetric === 'connectivity-status' && (
-                <div className="table-wrapper">
-                  <Table
-                    columns={metricsTableCols}
-                    dataSource={connectivityStatusMetricsData}
-                    className="connectivity-status-metrics-table"
-                    rowKey="nodeId"
-                    size="small"
-                    pagination={{ pageSize: 100 }}
-                    scroll={{ x: true }}
-                  />
-                </div>
-              )}
-              {currentMetric === 'latency' && (
-                <div className="table-wrapper">
-                  <Table
-                    columns={metricsTableCols}
-                    dataSource={latencyMetricsData}
-                    className="latency-metrics-table"
-                    rowKey="nodeId"
-                    size="small"
-                    pagination={{ pageSize: 100 }}
-                    scroll={{ x: true }}
-                  />
-                </div>
-              )}
-              {currentMetric === 'bytes-sent' && (
-                <div className="table-wrapper">
-                  <Table
-                    columns={metricsTableCols}
-                    dataSource={bytesSentMetricsData}
-                    className="bytes-sent-metrics-table"
-                    rowKey="nodeId"
-                    size="small"
-                    pagination={{ pageSize: 100 }}
-                    scroll={{ x: true }}
-                  />
-                </div>
-              )}
-              {currentMetric === 'bytes-received' && (
-                <div className="table-wrapper">
-                  <Table
-                    columns={metricsTableCols}
-                    dataSource={bytesReceivedMetricsData}
-                    className="bytes-received-metrics-table"
-                    rowKey="nodeId"
-                    size="small"
-                    pagination={{ pageSize: 100 }}
-                    scroll={{ x: true }}
-                  />
-                </div>
-              )}
-              {currentMetric === 'uptime' && (
-                <div className="table-wrapper">
-                  <Table
-                    columns={metricsTableCols}
-                    dataSource={latencyMetricsData}
-                    className="latency-metrics-table"
-                    rowKey="nodeId"
-                    size="small"
-                    pagination={{ pageSize: 100 }}
-                    scroll={{ x: true }}
-                  />
-                </div>
-              )}
-              {currentMetric === 'clients' && (
-                <div className="table-wrapper">
-                  <Table
-                    columns={clientMetricsTableCols}
-                    dataSource={clientsMetricsData}
-                    className="clients-metrics-table"
-                    rowKey="node_name"
-                    size="small"
-                    pagination={{ pageSize: 100 }}
-                    scroll={{ x: true }}
-                  />
-                </div>
-              )}
-            </div>
-          </Col>
-        </Row>
-      </div>
+        <Col xs={24} style={{ paddingTop: '1rem' }}>
+          <div className="" style={{ width: '100%', overflow: 'auto' }}>
+            {currentMetric === 'connectivity-status' && (
+              <div className="table-wrapper">
+                <Table
+                  columns={metricsTableCols}
+                  dataSource={connectivityStatusMetricsData}
+                  className="connectivity-status-metrics-table"
+                  rowKey="nodeId"
+                  size="small"
+                  pagination={{ pageSize: 100 }}
+                  scroll={{ x: true }}
+                />
+              </div>
+            )}
+            {currentMetric === 'latency' && (
+              <div className="table-wrapper">
+                <Table
+                  columns={metricsTableCols}
+                  dataSource={latencyMetricsData}
+                  className="latency-metrics-table"
+                  rowKey="nodeId"
+                  size="small"
+                  pagination={{ pageSize: 100 }}
+                  scroll={{ x: true }}
+                />
+              </div>
+            )}
+            {currentMetric === 'bytes-sent' && (
+              <div className="table-wrapper">
+                <Table
+                  columns={metricsTableCols}
+                  dataSource={bytesSentMetricsData}
+                  className="bytes-sent-metrics-table"
+                  rowKey="nodeId"
+                  size="small"
+                  pagination={{ pageSize: 100 }}
+                  scroll={{ x: true }}
+                />
+              </div>
+            )}
+            {currentMetric === 'bytes-received' && (
+              <div className="table-wrapper">
+                <Table
+                  columns={metricsTableCols}
+                  dataSource={bytesReceivedMetricsData}
+                  className="bytes-received-metrics-table"
+                  rowKey="nodeId"
+                  size="small"
+                  pagination={{ pageSize: 100 }}
+                  scroll={{ x: true }}
+                />
+              </div>
+            )}
+            {currentMetric === 'uptime' && (
+              <div className="table-wrapper">
+                <Table
+                  columns={metricsTableCols}
+                  dataSource={latencyMetricsData}
+                  className="latency-metrics-table"
+                  rowKey="nodeId"
+                  size="small"
+                  pagination={{ pageSize: 100 }}
+                  scroll={{ x: true }}
+                />
+              </div>
+            )}
+            {currentMetric === 'clients' && (
+              <div className="table-wrapper">
+                <Table
+                  columns={clientMetricsTableCols}
+                  dataSource={clientsMetricsData}
+                  className="clients-metrics-table"
+                  rowKey="node_name"
+                  size="small"
+                  pagination={{ pageSize: 100 }}
+                  scroll={{ x: true }}
+                />
+              </div>
+            )}
+          </div>
+        </Col>
+      </Row>
 
       {/* misc */}
       {notifyCtx}

@@ -105,146 +105,140 @@ export default function NetworkInfoPage({ isFullScreen }: NetworkInfoPageProps) 
   }, [form, isInitialLoad, isLoadingNetwork, network]);
 
   return (
-    <div className="NetworkInfoPage" style={{ position: 'relative', height: '100%', padding: isFullScreen ? 0 : 24 }}>
-      <div className={`${isFullScreen ? 'page-padding' : ''}`}>
-        <Row style={{ marginBottom: '1rem', width: '100%' }}>
-          <Col>
-            <Typography.Title level={2}>Info</Typography.Title>
-          </Col>
-        </Row>
-        <Row style={{ width: '100%', textAlign: 'center', justifyContent: 'center' }}>
-          <Card className="overview-card">
-            <Form
-              name="network-details-form"
-              form={form}
-              layout="vertical"
-              initialValues={network ?? undefined}
-              disabled={!isEditingNetwork}
+    <div className="relative h-full">
+      <Row style={{ width: '100%', textAlign: 'center', justifyContent: 'center' }}>
+        <Card className="overview-card">
+          <Form
+            name="network-details-form"
+            form={form}
+            layout="vertical"
+            initialValues={network ?? undefined}
+            disabled={!isEditingNetwork}
+          >
+            <Form.Item
+              label="Network name"
+              name="netid"
+              rules={[{ required: true }]}
+              data-nmui-intercom="network-details-form_netid"
             >
-              <Form.Item
-                label="Network name"
-                name="netid"
-                rules={[{ required: true }]}
-                data-nmui-intercom="network-details-form_netid"
-              >
-                <Input placeholder="Network name" disabled={!isEditingNetwork} />
-              </Form.Item>
+              <Input placeholder="Network name" disabled={!isEditingNetwork} />
+            </Form.Item>
 
-              {/* ipv4 */}
-              <Row
-                style={{
-                  border: `1px solid ${themeToken.colorBorder}`,
-                  borderRadius: '8px',
-                  padding: '.5rem',
-                  marginBottom: '1.5rem',
-                }}
-              >
-                <Col xs={24}>
-                  <Row justify="space-between" style={{ marginBottom: isIpv4Watch ? '.5rem' : '0px' }}>
-                    <Col>IPv4</Col>
-                    <Col>
+            {/* ipv4 */}
+            <Row
+              style={{
+                border: `1px solid ${themeToken.colorBorder}`,
+                borderRadius: '8px',
+                padding: '.5rem',
+                marginBottom: '1.5rem',
+              }}
+            >
+              <Col xs={24}>
+                <Row justify="space-between" style={{ marginBottom: isIpv4Watch ? '.5rem' : '0px' }}>
+                  <Col>IPv4</Col>
+                  <Col>
+                    <Form.Item
+                      name="isipv4"
+                      valuePropName="checked"
+                      style={{ marginBottom: '0px' }}
+                      data-nmui-intercom="network-details-form_isipv4"
+                    >
+                      <Switch disabled={!isEditingNetwork} />
+                    </Form.Item>
+                  </Col>
+                </Row>
+                {isIpv4Watch && (
+                  <Row>
+                    <Col xs={24}>
                       <Form.Item
-                        name="isipv4"
-                        valuePropName="checked"
+                        name="addressrange"
                         style={{ marginBottom: '0px' }}
-                        data-nmui-intercom="network-details-form_isipv4"
+                        data-nmui-intercom="network-details-form_addressrange"
                       >
-                        <Switch disabled={!isEditingNetwork} />
+                        <Input placeholder="Enter address CIDR (eg: 100.64.1.0/24)" disabled={!isEditingNetwork} />
                       </Form.Item>
                     </Col>
                   </Row>
-                  {isIpv4Watch && (
-                    <Row>
-                      <Col xs={24}>
-                        <Form.Item
-                          name="addressrange"
-                          style={{ marginBottom: '0px' }}
-                          data-nmui-intercom="network-details-form_addressrange"
-                        >
-                          <Input placeholder="Enter address CIDR (eg: 100.64.1.0/24)" disabled={!isEditingNetwork} />
-                        </Form.Item>
-                      </Col>
-                    </Row>
-                  )}
-                </Col>
-              </Row>
+                )}
+              </Col>
+            </Row>
 
-              {/* ipv6 */}
-              <Row
-                style={{
-                  border: `1px solid ${themeToken.colorBorder}`,
-                  borderRadius: '8px',
-                  padding: '.5rem',
-                  marginBottom: '1.5rem',
-                }}
-              >
-                <Col xs={24}>
-                  <Row justify="space-between" style={{ marginBottom: isIpv6Watch ? '.5rem' : '0px' }}>
-                    <Col>IPv6</Col>
-                    <Col>
+            {/* ipv6 */}
+            <Row
+              style={{
+                border: `1px solid ${themeToken.colorBorder}`,
+                borderRadius: '8px',
+                padding: '.5rem',
+                marginBottom: '1.5rem',
+              }}
+            >
+              <Col xs={24}>
+                <Row justify="space-between" style={{ marginBottom: isIpv6Watch ? '.5rem' : '0px' }}>
+                  <Col>IPv6</Col>
+                  <Col>
+                    <Form.Item
+                      name="isipv6"
+                      valuePropName="checked"
+                      style={{ marginBottom: '0px' }}
+                      data-nmui-intercom="network-details-form_isipv6"
+                    >
+                      <Switch disabled />
+                    </Form.Item>
+                  </Col>
+                </Row>
+                {isIpv6Watch && (
+                  <Row>
+                    <Col xs={24}>
                       <Form.Item
-                        name="isipv6"
-                        valuePropName="checked"
+                        name="addressrange6"
                         style={{ marginBottom: '0px' }}
-                        data-nmui-intercom="network-details-form_isipv6"
+                        data-nmui-intercom="network-details-form_addressrange6"
                       >
-                        <Switch disabled />
+                        <Input
+                          placeholder="Enter address CIDR (eg: fd::1234:abcd:ffff:c0a8:101/64)"
+                          disabled={!isEditingNetwork}
+                        />
                       </Form.Item>
                     </Col>
                   </Row>
-                  {isIpv6Watch && (
-                    <Row>
-                      <Col xs={24}>
-                        <Form.Item
-                          name="addressrange6"
-                          style={{ marginBottom: '0px' }}
-                          data-nmui-intercom="network-details-form_addressrange6"
-                        >
-                          <Input
-                            placeholder="Enter address CIDR (eg: fd::1234:abcd:ffff:c0a8:101/64)"
-                            disabled={!isEditingNetwork}
-                          />
-                        </Form.Item>
-                      </Col>
-                    </Row>
-                  )}
-                </Col>
-              </Row>
+                )}
+              </Col>
+            </Row>
 
-              <Row
-                style={{
-                  border: `1px solid ${themeToken.colorBorder}`,
-                  borderRadius: '8px',
-                  padding: '.5rem',
-                  marginBottom: '1.5rem',
-                }}
-              >
-                <Col xs={24}>
-                  <Row justify="space-between">
-                    <Col>Default Access Control</Col>
-                    <Col xs={8}>
-                      <Form.Item
-                        name="defaultacl"
-                        style={{ marginBottom: '0px' }}
-                        rules={[{ required: true }]}
-                        data-nmui-intercom="network-details-form_defaultacl"
-                      >
-                        <Select
-                          size="small"
-                          style={{ width: '100%' }}
-                          options={[
-                            { label: 'ALLOW', value: 'yes' },
-                            { label: 'DENY', value: 'no' },
-                          ]}
-                          disabled
-                        ></Select>
-                      </Form.Item>
-                    </Col>
-                  </Row>
-                </Col>
-              </Row>
-              {/* TODO: Bring back if needed */}
-              {/* <Row
+            <Row
+              style={{
+                border: `1px solid ${themeToken.colorBorder}`,
+                borderRadius: '8px',
+                padding: '.5rem',
+                marginBottom: '1.5rem',
+              }}
+            >
+              <Col xs={24}>
+                <Row justify="space-between">
+                  <Col>Default Access Control</Col>
+                  <Col xs={8}>
+                    <Form.Item
+                      name="defaultacl"
+                      style={{ marginBottom: '0px' }}
+                      rules={[{ required: true }]}
+                      data-nmui-intercom="network-details-form_defaultacl"
+                    >
+                      <Select
+                        size="small"
+                        style={{ width: '100%' }}
+                        options={[
+                          { label: 'ALLOW', value: 'yes' },
+                          { label: 'DENY', value: 'no' },
+                        ]}
+                        disabled
+                      ></Select>
+                    </Form.Item>
+                  </Col>
+                </Row>
+              </Col>
+            </Row>
+            {/* TODO: Bring back if needed */}
+            {/* <Row
               style={{
                 border: `1px solid ${themeToken.colorBorder}`,
                 borderRadius: '8px',
@@ -284,10 +278,9 @@ export default function NetworkInfoPage({ isFullScreen }: NetworkInfoPageProps) 
                 </Row>
               </Col>
             </Row> */}
-            </Form>
-          </Card>
-        </Row>
-      </div>
+          </Form>
+        </Card>
+      </Row>
 
       {/* misc */}
       {notifyCtx}

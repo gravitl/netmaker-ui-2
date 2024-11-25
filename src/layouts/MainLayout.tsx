@@ -472,7 +472,7 @@ export default function MainLayout() {
 
   return (
     <AppErrorBoundary key={location.pathname}>
-      <Layout hasSider>
+      <Layout hasSider style={{ backgroundColor: 'transparent' }}>
         <Sider
           collapsible={false}
           collapsed={isSidebarCollapsed}
@@ -512,9 +512,11 @@ export default function MainLayout() {
             transition: 'all 200ms',
             display: hideContent ? 'none' : 'block',
             position: 'relative',
+            backgroundColor: 'transparent',
+            height: '100%', // Changed to make layout take full height
           }}
         >
-          <Content style={{ background: themeToken.colorBgContainer, overflow: 'initial', minHeight: '100vh' }}>
+          <Content style={{ overflow: 'initial', minHeight: '100vh' }}>
             {/* managed host is loading */}
             {checkIfManagedHostIsLoading && (
               <Alert

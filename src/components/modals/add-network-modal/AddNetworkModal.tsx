@@ -63,6 +63,7 @@ export default function AddNetworkModal({
       );
       store.addNetwork(network);
       notify.success({ message: `Network ${network.netid} created` });
+      store.setActiveNetwork(network.netid);
       onCreateNetwork(network);
       resetModal();
     } catch (err) {
