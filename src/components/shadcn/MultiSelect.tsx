@@ -265,24 +265,26 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
                     {selectedValues.length === options.length && <CheckIcon className="inline w-4 h-4" />}
                   </div>
                 </CommandItem>
-                {options.map((option) => {
-                  const isSelected = selectedValues.includes(option.value);
-                  return (
-                    <CommandItem
-                      key={option.value}
-                      onSelect={() => toggleOption(option.value)}
-                      className="cursor-pointer"
-                    >
-                      <div className="flex justify-between" style={{ width: '100%' }}>
-                        <span>
-                          {option.icon && <option.icon className="inline w-4 h-4 mr-2 text-muted-foreground" />}
-                          <span className="mr-2">{option.label}</span>
-                        </span>
-                        {isSelected && <CheckIcon className="w-4 h-4" />}
-                      </div>
-                    </CommandItem>
-                  );
-                })}
+                <div className="h-40 overflow-y-auto">
+                  {options.map((option) => {
+                    const isSelected = selectedValues.includes(option.value);
+                    return (
+                      <CommandItem
+                        key={option.value}
+                        onSelect={() => toggleOption(option.value)}
+                        className="cursor-pointer"
+                      >
+                        <div className="flex justify-between w-full">
+                          <span>
+                            {option.icon && <option.icon className="inline w-4 h-4 mr-2 text-muted-foreground" />}
+                            <span className="mr-2">{option.label}</span>
+                          </span>
+                          {isSelected && <CheckIcon className="w-4 h-4" />}
+                        </div>
+                      </CommandItem>
+                    );
+                  })}
+                </div>
               </CommandGroup>
               <CommandSeparator />
               <CommandGroup>

@@ -21,6 +21,7 @@ import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { NotificationInstance } from 'antd/es/notification/interface';
 import { Link } from 'react-router-dom';
 import { useServerLicense } from '@/utils/Utils';
+import arrowBidirectional from '@/assets/arrow-bidirectional.svg';
 
 interface Item {
   id: string;
@@ -545,7 +546,7 @@ const UsersForm: React.FC<UsersFormProps> = ({ networkId, onClose, fetchACLRules
 
           <div className="flex flex-col items-center justify-center w-2/3 gap-2">
             <img
-              src="/arrow-bidirectional.svg"
+              src={arrowBidirectional}
               className="w-full px-4 py-2 text-sm border rounded-lg bg-bg-default border-stroke-default"
               alt="Bidirectional arrow"
             />

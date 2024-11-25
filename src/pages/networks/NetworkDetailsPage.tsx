@@ -2450,7 +2450,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                     },
                   },
                   {
-                    title: 'External Routes',
+                    title: 'Egress',
                     render(_, node) {
                       const extendedNode = getExtendedNode(node, store.hostsCommonDetails);
                       if (extendedNode.is_static && extendedNode.static_node) {

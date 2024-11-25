@@ -3,6 +3,7 @@ import { StateCreator } from 'zustand';
 import { AvailableThemes } from '../models/AvailableThemes';
 import { ServerConfigService } from '@/services/ServerConfigService';
 import { SIDE_NAV_EXPANDED_WIDTH } from '@/layouts/MainLayout';
+import { NMUI_ACL_VERSION } from '@/services/BaseService';
 
 export interface IAppSlice {
   currentTheme: AvailableThemes;
@@ -12,6 +13,7 @@ export interface IAppSlice {
   serverConfig: ServerConfig | null;
   isSidebarCollapsed: boolean;
   sidebarWidth: string;
+  aclVersion: 1 | 2;
 
   // methods
   setCurrentTheme: (theme: AvailableThemes) => void;
@@ -21,6 +23,7 @@ export interface IAppSlice {
   fetchServerConfig: () => Promise<[Boolean, ServerConfig | null]>; // eslint-disable-line @typescript-eslint/ban-types
   setIsSidebarCollapsed: (isCollapsed: boolean) => void;
   setSidebarWidth: (width: string) => void;
+  setAclVersion: (version: 1 | 2) => void;
 }
 
 const createAppSlice: StateCreator<IAppSlice, [], [], IAppSlice> = (set) => ({
@@ -31,6 +34,7 @@ const createAppSlice: StateCreator<IAppSlice, [], [], IAppSlice> = (set) => ({
   serverConfig: null,
   isSidebarCollapsed: false,
   sidebarWidth: SIDE_NAV_EXPANDED_WIDTH,
+  aclVersion: 1,
 
   setCurrentTheme: (theme) => set(() => ({ currentTheme: theme })),
   setLogoUrl: (url) => set(() => ({ logoUrl: url })),
@@ -54,6 +58,16 @@ const createAppSlice: StateCreator<IAppSlice, [], [], IAppSlice> = (set) => ({
   },
   setIsSidebarCollapsed: (isCollapsed) => set(() => ({ isSidebarCollapsed: isCollapsed })),
   setSidebarWidth: (width) => set(() => ({ sidebarWidth: width })),
+  setAclVersion: (version) => {
+    try {
+      if (typeof window !== 'undefined') {
+        window?.localStorage?.setItem(NMUI_ACL_VERSION, version.toString());
+      }
+      set(() => ({ aclVersion: version }));
+    } catch (error) {
+      set(() => ({ aclVersion: 1 }));
+    }
+  },
 });
 
 export const AppSlice = {
