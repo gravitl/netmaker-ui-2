@@ -34,7 +34,7 @@ export default function NetworkInfoPage({ isFullScreen }: NetworkInfoPageProps) 
   return (
     <div className="relative h-full">
       <Row style={{ width: '100%', textAlign: 'center', justifyContent: 'center' }}>
-        <Card className="overview-card" style={{ width: '50%', minWidth: '1360px' }}>
+        <Card className="overview-card" style={{ width: '50%', maxWidth: '1360px' }}>
           <Form
             name="network-details-form"
             form={form}
