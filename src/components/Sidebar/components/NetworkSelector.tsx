@@ -91,7 +91,7 @@ const NetworkSelector: React.FC<NetworkSelectorProps> = ({ isSidebarCollapsed = 
       {/* Dropdown Menu */}
       {isOpen && (
         <div
-          className={`absolute mt-2  rounded-lg shadow-xl z-50 bg-bg-contrastDefault min-w-60
+          className={`absolute mt-2 min-w-80 w-full left-0 rounded-lg shadow-xl z-50 bg-bg-contrastDefault border border-stroke-default
             ${
               isSidebarCollapsed
                 ? 'left-16 w-48' // When collapsed, position to the right of the button
@@ -103,35 +103,37 @@ const NetworkSelector: React.FC<NetworkSelectorProps> = ({ isSidebarCollapsed = 
             <div className="absolute w-2 h-2 rotate-45 -translate-y-1/2 -left-1 top-[1.75rem] bg-bg-default" />
           )}
 
-          <div className="flex flex-col gap-2 p-2">
+          <div className="flex flex-col gap-2 ">
             {/* Optional heading for collapsed state */}
-            <div className="px-4 mb-1 text-sm text-text-secondary">Networks</div>
-            <div className="flex flex-col gap-2 p-2 overflow-auto border-b max-h-48 border-stroke-default">
+            <div className="px-4 pt-4 text-sm-semibold text-text-secondary">Select a network</div>
+            <div className="flex flex-col gap-2 p-2 overflow-auto border-b max-h-32 border-stroke-default">
               {networks?.map((network) => (
                 <div
                   key={network.netid}
                   className={`flex rounded-md items-center gap-2 px-3 py-2 text-sm-semibold cursor-pointer text-sm
-                  ${activeNetwork === network.netid ? 'bg-button-plain-fill-default text-button-plain-text-default' : 'hover:bg-bg-contrastHover'}
+                  ${activeNetwork === network.netid ? 'bg-bg-contrastActive text-text-primary' : 'hover:bg-bg-contrastHover text-text-secondary'}
                   transition-colors duration-150`}
                   onClick={() => handleNetworkSelect(network.netid)}
                 >
                   {activeNetwork === network.netid ? (
-                    <CheckIcon className="size-5 shrink-0" />
+                    <CheckIcon className="size-4 shrink-0" />
                   ) : (
-                    <div className="size-5 shrink-0" />
+                    <div className="size-4 shrink-0" />
                   )}
                   <span className="truncate">{network.netid}</span>
                 </div>
               ))}
             </div>
 
-            <MenuRow title="All Networks" onClick={() => navigate(AppRoutes.NETWORKS_ROUTE)} />
-            <div
-              className="flex items-center gap-2 px-3 py-2 text-sm transition-colors duration-150 border-t rounded-md cursor-pointer text-sm-semibold text-button-primary-text-default bg-button-primary-fill-default border-stroke-hover"
-              onClick={() => setIsAddNetworkModalOpen(true)}
-            >
-              <PlusIcon className="size-5" />
-              <span className="">Create Network</span>
+            <div className="flex flex-col gap-2 px-2 pb-2">
+              <MenuRow title="All Networks" onClick={() => navigate(AppRoutes.NETWORKS_ROUTE)} />
+              <div
+                className="flex items-center gap-2 px-3 py-2 text-sm transition-colors duration-150 border-t rounded-md cursor-pointer text-sm-semibold text-button-primary-text-default bg-button-primary-fill-default border-stroke-hover"
+                onClick={() => setIsAddNetworkModalOpen(true)}
+              >
+                <PlusIcon className="size-5" />
+                <span className="">New Network</span>
+              </div>
             </div>
           </div>
         </div>
