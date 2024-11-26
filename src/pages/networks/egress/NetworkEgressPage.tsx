@@ -167,7 +167,7 @@ export default function NetworkEgressPage({ isFullScreen }: NetworkEgressPagePro
       {
         title: 'Host name',
         dataIndex: 'name',
-        width: 500,
+        width: '33%',
         render(name) {
           return <Typography.Link>{name}</Typography.Link>;
         },
