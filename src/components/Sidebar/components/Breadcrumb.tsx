@@ -66,7 +66,7 @@ const Breadcrumb = ({ className = '' }: BreadcrumbProps) => {
   }
 
   return (
-    <nav className={`flex items-center space-x-2 mb-6 text-sm text-text-secondary min-h-11 ${className}`}>
+    <nav className={`flex items-center space-x-2 mb-6 text-sm text-text-secondary min-h-11 z-10 ${className}`}>
       {breadcrumbs.map((breadcrumb, index) => (
         <Fragment key={breadcrumb.path}>
           {index > 0 && <ChevronRight className="w-4 h-4" />}

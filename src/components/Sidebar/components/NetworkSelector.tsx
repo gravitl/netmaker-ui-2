@@ -8,14 +8,16 @@ import { getNetworkPageRoute } from '@/utils/RouteUtils';
 import { AppRoutes } from '@/routes';
 import MenuRow from './MenuRow';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
+import AddNetworkModal from '@/components/modals/add-network-modal/AddNetworkModal';
 
 interface NetworkSelectorProps {
   isSidebarCollapsed?: boolean;
-  onAddNetwork?: () => void;
 }
 
-const NetworkSelector: React.FC<NetworkSelectorProps> = ({ isSidebarCollapsed = false, onAddNetwork }) => {
+const NetworkSelector: React.FC<NetworkSelectorProps> = ({ isSidebarCollapsed = false }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isAddNetworkModalOpen, setIsAddNetworkModalOpen] = useState(false);
+
   const menuRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -23,6 +25,13 @@ const NetworkSelector: React.FC<NetworkSelectorProps> = ({ isSidebarCollapsed = 
 
   const networks = store.networks;
   const activeNetwork = store.activeNetwork;
+
+  const autoFillButtonRef = useRef(null);
+  const networkNameInputRef = useRef(null);
+  const ipv4InputRef = useRef(null);
+  const ipv6InputRef = useRef(null);
+  const defaultAclInputRef = useRef(null);
+  const submitButtonRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -119,7 +128,7 @@ const NetworkSelector: React.FC<NetworkSelectorProps> = ({ isSidebarCollapsed = 
             <MenuRow title="All Networks" onClick={() => navigate(AppRoutes.NETWORKS_ROUTE)} />
             <div
               className="flex items-center gap-2 px-3 py-2 text-sm transition-colors duration-150 border-t rounded-md cursor-pointer text-sm-semibold text-button-primary-text-default bg-button-primary-fill-default border-stroke-hover"
-              onClick={onAddNetwork}
+              onClick={() => setIsAddNetworkModalOpen(true)}
             >
               <PlusIcon className="size-5" />
               <span className="">Create Network</span>
@@ -127,6 +136,19 @@ const NetworkSelector: React.FC<NetworkSelectorProps> = ({ isSidebarCollapsed = 
           </div>
         </div>
       )}
+      <AddNetworkModal
+        isOpen={isAddNetworkModalOpen}
+        onCreateNetwork={() => {
+          setIsAddNetworkModalOpen(false);
+        }}
+        onCancel={() => setIsAddNetworkModalOpen(false)}
+        autoFillButtonRef={autoFillButtonRef}
+        networkNameInputRef={networkNameInputRef}
+        ipv4InputRef={ipv4InputRef}
+        ipv6InputRef={ipv6InputRef}
+        defaultAclInputRef={defaultAclInputRef}
+        submitButtonRef={submitButtonRef}
+      />
     </div>
   );
 };

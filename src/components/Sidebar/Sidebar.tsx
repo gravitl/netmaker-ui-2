@@ -57,15 +57,7 @@ const Sidebar = ({
   const [isTenantCollapsed, setIsTenantCollapsed] = useState(false);
   const [selectedMenu, setSelectedMenu] = useState('');
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
-  const [isAddNetworkModalOpen, setIsAddNetworkModalOpen] = useState(false);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
-
-  const autoFillButtonRef = useRef(null);
-  const networkNameInputRef = useRef(null);
-  const ipv4InputRef = useRef(null);
-  const ipv6InputRef = useRef(null);
-  const defaultAclInputRef = useRef(null);
-  const submitButtonRef = useRef(null);
 
   const store = useStore();
   const location = useLocation();
@@ -301,7 +293,7 @@ const Sidebar = ({
 
       {/* Middle scrollable section */}
       <div className="flex flex-col flex-1 min-h-0 mt-4">
-        <NetworkSelector isSidebarCollapsed={isSidebarCollapsed} onAddNetwork={() => setIsAddNetworkModalOpen(true)} />
+        <NetworkSelector isSidebarCollapsed={isSidebarCollapsed} />
         <div className={`flex-1 overflow-y-auto ${isSidebarCollapsed ? 'px-2' : 'pl-4 pr-2'}`}>
           <div
             className={`flex flex-col gap-2 pt-2 ${isSidebarCollapsed ? '' : 'border-stroke-default border-l pl-2'}`}
@@ -349,19 +341,6 @@ const Sidebar = ({
         />
       </div>
 
-      <AddNetworkModal
-        isOpen={isAddNetworkModalOpen}
-        onCreateNetwork={() => {
-          setIsAddNetworkModalOpen(false);
-        }}
-        onCancel={() => setIsAddNetworkModalOpen(false)}
-        autoFillButtonRef={autoFillButtonRef}
-        networkNameInputRef={networkNameInputRef}
-        ipv4InputRef={ipv4InputRef}
-        ipv6InputRef={ipv6InputRef}
-        defaultAclInputRef={defaultAclInputRef}
-        submitButtonRef={submitButtonRef}
-      />
       <UpgradeModal
         isOpen={isUpgradeModalOpen}
         onCancel={() => setIsUpgradeModalOpen(false)}
