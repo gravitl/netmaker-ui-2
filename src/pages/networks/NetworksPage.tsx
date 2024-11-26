@@ -29,6 +29,7 @@ import { NetworksService } from '@/services/NetworksService';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import PageLayout from '@/layouts/PageLayout';
 import { GlobeAltIcon } from '@heroicons/react/24/solid';
+import { NodesService } from '@/services/NodesService';
 
 export default function NetworksPage(props: PageProps) {
   const store = useStore();
@@ -49,27 +50,46 @@ export default function NetworksPage(props: PageProps) {
   const [tourStep, setTourStep] = useState(0);
   const [notify, notifyCtx] = notification.useNotification();
 
-  const confirmNetworkDelete = useCallback((netId: string) => {
-    Modal.confirm({
-      title: `Are you sure you want to the delete the network ${netId}?`,
-      content: `This action cannot be undone.`,
-      onOk: async () => {
-        try {
-          const network = await NetworksService.deleteNetwork(netId);
-          store.deleteNetwork(netId);
-          notify.success({
-            message: 'Network deleted',
-            description: `Network ${netId} has been deleted`,
-          });
-        } catch (err) {
-          notify.error({
-            message: 'Failed to delete network',
-            description: extractErrorMsg(err as any),
-          });
-        }
-      },
-    });
+  const loadNetworks = useCallback(async () => {
+    await store.fetchNetworks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const confirmNetworkDelete = useCallback(
+    (netId: string) => {
+      Modal.confirm({
+        title: `Are you sure you want to the delete the network ${netId}?`,
+        content: `This action cannot be undone.`,
+        onOk: async () => {
+          try {
+            await NetworksService.deleteNetwork(netId);
+            notify.success({
+              message: 'Network deleted',
+              description: `Network ${netId} has been deleted`,
+            });
+            // if (netId === store.activeNetwork) {
+            //   const response = await NetworksService.getNetworks();
+            //   const fallbackNetwork = response.data[0]?.netid;
+            //   store.setActiveNetwork(fallbackNetwork);
+            //   console.log(fallbackNetwork);
+            // }
+            if (netId === store.activeNetwork && store.networks.length > 1) {
+              const fallbackNetwork = store.networks[1]?.netid;
+              store.setActiveNetwork(fallbackNetwork);
+              console.log(store.networks);
+            }
+            store.deleteNetwork(netId);
+          } catch (err) {
+            notify.error({
+              message: 'Failed to delete network',
+              description: extractErrorMsg(err as any),
+            });
+          }
+        },
+      });
+    },
+    [store],
+  );
 
   const checkIfNetworkDeleteIsPossible = useCallback(
     (netId: string) => {
@@ -189,11 +209,6 @@ export default function NetworksPage(props: PageProps) {
       }),
     [networks, searchText],
   );
-
-  const loadNetworks = useCallback(async () => {
-    await store.fetchNetworks();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const tourSteps: TourProps['steps'] = [
     {
