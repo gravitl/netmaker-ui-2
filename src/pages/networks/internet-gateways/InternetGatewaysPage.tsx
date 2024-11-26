@@ -335,7 +335,7 @@ export function NetworkInternetGatewaysPage({
 
   return (
     <PageLayout
-      title="Gateways"
+      title="Internet Gateways"
       isFullScreen
       description={
         <>
