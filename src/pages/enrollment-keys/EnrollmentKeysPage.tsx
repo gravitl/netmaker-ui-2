@@ -421,7 +421,7 @@ export default function EnrollmentKeysPage(props: PageProps) {
                       };
                     }}
                     ref={enrollmentKeysTableRef}
-                    pagination={{ size: 'small', hideOnSinglePage: true, pageSize: 50 }}
+                    pagination={{ size: 'small', hideOnSinglePage: true, pageSize: 15 }}
                   />
                 </div>
               </Col>

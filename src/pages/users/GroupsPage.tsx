@@ -7,7 +7,6 @@ import { useServerLicense } from '@/utils/Utils';
 import {
   DeleteOutlined,
   InfoCircleOutlined,
-  MoreOutlined,
   PlusOutlined,
   QuestionCircleOutlined,
   SearchOutlined,
@@ -105,6 +104,7 @@ export default function GroupsPage({
       {
         title: 'Name',
         dataIndex: 'id',
+        width: '20%',
         render(id, group) {
           return (
             <>
@@ -125,11 +125,14 @@ export default function GroupsPage({
       {
         title: 'Description',
         dataIndex: 'meta_data',
-        width: '50%',
+        width: '40%',
         render(desc) {
           return (
             <>
-              <Typography.Text ellipsis={{ tooltip: desc }} style={{ width: '100%' }}>
+              <Typography.Text
+                ellipsis={{ tooltip: desc }}
+                style={{ width: '100%', whiteSpace: 'break-spaces', textWrap: 'wrap' }}
+              >
                 {desc ?? ''}
               </Typography.Text>
             </>
@@ -348,6 +351,10 @@ export default function GroupsPage({
                   //     setSelectedGroup(group);
                   //   },
                   // }}
+                  pagination={{
+                    pageSize: 15,
+                    hideOnSinglePage: true,
+                  }}
                 />
               </div>
             </Col>
