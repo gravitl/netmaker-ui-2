@@ -68,7 +68,7 @@ const NetworkSelector: React.FC<NetworkSelectorProps> = ({ isSidebarCollapsed = 
     <div ref={menuRef} className="relative px-2 ">
       {/* Network Selection Button */}
       <div
-        className={`flex max-w-48 items-center cursor-pointer transition-colors duration-150
+        className={`flex max-w-full items-center cursor-pointer transition-colors duration-150
           ${
             isSidebarCollapsed
               ? 'justify-center p-2  rounded-md'

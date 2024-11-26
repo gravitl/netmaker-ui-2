@@ -70,7 +70,7 @@ const Breadcrumb = ({ className = '' }: BreadcrumbProps) => {
       {breadcrumbs.map((breadcrumb, index) => (
         <Fragment key={breadcrumb.path}>
           {index > 0 && <ChevronRight className="w-4 h-4" />}
-          {params.networkId && breadcrumb.label === params.networkId ? (
+          {params.networkId && breadcrumb.label === params.networkId && index === 1 ? (
             <NetworkSelector />
           ) : breadcrumb.isLast ? (
             <span className="font-medium text-text-primary">{getReadableName(breadcrumb.label)}</span>
