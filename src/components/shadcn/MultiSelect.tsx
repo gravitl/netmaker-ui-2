@@ -190,13 +190,18 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
                     return (
                       <Badge
                         key={value}
-                        className={cn(isAnimating ? 'animate-bounce' : '', 'p-2', multiSelectVariants({ variant }))}
+                        className={cn(
+                          isAnimating ? 'animate-bounce' : '',
+                          'p-2',
+                          multiSelectVariants({ variant }),
+                          'max-w-64  ',
+                        )}
                         style={{ animationDuration: `${animation}s`, backgroundColor: '#3F3F46' }}
                       >
-                        {IconComponent && <IconComponent className="inline w-4 h-4 mr-2" />}
-                        {option?.label}
+                        {IconComponent && <IconComponent className="inline w-4 h-4 mr-2 shrink-0" />}
+                        <span className="truncate">{option?.label}</span>
                         <XCircle
-                          className="w-4 h-4 ml-2 cursor-pointer"
+                          className="w-4 h-4 ml-2 cursor-pointer shrink-0"
                           onClick={(event) => {
                             event.stopPropagation();
                             toggleOption(value);
