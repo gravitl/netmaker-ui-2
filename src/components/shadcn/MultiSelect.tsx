@@ -284,7 +284,7 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
                       </CommandItem>
                     );
                   })}
-                </div>{' '}
+                </div>
               </CommandGroup>
               <CommandSeparator />
               <CommandGroup>
