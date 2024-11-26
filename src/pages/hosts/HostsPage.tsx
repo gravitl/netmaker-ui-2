@@ -733,6 +733,10 @@ export default function HostsPage(props: PageProps) {
                   },
                 })}
                 ref={hostsTableRef}
+                pagination={{
+                  hideOnSinglePage: true,
+                  pageSize: 15,
+                }}
               />
             </div>
           </Col>

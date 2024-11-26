@@ -6,7 +6,6 @@ import {
   Squares2X2Icon as Squares2X2IconSolid,
   UserCircleIcon,
   UsersIcon as UsersIconSolid,
-  GlobeAltIcon as GlobeAltIconSolid,
   ComputerDesktopIcon as ComputerDesktopIconSolid,
   ViewfinderCircleIcon as ViewfinderCircleIconSolid,
   ArrowPathIcon as ArrowPathIconSolid,
@@ -23,7 +22,6 @@ import {
   KeyIcon as KeyIconOutline,
   Squares2X2Icon as Squares2X2IconOutline,
   UsersIcon as UsersIconOutline,
-  GlobeAltIcon as GlobeAltIconOutline,
   ComputerDesktopIcon as ComputerDesktopIconOutline,
   ViewfinderCircleIcon as ViewfinderCircleIconOutline,
   ArrowPathIcon as ArrowPathIconOutline,
@@ -40,7 +38,6 @@ import MenuRow from './components/MenuRow';
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AppRoutes } from '@/routes';
-import NetworkDropdown from './components/NetworkDropdown';
 import AccountDropdown from './components/AccountDropdown';
 import { useStore } from '@/store/store';
 import AddNetworkModal from '../modals/add-network-modal/AddNetworkModal';
@@ -60,7 +57,6 @@ const Sidebar = ({
   const [isTenantCollapsed, setIsTenantCollapsed] = useState(false);
   const [selectedMenu, setSelectedMenu] = useState('');
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
-  const [isNetworkDropdownOpen, setIsNetworkDropdownOpen] = useState(false);
   const [isAddNetworkModalOpen, setIsAddNetworkModalOpen] = useState(false);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
 

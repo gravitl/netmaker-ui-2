@@ -1,53 +1,22 @@
-import AddDnsModal from '@/components/modals/add-dns-modal/AddDnsModal';
-import AddRelayModal from '@/components/modals/add-relay-modal/AddRelayModal';
-import UpdateRelayModal from '@/components/modals/update-relay-modal/UpdateRelayModal';
 import NetworkGraph from '@/components/NetworkGraph';
 import { NETWORK_GRAPH_SIGMA_CONTAINER_ID } from '@/constants/AppConstants';
-import { ExternalLinks } from '@/constants/LinkAndImageConstants';
-import { NULL_HOST, NULL_NODE } from '@/constants/Types';
+import { NULL_HOST } from '@/constants/Types';
 import { NodeAclContainer } from '@/models/Acl';
-import { DNS } from '@/models/Dns';
 import { ExternalClient } from '@/models/ExternalClient';
 import { Host } from '@/models/Host';
-import { ExtendedNode } from '@/models/Node';
-import { isSaasBuild } from '@/services/BaseService';
 import { NetworksService } from '@/services/NetworksService';
 import { NodesService } from '@/services/NodesService';
 import { useStore } from '@/store/store';
-import { getExtendedNode, isNodeRelay } from '@/utils/NodeUtils';
+import { getExtendedNode } from '@/utils/NodeUtils';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
-import { useBranding, useGetActiveNetwork, useServerLicense } from '@/utils/Utils';
-import {
-  SearchOutlined,
-  InfoCircleOutlined,
-  QuestionCircleOutlined,
-  MoreOutlined,
-  PlusOutlined,
-  DeleteOutlined,
-  EditOutlined,
-} from '@ant-design/icons';
+import { useGetActiveNetwork } from '@/utils/Utils';
 import { SigmaContainer, ControlsContainer, ZoomControl, FullScreenControl, SearchControl } from '@react-sigma/core';
-import {
-  Button,
-  Card,
-  Col,
-  Dropdown,
-  Input,
-  MenuProps,
-  Modal,
-  notification,
-  Row,
-  Skeleton,
-  Table,
-  TableColumnProps,
-  theme,
-  Tooltip,
-  Typography,
-} from 'antd';
+import { Col, notification, Row, Skeleton, theme, Typography } from 'antd';
 import { AxiosError } from 'axios';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import getNodeImageProgram from 'sigma/rendering/webgl/programs/node.image';
+import '@react-sigma/core/lib/react-sigma.min.css';
 
 interface NetworkGraphPageProps {
   networkId?: string;
@@ -56,17 +25,14 @@ interface NetworkGraphPageProps {
 
 export default function NetworkGraphPage({ isFullScreen }: NetworkGraphPageProps) {
   const store = useStore();
-  const storeFetchNodes = store.fetchNodes;
   const { networkId } = useParams<{ networkId: string }>();
   const resolvedNetworkId = networkId || store.activeNetwork;
-  const { isServerEE } = useServerLicense();
-  const branding = useBranding();
   const { network, isLoadingNetwork } = useGetActiveNetwork(resolvedNetworkId);
   const [notify, notifyCtx] = notification.useNotification();
   const { token: themeToken } = theme.useToken();
 
   const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const [originalAcls, setOriginalAcls] = useState<NodeAclContainer>({});
+  const [acls, setAcls] = useState<NodeAclContainer>({});
   const [clients, setClients] = useState<ExternalClient[]>([]);
 
   const networkNodes = useMemo(
@@ -91,7 +57,7 @@ export default function NetworkGraphPage({ isFullScreen }: NetworkGraphPageProps
     try {
       if (!networkId) return;
       const acls = (await NetworksService.getAcls(networkId)).data;
-      setOriginalAcls(acls);
+      setAcls(acls);
     } catch (err) {
       if (err instanceof AxiosError) {
         if (err instanceof AxiosError && err.response?.status === 403) return;
@@ -103,12 +69,27 @@ export default function NetworkGraphPage({ isFullScreen }: NetworkGraphPageProps
     }
   }, [networkId, notify]);
 
+  const loadClients = useCallback(async () => {
+    try {
+      if (!networkId) return;
+      const networkClients = (await NodesService.getNetworkExternalClients(networkId)).data ?? [];
+      setClients(networkClients);
+    } catch (err) {
+      if (err instanceof AxiosError && err.response?.status === 403) return;
+      notify.error({
+        message: 'Error loading clients',
+        description: extractErrorMsg(err as any),
+      });
+    }
+  }, [networkId, notify]);
+
   useEffect(() => {
     if (isInitialLoad) {
+      loadClients();
       loadAcls();
       setIsInitialLoad(false);
     }
-  }, [isInitialLoad, loadAcls]);
+  }, [isInitialLoad, loadAcls, loadClients]);
 
   const containerHeight = '78vh';
 
@@ -133,15 +114,15 @@ export default function NetworkGraphPage({ isFullScreen }: NetworkGraphPageProps
                   network={network}
                   hosts={networkHosts}
                   nodes={networkNodes}
-                  acl={originalAcls}
+                  acl={acls}
                   clients={clients}
                 />
-                <ControlsContainer position={'top-left'}>
+                <ControlsContainer position={'bottom-left'}>
                   <ZoomControl />
                   <FullScreenControl />
                 </ControlsContainer>
                 <ControlsContainer position={'top-left'} className="search-container">
-                  <SearchControl />
+                  <SearchControl labels={{ placeholder: 'Search for a device...' }} />
                 </ControlsContainer>
               </SigmaContainer>
             )}

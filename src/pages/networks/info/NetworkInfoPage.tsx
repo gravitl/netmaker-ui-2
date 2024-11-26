@@ -1,61 +1,9 @@
-import AddDnsModal from '@/components/modals/add-dns-modal/AddDnsModal';
-import AddRelayModal from '@/components/modals/add-relay-modal/AddRelayModal';
-import UpdateRelayModal from '@/components/modals/update-relay-modal/UpdateRelayModal';
-import NetworkGraph from '@/components/NetworkGraph';
-import { NETWORK_GRAPH_SIGMA_CONTAINER_ID } from '@/constants/AppConstants';
-import { ExternalLinks } from '@/constants/LinkAndImageConstants';
-import { NULL_HOST, NULL_NODE } from '@/constants/Types';
-import { NodeAclContainer } from '@/models/Acl';
-import { DNS } from '@/models/Dns';
-import { ExternalClient } from '@/models/ExternalClient';
-import { Host } from '@/models/Host';
-import { MetricCategories, NetworkMetrics, NodeOrClientMetric, UptimeNodeMetrics } from '@/models/Metrics';
 import { Network } from '@/models/Network';
-import { ExtendedNode, Node } from '@/models/Node';
-import { isSaasBuild } from '@/services/BaseService';
-import { NetworksService } from '@/services/NetworksService';
-import { NodesService } from '@/services/NodesService';
 import { useStore } from '@/store/store';
-import { getExtendedNode, isNodeRelay } from '@/utils/NodeUtils';
-import { extractErrorMsg } from '@/utils/ServiceUtils';
-import { renderMetricValue, useBranding, useGetActiveNetwork, useServerLicense } from '@/utils/Utils';
-import {
-  SearchOutlined,
-  InfoCircleOutlined,
-  QuestionCircleOutlined,
-  MoreOutlined,
-  PlusOutlined,
-  DeleteOutlined,
-  EditOutlined,
-  DashOutlined,
-} from '@ant-design/icons';
-import { SigmaContainer, ControlsContainer, ZoomControl, FullScreenControl, SearchControl } from '@react-sigma/core';
-import {
-  Button,
-  Card,
-  Col,
-  Dropdown,
-  Form,
-  Input,
-  MenuProps,
-  Modal,
-  notification,
-  Radio,
-  Row,
-  Select,
-  Skeleton,
-  Switch,
-  Table,
-  TableColumnProps,
-  theme,
-  Tooltip,
-  Typography,
-} from 'antd';
-import form from 'antd/es/form';
-import { AxiosError } from 'axios';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useGetActiveNetwork } from '@/utils/Utils';
+import { Card, Col, Form, Input, notification, Row, Select, Switch, theme } from 'antd';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import getNodeImageProgram from 'sigma/rendering/webgl/programs/node.image';
 
 interface NetworkInfoPageProps {
   networkId?: string;
@@ -64,11 +12,8 @@ interface NetworkInfoPageProps {
 
 export default function NetworkInfoPage({ isFullScreen }: NetworkInfoPageProps) {
   const store = useStore();
-  const storeFetchNodes = store.fetchNodes;
   const { networkId } = useParams<{ networkId: string }>();
   const resolvedNetworkId = networkId || store.activeNetwork;
-  const { isServerEE } = useServerLicense();
-  const branding = useBranding();
   const { network, isLoadingNetwork } = useGetActiveNetwork(resolvedNetworkId);
   const [notify, notifyCtx] = notification.useNotification();
   const { token: themeToken } = theme.useToken();
@@ -78,24 +23,6 @@ export default function NetworkInfoPage({ isFullScreen }: NetworkInfoPageProps) 
   const isIpv6Watch = Form.useWatch('isipv6', form);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [isEditingNetwork, setIsEditingNetwork] = useState(false);
-
-  const networkNodes = useMemo(
-    () =>
-      store.nodes
-        .map((node) => getExtendedNode(node, store.hostsCommonDetails))
-        .filter((node) => node.network === resolvedNetworkId),
-    [store.nodes, store.hostsCommonDetails, resolvedNetworkId],
-  );
-
-  const networkHosts = useMemo(() => {
-    const hostsMap = new Map<Host['id'], Host>();
-    store.hosts.forEach((host) => {
-      hostsMap.set(host.id, host);
-    });
-    return store.nodes
-      .filter((node) => node.network === networkId)
-      .map((node) => hostsMap.get(node.hostid) ?? NULL_HOST);
-  }, [networkId, store.hosts, store.nodes]);
 
   useEffect(() => {
     if (!isLoadingNetwork) {
@@ -107,7 +34,7 @@ export default function NetworkInfoPage({ isFullScreen }: NetworkInfoPageProps) 
   return (
     <div className="relative h-full">
       <Row style={{ width: '100%', textAlign: 'center', justifyContent: 'center' }}>
-        <Card className="overview-card">
+        <Card className="overview-card" style={{ width: '50%', minWidth: '1360px' }}>
           <Form
             name="network-details-form"
             form={form}
