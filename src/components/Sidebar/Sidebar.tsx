@@ -293,7 +293,9 @@ const Sidebar = ({
 
       {/* Middle scrollable section */}
       <div className="flex flex-col flex-1 min-h-0 mt-4">
-        <NetworkSelector isSidebarCollapsed={isSidebarCollapsed} />
+        <div className="px-2">
+          <NetworkSelector isSidebarCollapsed={isSidebarCollapsed} />
+        </div>
         <div className={`flex-1 overflow-y-auto ${isSidebarCollapsed ? 'px-2' : 'pl-4 pr-2'}`}>
           <div
             className={`flex flex-col gap-2 pt-2 ${isSidebarCollapsed ? '' : 'border-stroke-default border-l pl-2'}`}

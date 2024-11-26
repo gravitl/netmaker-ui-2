@@ -13,7 +13,7 @@ interface PageLayoutProps {
 const PageLayout = ({ title, description, icon, children, isFullScreen = false, className = '' }: PageLayoutProps) => {
   return (
     <main className={`relative h-full ${className}`}>
-      <div className={`${isFullScreen ? 'px-8 py-6' : ''}`}>
+      <div className={`${isFullScreen ? 'sm:px-8 py-6 px-4' : ''}`}>
         <Breadcrumb />
         <div className="flex flex-col gap-2 mb-8">
           <div className="flex items-center gap-2 text-text-primary">
