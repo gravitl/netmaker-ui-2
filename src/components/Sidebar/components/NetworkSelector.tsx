@@ -1,10 +1,13 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useStore } from '@/store/store';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ChevronDownIcon } from '@heroicons/react/20/solid';
 import { GlobeAltIcon } from '@heroicons/react/24/outline';
 import { CheckIcon, PlusIcon } from '@heroicons/react/24/solid';
 import { getNetworkPageRoute } from '@/utils/RouteUtils';
+import { AppRoutes } from '@/routes';
+import MenuRow from './MenuRow';
+import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 
 interface NetworkSelectorProps {
   isSidebarCollapsed?: boolean;
@@ -56,7 +59,7 @@ const NetworkSelector: React.FC<NetworkSelectorProps> = ({ isSidebarCollapsed = 
     <div ref={menuRef} className="relative px-2 ">
       {/* Network Selection Button */}
       <div
-        className={`flex items-center cursor-pointer transition-colors duration-150
+        className={`flex max-w-48 items-center cursor-pointer transition-colors duration-150
           ${
             isSidebarCollapsed
               ? 'justify-center p-2  rounded-md'
@@ -64,12 +67,12 @@ const NetworkSelector: React.FC<NetworkSelectorProps> = ({ isSidebarCollapsed = 
           }`}
         onClick={() => setIsOpen(!isOpen)}
       >
-        <GlobeAltIcon className="size-5" />
+        <GlobeAltIcon className="size-5 shrink-0" />
         {!isSidebarCollapsed && (
           <>
-            <div className="text-sm-semibold">{activeNetwork}</div>
+            <div className="truncate text-sm-semibold">{activeNetwork}</div>
             <ChevronDownIcon
-              className={`size-5 transition-transform duration-200
+              className={`size-5 transition-transform duration-200 shrink-0
                 ${isOpen ? 'rotate-180' : ''}`}
             />
           </>
@@ -79,7 +82,7 @@ const NetworkSelector: React.FC<NetworkSelectorProps> = ({ isSidebarCollapsed = 
       {/* Dropdown Menu */}
       {isOpen && (
         <div
-          className={`absolute mt-2 overflow-hidden rounded-lg shadow-xl z-50 bg-bg-contrastDefault min-w-60
+          className={`absolute mt-2  rounded-lg shadow-xl z-50 bg-bg-contrastDefault min-w-60
             ${
               isSidebarCollapsed
                 ? 'left-16 w-48' // When collapsed, position to the right of the button
@@ -94,20 +97,26 @@ const NetworkSelector: React.FC<NetworkSelectorProps> = ({ isSidebarCollapsed = 
           <div className="flex flex-col gap-2 p-2">
             {/* Optional heading for collapsed state */}
             <div className="px-4 mb-1 text-sm text-text-secondary">Networks</div>
-
-            {networks?.map((network) => (
-              <div
-                key={network.netid}
-                className={`flex rounded-md items-center gap-2 px-3 py-2 text-sm-semibold cursor-pointer text-sm
+            <div className="flex flex-col gap-2 p-2 overflow-auto border-b max-h-48 border-stroke-default">
+              {networks?.map((network) => (
+                <div
+                  key={network.netid}
+                  className={`flex rounded-md items-center gap-2 px-3 py-2 text-sm-semibold cursor-pointer text-sm
                   ${activeNetwork === network.netid ? 'bg-button-plain-fill-default text-button-plain-text-default' : 'hover:bg-bg-contrastHover'}
                   transition-colors duration-150`}
-                onClick={() => handleNetworkSelect(network.netid)}
-              >
-                {activeNetwork === network.netid ? <CheckIcon className="size-5" /> : <div className="size-5" />}
-                <span>{network.netid}</span>
-              </div>
-            ))}
+                  onClick={() => handleNetworkSelect(network.netid)}
+                >
+                  {activeNetwork === network.netid ? (
+                    <CheckIcon className="size-5 shrink-0" />
+                  ) : (
+                    <div className="size-5 shrink-0" />
+                  )}
+                  <span className="truncate">{network.netid}</span>
+                </div>
+              ))}
+            </div>
 
+            <MenuRow title="All Networks" onClick={() => navigate(AppRoutes.NETWORKS_ROUTE)} />
             <div
               className="flex items-center gap-2 px-3 py-2 text-sm transition-colors duration-150 border-t rounded-md cursor-pointer text-sm-semibold text-button-primary-text-default bg-button-primary-fill-default border-stroke-hover"
               onClick={onAddNetwork}

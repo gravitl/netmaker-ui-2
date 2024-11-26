@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 type MenuRowProps = {
   title: string;
   subtitle?: string;
-  icon: React.ReactNode;
+  icon?: React.ReactNode;
   selected?: boolean;
   rightIcon?: 'plus' | 'ellipsis';
   isSidebarCollapsed?: boolean;
