@@ -33,6 +33,7 @@ import {
   Modal,
   notification,
   Row,
+  Spin,
   Table,
   TableColumnProps,
   Tooltip,
@@ -61,6 +62,7 @@ export default function NetworkDnsPage({ isFullScreen }: NetworkDnsPageProps) {
   const [searchDns, setSearchDns] = useState('');
   const [dnses, setDnses] = useState<DNS[]>([]);
   const [isAddDnsModalOpen, setIsAddDnsModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const networkNodes = useMemo(
     () =>
@@ -111,6 +113,7 @@ export default function NetworkDnsPage({ isFullScreen }: NetworkDnsPageProps) {
   const loadNetworkDnses = useCallback(async () => {
     try {
       if (!networkId) return;
+      setIsLoading(true);
       const dnses = (await NetworksService.getDnsesPerNetwork(networkId)).data ?? [];
       setDnses(dnses);
     } catch (err) {
@@ -119,17 +122,19 @@ export default function NetworkDnsPage({ isFullScreen }: NetworkDnsPageProps) {
         message: 'Error loading network DNS',
         description: extractErrorMsg(err as any),
       });
+    } finally {
+      setIsLoading(false);
+      setIsInitialLoad(false);
     }
   }, [networkId, notify]);
 
   useEffect(() => {
     if (isInitialLoad) {
       loadNetworkDnses();
-      setIsInitialLoad(false);
     }
   }, [isInitialLoad, loadNetworkDnses]);
 
-  const isEmpty = dnses.length === 0;
+  const isEmpty = !isLoading && dnses.length === 0;
 
   return (
     <PageLayout
@@ -144,143 +149,154 @@ export default function NetworkDnsPage({ isFullScreen }: NetworkDnsPageProps) {
       }
       icon={<InboxStackIcon className=" size-5" />}
     >
-      {isEmpty && (
-        <Row
-          className="page-padding"
-          style={{
-            background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
-            width: '100%',
-          }}
-        >
-          <Col xs={24} xl={16}>
-            <Typography.Title level={3} style={{ color: 'white ' }}>
-              Domain Names
-            </Typography.Title>
-            <Typography.Text style={{ color: 'white ' }}>
-              DNS, otherwise known as human-readable machine addresses, are used to easily access devices on the
-              network. DNS entries can be created for devices on the network, and can be used to access devices by name
-              instead of IP address.
-              <a
-                href="https://www.netmaker.io/features#DNS"
-                target="_blank"
-                rel="noreferrer"
-                style={{ color: 'inherit', textDecoration: 'underline' }}
-              >
-                (Learn More)
-              </a>
-              .
-            </Typography.Text>
-          </Col>
-          <Col xs={24} xl={8} style={{ position: 'relative' }}>
-            <Card className="header-card" style={{ position: 'absolute', width: '100%' }}>
-              <Typography.Title level={3}>Create DNS Entry</Typography.Title>
-              <Typography.Text>
-                Select a device to create a DNS entry for. Afterwards, you can access the device by name instead of IP.
-              </Typography.Text>
-              <Row style={{ marginTop: '5rem' }}>
-                <Col>
-                  <Button type="primary" size="large" onClick={() => setIsAddDnsModalOpen(true)}>
-                    <PlusOutlined /> Create DNS
-                  </Button>
-                </Col>
-              </Row>
-            </Card>
-          </Col>
+      {isLoading ? (
+        <Row justify="center" align="middle" style={{ minHeight: '200px' }}>
+          <Spin size="large" />
         </Row>
-      )}
-      {!isEmpty && (
-        <Row justify="space-between" style={{ marginBottom: '1rem', width: '100%' }}>
-          <Col xs={24} md={8}>
-            <Input
-              size="large"
-              placeholder="Search DNS"
-              value={searchDns}
-              onChange={(ev) => setSearchDns(ev.target.value)}
-              prefix={<SearchOutlined />}
-              style={{ marginBottom: '.5rem' }}
-            />
-          </Col>
-          <Col xs={24} md={6} style={{ textAlign: 'right' }}>
-            <Button
-              type="primary"
-              size="large"
-              onClick={() => setIsAddDnsModalOpen(true)}
-              className="mt-10 full-width-button-xs"
-              style={{ marginBottom: '.5rem' }}
+      ) : (
+        <>
+          {isEmpty && (
+            <Row
+              className="page-padding"
+              style={{
+                background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
+                width: '100%',
+              }}
             >
-              <PlusOutlined /> Add DNS
-            </Button>
-            {/* <Button
+              <Col xs={24} xl={16}>
+                <Typography.Title level={3} style={{ color: 'white ' }}>
+                  Domain Names
+                </Typography.Title>
+                <Typography.Text style={{ color: 'white ' }}>
+                  DNS, otherwise known as human-readable machine addresses, are used to easily access devices on the
+                  network. DNS entries can be created for devices on the network, and can be used to access devices by
+                  name instead of IP address.
+                  <a
+                    href="https://www.netmaker.io/features#DNS"
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{ color: 'inherit', textDecoration: 'underline' }}
+                  >
+                    (Learn More)
+                  </a>
+                  .
+                </Typography.Text>
+              </Col>
+              <Col xs={24} xl={8} style={{ position: 'relative' }}>
+                <Card className="header-card" style={{ position: 'absolute', width: '100%' }}>
+                  <Typography.Title level={3}>Create DNS Entry</Typography.Title>
+                  <Typography.Text>
+                    Select a device to create a DNS entry for. Afterwards, you can access the device by name instead of
+                    IP.
+                  </Typography.Text>
+                  <Row style={{ marginTop: '5rem' }}>
+                    <Col>
+                      <Button type="primary" size="large" onClick={() => setIsAddDnsModalOpen(true)}>
+                        <PlusOutlined /> Create DNS
+                      </Button>
+                    </Col>
+                  </Row>
+                </Card>
+              </Col>
+            </Row>
+          )}
+          {!isEmpty && (
+            <Row justify="space-between" style={{ marginBottom: '1rem', width: '100%' }}>
+              <Col xs={24} md={8}>
+                <Input
+                  size="large"
+                  placeholder="Search DNS"
+                  value={searchDns}
+                  onChange={(ev) => setSearchDns(ev.target.value)}
+                  prefix={<SearchOutlined />}
+                  style={{ marginBottom: '.5rem' }}
+                />
+              </Col>
+              <Col xs={24} md={6} style={{ textAlign: 'right' }}>
+                <Button
+                  type="primary"
+                  size="large"
+                  onClick={() => setIsAddDnsModalOpen(true)}
+                  className="mt-10 full-width-button-xs"
+                  style={{ marginBottom: '.5rem' }}
+                >
+                  <PlusOutlined /> Add DNS
+                </Button>
+                {/* <Button
               style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
               onClick={() => alert('not implemented')}
               icon={<InfoCircleOutlined />}
             >
               Take Tour
             </Button> */}
-            <Button
-              title="Go to DNS documentation"
-              style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
-              href={ExternalLinks.CORE_DNS_SETUP_LINK}
-              target="_blank"
-              icon={<QuestionCircleOutlined />}
-            />
-          </Col>
+                <Button
+                  title="Go to DNS documentation"
+                  style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
+                  href={ExternalLinks.CORE_DNS_SETUP_LINK}
+                  target="_blank"
+                  icon={<QuestionCircleOutlined />}
+                />
+              </Col>
 
-          <Col xs={24} style={{ paddingTop: '1rem' }}>
-            <div className="table-wrapper">
-              <Table
-                scroll={{ x: true }}
-                columns={[
-                  {
-                    title: 'DNS Entry',
-                    render(_, dns) {
-                      return <Typography.Text copyable>{`${dns.name}`}</Typography.Text>;
-                    },
-                    sorter: (a, b) => a.name.localeCompare(b.name),
-                    defaultSortOrder: 'ascend',
-                  },
-                  {
-                    title: 'IP Addresses',
-                    render(_, dns) {
-                      const addrs = ([] as Array<string>).concat(dns.address || [], dns.address6 || []).join(', ');
-                      return <Typography.Text copyable>{addrs}</Typography.Text>;
-                    },
-                  },
-                  {
-                    title: '',
-                    key: 'action',
-                    width: '1rem',
-                    render: (_, dns) => (
-                      <Dropdown
-                        placement="bottomRight"
-                        menu={{
-                          items: [
-                            {
-                              key: 'delete',
-                              disabled: isDefaultDns(dns),
-                              onClick: () => (isDefaultDns(dns) ? undefined : confirmDeleteDns(dns)),
-                              danger: true,
-                              label: (
-                                <Tooltip title={isDefaultDns(dns) ? 'Cannot delete default DNS' : 'Delete DNS'}>
-                                  <DeleteOutlined /> Delete
-                                </Tooltip>
-                              ),
-                            },
-                          ] as MenuProps['items'],
-                        }}
-                      >
-                        <MoreOutlined />
-                      </Dropdown>
-                    ),
-                  },
-                ]}
-                dataSource={dnses.filter((dns) => dns.name.toLocaleLowerCase().includes(searchDns.toLocaleLowerCase()))}
-                rowKey="name"
-                size="small"
-              />
-            </div>
-          </Col>
-        </Row>
+              <Col xs={24} style={{ paddingTop: '1rem' }}>
+                <div className="table-wrapper">
+                  <Table
+                    scroll={{ x: true }}
+                    columns={[
+                      {
+                        title: 'DNS Entry',
+                        render(_, dns) {
+                          return <Typography.Text copyable>{`${dns.name}`}</Typography.Text>;
+                        },
+                        sorter: (a, b) => a.name.localeCompare(b.name),
+                        defaultSortOrder: 'ascend',
+                      },
+                      {
+                        title: 'IP Addresses',
+                        render(_, dns) {
+                          const addrs = ([] as Array<string>).concat(dns.address || [], dns.address6 || []).join(', ');
+                          return <Typography.Text copyable>{addrs}</Typography.Text>;
+                        },
+                      },
+                      {
+                        title: '',
+                        key: 'action',
+                        width: '1rem',
+                        render: (_, dns) => (
+                          <Dropdown
+                            placement="bottomRight"
+                            menu={{
+                              items: [
+                                {
+                                  key: 'delete',
+                                  disabled: isDefaultDns(dns),
+                                  onClick: () => (isDefaultDns(dns) ? undefined : confirmDeleteDns(dns)),
+                                  danger: true,
+                                  label: (
+                                    <Tooltip title={isDefaultDns(dns) ? 'Cannot delete default DNS' : 'Delete DNS'}>
+                                      <DeleteOutlined /> Delete
+                                    </Tooltip>
+                                  ),
+                                },
+                              ] as MenuProps['items'],
+                            }}
+                          >
+                            <MoreOutlined />
+                          </Dropdown>
+                        ),
+                      },
+                    ]}
+                    dataSource={dnses.filter((dns) =>
+                      dns.name.toLocaleLowerCase().includes(searchDns.toLocaleLowerCase()),
+                    )}
+                    rowKey="name"
+                    size="small"
+                  />
+                </div>
+              </Col>
+            </Row>
+          )}
+        </>
       )}
 
       {/* misc */}

@@ -32,6 +32,7 @@ import {
   Modal,
   notification,
   Row,
+  Spin,
   Switch,
   Table,
   TableColumnProps,
@@ -69,6 +70,7 @@ export default function NetworkRemoteAccessPage({ isFullScreen }: RemoteAccessPa
   const [isUpdateClientModalOpen, setIsUpdateClientModalOpen] = useState(false);
   const [isDownloadRemoteAccessClientModalOpen, setIsDownloadRemoteAccessClientModalOpen] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
   const networkNodes = useMemo(
     () =>
@@ -458,15 +460,28 @@ export default function NetworkRemoteAccessPage({ isFullScreen }: RemoteAccessPa
 
   useEffect(() => {
     if (isInitialLoad) {
-      const sortedClientGateways = filteredClientGateways.sort((a, b) =>
-        a.name && b.name ? a.name.localeCompare(b.name) : 0,
-      );
-      setSelectedGateway(sortedClientGateways[0] ?? null);
-      setIsInitialLoad(false);
+      setIsLoading(true);
+      Promise.all([storeFetchNodes(), loadClients()])
+        .then(() => {
+          const sortedClientGateways = filteredClientGateways.sort((a, b) =>
+            a.name && b.name ? a.name.localeCompare(b.name) : 0,
+          );
+          setSelectedGateway(sortedClientGateways[0] ?? null);
+        })
+        .catch((err) => {
+          notify.error({
+            message: 'Error loading data',
+            description: extractErrorMsg(err),
+          });
+        })
+        .finally(() => {
+          setIsLoading(false);
+          setIsInitialLoad(false);
+        });
     }
-  }, [isInitialLoad, filteredClientGateways]);
+  }, [isInitialLoad, storeFetchNodes, loadClients, filteredClientGateways, notify]);
 
-  const isEmpty = clients.length === 0 && clientGateways.length === 0;
+  const isEmpty = !isLoading && clients.length === 0 && clientGateways.length === 0;
 
   return (
     <PageLayout
@@ -481,220 +496,229 @@ export default function NetworkRemoteAccessPage({ isFullScreen }: RemoteAccessPa
       }
       icon={<ViewfinderCircleIcon className=" size-5" />}
     >
-      {isEmpty && (
-        <Row
-          className="page-padding"
-          style={{
-            background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
-            width: '100%',
-          }}
-        >
-          <Col xs={24} xl={(24 * 2) / 3}>
-            <Typography.Title level={3} style={{ color: 'white ' }}>
-              Remote Access
-            </Typography.Title>
-            <Typography.Text style={{ color: 'white ' }}>
-              Remote Access Gateways enable secure access to your network via Clients. The Gateway forwards traffic from
-              the clients into the network, and from the network back to the clients. Clients are simple WireGuard
-              config files, supported on most devices. To use Clients, you must configure a Remote Access Gateway, which
-              is typically deployed in a public cloud environment, e.g. on a server with a public IP, so that it is
-              easily reachable from the Clients. Clients are configured on this dashboard primary via client configs{' '}
-              <a
-                href="https://www.netmaker.io/features/remote-access-gateway"
-                target="_blank"
-                rel="noreferrer"
-                style={{ color: 'inherit', textDecoration: 'underline' }}
-              >
-                Learn More
-              </a>
-            </Typography.Text>
-          </Col>
-          <Col xs={24} xl={(24 * 1) / 3} style={{ position: 'relative' }}>
-            <Card className="header-card" style={{ position: 'absolute', width: '100%' }}>
-              <Typography.Title level={3}>Create Remote Access Gateway</Typography.Title>
-              <Typography.Text>
-                You will need to create a remote access gateway for your network before you can create a client.
-              </Typography.Text>
-              <Row style={{ marginTop: '1rem' }}>
-                <Col>
-                  <Button type="primary" size="large" onClick={() => setIsAddClientGatewayModalOpen(true)}>
-                    <PlusOutlined /> Create Gateway
-                  </Button>
-                </Col>
-              </Row>
-            </Card>
-          </Col>
+      {isLoading ? (
+        <Row justify="center" align="middle" style={{ minHeight: '200px' }}>
+          <Spin size="large" />
         </Row>
-      )}
-
-      {!isEmpty && (
-        <Row>
-          {isServerEE && (
-            <Row style={{ width: '100%' }}>
-              <Col
-                style={{
-                  marginBottom: '1rem',
-                  background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
-                  padding: '1rem',
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                }}
-              >
-                <span>
-                  Introducing the Remote Access Client (RAC) - a graphical user interface (GUI) tool designed for
-                  convenient connectivity to a Netmaker network. RAC is particularly well-suited for offsite machines
-                  requiring access to a Netmaker network and is compatible with Windows, Mac, Linux and mobile (Android,
-                  iOS) operating systems.
-                </span>
-                <Button
-                  // href={ExternalLinks.RAC_DOWNLOAD_DOCS_LINK}
-                  onClick={() => setIsDownloadRemoteAccessClientModalOpen(true)}
-                  target="_blank"
-                  rel="noreferrer"
-                  type="primary"
-                  style={{
-                    marginLeft: 'auto',
-                  }}
-                >
-                  {' '}
-                  Download RAC
-                </Button>
+      ) : (
+        <>
+          {' '}
+          {isEmpty && (
+            <Row
+              className="page-padding"
+              style={{
+                background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
+                width: '100%',
+              }}
+            >
+              <Col xs={24} xl={(24 * 2) / 3}>
+                <Typography.Title level={3} style={{ color: 'white ' }}>
+                  Remote Access
+                </Typography.Title>
+                <Typography.Text style={{ color: 'white ' }}>
+                  Remote Access Gateways enable secure access to your network via Clients. The Gateway forwards traffic
+                  from the clients into the network, and from the network back to the clients. Clients are simple
+                  WireGuard config files, supported on most devices. To use Clients, you must configure a Remote Access
+                  Gateway, which is typically deployed in a public cloud environment, e.g. on a server with a public IP,
+                  so that it is easily reachable from the Clients. Clients are configured on this dashboard primary via
+                  client configs{' '}
+                  <a
+                    href="https://www.netmaker.io/features/remote-access-gateway"
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{ color: 'inherit', textDecoration: 'underline' }}
+                  >
+                    Learn More
+                  </a>
+                </Typography.Text>
+              </Col>
+              <Col xs={24} xl={(24 * 1) / 3} style={{ position: 'relative' }}>
+                <Card className="header-card" style={{ position: 'absolute', width: '100%' }}>
+                  <Typography.Title level={3}>Create Remote Access Gateway</Typography.Title>
+                  <Typography.Text>
+                    You will need to create a remote access gateway for your network before you can create a client.
+                  </Typography.Text>
+                  <Row style={{ marginTop: '1rem' }}>
+                    <Col>
+                      <Button type="primary" size="large" onClick={() => setIsAddClientGatewayModalOpen(true)}>
+                        <PlusOutlined /> Create Gateway
+                      </Button>
+                    </Col>
+                  </Row>
+                </Card>
               </Col>
             </Row>
           )}
+          {!isEmpty && (
+            <Row>
+              {isServerEE && (
+                <Row style={{ width: '100%' }}>
+                  <Col
+                    style={{
+                      marginBottom: '1rem',
+                      background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
+                      padding: '1rem',
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <span>
+                      Introducing the Remote Access Client (RAC) - a graphical user interface (GUI) tool designed for
+                      convenient connectivity to a Netmaker network. RAC is particularly well-suited for offsite
+                      machines requiring access to a Netmaker network and is compatible with Windows, Mac, Linux and
+                      mobile (Android, iOS) operating systems.
+                    </span>
+                    <Button
+                      // href={ExternalLinks.RAC_DOWNLOAD_DOCS_LINK}
+                      onClick={() => setIsDownloadRemoteAccessClientModalOpen(true)}
+                      target="_blank"
+                      rel="noreferrer"
+                      type="primary"
+                      style={{
+                        marginLeft: 'auto',
+                      }}
+                    >
+                      {' '}
+                      Download RAC
+                    </Button>
+                  </Col>
+                </Row>
+              )}
 
-          <Row style={{ width: '100%' }}>
-            <Col xs={24} xl={12} style={{ marginBottom: '2rem' }}>
-              <Input
-                placeholder="Search gateways"
-                value={searchClientGateways}
-                onChange={(ev) => setSearchClientGateways(ev.target.value)}
-                prefix={<SearchOutlined />}
-                style={{ width: '60%' }}
-              />
-            </Col>
-
-            <Col xs={24} xl={12} style={{ marginBottom: '2rem' }}>
-              <Input
-                placeholder="Search clients"
-                value={searchClients}
-                onChange={(ev) => setSearchClients(ev.target.value)}
-                prefix={<SearchOutlined />}
-                style={{ width: '60%' }}
-              />
-            </Col>
-            <Col xs={24} xl={12}>
               <Row style={{ width: '100%' }}>
-                <Col xs={24} md={10}>
-                  <Typography.Title style={{ marginTop: '0px' }} level={5}>
-                    Gateways
-                  </Typography.Title>
-                </Col>
-                <Col xs={23} md={13} style={{ textAlign: 'right' }}>
-                  <Button
-                    type="primary"
-                    onClick={() => setIsAddClientGatewayModalOpen(true)}
-                    className="full-width-button-xs"
-                    style={{ marginBottom: '.5rem' }}
-                  >
-                    <PlusOutlined /> Create Gateway
-                  </Button>
-                  {/* <Button
-                    style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
-                    onClick={() => alert('Tour not implemented')}
-                    icon={<InfoCircleOutlined />}
-                  >
-                    Take Tour
-                  </Button> */}
-                  <Button
-                    title="Go to remote access gateways documentation"
-                    style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
-                    href={ExternalLinks.GATEWAYS_DOCS_URL}
-                    target="_blank"
-                    icon={<QuestionCircleOutlined />}
+                <Col xs={24} xl={12} style={{ marginBottom: '2rem' }}>
+                  <Input
+                    placeholder="Search gateways"
+                    value={searchClientGateways}
+                    onChange={(ev) => setSearchClientGateways(ev.target.value)}
+                    prefix={<SearchOutlined />}
+                    style={{ width: '60%' }}
                   />
                 </Col>
-              </Row>
-              <Row style={{ marginTop: '1rem' }}>
-                <Col xs={23}>
-                  <div className="table-wrapper">
-                    <Table
-                      columns={gatewaysTableCols}
-                      dataSource={filteredClientGateways}
-                      rowKey="id"
-                      size="small"
-                      scroll={{ x: true }}
-                      rowClassName={(gateway) => {
-                        return gateway.id === selectedGateway?.id ? 'selected-row' : '';
-                      }}
-                      onRow={(gateway) => {
-                        return {
-                          onClick: () => {
-                            setSelectedGateway(gateway);
-                          },
-                        };
-                      }}
-                      rowSelection={{
-                        type: 'radio',
-                        hideSelectAll: true,
-                        selectedRowKeys: selectedGateway ? [selectedGateway.id] : [],
-                        onSelect: (gateway) => {
-                          if (selectedGateway?.id === gateway.id) {
-                            setSelectedGateway(null);
-                          } else {
-                            setSelectedGateway(gateway);
-                          }
-                        },
-                      }}
-                    />
-                  </div>
+
+                <Col xs={24} xl={12} style={{ marginBottom: '2rem' }}>
+                  <Input
+                    placeholder="Search clients"
+                    value={searchClients}
+                    onChange={(ev) => setSearchClients(ev.target.value)}
+                    prefix={<SearchOutlined />}
+                    style={{ width: '60%' }}
+                  />
+                </Col>
+                <Col xs={24} xl={12}>
+                  <Row style={{ width: '100%' }}>
+                    <Col xs={24} md={10}>
+                      <Typography.Title style={{ marginTop: '0px' }} level={5}>
+                        Gateways
+                      </Typography.Title>
+                    </Col>
+                    <Col xs={23} md={13} style={{ textAlign: 'right' }}>
+                      <Button
+                        type="primary"
+                        onClick={() => setIsAddClientGatewayModalOpen(true)}
+                        className="full-width-button-xs"
+                        style={{ marginBottom: '.5rem' }}
+                      >
+                        <PlusOutlined /> Create Gateway
+                      </Button>
+                      {/* <Button
+                      style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
+                      onClick={() => alert('Tour not implemented')}
+                      icon={<InfoCircleOutlined />}
+                    >
+                      Take Tour
+                    </Button> */}
+                      <Button
+                        title="Go to remote access gateways documentation"
+                        style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
+                        href={ExternalLinks.GATEWAYS_DOCS_URL}
+                        target="_blank"
+                        icon={<QuestionCircleOutlined />}
+                      />
+                    </Col>
+                  </Row>
+                  <Row style={{ marginTop: '1rem' }}>
+                    <Col xs={23}>
+                      <div className="table-wrapper">
+                        <Table
+                          columns={gatewaysTableCols}
+                          dataSource={filteredClientGateways}
+                          rowKey="id"
+                          size="small"
+                          scroll={{ x: true }}
+                          rowClassName={(gateway) => {
+                            return gateway.id === selectedGateway?.id ? 'selected-row' : '';
+                          }}
+                          onRow={(gateway) => {
+                            return {
+                              onClick: () => {
+                                setSelectedGateway(gateway);
+                              },
+                            };
+                          }}
+                          rowSelection={{
+                            type: 'radio',
+                            hideSelectAll: true,
+                            selectedRowKeys: selectedGateway ? [selectedGateway.id] : [],
+                            onSelect: (gateway) => {
+                              if (selectedGateway?.id === gateway.id) {
+                                setSelectedGateway(null);
+                              } else {
+                                setSelectedGateway(gateway);
+                              }
+                            },
+                          }}
+                        />
+                      </div>
+                    </Col>
+                  </Row>
+                </Col>
+                <Col xs={24} xl={12}>
+                  <>
+                    <Row style={{ width: '100%' }}>
+                      <Col xs={24} md={12}>
+                        <Typography.Title style={{ marginTop: '0px' }} level={5}>
+                          VPN Config Files
+                        </Typography.Title>
+                      </Col>
+                      <Col xs={24} md={12} style={{ textAlign: 'right' }}>
+                        <Button
+                          type="primary"
+                          style={{ marginRight: '1rem', marginBottom: '.5rem' }}
+                          onClick={() => setIsAddClientModalOpen(true)}
+                          className="full-width-button-xs"
+                        >
+                          <PlusOutlined /> Create Config
+                        </Button>
+                        <Button
+                          title="Go to client documentation"
+                          style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
+                          href={ExternalLinks.CLIENTS_DOCS_URL}
+                          target="_blank"
+                          icon={<QuestionCircleOutlined />}
+                        />
+                      </Col>
+                    </Row>
+                    <Row style={{ marginTop: '1rem', marginBottom: '.5rem' }}>
+                      <Col xs={24}>
+                        <div className="table-wrapper">
+                          <Table
+                            columns={clientsTableCols}
+                            dataSource={filteredClients}
+                            rowKey="clientid"
+                            size="small"
+                            scroll={{ x: true }}
+                          />
+                        </div>
+                      </Col>
+                    </Row>
+                  </>
                 </Col>
               </Row>
-            </Col>
-            <Col xs={24} xl={12}>
-              <>
-                <Row style={{ width: '100%' }}>
-                  <Col xs={24} md={12}>
-                    <Typography.Title style={{ marginTop: '0px' }} level={5}>
-                      VPN Config Files
-                    </Typography.Title>
-                  </Col>
-                  <Col xs={24} md={12} style={{ textAlign: 'right' }}>
-                    <Button
-                      type="primary"
-                      style={{ marginRight: '1rem', marginBottom: '.5rem' }}
-                      onClick={() => setIsAddClientModalOpen(true)}
-                      className="full-width-button-xs"
-                    >
-                      <PlusOutlined /> Create Config
-                    </Button>
-                    <Button
-                      title="Go to client documentation"
-                      style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
-                      href={ExternalLinks.CLIENTS_DOCS_URL}
-                      target="_blank"
-                      icon={<QuestionCircleOutlined />}
-                    />
-                  </Col>
-                </Row>
-                <Row style={{ marginTop: '1rem', marginBottom: '.5rem' }}>
-                  <Col xs={24}>
-                    <div className="table-wrapper">
-                      <Table
-                        columns={clientsTableCols}
-                        dataSource={filteredClients}
-                        rowKey="clientid"
-                        size="small"
-                        scroll={{ x: true }}
-                      />
-                    </div>
-                  </Col>
-                </Row>
-              </>
-            </Col>
-          </Row>
-        </Row>
+            </Row>
+          )}
+        </>
       )}
 
       {/* misc */}
