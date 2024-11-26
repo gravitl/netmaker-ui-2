@@ -16,6 +16,7 @@ import {
   CommandSeparator,
 } from '@/components/shadcn/Command';
 import { AvailableThemes } from '@/models/AvailableThemes';
+import { Tooltip } from 'antd';
 
 /**
  * Variants for the multi-select component to handle different styles.
@@ -169,6 +170,12 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
       }
     };
 
+    const renderTruncatedText = (text: string) => (
+      <Tooltip title={text} mouseEnterDelay={0.5}>
+        <span className="truncate">{text}</span>
+      </Tooltip>
+    );
+
     return (
       <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen} modal={modalPopover}>
         <PopoverTrigger asChild className="border-stroke-default">
@@ -199,7 +206,7 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
                         style={{ animationDuration: `${animation}s`, backgroundColor: '#3F3F46' }}
                       >
                         {IconComponent && <IconComponent className="inline w-4 h-4 mr-2 shrink-0" />}
-                        <span className="truncate">{option?.label}</span>
+                        {renderTruncatedText(option?.label || '')}{' '}
                         <XCircle
                           className="w-4 h-4 ml-2 cursor-pointer shrink-0"
                           onClick={(event) => {
@@ -219,9 +226,10 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
                       )}
                       style={{ animationDuration: `${animation}s` }}
                     >
-                      {`+ ${selectedValues.length - maxCount} more`}
+                      <span>{`+ ${selectedValues.length - maxCount} more`}</span>
+
                       <XCircle
-                        className="w-4 h-4 ml-2 cursor-pointer"
+                        className="w-4 h-4 ml-2 cursor-pointer shrink-0"
                         onClick={(event) => {
                           event.stopPropagation();
                           clearExtraOptions();
@@ -279,12 +287,14 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
                         onSelect={() => toggleOption(option.value)}
                         className="cursor-pointer"
                       >
-                        <div className="flex justify-between w-full">
-                          <span>
-                            {option.icon && <option.icon className="inline w-4 h-4 mr-2 text-muted-foreground" />}
-                            <span className="mr-2">{option.label}</span>
+                        <div className="flex justify-between w-full ">
+                          <span className="flex max-w-96 ">
+                            {option.icon && (
+                              <option.icon className="inline w-4 h-4 mr-2 text-muted-foreground shrink-0" />
+                            )}
+                            {renderTruncatedText(option.label)}
                           </span>
-                          {isSelected && <CheckIcon className="w-4 h-4" />}
+                          {isSelected && <CheckIcon className="w-4 h-4 ml-4 shrink-0 ml" />}
                         </div>
                       </CommandItem>
                     );
