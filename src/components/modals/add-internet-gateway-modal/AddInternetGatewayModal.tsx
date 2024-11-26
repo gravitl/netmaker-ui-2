@@ -252,12 +252,12 @@ export default function AddInternetGatewayModal({
           {selectedGateway && (
             <div ref={selectConnectedHostsRef}>
               <Form.Item
-                label="Select hosts to connect (optional)"
+                label="Select nodes to connect (optional)"
                 data-nmui-intercom="add-internet-gateway-form_connected-hosts"
                 style={{ marginTop: '2rem' }}
               >
                 <Select
-                  placeholder="Select hosts to provide internet access to"
+                  placeholder="Select nodes to provide internet access to"
                   open={isSelectOpen}
                   onDropdownVisibleChange={(visible) => setIsSelectOpen(visible)}
                   dropdownRender={() => (
@@ -265,7 +265,7 @@ export default function AddInternetGatewayModal({
                       <Row style={{ marginBottom: '1rem' }}>
                         <Col span={8}>
                           <Input
-                            placeholder="Search host..."
+                            placeholder="Search nodes..."
                             value={connectedHostsSearch}
                             onChange={(e) => setConnectedHostsSearch(e.target.value)}
                           />
