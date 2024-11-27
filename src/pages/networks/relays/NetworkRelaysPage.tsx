@@ -4,7 +4,6 @@ import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 import { NULL_NODE } from '@/constants/Types';
 import PageLayout from '@/layouts/PageLayout';
 import { ExtendedNode } from '@/models/Node';
-import { isSaasBuild } from '@/services/BaseService';
 import { NodesService } from '@/services/NodesService';
 import { useStore } from '@/store/store';
 import { getExtendedNode, isNodeRelay } from '@/utils/NodeUtils';
@@ -12,7 +11,6 @@ import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { useBranding, useGetActiveNetwork, useServerLicense } from '@/utils/Utils';
 import {
   SearchOutlined,
-  InfoCircleOutlined,
   QuestionCircleOutlined,
   MoreOutlined,
   PlusOutlined,
@@ -51,7 +49,6 @@ export default function NetworkRelaysPage({ isFullScreen }: NetworkRelaysPage) {
   const resolvedNetworkId = networkId || store.activeNetwork;
   const { isServerEE } = useServerLicense();
   const branding = useBranding();
-  const { network, isLoadingNetwork } = useGetActiveNetwork(resolvedNetworkId);
   const [notify, notifyCtx] = notification.useNotification();
 
   const [selectedRelay, setSelectedRelay] = useState<ExtendedNode | null>(null);
@@ -271,7 +268,11 @@ export default function NetworkRelaysPage({ isFullScreen }: NetworkRelaysPage) {
       setIsLoading(true);
       storeFetchNodes()
         .then(() => {
-          const sortedRelays = filteredRelays.sort((a, b) => (a.name && b.name ? a.name.localeCompare(b.name) : 0));
+          const sortedRelays = store.nodes
+            .map((node) => getExtendedNode(node, store.hostsCommonDetails))
+            .filter((node) => node.network === resolvedNetworkId)
+            .filter((node) => isNodeRelay(node))
+            .sort((a, b) => (a.name && b.name ? a.name.localeCompare(b.name) : 0));
           setSelectedRelay(sortedRelays[0] ?? null);
         })
         .finally(() => {
@@ -279,7 +280,7 @@ export default function NetworkRelaysPage({ isFullScreen }: NetworkRelaysPage) {
           setIsInitialLoad(false);
         });
     }
-  }, [filteredRelays, isInitialLoad, storeFetchNodes]);
+  }, [isInitialLoad, storeFetchNodes, resolvedNetworkId, store.nodes, store.hostsCommonDetails]);
 
   const isEmpty = !isLoading && relays.length === 0;
   return (

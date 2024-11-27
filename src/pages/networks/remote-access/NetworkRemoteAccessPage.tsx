@@ -1,17 +1,22 @@
+import AddClientModal from '@/components/modals/add-client-modal/AddClientModal';
+import AddRemoteAccessGatewayModal from '@/components/modals/add-remote-access-gateway-modal/AddRemoteAccessGatewayModal';
+import ClientConfigModal from '@/components/modals/client-config-modal/ClientConfigModal';
+import ClientDetailsModal from '@/components/modals/client-detaiils-modal/ClientDetailsModal';
+import DownloadRemotesAccessClientModal from '@/components/modals/remote-access-client-modal/DownloadRemoteAccessClientModal';
+import UpdateClientModal from '@/components/modals/update-client-modal/UpdateClientModal';
+import UpdateRemoteAccessGatewayModal from '@/components/modals/update-remote-access-gateway-modal/UpdateRemoteAccessGatewayModal';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 import PageLayout from '@/layouts/PageLayout';
 import { ExternalClient } from '@/models/ExternalClient';
 import { ExtendedNode, Node } from '@/models/Node';
-import { isSaasBuild } from '@/services/BaseService';
 import { NodesService } from '@/services/NodesService';
 import { useStore } from '@/store/store';
-import { getExtendedNode, getNodeConnectivityStatus } from '@/utils/NodeUtils';
+import { getExtendedNode } from '@/utils/NodeUtils';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { isAdminUserOrRole } from '@/utils/UserMgmtUtils';
-import { useBranding, useGetActiveNetwork, useServerLicense } from '@/utils/Utils';
+import { useBranding, useServerLicense } from '@/utils/Utils';
 import {
   SearchOutlined,
-  InfoCircleOutlined,
   QuestionCircleOutlined,
   MoreOutlined,
   PlusOutlined,
@@ -54,7 +59,6 @@ export default function NetworkRemoteAccessPage({ isFullScreen }: RemoteAccessPa
   const resolvedNetworkId = networkId || store.activeNetwork;
   const { isServerEE } = useServerLicense();
   const branding = useBranding();
-  const { network, isLoadingNetwork } = useGetActiveNetwork(resolvedNetworkId);
   const [notify, notifyCtx] = notification.useNotification();
 
   const [isAddClientModalOpen, setIsAddClientModalOpen] = useState(false);
@@ -458,29 +462,31 @@ export default function NetworkRemoteAccessPage({ isFullScreen }: RemoteAccessPa
     ],
   );
 
+  const loadData = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      await Promise.all([storeFetchNodes(), loadClients()]);
+    } catch (err) {
+      notify.error({
+        message: 'Error loading data',
+        description: extractErrorMsg(err as any),
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [loadClients, notify, storeFetchNodes]);
+
   useEffect(() => {
     if (isInitialLoad) {
-      setIsLoading(true);
-      Promise.all([storeFetchNodes(), loadClients()])
-        .then(() => {
-          const sortedClientGateways = filteredClientGateways.sort((a, b) =>
-            a.name && b.name ? a.name.localeCompare(b.name) : 0,
-          );
-          setSelectedGateway(sortedClientGateways[0] ?? null);
-        })
-        .catch((err) => {
-          notify.error({
-            message: 'Error loading data',
-            description: extractErrorMsg(err),
-          });
-        })
-        .finally(() => {
-          setIsLoading(false);
-          setIsInitialLoad(false);
-        });
+      loadData().then(() => {
+        const sortedClientGateways = filteredClientGateways.sort((a, b) =>
+          a.name && b.name ? a.name.localeCompare(b.name) : 0,
+        );
+        setSelectedGateway(sortedClientGateways[0] ?? null);
+      });
+      setIsInitialLoad(false);
     }
-  }, [isInitialLoad, storeFetchNodes, loadClients, filteredClientGateways, notify]);
-
+  }, [filteredClientGateways, isInitialLoad, loadData]);
   const isEmpty = !isLoading && clients.length === 0 && clientGateways.length === 0;
 
   return (
@@ -723,6 +729,81 @@ export default function NetworkRemoteAccessPage({ isFullScreen }: RemoteAccessPa
 
       {/* misc */}
       {notifyCtx}
+      <AddRemoteAccessGatewayModal
+        isOpen={isAddClientGatewayModalOpen}
+        networkId={resolvedNetworkId}
+        onCreateIngress={(remoteAccessGateway) => {
+          store.fetchNodes();
+          setSelectedGateway(remoteAccessGateway);
+          setIsAddClientGatewayModalOpen(false);
+        }}
+        onCancel={() => setIsAddClientGatewayModalOpen(false)}
+      />
+      {selectedGateway && (
+        <UpdateRemoteAccessGatewayModal
+          key={`update-ingress-${selectedGateway.id}`}
+          isOpen={isUpdateGatewayModalOpen}
+          ingress={selectedGateway}
+          networkId={resolvedNetworkId}
+          onUpdateIngress={(newNode) => {
+            setIsUpdateGatewayModalOpen(false);
+            setSelectedGateway(newNode);
+          }}
+          onCancel={() => setIsUpdateGatewayModalOpen(false)}
+        />
+      )}
+      <AddClientModal
+        key={selectedGateway ? `add-client-${selectedGateway.id}` : 'add-client'}
+        isOpen={isAddClientModalOpen}
+        networkId={resolvedNetworkId}
+        preferredGateway={selectedGateway ?? undefined}
+        onCreateClient={() => {
+          loadClients();
+          store.fetchNodes();
+          setIsAddClientModalOpen(false);
+        }}
+        onCancel={() => setIsAddClientModalOpen(false)}
+      />
+      {targetClient && (
+        <ClientDetailsModal
+          key={`view-client-${targetClient.clientid}`}
+          isOpen={isClientDetailsModalOpen}
+          client={targetClient}
+          onViewConfig={() => setIsClientConfigModalOpen(true)}
+          onUpdateClient={(updatedClient: ExternalClient) => {
+            setClients((prev) => prev.map((c) => (c.clientid === targetClient.clientid ? updatedClient : c)));
+            setTargetClient(updatedClient);
+          }}
+          onCancel={() => setIsClientDetailsModalOpen(false)}
+        />
+      )}
+      {targetClient && selectedGateway && (
+        <ClientConfigModal
+          key={`view-client-config-${targetClient.clientid}`}
+          isOpen={isClientConfigModalOpen}
+          client={targetClient}
+          gateway={selectedGateway}
+          onCancel={() => setIsClientConfigModalOpen(false)}
+        />
+      )}
+      {targetClient && (
+        <UpdateClientModal
+          key={`update-client-${targetClient.clientid}`}
+          isOpen={isUpdateClientModalOpen}
+          client={targetClient}
+          networkId={resolvedNetworkId}
+          onUpdateClient={() => {
+            loadClients();
+            setIsUpdateClientModalOpen(false);
+          }}
+          onCancel={() => setIsUpdateClientModalOpen(false)}
+        />
+      )}
+      <DownloadRemotesAccessClientModal
+        isOpen={isDownloadRemoteAccessClientModalOpen}
+        onCancel={() => setIsDownloadRemoteAccessClientModalOpen(false)}
+        networkId={networkId}
+      />
     </PageLayout>
   );
 }
