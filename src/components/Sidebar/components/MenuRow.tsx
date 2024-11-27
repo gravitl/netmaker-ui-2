@@ -11,6 +11,7 @@ type MenuRowProps = {
   onClick?: () => void;
   children?: React.ReactNode;
   danger?: boolean;
+  imgLink?: string;
 };
 
 const MenuRow: React.FC<MenuRowProps> = ({
@@ -23,6 +24,7 @@ const MenuRow: React.FC<MenuRowProps> = ({
   onClick,
   children,
   danger,
+  imgLink,
 }) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
@@ -51,7 +53,7 @@ const MenuRow: React.FC<MenuRowProps> = ({
         onMouseEnter={() => setShowTooltip(true)}
         onMouseLeave={() => setShowTooltip(false)}
       >
-        {icon}
+        {!imgLink ? icon : <img src={imgLink} alt="avatar" className="w-5 h-5 rounded-full" />}
         {!isSidebarCollapsed && (
           <>
             <p className="flex-grow truncate text-sm-semibold">

@@ -343,6 +343,7 @@ const Sidebar = ({
           title={store.username as string}
           icon={<UserCircleIcon className="size-5" />}
           rightIcon="ellipsis"
+          imgLink={`https://ui-avatars.com/api/?name=${store.username as string}&background=4F46E5&color=fff&font-size=0.5`}
           isSidebarCollapsed={isSidebarCollapsed}
           onClick={() => setIsAccountDropdownOpen(!isAccountDropdownOpen)}
         />
