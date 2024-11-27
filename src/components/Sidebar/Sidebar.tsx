@@ -31,6 +31,7 @@ import {
   ChartBarSquareIcon as ChartBarSquareIconOutline,
   HashtagIcon as HashtagIconOutline,
   InboxStackIcon as InboxStackIconOutline,
+  ArrowDownTrayIcon,
 } from '@heroicons/react/24/outline';
 
 import LogoBlock from './components/LogoBlock';
@@ -45,6 +46,7 @@ import { getAmuiUrl, getNetworkPageRoute, isNetworkPage, NetworkPage } from '@/u
 import { useServerLicense } from '@/utils/Utils';
 import UpgradeModal from '../modals/upgrade-modal/UpgradeModal';
 import NetworkSelector from './components/NetworkSelector';
+import RacModal from '../modals/rac-modal/RacModal';
 
 const Sidebar = ({
   isSidebarCollapsed,
@@ -58,6 +60,7 @@ const Sidebar = ({
   const [selectedMenu, setSelectedMenu] = useState('');
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
+  const [isRacModalOpen, setIsRacModalOpen] = useState(false);
 
   const store = useStore();
   const location = useLocation();
@@ -328,7 +331,14 @@ const Sidebar = ({
       </div>
 
       {/* Bottom fixed section */}
-      <div className="relative px-2 py-2 mt-auto border-t shadow-lg border-stroke-default">
+      <div className="relative flex flex-col gap-2 px-2 py-2 mt-auto border-t shadow-lg border-stroke-default">
+        <MenuRow
+          title="Download RAC"
+          icon={<ArrowDownTrayIcon className="size-5" />}
+          isSidebarCollapsed={isSidebarCollapsed}
+          onClick={() => setIsRacModalOpen(true)}
+        />
+
         <MenuRow
           title={store.username as string}
           icon={<UserCircleIcon className="size-5" />}
@@ -336,6 +346,7 @@ const Sidebar = ({
           isSidebarCollapsed={isSidebarCollapsed}
           onClick={() => setIsAccountDropdownOpen(!isAccountDropdownOpen)}
         />
+
         <AccountDropdown
           isOpen={isAccountDropdownOpen}
           onClose={() => setIsAccountDropdownOpen(false)}
@@ -350,6 +361,7 @@ const Sidebar = ({
           setIsUpgradeModalOpen(false);
         }}
       />
+      <RacModal isOpen={isRacModalOpen} onClose={() => setIsRacModalOpen(false)} />
     </div>
   );
 };

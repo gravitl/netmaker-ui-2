@@ -31,7 +31,7 @@ const CopyableCodeTag = ({ code }: { code: string }) => {
   };
 
   return (
-    <div className="relative w-full px-4 py-3 overflow-x-auto rounded-lg bg-bg-hover">
+    <div className="relative w-full px-4 py-3 overflow-x-auto rounded-lg bg-bg-contrastHover">
       <code className="block min-w-0 break-words whitespace-pre-wrap rounded text-sm-semibold text-text-primary">
         {code}
       </code>
@@ -542,13 +542,16 @@ sudo dnf install remote-client
   if (!isOpen) return null;
 
   return (
-    <div onClick={handleOverlayClick} className="fixed inset-0 z-50 overflow-y-auto bg-[#141414] bg-opacity-50">
+    <div
+      onClick={handleOverlayClick}
+      className="fixed inset-0 z-50 overflow-y-auto bg-[#141414] bg-opacity-50 backdrop-filter backdrop-blur-sm"
+    >
       <div className="flex items-center justify-center min-h-full p-4 " onClick={handleOverlayClick}>
         <div
-          className="relative w-full max-w-[620px] bg-bg-default border border-stroke-default rounded-xl "
+          className="relative w-full max-w-[620px] bg-bg-contrastDefault border border-stroke-default rounded-xl "
           onClick={handleDialogClick}
         >
-          <div className="flex items-start justify-between w-full gap-6 py-6 pl-8 pr-3 border-b border-stroke-default bg-bg-default rounded-t-xl">
+          <div className="flex items-start justify-between w-full gap-6 py-6 pl-8 pr-3 border-b border-stroke-default bg-bg-contrastDefault rounded-t-xl">
             <div className="flex flex-col gap-1">
               <h2 className="text-xl text-text-primary">Download Remote Access Client</h2>
               <p className="text-text-secondary">Easily connect to your network via RAC.</p>
