@@ -42,9 +42,11 @@ const MenuRow: React.FC<MenuRowProps> = ({
     <div className="relative w-full">
       <div
         ref={menuRef}
-        className={`flex items-center w-full gap-2 rounded-md px-3 py-2 cursor-pointer 
-          ${selected && !danger ? 'bg-bg-contrastActive text-text-primary ' : ' text-text-secondary hover:bg-bg-contrastHover '} 
-          ${isSidebarCollapsed ? 'justify-center' : ''} ${danger ? 'text-text-critical hover:text-text-critical ' : ''}`}
+        className={`
+          flex items-center w-full gap-2 rounded-md px-3 py-2 cursor-pointer
+          ${danger ? 'text-text-critical' : selected ? 'bg-bg-contrastActive text-text-primary' : 'text-text-secondary hover:bg-bg-contrastHover hover:text-text-primary'}
+          ${isSidebarCollapsed ? 'justify-center' : ''}
+        `}
         onClick={onClick}
         onMouseEnter={() => setShowTooltip(true)}
         onMouseLeave={() => setShowTooltip(false)}
