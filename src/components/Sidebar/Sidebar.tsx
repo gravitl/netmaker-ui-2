@@ -215,10 +215,10 @@ const Sidebar = ({
     if (!isServerEE)
       return (
         <span title="Click to upgrade" className="underline" onClick={() => setIsUpgradeModalOpen(true)}>
-          CE License
+          Community Edition
         </span>
       );
-    return 'Pro License';
+    return 'Pro Edition';
   }, [isServerEE]);
 
   useEffect(() => {
@@ -258,9 +258,10 @@ const Sidebar = ({
         >
           <ChevronUpIcon className={`size-5 ${isTenantCollapsed ? 'transform rotate-180 text-center' : ''}`} />
           {!isSidebarCollapsed && (
-            <div className="flex flex-col w-full py-0.5 gap-1">
-              <div className="flex gap-2 text-text-primary">
+            <div className="inline-flex items-start flex-col w-full py-0.5 gap-1">
+              <div className="inline-flex items-center gap-2 text-text-primary">
                 <span className="text-sm-semibold">Tenant</span>
+
                 {!isSidebarCollapsed && (
                   <ArrowTopRightOnSquareIcon
                     onClick={(ev) => {
@@ -273,7 +274,9 @@ const Sidebar = ({
                   />
                 )}
               </div>
-              <span className="text-sm text-text-secondary">{licenseType}</span>
+              <span className="px-2 py-0.5 text-white bg-button-primary-fill-default rounded-full text-xs-semibold">
+                {licenseType}
+              </span>
             </div>
           )}
         </div>

@@ -46,7 +46,7 @@ const MenuRow: React.FC<MenuRowProps> = ({
         ref={menuRef}
         className={`
           flex items-center w-full gap-2 rounded-md px-3 py-2 cursor-pointer
-          ${danger ? 'text-text-critical' : selected ? 'bg-bg-contrastActive text-text-primary' : 'text-text-secondary hover:bg-bg-contrastHover hover:text-text-primary'}
+          ${danger ? 'text-text-critical hover:bg-bg-contrastHover' : selected ? 'bg-bg-contrastActive text-text-primary' : 'text-text-secondary hover:bg-bg-contrastHover hover:text-text-primary'}
           ${isSidebarCollapsed ? 'justify-center' : ''}
         `}
         onClick={onClick}
