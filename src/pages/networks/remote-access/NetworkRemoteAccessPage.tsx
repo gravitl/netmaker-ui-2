@@ -2,7 +2,7 @@ import AddClientModal from '@/components/modals/add-client-modal/AddClientModal'
 import AddRemoteAccessGatewayModal from '@/components/modals/add-remote-access-gateway-modal/AddRemoteAccessGatewayModal';
 import ClientConfigModal from '@/components/modals/client-config-modal/ClientConfigModal';
 import ClientDetailsModal from '@/components/modals/client-detaiils-modal/ClientDetailsModal';
-import DownloadRemotesAccessClientModal from '@/components/modals/remote-access-client-modal/DownloadRemoteAccessClientModal';
+import RacModal from '@/components/modals/rac-modal/RacModal';
 import UpdateClientModal from '@/components/modals/update-client-modal/UpdateClientModal';
 import UpdateRemoteAccessGatewayModal from '@/components/modals/update-remote-access-gateway-modal/UpdateRemoteAccessGatewayModal';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
@@ -799,10 +799,10 @@ export default function NetworkRemoteAccessPage({ isFullScreen }: RemoteAccessPa
           onCancel={() => setIsUpdateClientModalOpen(false)}
         />
       )}
-      <DownloadRemotesAccessClientModal
+      <RacModal
         isOpen={isDownloadRemoteAccessClientModalOpen}
-        onCancel={() => setIsDownloadRemoteAccessClientModalOpen(false)}
-        networkId={networkId}
+        // networkId={networkId}
+        onClose={() => setIsDownloadRemoteAccessClientModalOpen(false)}
       />
     </PageLayout>
   );
