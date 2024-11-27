@@ -5,6 +5,7 @@ import ClientDetailsModal from '@/components/modals/client-detaiils-modal/Client
 import RacModal from '@/components/modals/rac-modal/RacModal';
 import UpdateClientModal from '@/components/modals/update-client-modal/UpdateClientModal';
 import UpdateRemoteAccessGatewayModal from '@/components/modals/update-remote-access-gateway-modal/UpdateRemoteAccessGatewayModal';
+import RacDownloadBanner from '@/components/RacDownloadBanner';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 import PageLayout from '@/layouts/PageLayout';
 import { ExternalClient } from '@/models/ExternalClient';
@@ -561,33 +562,10 @@ export default function NetworkRemoteAccessPage({ isFullScreen }: RemoteAccessPa
                 <Row style={{ width: '100%' }}>
                   <Col
                     style={{
-                      marginBottom: '1rem',
-                      background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
-                      padding: '1rem',
                       width: '100%',
-                      display: 'flex',
-                      alignItems: 'center',
                     }}
                   >
-                    <span>
-                      Introducing the Remote Access Client (RAC) - a graphical user interface (GUI) tool designed for
-                      convenient connectivity to a Netmaker network. RAC is particularly well-suited for offsite
-                      machines requiring access to a Netmaker network and is compatible with Windows, Mac, Linux and
-                      mobile (Android, iOS) operating systems.
-                    </span>
-                    <Button
-                      // href={ExternalLinks.RAC_DOWNLOAD_DOCS_LINK}
-                      onClick={() => setIsDownloadRemoteAccessClientModalOpen(true)}
-                      target="_blank"
-                      rel="noreferrer"
-                      type="primary"
-                      style={{
-                        marginLeft: 'auto',
-                      }}
-                    >
-                      {' '}
-                      Download RAC
-                    </Button>
+                    <RacDownloadBanner />
                   </Col>
                 </Row>
               )}
@@ -801,7 +779,6 @@ export default function NetworkRemoteAccessPage({ isFullScreen }: RemoteAccessPa
       )}
       <RacModal
         isOpen={isDownloadRemoteAccessClientModalOpen}
-        // networkId={networkId}
         onClose={() => setIsDownloadRemoteAccessClientModalOpen(false)}
       />
     </PageLayout>
