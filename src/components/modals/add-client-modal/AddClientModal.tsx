@@ -47,8 +47,8 @@ interface AddClientModalProps {
   createClientConfigModalPublicKeyRef?: Ref<HTMLDivElement>;
   createClientConfigModalDNSRef?: Ref<HTMLDivElement>;
   createClientConfigModalAdditionalAddressesRef?: Ref<HTMLDivElement>;
-  createClientConfigModalPostUpRef: Ref<HTMLDivElement>;
-  createClientConfigModalPostDownRef: Ref<HTMLDivElement>;
+  createClientConfigModalPostUpRef?: Ref<HTMLDivElement>;
+  createClientConfigModalPostDownRef?: Ref<HTMLDivElement>;
   isTourOpen?: boolean;
 }
 

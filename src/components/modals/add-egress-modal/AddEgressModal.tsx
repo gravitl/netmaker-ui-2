@@ -38,9 +38,9 @@ interface AddEgressModalProps {
   closeModal?: () => void;
   onOk?: (e: MouseEvent<HTMLButtonElement>) => void;
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
-  createEgressModalSelectHostRef: Ref<HTMLDivElement>;
-  createEgressModalEnableNATRef: Ref<HTMLDivElement>;
-  createEgressModalSelectExternalRangesRef: Ref<HTMLDivElement>;
+  createEgressModalSelectHostRef?: Ref<HTMLDivElement>;
+  createEgressModalEnableNATRef?: Ref<HTMLDivElement>;
+  createEgressModalSelectExternalRangesRef?: Ref<HTMLDivElement>;
 }
 
 type AddEgressFormFields = CreateEgressNodeDto & {

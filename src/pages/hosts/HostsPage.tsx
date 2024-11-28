@@ -47,7 +47,8 @@ import { lt } from 'semver';
 import { ExtendedNode } from '@/models/Node';
 import { HOST_HEALTH_STATUS } from '@/models/NodeConnectivityStatus';
 import NodeStatus from '@/components/ui/Status';
-import { EllipsisHorizontalIcon } from '@heroicons/react/24/solid';
+import { DevicePhoneMobileIcon, EllipsisHorizontalIcon } from '@heroicons/react/24/solid';
+import PageLayout from '@/layouts/PageLayout';
 
 const HOST_DOCS_URL = 'https://docs.netmaker.io/docs/references/user-interface#hosts';
 
@@ -717,7 +718,7 @@ export default function HostsPage(props: PageProps) {
   // ui components
   const getOverviewContent = useCallback(() => {
     return (
-      <Skeleton loading={!hasLoaded && store.isFetchingHosts} active title={true} className="page-padding">
+      <Skeleton loading={!hasLoaded && store.isFetchingHosts} active title={true}>
         <Row className="">
           <Col xs={24}>
             <div className="table-wrapper">
@@ -732,6 +733,10 @@ export default function HostsPage(props: PageProps) {
                   },
                 })}
                 ref={hostsTableRef}
+                pagination={{
+                  hideOnSinglePage: true,
+                  pageSize: 15,
+                }}
               />
             </div>
           </Col>
@@ -742,7 +747,7 @@ export default function HostsPage(props: PageProps) {
 
   const getNetworkAccessContent = useCallback(() => {
     return (
-      <Skeleton loading={!hasLoaded && store.isFetchingHosts} active title={true} className="page-padding">
+      <Skeleton loading={!hasLoaded && store.isFetchingHosts} active title={true}>
         <>
           <Row className="" justify="space-between">
             <Col xs={24} md={12}>
@@ -950,29 +955,26 @@ export default function HostsPage(props: PageProps) {
   }, [hasAdvicedHosts, hosts.length, notify, t]);
 
   return (
-    <Layout.Content
-      className="HostsPage"
-      style={{ position: 'relative', height: '100%', padding: props.isFullScreen ? 0 : 24 }}
+    <PageLayout
+      title="Devices"
+      isFullScreen
+      description={
+        <>
+          View and manage all connected devices across your network infrastructure.
+          <br />
+          Configure device settings, monitor status, and control access permissions seamlessly.
+        </>
+      }
+      icon={<DevicePhoneMobileIcon className=" size-5" />}
     >
-      <Skeleton loading={!hasLoaded && store.isFetchingHosts} active title={true} className="page-padding">
+      <Skeleton loading={!hasLoaded && store.isFetchingHosts} active title={true}>
         {hosts.length === 0 && (
           <>
             <Row
-              className="page-padding"
               style={{
                 background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
               }}
             >
-              <Col xs={24} xl={(24 * 2) / 3}>
-                <Typography.Title level={3} style={{ color: 'white ' }}>
-                  Devices
-                </Typography.Title>
-                <Typography.Text style={{ color: 'white ' }}>
-                  Devices can be added to your network on this page. Servers, VM&apos;s, containers, laptops, and more
-                  can all be added. Windows, Linux, Mac are all supported. Register a device with your server and add
-                  them to networks to give them secure access to other devices and resources.
-                </Typography.Text>
-              </Col>
               <Col xs={24} xl={(24 * 1) / 3} style={{ position: 'relative' }}>
                 <Card className="header-card" style={{ height: '20rem', position: 'absolute', width: '100%' }}>
                   <Typography.Title level={3}>Add a Device</Typography.Title>
@@ -1040,13 +1042,7 @@ export default function HostsPage(props: PageProps) {
         )}
         {hosts.length > 0 && (
           <>
-            <Row className="page-row-padding">
-              <Col xs={24}>
-                <Typography.Title level={3}>Devices</Typography.Title>
-              </Col>
-            </Row>
-
-            <Row className="page-row-padding" justify="space-between">
+            <Row justify="space-between">
               <Col xs={24} md={6}>
                 <Input
                   size="large"
@@ -1109,7 +1105,7 @@ export default function HostsPage(props: PageProps) {
               </Col>
             </Row>
 
-            <Row className="page-row-padding" justify="space-between">
+            <Row justify="space-between">
               <Col xs={24}>
                 <Tabs
                   activeKey={activeKey}
@@ -1148,6 +1144,6 @@ export default function HostsPage(props: PageProps) {
         tourStep={tourStep}
         page="host"
       />
-    </Layout.Content>
+    </PageLayout>
   );
 }

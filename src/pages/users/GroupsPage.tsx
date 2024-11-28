@@ -270,11 +270,11 @@ export default function GroupsPage({
         <>
           <Row className="mb-4">
             <Col xs={24} md={16}>
-              <Typography className="text-xl secondary text-text-secondary">
+              <p className="text-base text-text-secondary">
                 Groups help manage users within specific categories, such as Admins, Developers, and QA.
                 <br />
                 Create groups to organize users and assign roles to clearly define permissions.
-              </Typography>
+              </p>
             </Col>
             <Col xs={24} md={8} style={{ textAlign: 'right' }}>
               <Button

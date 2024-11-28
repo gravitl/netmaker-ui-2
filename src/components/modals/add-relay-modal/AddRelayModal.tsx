@@ -35,7 +35,7 @@ interface AddRelayModalProps {
   closeModal?: () => void;
   onOk?: (e: MouseEvent<HTMLButtonElement>) => void;
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
-  createRelayModalSelectHostRef: Ref<HTMLDivElement>;
+  createRelayModalSelectHostRef?: Ref<HTMLDivElement>;
 }
 
 const nodeIdFormName = 'nodeid';
