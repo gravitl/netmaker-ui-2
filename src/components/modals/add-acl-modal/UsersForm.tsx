@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { notification, Switch, Button } from 'antd';
+import { notification, Switch, Button, Tooltip } from 'antd';
 import { useForm, Controller } from 'react-hook-form';
 import {
   UsersIcon,
@@ -127,24 +127,26 @@ const SelectDropdown: React.FC<SelectDropdownProps> = ({
         ) : (
           <div className="flex flex-wrap gap-1">
             {value.map((item) => (
-              <span
-                key={item.id}
-                className="inline-flex items-center gap-1 px-2 py-1 text-sm rounded text-text-primary bg-bg-hover"
-              >
-                {item.type === 'group' ? (
-                  <UsersIcon className="w-3 h-3 shrink-0" />
-                ) : (
-                  <UserIcon className="w-3 h-3 shrink-0" />
-                )}
-                {item.name}
-                <XMarkIcon
-                  className="w-4 h-4 cursor-pointer shrink-0"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    removeItem(item);
-                  }}
-                />
-              </span>
+              <Tooltip key={item.id} title={item.name}>
+                <span
+                  key={item.id}
+                  className="inline-flex items-center w-32 gap-1 px-2 py-1 text-sm rounded text-text-primary bg-bg-hover"
+                >
+                  {item.type === 'group' ? (
+                    <UsersIcon className="w-3 h-3 shrink-0" />
+                  ) : (
+                    <UserIcon className="w-3 h-3 shrink-0" />
+                  )}
+                  <span className="w-full truncate"> {item.name}</span>
+                  <XMarkIcon
+                    className="w-4 h-4 cursor-pointer shrink-0"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeItem(item);
+                    }}
+                  />
+                </span>
+              </Tooltip>
             ))}
           </div>
         )}
@@ -292,20 +294,22 @@ const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
         ) : (
           <div className="flex flex-wrap gap-1">
             {value.map((item) => (
-              <span
-                key={item.id}
-                className="inline-flex items-center gap-1 px-2 py-1 text-sm rounded text-text-primary bg-bg-hover"
-              >
-                <TagIcon className="w-3 h-3" />
-                {item.name}
-                <XMarkIcon
-                  className="w-4 h-4 cursor-pointer shrink-0"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    removeItem(item);
-                  }}
-                />
-              </span>
+              <Tooltip key={item.id} title={item.name}>
+                <span
+                  key={item.id}
+                  className="inline-flex items-center w-32 gap-1 px-2 py-1 text-sm rounded text-text-primary bg-bg-hover"
+                >
+                  <TagIcon className="w-3 h-3" />
+                  <span className="w-full truncate">{item.name}</span>
+                  <XMarkIcon
+                    className="w-4 h-4 cursor-pointer shrink-0"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeItem(item);
+                    }}
+                  />
+                </span>
+              </Tooltip>
             ))}
           </div>
         )}
