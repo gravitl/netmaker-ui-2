@@ -143,12 +143,12 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
     return networkNodes.some((node) => node.is_fail_over);
   }, [networkNodes]);
 
-  const checkIfManagedHostIsLoading = useMemo(() => {
-    // check if managed host is loading
-    const isNewTenant = store.isNewTenant;
-    const isManagedHostLoaded = store.hosts.some((host) => isManagedHost(host.name));
-    return isSaasBuild && isNewTenant && !isManagedHostLoaded;
-  }, [store.isNewTenant, store.hosts]);
+  // const checkIfManagedHostIsLoading = useMemo(() => {
+  //   // check if managed host is loading
+  //   const isNewTenant = store.isNewTenant;
+  //   const isManagedHostLoaded = store.hosts.some((host) => isManagedHost(host.name));
+  //   return isSaasBuild && isNewTenant && !isManagedHostLoaded;
+  // }, [store.isNewTenant, store.hosts]);
 
   const editNode = useCallback((node: Node) => {
     setTargetNode(node);
@@ -451,7 +451,7 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
           </div>
         </div>{' '}
         <Col xs={24} style={{ paddingTop: '1rem' }}>
-          {checkIfManagedHostIsLoading && (
+          {/* {checkIfManagedHostIsLoading && (
             <Alert
               message="Managed host creation in progress (estimated completion time: 5 - 10 minutes)."
               type="info"
@@ -459,7 +459,7 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
               icon={<LoadingOutlined />}
               style={{ marginBottom: '1rem' }}
             />
-          )}
+          )} */}
           {isServerEE && networkNodes.length > 0 && !isFailoverNodePresentInNetwork && (
             <Alert
               message="There's no failover host present in the network. Set one for redundancy, in case of failure."
