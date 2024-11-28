@@ -1977,12 +1977,12 @@ export default function NetworkDetailsPage(props: PageProps) {
     return nodeHealth === value;
   };
 
-  // const checkIfManagedHostIsLoading = useMemo(() => {
-  //   // check if managed host is loading
-  //   const isNewTenant = store.isNewTenant;
-  //   const isManagedHostLoaded = store.hosts.some((host) => isManagedHost(host.name));
-  //   return isSaasBuild && isNewTenant && !isManagedHostLoaded;
-  // }, [store.isNewTenant, store.hosts]);
+  const checkIfManagedHostIsLoading = useMemo(() => {
+    // check if managed host is loading
+    const isNewTenant = store.isNewTenant;
+    const isManagedHostLoaded = store.hosts.some((host) => isManagedHost(host.name));
+    return isSaasBuild && isNewTenant && !isManagedHostLoaded;
+  }, [store.isNewTenant, store.hosts]);
 
   const jumpToTourStep = useCallback(
     (step: NetworkDetailTourStep) => {
@@ -2281,7 +2281,7 @@ export default function NetworkDetailsPage(props: PageProps) {
             </div>
           </div>{' '}
           <Col xs={24} style={{ paddingTop: '1rem' }}>
-            {/* {checkIfManagedHostIsLoading && (
+            {checkIfManagedHostIsLoading && (
               <Alert
                 message="Managed host creation in progress (estimated completion time: 5 - 10 minutes)."
                 type="info"
@@ -2289,7 +2289,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                 icon={<LoadingOutlined />}
                 style={{ marginBottom: '1rem' }}
               />
-            )} */}
+            )}
             {isServerEE && networkNodes.length > 0 && !isFailoverNodePresentInNetwork && (
               <Alert
                 message="There's no failover host present in the network. Set one for redundancy, in case of failure."
@@ -2720,7 +2720,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     );
   }, [
     searchHost,
-    // checkIfManagedHostIsLoading,
+    checkIfManagedHostIsLoading,
     isServerEE,
     isFailoverNodePresentInNetwork,
     filteredNetworkNodes,
