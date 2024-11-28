@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { notification, Switch, Button } from 'antd';
+import { notification, Switch, Button, Select, Input, InputNumber, Alert, Tooltip } from 'antd';
 import { useForm, Controller } from 'react-hook-form';
 import {
   UsersIcon,
@@ -9,13 +9,14 @@ import {
   MagnifyingGlassIcon,
   ChevronDownIcon,
   TagIcon,
+  InformationCircleIcon,
 } from '@heroicons/react/24/solid';
 import { UsersService } from '@/services/UsersService';
 import { ACLService } from '@/services/ACLService';
 import { TagsService } from '@/services/TagsService';
 import { User, UserGroup } from '@/models/User';
 import { Tag } from '@/models/Tags';
-import { SourceTypeValue, DestinationTypeValue, ACLRule } from '@/services/dtos/ACLDtos';
+import { ACLRule, SourceTypeValue, DestinationTypeValue } from '@/services/dtos/ACLDtos';
 import { Network } from '@/models/Network';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { NotificationInstance } from 'antd/es/notification/interface';
@@ -58,10 +59,19 @@ interface UpdateUsersFormProps {
   notify: NotificationInstance;
 }
 
+interface ACLType {
+  name: string;
+  allowed_protocols: string[];
+  port_range: number;
+  allow_port_setting: boolean;
+}
+
 interface FormValues {
   name: string;
   source: Item[];
   destination: Item[];
+  service: string;
+  port: number;
 }
 
 const SelectDropdown: React.FC<SelectDropdownProps> = ({
@@ -75,6 +85,7 @@ const SelectDropdown: React.FC<SelectDropdownProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
+
   const { isServerEE } = useServerLicense();
 
   const toggleItem = useCallback(
@@ -170,7 +181,7 @@ const SelectDropdown: React.FC<SelectDropdownProps> = ({
               </div>
             </div>
 
-            <div className="w-full ">
+            <div className="w-full">
               <div className="flex w-full max-h-[180px]">
                 {filteredItems.groups.length > 0 && isServerEE && (
                   <div className="w-full py-1 overflow-y-auto">
@@ -311,13 +322,11 @@ const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
                 <TagIcon className="w-3 h-3 shrink-0" />
                 {item.name}
                 <XMarkIcon
-                  className="w-4 h-4 cursor-pointer shrink-0 hover:text-text-primary"
+                  className="w-4 h-4 cursor-pointer shrink-0"
                   onClick={(e) => {
                     e.stopPropagation();
                     removeItem(item);
                   }}
-                  role="button"
-                  aria-label={`Remove ${item.name}`}
                 />
               </span>
             ))}
@@ -328,11 +337,8 @@ const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
 
       {isOpen && (
         <>
-          <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} aria-hidden="true" />
-          <div
-            className="absolute z-20 mt-1 overflow-hidden border rounded-lg shadow-lg w-96 bg-bg-default border-stroke-default"
-            role="listbox"
-          >
+          <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
+          <div className="absolute z-20 mt-1 overflow-hidden border rounded-lg shadow-lg w-96 bg-bg-default border-stroke-default">
             <div className="p-2 border-b border-stroke-default">
               <div className="relative">
                 <input
@@ -341,31 +347,20 @@ const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
                   onChange={(e) => setSearchText(e.target.value)}
                   placeholder="Search tags..."
                   className="w-full pl-8 pr-2 py-1.5 text-sm border rounded-md bg-bg-default border-stroke-default focus:outline-none focus:ring-1 focus:ring-primary-500"
-                  onClick={(e) => e.stopPropagation()}
-                  autoComplete="off"
                 />
-                <MagnifyingGlassIcon
-                  className="absolute w-4 h-4 shrink-0 left-2 top-2 text-text-secondary"
-                  aria-hidden="true"
-                />
+                <MagnifyingGlassIcon className="absolute w-4 h-4 shrink-0 left-2 top-2 text-text-secondary" />
               </div>
             </div>
 
-            <div className="w-full overflow-y-auto max-h-[300px]" role="presentation">
+            <div className="w-full py-1">
               <div
                 className="flex items-center gap-2 px-3 py-2 text-sm cursor-pointer hover:bg-button-secondary-fill-hover"
                 onClick={selectAllTag}
-                role="option"
-                aria-selected={value.some((v) => v.id === '*')}
               >
-                <TagIcon className="w-4 h-4 shrink-0 text-text-secondary" aria-hidden="true" />
-                <span className="flex-1">All Resources</span>
-                {value.some((v) => v.id === '*') && <div className="w-4 h-4 ml-auto text-primary-500">✓</div>}
+                <TagIcon className="w-4 h-4 shrink-0 text-text-secondary" />
+                All Resources
+                {value.some((v) => v.id === '*') && <div className="w-4 h-4 ml-auto">✓</div>}
               </div>
-
-              {filteredTags.length === 0 && searchText && (
-                <div className="px-3 py-2 text-sm text-text-secondary">No tags found</div>
-              )}
 
               {filteredTags.map((tag) => {
                 const isSelected = value.some((v) => v.id === tag.id);
@@ -376,12 +371,8 @@ const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
                     key={tag.id}
                     className={`
                       flex items-center gap-2 px-3 py-2 text-sm
-                      ${
-                        isDisabled
-                          ? 'opacity-50 cursor-not-allowed'
-                          : 'cursor-pointer hover:bg-button-secondary-fill-hover'
-                      }
-                      ${isSelected && !isDisabled ? 'bg-button-secondary-fill-hover' : ''}
+${isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-button-secondary-fill-hover'}
+                    ${isSelected && !isDisabled ? 'bg-button-secondary-fill-hover' : ''}
                     `}
                     onClick={() => !isDisabled && toggleTag(tag)}
                     role="option"
@@ -417,6 +408,12 @@ const UpdateUsersForm: React.FC<UpdateUsersFormProps> = ({
   const [groupsList, setGroupsList] = useState<UserGroup[]>([]);
   const [tagsList, setTagsList] = useState<Tag[]>([]);
   const [direction, setDirection] = useState<0 | 1>(selectedPolicy.allowed_traffic_direction);
+  const [aclTypes, setAclTypes] = useState<ACLType[]>([]);
+  const [selectedService, setSelectedService] = useState<ACLType | null>(null);
+  const [showUnidirectionalWarning, setShowUnidirectionalWarning] = useState(false);
+  const [protocolType, setProtocolType] = useState<'tcp' | 'udp'>(
+    (selectedPolicy.ports[0].split('/')[1] as 'tcp' | 'udp') || 'tcp',
+  );
 
   const { isServerEE } = useServerLicense();
 
@@ -432,6 +429,8 @@ const UpdateUsersForm: React.FC<UpdateUsersFormProps> = ({
       name: selectedPolicy.name,
       source: [],
       destination: [],
+      service: selectedPolicy.protocol,
+      port: parseInt(selectedPolicy.ports[0].split('/')[0]),
     },
   });
 
@@ -439,11 +438,10 @@ const UpdateUsersForm: React.FC<UpdateUsersFormProps> = ({
     (sourceTypes: SourceTypeValue[]): Item[] => {
       return sourceTypes.map((source) => {
         if (source.id === 'user-group') {
-          // Look up the group name from groupsList
           const group = groupsList.find((g) => g.id === source.value);
           return {
             id: source.value,
-            name: group?.name || source.value, // Fallback to value if group not found
+            name: group?.name || source.value,
             type: 'group',
           };
         }
@@ -472,6 +470,29 @@ const UpdateUsersForm: React.FC<UpdateUsersFormProps> = ({
   }, [selectedPolicy, setValue, convertSourceTypesToItems, convertDestinationTypeToItems]);
 
   useEffect(() => {
+    const fetchACLTypes = async () => {
+      try {
+        if (!networkId) return;
+        const response = await ACLService.getACLTypes();
+        const types = response?.data?.Response?.ProtocolTypes || [];
+        if (Array.isArray(types)) {
+          setAclTypes(types);
+          const service = types.find((t) => t.name === selectedPolicy.protocol);
+          setSelectedService(service || null);
+        }
+      } catch (error) {
+        console.error('Error fetching ACL types:', error);
+        notify.error({
+          message: 'Failed to fetch ACL types',
+          description: error instanceof Error ? error.message : 'Unknown error occurred',
+        });
+      }
+    };
+
+    fetchACLTypes();
+  }, [networkId, notify, selectedPolicy.protocol]);
+
+  useEffect(() => {
     const fetchUsers = async () => {
       try {
         const response = await UsersService.getUsers();
@@ -489,13 +510,11 @@ const UpdateUsersForm: React.FC<UpdateUsersFormProps> = ({
           if (!group.network_roles) {
             return false;
           }
-
           return (
             Object.keys(group.network_roles).includes(networkId) ||
             Object.keys(group.network_roles).includes('all_networks')
           );
         });
-
         setGroupsList(filteredGroups);
       } catch (error) {
         console.error('Error fetching groups:', error);
@@ -532,13 +551,37 @@ const UpdateUsersForm: React.FC<UpdateUsersFormProps> = ({
     };
   }, []);
 
-  useEffect(() => {
-    console.log('before', selectedPolicy);
-  }, [selectedPolicy]);
+  const handleServiceChange = (serviceName: string) => {
+    const service = aclTypes.find((type) => type.name === serviceName);
+    setSelectedService(service || null);
+
+    if (service) {
+      if (service.allow_port_setting) {
+        setValue('port', 8000);
+        // Just keep current protocol type in state
+        setProtocolType(protocolType);
+      } else {
+        setValue('port', service.port_range);
+        // Update protocol type state only
+        if (service.allowed_protocols && service.allowed_protocols.length > 0) {
+          setProtocolType(service.allowed_protocols[0] as 'tcp' | 'udp');
+        }
+      }
+    } else {
+      setValue('port', 8000);
+      // Default to tcp in state
+      setProtocolType('tcp');
+    }
+  };
+  const handleDirectionChange = () => {
+    const newDirection = direction === 0 ? 1 : 0;
+    setDirection(newDirection);
+    setShowUnidirectionalWarning(newDirection === 0);
+  };
 
   const onSubmit = async (values: FormValues) => {
     try {
-      if (!values.name || !values.source.length || !values.destination.length) {
+      if (!values.name || !values.source.length || !values.destination.length || !values.service) {
         notify.error({
           message: 'Validation Error',
           description: 'Please fill in all required fields',
@@ -557,10 +600,14 @@ const UpdateUsersForm: React.FC<UpdateUsersFormProps> = ({
         dst_type: values.destination.map(convertDestinationItemToTypeValue),
         enabled: isPolicyEnabled,
         allowed_traffic_direction: direction,
+        protocol: values.service,
+        type: protocolType, // Use state value directly
+        ports: [`${values.port}`],
       };
-      console.log('after', updatedPolicy);
 
-      await ACLService.updateACLRule(updatedPolicy, networkId);
+      const response = await ACLService.updateACLRule(updatedPolicy, networkId);
+      console.log(response);
+
       notify.success({ message: 'Policy updated successfully' });
       fetchACLRules?.();
       reloadACL();
@@ -574,7 +621,6 @@ const UpdateUsersForm: React.FC<UpdateUsersFormProps> = ({
       setIsSubmitting(false);
     }
   };
-
   return (
     <div className="w-full">
       {error && <div className="p-3 mb-4 text-sm text-red-600 border border-red-200 rounded-md bg-red-50">{error}</div>}
@@ -592,6 +638,85 @@ const UpdateUsersForm: React.FC<UpdateUsersFormProps> = ({
             className="w-full p-2 text-sm border rounded-lg bg-bg-default border-stroke-default"
           />
           {errors.name && <span className="text-sm text-red-500">Rule name is required</span>}
+        </div>
+
+        <div className="flex gap-4 mb-4">
+          <div className="flex flex-col flex-1 gap-2">
+            <label htmlFor="service" className="block text-sm font-semibold text-text-primary">
+              Service
+            </label>
+            <Controller
+              name="service"
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <Select
+                  {...field}
+                  className="w-full"
+                  placeholder="Select a service"
+                  options={aclTypes.map((type) => ({ label: type.name, value: type.name }))}
+                  onChange={(value) => {
+                    field.onChange(value);
+                    handleServiceChange(value);
+                  }}
+                />
+              )}
+            />
+            {errors.service && <span className="text-sm text-red-500">Service is required</span>}
+          </div>
+
+          {selectedService?.allow_port_setting && (
+            <div className="flex flex-col w-32 gap-2">
+              <label htmlFor="type" className="block text-sm font-semibold text-text-primary">
+                Type
+              </label>
+              <Select
+                value={protocolType}
+                onChange={setProtocolType}
+                options={selectedService.allowed_protocols.map((protocol) => ({
+                  label: protocol,
+                  value: protocol,
+                }))}
+              />
+            </div>
+          )}
+          <div className="flex flex-col w-32 gap-2">
+            <label htmlFor="port" className="block text-sm font-semibold text-text-primary">
+              Port
+            </label>
+            <div className="flex items-center gap-2">
+              <Controller
+                name="port"
+                control={control}
+                rules={{
+                  required: true,
+                  validate: (value) => {
+                    if (selectedService?.allow_port_setting) {
+                      return value >= 1 && value <= 65535;
+                    }
+                    return true;
+                  },
+                }}
+                render={({ field: { onChange, value } }) => (
+                  <InputNumber
+                    onChange={(val) => onChange(val)}
+                    value={value}
+                    disabled={!selectedService?.allow_port_setting}
+                    placeholder="Port"
+                    min={1}
+                    max={65535}
+                    className="w-full"
+                  />
+                )}
+              />
+              {selectedService?.allowed_protocols && (
+                <Tooltip title="Enter a single port (80) or range (8000-9000), or leave blank for all ports">
+                  <InformationCircleIcon className="w-4 h-4 text-text-secondary cursor-help shrink-0" />
+                </Tooltip>
+              )}
+            </div>
+            {errors.port && <span className="text-sm text-red-500">Invalid port number</span>}
+          </div>
         </div>
 
         <div className="flex w-full gap-7">
@@ -618,13 +743,13 @@ const UpdateUsersForm: React.FC<UpdateUsersFormProps> = ({
           </div>
 
           <div className="flex flex-col items-center justify-center w-2/3 gap-2">
-            <img src={arrowRight} className="w-full " alt="Right arrow" />
+            <img src={arrowRight} className="w-full" alt="Right arrow" />
             <img
-              onClick={() => setDirection(direction === 0 ? 1 : 0)}
+              onClick={handleDirectionChange}
               src={arrowLeft}
               className={`w-full cursor-pointer ${direction === 0 ? 'opacity-30' : ''}`}
               alt="Left arrow"
-            />{' '}
+            />
           </div>
 
           <div className="w-full">
@@ -647,6 +772,18 @@ const UpdateUsersForm: React.FC<UpdateUsersFormProps> = ({
             </div>
           </div>
         </div>
+
+        {showUnidirectionalWarning && (
+          <Alert
+            message="Unidirectional Mode"
+            description="Only Linux machines are supported in unidirectional mode."
+            type="warning"
+            showIcon
+            closable
+            className="[&_.ant-alert-message]:!text-sm-semibold [&_.ant-alert-description]:!text-xs [&_.anticon]:!size-5 p-4"
+            onClose={() => setShowUnidirectionalWarning(false)}
+          />
+        )}
 
         <div className="flex w-full gap-2 p-4 mt-4 border rounded-md border-stroke-default">
           <div className="flex flex-col w-full gap-1">

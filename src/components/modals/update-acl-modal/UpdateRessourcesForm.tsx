@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { notification, Switch, Button } from 'antd';
+import { notification, Switch, Button, Tooltip, InputNumber, Select, Alert } from 'antd';
 import { useForm, Controller } from 'react-hook-form';
 import {
   ComputerDesktopIcon,
@@ -8,6 +8,7 @@ import {
   MagnifyingGlassIcon,
   ChevronDownIcon,
   TagIcon,
+  InformationCircleIcon,
 } from '@heroicons/react/24/solid';
 import { ACLService } from '@/services/ACLService';
 import { TagsService } from '@/services/TagsService';
@@ -42,10 +43,19 @@ interface UpdateResourcesFormProps {
   notify: NotificationInstance;
 }
 
+interface ACLType {
+  name: string;
+  allowed_protocols: string[];
+  port_range: number;
+  allow_port_setting: boolean;
+}
+
 interface FormValues {
   name: string;
   source: Item[];
   destination: Item[];
+  service: string;
+  port: number;
 }
 
 const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
@@ -234,6 +244,12 @@ const UpdateResourcesForm: React.FC<UpdateResourcesFormProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [tagsList, setTagsList] = useState<Tag[]>([]);
   const [direction, setDirection] = useState<0 | 1>(selectedPolicy.allowed_traffic_direction);
+  const [aclTypes, setAclTypes] = useState<ACLType[]>([]);
+  const [selectedService, setSelectedService] = useState<ACLType | null>(null);
+  const [showUnidirectionalWarning, setShowUnidirectionalWarning] = useState(false);
+  const [protocolType, setProtocolType] = useState<'tcp' | 'udp'>(
+    (selectedPolicy.ports[0].split('/')[1] as 'tcp' | 'udp') || 'tcp',
+  );
 
   const {
     register,
@@ -247,6 +263,8 @@ const UpdateResourcesForm: React.FC<UpdateResourcesFormProps> = ({
       name: selectedPolicy.name,
       source: [],
       destination: [],
+      service: selectedPolicy.protocol,
+      port: parseInt(selectedPolicy.ports[0].split('/')[0]),
     },
   });
 
@@ -257,6 +275,55 @@ const UpdateResourcesForm: React.FC<UpdateResourcesFormProps> = ({
       type: 'tag',
     }));
   }, []);
+
+  const handleDirectionChange = () => {
+    const newDirection = direction === 0 ? 1 : 0;
+    setDirection(newDirection);
+    setShowUnidirectionalWarning(newDirection === 0);
+  };
+
+  const handleServiceChange = (serviceName: string) => {
+    const service = aclTypes.find((type) => type.name === serviceName);
+    setSelectedService(service || null);
+
+    if (service) {
+      if (service.allow_port_setting) {
+        setValue('port', 8000);
+        setProtocolType(protocolType);
+      } else {
+        setValue('port', service.port_range);
+        if (service.allowed_protocols && service.allowed_protocols.length > 0) {
+          setProtocolType(service.allowed_protocols[0] as 'tcp' | 'udp');
+        }
+      }
+    } else {
+      setValue('port', 8000);
+      setProtocolType('tcp');
+    }
+  };
+
+  useEffect(() => {
+    const fetchACLTypes = async () => {
+      try {
+        if (!networkId) return;
+        const response = await ACLService.getACLTypes();
+        const types = response?.data?.Response?.ProtocolTypes || [];
+        if (Array.isArray(types)) {
+          setAclTypes(types);
+          const service = types.find((t) => t.name === selectedPolicy.protocol);
+          setSelectedService(service || null);
+        }
+      } catch (error) {
+        console.error('Error fetching ACL types:', error);
+        notify.error({
+          message: 'Failed to fetch ACL types',
+          description: error instanceof Error ? error.message : 'Unknown error occurred',
+        });
+      }
+    };
+
+    fetchACLTypes();
+  }, [networkId, notify, selectedPolicy.protocol]);
 
   useEffect(() => {
     setValue('name', selectedPolicy.name);
@@ -323,6 +390,9 @@ const UpdateResourcesForm: React.FC<UpdateResourcesFormProps> = ({
         dst_type: dstType,
         enabled: isPolicyEnabled,
         allowed_traffic_direction: direction,
+        protocol: values.service,
+        type: protocolType,
+        ports: [`${values.port}`],
       };
 
       await ACLService.updateACLRule(updatedPolicy, networkId);
@@ -359,6 +429,83 @@ const UpdateResourcesForm: React.FC<UpdateResourcesFormProps> = ({
           {errors.name && <span className="text-sm text-red-500">Rule name is required</span>}
         </div>
 
+        <div className="flex gap-4 mb-4">
+          <div className="flex flex-col flex-1 gap-2">
+            <label htmlFor="service" className="block text-sm font-semibold text-text-primary">
+              Service
+            </label>
+            <Controller
+              name="service"
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <Select
+                  {...field}
+                  className="w-full"
+                  placeholder="Select a service"
+                  options={aclTypes.map((type) => ({ label: type.name, value: type.name }))}
+                  onChange={(value) => {
+                    field.onChange(value);
+                    handleServiceChange(value);
+                  }}
+                />
+              )}
+            />
+            {errors.service && <span className="text-sm text-red-500">Service is required</span>}
+          </div>
+
+          {selectedService?.allow_port_setting && (
+            <div className="flex flex-col w-32 gap-2">
+              <label htmlFor="protocol" className="block text-sm font-semibold text-text-primary">
+                Type
+              </label>
+              <Select
+                value={protocolType}
+                onChange={setProtocolType}
+                options={selectedService.allowed_protocols.map((protocol) => ({ label: protocol, value: protocol }))}
+              />
+            </div>
+          )}
+
+          <div className="flex flex-col w-32 gap-2">
+            <label htmlFor="port" className="block text-sm font-semibold text-text-primary">
+              Port
+            </label>
+            <div className="flex items-center gap-2">
+              <Controller
+                name="port"
+                control={control}
+                rules={{
+                  required: true,
+                  validate: (value) => {
+                    if (selectedService?.allow_port_setting) {
+                      return value >= 1 && value <= 65535;
+                    }
+                    return true;
+                  },
+                }}
+                render={({ field: { onChange, value } }) => (
+                  <InputNumber
+                    onChange={(val) => onChange(val)}
+                    value={value}
+                    disabled={!selectedService?.allow_port_setting}
+                    placeholder="Port"
+                    min={1}
+                    max={65535}
+                    className="w-full"
+                  />
+                )}
+              />
+              {selectedService?.allowed_protocols && (
+                <Tooltip title="Enter a single port (80) or range (8000-9000), or leave blank for all ports">
+                  <InformationCircleIcon className="w-4 h-4 text-text-secondary cursor-help shrink-0" />
+                </Tooltip>
+              )}
+            </div>
+            {errors.port && <span className="text-sm text-red-500">Invalid port number</span>}
+          </div>
+        </div>
+
         <div className="flex w-full gap-7">
           <div className="w-full">
             <div className="flex flex-col w-full gap-2">
@@ -381,13 +528,13 @@ const UpdateResourcesForm: React.FC<UpdateResourcesFormProps> = ({
           </div>
 
           <div className="flex flex-col items-center justify-center w-2/3 gap-2">
-            <img src={arrowRight} className="w-full " alt="Right arrow" />
+            <img src={arrowRight} className="w-full" alt="Right arrow" />
             <img
-              onClick={() => setDirection(direction === 0 ? 1 : 0)}
+              onClick={handleDirectionChange}
               src={arrowLeft}
               className={`w-full cursor-pointer ${direction === 0 ? 'opacity-30' : ''}`}
               alt="Left arrow"
-            />{' '}
+            />
           </div>
 
           <div className="w-full">
@@ -410,6 +557,18 @@ const UpdateResourcesForm: React.FC<UpdateResourcesFormProps> = ({
             </div>
           </div>
         </div>
+
+        {showUnidirectionalWarning && (
+          <Alert
+            message="Unidirectional Mode"
+            description="Only Linux machines are supported in unidirectional mode."
+            type="warning"
+            showIcon
+            closable
+            className="[&_.ant-alert-message]:!text-sm-semibold [&_.ant-alert-description]:!text-xs [&_.anticon]:!size-5 p-4"
+            onClose={() => setShowUnidirectionalWarning(false)}
+          />
+        )}
 
         <div className="flex w-full gap-2 p-4 mt-4 border rounded-md border-stroke-default">
           <div className="flex flex-col w-full gap-1">

@@ -18,7 +18,7 @@ export interface DestinationTypeValue {
 
 export interface ProtocolType {
   name: string;
-  allowed_protocols: number[];
+  allowed_protocols: string[];
   port_range: number;
   allow_port_setting: boolean;
 }
@@ -33,7 +33,8 @@ export interface ACLRule {
   src_type: SourceTypeValue[];
   dst_type: DestinationTypeValue[];
   protocol: string;
-  ports: number;
+  ports: string[];
+  type: string;
   allowed_traffic_direction: 0 | 1; // 0 for unidirectional, 1 for bidirectional
   enabled: boolean;
   created_by: string;
@@ -48,7 +49,8 @@ export interface CreateACLRuleDto {
   src_type: SourceTypeValue[];
   dst_type: DestinationTypeValue[];
   protocol?: string;
-  ports?: number;
+  ports: string[];
+  type: string;
   allowed_traffic_direction?: 0 | 1;
   enabled?: boolean;
 }

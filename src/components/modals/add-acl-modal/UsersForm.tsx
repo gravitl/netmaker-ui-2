@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { notification, Switch, Button, Select, Input, InputNumber } from 'antd';
+import { notification, Switch, Button, Select, Input, InputNumber, Alert, Tooltip } from 'antd';
 import { useForm, Controller } from 'react-hook-form';
 import {
   UsersIcon,
@@ -9,6 +9,7 @@ import {
   MagnifyingGlassIcon,
   ChevronDownIcon,
   TagIcon,
+  InformationCircleIcon,
 } from '@heroicons/react/24/solid';
 import { UsersService } from '@/services/UsersService';
 import { ACLService } from '@/services/ACLService';
@@ -59,7 +60,7 @@ interface UsersFormProps {
 
 interface ACLType {
   name: string;
-  allowed_protocols: number[];
+  allowed_protocols: string[];
   port_range: number;
   allow_port_setting: boolean;
 }
@@ -389,9 +390,11 @@ const UsersForm: React.FC<UsersFormProps> = ({ networkId, onClose, fetchACLRules
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [direction, setDirection] = useState<0 | 1>(0);
+  const [direction, setDirection] = useState<0 | 1>(1);
   const [aclTypes, setAclTypes] = useState<ACLType[]>([]);
   const [selectedService, setSelectedService] = useState<ACLType | null>(null);
+  const [showUnidirectionalWarning, setShowUnidirectionalWarning] = useState(false);
+  const [protocolType, setProtocolType] = useState<'tcp' | 'udp'>('tcp');
 
   const { isServerEE } = useServerLicense();
 
@@ -525,7 +528,8 @@ const UsersForm: React.FC<UsersFormProps> = ({ networkId, onClose, fetchACLRules
         allowed_traffic_direction: direction,
         enabled: isPolicyEnabled,
         protocol: values.service,
-        ports: Number(values.port),
+        type: protocolType,
+        ports: [String(values.port)],
       };
 
       console.log(payload);
@@ -533,6 +537,7 @@ const UsersForm: React.FC<UsersFormProps> = ({ networkId, onClose, fetchACLRules
       notify.success({ message: `User policy created` });
       reset();
       setIsPolicyEnabled(true);
+      setDirection(1);
       fetchACLRules?.();
       reloadACL();
       onClose?.();
@@ -551,14 +556,28 @@ const UsersForm: React.FC<UsersFormProps> = ({ networkId, onClose, fetchACLRules
     setSelectedService(service || null);
 
     if (service) {
-      if (serviceName === 'Custom') {
-        setValue('port', 1);
+      if (service.allow_port_setting) {
+        setValue('port', 8000);
+        // If port setting is allowed, keep current protocol type
+        setProtocolType(protocolType);
       } else {
         setValue('port', service.port_range);
+        // If port setting is not allowed, use the first allowed protocol
+        if (service.allowed_protocols && service.allowed_protocols.length > 0) {
+          setProtocolType(service.allowed_protocols[0] as 'tcp' | 'udp');
+        }
       }
     } else {
-      setValue('port', 1);
+      setValue('port', 8000);
+      // Default to tcp if no service is selected
+      setProtocolType('tcp');
     }
+  };
+
+  const handleDirectionChange = () => {
+    const newDirection = direction === 0 ? 1 : 0;
+    setDirection(newDirection);
+    setShowUnidirectionalWarning(newDirection === 0);
   };
 
   return (
@@ -609,36 +628,55 @@ const UsersForm: React.FC<UsersFormProps> = ({ networkId, onClose, fetchACLRules
             />
             {errors.service && <span className="text-sm text-red-500">Service is required</span>}
           </div>{' '}
+          {selectedService?.allow_port_setting && (
+            <div className="flex flex-col w-32 gap-2">
+              <label htmlFor="protocol" className="block text-sm font-semibold text-text-primary">
+                Type
+              </label>
+              <Select
+                value={protocolType}
+                onChange={setProtocolType}
+                options={selectedService.allowed_protocols.map((protocol) => ({ label: protocol, value: protocol }))}
+              />
+            </div>
+          )}
           <div className="flex flex-col w-32 gap-2">
             <label htmlFor="port" className="block text-sm font-semibold text-text-primary">
               Port
             </label>
-            <Controller
-              name="port"
-              control={control}
-              rules={{
-                required: true,
-                validate: (value) => {
-                  if (selectedService?.allow_port_setting) {
-                    return value >= 1 && value <= 65535;
-                  }
-                  return true;
-                },
-              }}
-              render={({ field: { onChange, value } }) => (
-                <InputNumber
-                  onChange={(val) => onChange(val)}
-                  value={value}
-                  disabled={!selectedService?.allow_port_setting}
-                  placeholder="Port"
-                  min={1}
-                  max={65535}
-                  className="w-full"
-                />
+            <div className="flex items-center gap-2">
+              <Controller
+                name="port"
+                control={control}
+                rules={{
+                  required: true,
+                  validate: (value) => {
+                    if (selectedService?.allow_port_setting) {
+                      return value >= 1 && value <= 65535;
+                    }
+                    return true;
+                  },
+                }}
+                render={({ field: { onChange, value } }) => (
+                  <InputNumber
+                    onChange={(val) => onChange(val)}
+                    value={value}
+                    disabled={!selectedService?.allow_port_setting}
+                    placeholder=""
+                    min={1}
+                    max={65535}
+                    className="w-full"
+                  />
+                )}
+              />
+              {selectedService?.name === 'Custom' && (
+                <Tooltip title="Enter a single port (80) or range (8000-9000), or leave blank for all ports">
+                  <InformationCircleIcon className="w-4 h-4 text-text-secondary cursor-help shrink-0" />
+                </Tooltip>
               )}
-            />
+            </div>
             {errors.port && <span className="text-sm text-red-500">Invalid port number</span>}
-          </div>
+          </div>{' '}
         </div>
 
         <div className="flex w-full gap-7">
@@ -665,14 +703,13 @@ const UsersForm: React.FC<UsersFormProps> = ({ networkId, onClose, fetchACLRules
           </div>
 
           <div className="flex flex-col items-center justify-center w-2/3 gap-2">
-            <img src={arrowRight} className="w-full " alt="Right arrow" />
-
+            <img src={arrowRight} className="w-full" alt="Right arrow" />
             <img
-              onClick={() => setDirection(direction === 0 ? 1 : 0)}
+              onClick={() => handleDirectionChange()}
               src={arrowLeft}
               className={`w-full cursor-pointer ${direction === 0 ? 'opacity-30' : ''}`}
               alt="Left arrow"
-            />
+            />{' '}
           </div>
 
           <div className="w-full">
@@ -695,6 +732,17 @@ const UsersForm: React.FC<UsersFormProps> = ({ networkId, onClose, fetchACLRules
             </div>
           </div>
         </div>
+        {showUnidirectionalWarning && (
+          <Alert
+            message="Unidirectional Mode"
+            description="Only Linux machines are supported in unidirectional mode."
+            type="warning"
+            showIcon
+            closable
+            className="[&_.ant-alert-message]:!text-sm-semibold  [&_.ant-alert-description]:!text-xs [&_.anticon]:!size-5 p-4"
+            onClose={() => setShowUnidirectionalWarning(false)}
+          />
+        )}
 
         <div className="flex w-full gap-2 p-4 mt-4 border rounded-md border-stroke-default">
           <div className="flex flex-col w-full gap-1">

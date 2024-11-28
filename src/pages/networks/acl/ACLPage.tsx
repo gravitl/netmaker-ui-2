@@ -258,41 +258,40 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, reloa
             dataIndex: 'name',
             sorter: (a: ACLRule, b: ACLRule) => a.name.localeCompare(b.name),
             defaultSortOrder: 'ascend',
-          },
-          {
-            title: 'Type',
-            dataIndex: 'policy_type',
-            render: (policyType: string) => (
+            render: (name: string, record: ACLRule) => (
               <div className="flex items-center gap-2 text-sm-semibold">
                 <span>
-                  {policyType === 'device-policy' ? (
+                  {record.policy_type === 'device-policy' ? (
                     <ComputerDesktopIcon className="w-4 h-4 shrink-0" />
                   ) : (
                     <UsersIcon className="w-4 h-4 shrink-0" />
                   )}
                 </span>
-                <span>{policyType === 'device-policy' ? 'Resources' : 'Users'}</span>
+                <span>{name}</span>
               </div>
             ),
           },
+
           {
-            title: 'Service',
-            render: () => <span>SSH</span>,
+            title: 'Type',
+            dataIndex: 'type',
+            render: (type: string | null) => <span>{type?.toUpperCase()}</span>,
           },
           {
             title: 'Protocol',
             dataIndex: 'protocol',
-            render: (proto: string | null) => <span>{proto}</span>,
+            render: (proto: string | null) => <span>{proto === 'all' ? 'All' : proto}</span>,
           },
           {
             title: 'Port',
             dataIndex: 'ports',
-            render: (port: string | null) => <span>{port || 'All'}</span>,
+            render: (port: string | null) => <span>{port || 'All '}</span>,
           },
           {
             title: 'Source',
+            width: '160px',
             render: (_, rule: ACLRule) => (
-              <>
+              <div className="flex flex-wrap gap-2">
                 {rule.src_type.map((type: SourceTypeValue, index) => {
                   let displayValue = type.value;
                   let Icon = UserIcon;
@@ -306,7 +305,6 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, reloa
                           : type.id === 'tag'
                             ? 'All Resources'
                             : type.value;
-
                     Icon = type.id === 'user' ? UserIcon : type.id === 'user-group' ? UsersIcon : TagIcon;
                   } else if (type.id === 'user-group') {
                     const group = groupsList.find((g) => g.id === type.value);
@@ -322,34 +320,35 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, reloa
 
                   return (
                     <Tooltip key={index} title={displayValue}>
-                      <Tag>
-                        <div className="flex items-center gap-1">
-                          <Icon className="w-3 h-3 shrink-0" />
-                          <span>{displayValue}</span>
-                        </div>
-                      </Tag>
+                      <div className="flex items-center gap-2 px-2 py-1 border rounded-md bg-bg-contrastDefault border-stroke-default">
+                        <Icon className="w-4 h-4 shrink-0" />
+                        <span className="text-base truncate max-w-40">{displayValue}</span>
+                      </div>
                     </Tooltip>
                   );
                 })}
-              </>
+              </div>
             ),
           },
           {
             title: 'Direction',
+            width: '96px',
             render: (_, rule: ACLRule) => (
               <>
                 {rule.allowed_traffic_direction === 0 ? (
-                  <img src={uniArrow} className="w-full " alt="Uni arrow" />
+                  <img src={uniArrow} className={`w-24 ${!rule.enabled ? 'opacity-40  ' : ''}`} alt="Uni arrow" />
                 ) : (
-                  <img src={biArrow} className="w-full " alt="Bi arrow" />
+                  <img src={biArrow} className={`w-24 ${!rule.enabled ? 'opacity-40 ' : ''}`} alt="Bi arrow" />
                 )}
               </>
             ),
           },
           {
             title: 'Destination',
+            width: '160px',
+
             render: (_, rule: ACLRule) => (
-              <>
+              <div className="flex flex-wrap gap-2">
                 {rule.dst_type.map((type: DestinationTypeValue, index) => {
                   let displayValue = type.value;
 
@@ -362,16 +361,14 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, reloa
 
                   return (
                     <Tooltip key={index} title={displayValue}>
-                      <Tag>
-                        <div className="flex items-center gap-1">
-                          <TagIcon className="w-3 h-3 shrink-0" />
-                          <span>{displayValue}</span>
-                        </div>
-                      </Tag>
+                      <div className="flex items-center gap-2 px-2 py-1 border rounded-md bg-bg-contrastDefault border-stroke-default">
+                        <TagIcon className="w-4 h-4 shrink-0 " />
+                        <span className="text-base truncate max-w-40">{displayValue}</span>
+                      </div>
                     </Tooltip>
                   );
                 })}
-              </>
+              </div>
             ),
           },
           {
