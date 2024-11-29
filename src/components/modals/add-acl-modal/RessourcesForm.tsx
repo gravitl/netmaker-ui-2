@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { Switch, Button, Select, InputNumber, Alert, Tooltip, notification } from 'antd';
+import { Switch, Button, Select, InputNumber, Alert, Tooltip, notification, Input } from 'antd';
 import { useForm, Controller } from 'react-hook-form';
 import {
   ComputerDesktopIcon,
@@ -54,7 +54,7 @@ interface FormValues {
   source: Item[];
   destination: Item[];
   service: string;
-  port: number;
+  port: string;
 }
 
 const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
@@ -255,9 +255,51 @@ const ResourcesForm: React.FC<ResourcesFormProps> = ({ networkId, onClose, fetch
       source: [],
       destination: [],
       service: '',
-      port: 1,
+      port: '8000',
     },
   });
+
+  const validatePortFormat = (value: string): boolean => {
+    if (!value) return false;
+
+    // Remove all whitespace
+    const sanitizedValue = value.replace(/\s/g, '');
+
+    // Check if the format matches the pattern: numbers and dashes separated by commas
+    const isValidFormat = /^(\d+(-\d+)?)(,\d+(-\d+)?)*$/.test(sanitizedValue);
+    if (!isValidFormat) return false;
+
+    // Split by comma and validate each part
+    const parts = sanitizedValue.split(',');
+
+    return parts.every((part) => {
+      if (part.includes('-')) {
+        // Validate range
+        const [start, end] = part.split('-').map(Number);
+        return !isNaN(start) && !isNaN(end) && start >= 1 && start <= 65535 && end >= 1 && end <= 65535 && start < end;
+      } else {
+        // Validate single port
+        const port = Number(part);
+        return !isNaN(port) && port >= 1 && port <= 65535;
+      }
+    });
+  };
+
+  const convertPortsToArray = (portString: string): string[] => {
+    const ports: string[] = [];
+    const entries = portString.split(',').map((entry) => entry.trim());
+
+    for (const entry of entries) {
+      if (entry.includes('-')) {
+        const [start, end] = entry.split('-').map(Number);
+        ports.push(`${start}-${end}`);
+      } else {
+        ports.push(entry);
+      }
+    }
+
+    return ports;
+  };
 
   const loadTags = useCallback(async () => {
     try {
@@ -282,7 +324,7 @@ const ResourcesForm: React.FC<ResourcesFormProps> = ({ networkId, onClose, fetch
         setAclTypes(types);
         const firstService = types[0];
         setValue('service', firstService.name);
-        setValue('port', firstService.port_range);
+        setValue('port', firstService.port_range.toString());
         setSelectedService(firstService);
       } else {
         console.error('ProtocolTypes is not an array:', types);
@@ -322,12 +364,17 @@ const ResourcesForm: React.FC<ResourcesFormProps> = ({ networkId, onClose, fetch
 
     if (service) {
       if (service.allow_port_setting) {
-        setValue('port', 8000);
+        setValue('port', '8000');
+        setProtocolType(protocolType);
       } else {
-        setValue('port', service.port_range);
+        setValue('port', service.port_range.toString());
+        if (service.allowed_protocols && service.allowed_protocols.length > 0) {
+          setProtocolType(service.allowed_protocols[0] as 'tcp' | 'udp');
+        }
       }
     } else {
-      setValue('port', 8000);
+      setValue('port', '8000');
+      setProtocolType('tcp');
     }
   };
 
@@ -375,7 +422,7 @@ const ResourcesForm: React.FC<ResourcesFormProps> = ({ networkId, onClose, fetch
         allowed_traffic_direction: direction,
         enabled: isPolicyEnabled,
         protocol: values.service,
-        ports: [`${values.port}`],
+        ports: convertPortsToArray(values.port),
         type: protocolType,
       };
 
@@ -470,30 +517,33 @@ const ResourcesForm: React.FC<ResourcesFormProps> = ({ networkId, onClose, fetch
                   required: true,
                   validate: (value) => {
                     if (selectedService?.allow_port_setting) {
-                      return value >= 1 && value <= 65535;
+                      return validatePortFormat(value);
                     }
                     return true;
                   },
                 }}
                 render={({ field: { onChange, value } }) => (
-                  <InputNumber
-                    onChange={(val) => onChange(val)}
+                  <Input
+                    onChange={(e) => onChange(e.target.value)}
                     value={value}
                     disabled={!selectedService?.allow_port_setting}
-                    placeholder="Port"
-                    min={1}
-                    max={65535}
+                    placeholder="80,443,8000-9000"
                     className="w-full"
                   />
                 )}
               />
-              {selectedService?.allow_port_setting && (
-                <Tooltip title="Enter a single port (80) or range (8000-9000), or leave blank for all ports">
+              {selectedService?.name === 'Custom' && (
+                <Tooltip title="Use single ports, ranges (e.g., 8000-9000), or comma-separated ports (80,443) or both.">
                   <InformationCircleIcon className="w-4 h-4 text-text-secondary cursor-help shrink-0" />
                 </Tooltip>
               )}
             </div>
-            {errors.port && <span className="text-sm text-red-500">Invalid port number</span>}
+            {errors.port && (
+              <span className="text-sm text-red-500">
+                Invalid port format. Use single ports, ranges (e.g., 8000-9000), or comma-separated ports (80,443) or
+                both.
+              </span>
+            )}
           </div>
         </div>
 
@@ -548,6 +598,7 @@ const ResourcesForm: React.FC<ResourcesFormProps> = ({ networkId, onClose, fetch
             </div>
           </div>
         </div>
+
         {showUnidirectionalWarning && (
           <Alert
             message="Unidirectional Mode"

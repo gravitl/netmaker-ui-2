@@ -285,7 +285,10 @@ export const ACLPage = ({ networkId, notify, hostsTabContainerAddHostsRef, reloa
           {
             title: 'Port',
             dataIndex: 'ports',
-            render: (port: string | null) => <span>{port || 'All '}</span>,
+            render: (ports: string[]) => {
+              if (!ports || ports.length === 0) return 'All';
+              return ports.join(', ');
+            },
           },
           {
             title: 'Source',
