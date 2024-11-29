@@ -17,6 +17,8 @@ import {
 } from '@/utils/NetworkUtils';
 import { convertUiNetworkToNetworkPayload } from '@/utils/NetworkUtils';
 import { ShuffleIcon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { AppRoutes } from '@/routes';
 
 interface AddNetworkModalProps {
   isOpen: boolean;
@@ -44,6 +46,7 @@ export default function AddNetworkModal({
   const { token: themeToken } = theme.useToken();
   const [notify, notifyCtx] = notification.useNotification();
   const store = useStore();
+  const navigate = useNavigate();
 
   const isIpv4Val = Form.useWatch('isipv4', form);
   const isIpv6Val = Form.useWatch('isipv6', form);
@@ -64,8 +67,9 @@ export default function AddNetworkModal({
       store.addNetwork(network);
       notify.success({ message: `Network ${network.netid} created` });
       store.setActiveNetwork(network.netid);
-      onCreateNetwork(network);
       resetModal();
+      onCreateNetwork(network);
+      navigate(AppRoutes.NETWORK_NODES_ROUTE.replace(':networkId', network.netid));
     } catch (err) {
       notify.error({
         message: 'Failed to create network',
@@ -73,7 +77,6 @@ export default function AddNetworkModal({
       });
     }
   };
-
   const autoFillCIDR = useCallback(
     (isIpV4: boolean) => {
       if (isIpV4) {
