@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -58,6 +58,7 @@
   --color-zinc-800: #27272a;
   --color-zinc-850: #1f1f22; /* Custom shade */
   --color-zinc-900: #18181b;
+  --color-zinc-950: #020617;
 
   /* Indigo Colors */
   --color-indigo-50: #eef2ff;
@@ -85,6 +86,7 @@
   --color-neutral-800: var(--color-zinc-800);
   --color-neutral-850: var(--color-zinc-850);
   --color-neutral-900: var(--color-zinc-900);
+  --color-neutral-950: var(--color-zinc-950);
 
   /* Primary Colors (based on Indigo) */
   --color-primary-50: var(--color-indigo-50);
@@ -98,21 +100,32 @@
   --color-primary-800: var(--color-indigo-800);
   --color-primary-900: var(--color-indigo-900);
 
+  /* Accent Colors */
+  --color-success: #00ba34;
+  --color-critical: #f43f5e;
+
   /* Global Variables - Light Theme (Default) */
   --color-bg-default: var(--color-neutral-100);
   --color-bg-hover: var(--color-neutral-150);
-  --color-bg-contrast-default: var(--color-white);
-  --color-bg-contrast-hover: var(--color-neutral-50);
+  --color-bg-contrast-default: var(--color-neutral-150);
+  --color-bg-contrast-hover: var(--color-neutral-200);
+  --color-bg-contrast-active: var(--color-neutral-300);
 
   --color-stroke-default: var(--color-neutral-300);
+  --color-stroke-hover: var(--color-neutral-400);
+  --color-stroke-active: var(--color-primary-500);
+  --color-stroke-error: var(--color-critical);
 
-  --color-text-primary: var(--color-neutral-800);
-  --color-text-secondary: var(--color-neutral-400);
+  --color-text-primary: var(--color-neutral-950);
+  --color-text-secondary: var(--color-neutral-600);
+  --color-text-disabled: var(--color-neutral-400);
+  --color-text-success: var(--color-success);
+  --color-text-critical: var(--color-critical);
 
   /* Button Variables - Light Theme (Default) */
-  --color-button-primary-fill-default: var(--color-primary-500);
-  --color-button-primary-fill-hover: var(--color-primary-600);
-  --color-button-primary-fill-disabled: var(--color-primary-600);
+  --color-button-primary-fill-default: var(--color-primary-600);
+  --color-button-primary-fill-hover: var(--color-primary-700);
+  --color-button-primary-fill-disabled: var(--color-primary-200);
 
   --color-button-primary-text-default: var(--color-primary-50);
   --color-button-primary-text-disabled: var(--color-primary-400);
@@ -121,7 +134,7 @@
   --color-button-plain-fill-hover: var(--color-neutral-900);
   --color-button-plain-fill-disabled: var(--color-neutral-800);
 
-  --color-button-plain-text-default: var(--color-neutral-100);
+  --color-button-plain-text-default: var(--color-neutral-50);
   --color-button-plain-text-disabled: var(--color-neutral-800);
 
   --color-button-secondary-fill-default: var(--color-neutral-200);
@@ -144,21 +157,28 @@
 
   /* Global Variables - Dark Theme  */
 
-  --color-bg-default-dark: var(--color-neutral-800);
-  --color-bg-hover-dark: var(--color-neutral-750);
-  --color-bg-contrast-default-dark: var(--color-neutral-900);
-  --color-bg-contrast-hover-dark: var(--color-neutral-850);
+  --color-bg-default-dark: var(--color-neutral-900);
+  --color-bg-hover-dark: var(--color-neutral-850);
+  --color-bg-contrast-default-dark: var(--color-neutral-850);
+  --color-bg-contrast-hover-dark: var(--color-neutral-800);
+  --color-bg-contrast-active-dark: var(--color-neutral-750);
 
   --color-stroke-default-dark: var(--color-neutral-750);
+  --color-stroke-hover-dark: var(--color-neutral-600);
+  --color-stroke-active-dark: var(--color-primary-500);
+  --color-stroke-error-dark: var(--color-critical);
 
-  --color-text-primary-dark: var(--color-neutral-200);
-  --color-text-secondary-dark: var(--color-neutral-500);
+  --color-text-primary-dark: var(--color-neutral-50);
+  --color-text-secondary-dark: var(--color-neutral-400);
+  --color-text-disabled-dark: var(--color-neutral-500);
+  --color-text-success-dark: var(--color-success);
+  --color-text-critical-dark: var(--color-critical);
 
   /* Button Variables - Dark Theme */
 
-  --color-button-primary-fill-default-dark: var(--color-primary-500);
-  --color-button-primary-fill-hover-dark: var(--color-primary-600);
-  --color-button-primary-fill-disabled-dark: var(--color-primary-600);
+  --color-button-primary-fill-default-dark: var(--color-primary-600);
+  --color-button-primary-fill-hover-dark: var(--color-primary-700);
+  --color-button-primary-fill-disabled-dark: var(--color-primary-400);
 
   --color-button-primary-text-default-dark: var(--color-primary-50);
   --color-button-primary-text-disabled-dark: var(--color-primary-400);
@@ -167,11 +187,11 @@
   --color-button-plain-fill-hover-dark: var(--color-neutral-300);
   --color-button-plain-fill-disabled-dark: var(--color-neutral-200);
 
-  --color-button-plain-text-default: var(--color-neutral-800);
-  --color-button-plain-text-disabled: var(--color-neutral-200);
+  --color-button-plain-text-default-dark: var(--color-neutral-800);
+  --color-button-plain-text-disabled-dark: var(--color-neutral-200);
 
   --color-button-secondary-fill-default-dark: var(--color-neutral-700);
-  --color-button-secondary-fill-hover-dark: var(--color-neutral-800);
+  --color-button-secondary-fill-hover-dark: var(--color-neutral-600);
   --color-button-secondary-fill-disabled-dark: var(--color-neutral-200);
 
   --color-button-secondary-text-default-dark: var(--color-neutral-200);
@@ -222,9 +242,16 @@
   --color-bg-hover: var(--color-bg-hover-dark);
   --color-bg-contrast-default: var(--color-bg-contrast-default-dark);
   --color-bg-contrast-hover: var(--color-bg-contrast-hover-dark);
+  --color-bg-contrast-active: var(--color-bg-contrast-active-dark);
 
   --color-stroke-default: var(--color-stroke-default-dark);
+  --color-stroke-hover: var(--color-stroke-hover-dark);
+  --color-stroke-active: var(--color-stroke-active-dark);
+  --color-stroke-error: var(--color-stroke-error-dark);
 
   --color-text-primary: var(--color-text-primary-dark);
   --color-text-secondary: var(--color-text-secondary-dark);
+  --color-text-disabled: var(--color-text-disabled-dark);
+  --color-text-success: var(--color-text-success-dark);
+  --color-text-critical: var(--color-text-critical-dark);
 }

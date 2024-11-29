@@ -103,7 +103,9 @@ import { isSaasBuild } from '@/services/BaseService';
 import { NetworkDetailTourStep } from '@/utils/Types';
 import TourComponent, { JumpToTourStepObj } from '@/pages/networks/TourComponent';
 import AddRemoteAccessGatewayModal from '@/components/modals/add-remote-access-gateway-modal/AddRemoteAccessGatewayModal';
-import { InternetGatewaysPage } from './internet-gateways/InternetGatewaysPage';
+// import { InternetGatewaysPage } from './internet-gateways/InternetGatewaysPage';
+import { NetworkInternetGatewaysPage } from './internet-gateways/InternetGatewaysPage';
+import { AvailableOses } from '@/models/AvailableOses';
 import { NetworkUsage, networkUsecaseMap } from '@/constants/NetworkUseCases';
 import { NetworkUsecaseString } from '@/store/networkusecase';
 import QuickSetupModal from '@/components/modals/quick-setup-modal/QuickSetupModal';
@@ -127,6 +129,7 @@ import {
   ServerIcon,
   UserIcon,
 } from '@heroicons/react/24/solid';
+
 import AddNodeDialog from '@/components/modals/add-node-modal/AddNodeDialog';
 import NodeStatus from '@/components/ui/Status';
 import { GatewaysFilterCombobox } from '@/components/ui/GatewayFilterCombobox';
@@ -2008,12 +2011,12 @@ export default function NetworkDetailsPage(props: PageProps) {
     return nodeHealth === value;
   };
 
-  const checkIfManagedHostIsLoading = useMemo(() => {
-    // check if managed host is loading
-    const isNewTenant = store.isNewTenant;
-    const isManagedHostLoaded = store.hosts.some((host) => isManagedHost(host.name));
-    return isSaasBuild && isNewTenant && !isManagedHostLoaded;
-  }, [store.isNewTenant, store.hosts]);
+  // const checkIfManagedHostIsLoading = useMemo(() => {
+  //   // check if managed host is loading
+  //   const isNewTenant = store.isNewTenant;
+  //   const isManagedHostLoaded = store.hosts.some((host) => isManagedHost(host.name));
+  //   return isSaasBuild && isNewTenant && !isManagedHostLoaded;
+  // }, [store.isNewTenant, store.hosts]);
 
   const jumpToTourStep = useCallback(
     (step: NetworkDetailTourStep) => {
@@ -2382,7 +2385,7 @@ export default function NetworkDetailsPage(props: PageProps) {
             </div>
           </div>{' '}
           <Col xs={24} style={{ paddingTop: '1rem' }}>
-            {checkIfManagedHostIsLoading && (
+            {/* {checkIfManagedHostIsLoading && (
               <Alert
                 message="Managed host creation in progress (estimated completion time: 5 - 10 minutes)."
                 type="info"
@@ -2390,7 +2393,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                 icon={<LoadingOutlined />}
                 style={{ marginBottom: '1rem' }}
               />
-            )}
+            )} */}
             {isServerEE && networkNodes.length > 0 && !isFailoverNodePresentInNetwork && (
               <Alert
                 message="There's no failover host present in the network. Set one for redundancy, in case of failure."
@@ -2625,7 +2628,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                     },
                   },
                   {
-                    title: 'External Routes',
+                    title: 'Egress',
                     render(_, node) {
                       const extendedNode = getExtendedNode(node, store.hostsCommonDetails);
                       if (extendedNode.is_static && extendedNode.static_node) {
@@ -2912,7 +2915,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     );
   }, [
     searchHost,
-    checkIfManagedHostIsLoading,
+    // checkIfManagedHostIsLoading,
     isServerEE,
     isFailoverNodePresentInNetwork,
     filteredNetworkNodes,
@@ -3874,16 +3877,15 @@ export default function NetworkDetailsPage(props: PageProps) {
   }, [fetchACLRules]);
 
   const getACLsContent = useCallback(() => {
-    return (
-      networkId && (
-        <ACLPage
-          networkId={networkId}
-          notify={notify}
-          hostsTabContainerAddHostsRef={hostsTabContainerAddHostsRef}
-          reloadACL={reloadACL}
-        />
-      )
-    );
+    return 'hello';
+    // return networkId && (
+    //   <NetworkAclsPage
+    //     networkId={networkId}
+    //     notify={notify}
+    //     hostsTabContainerAddHostsRef={hostsTabContainerAddHostsRef}
+    //     reloadACL={reloadACL}
+    //   />
+    // )
   }, [networkId, notify, hostsTabContainerAddHostsRef, setAclVersion, reloadACL]);
 
   const getGraphContent = useCallback(() => {
@@ -4145,24 +4147,24 @@ export default function NetworkDetailsPage(props: PageProps) {
       tabs.splice(4, 0, {
         key: 'internet-gateways',
         label: <Typography.Text>Internet Gateways ({internetGatewaysCount})</Typography.Text>,
-        children:
-          network && !isRefreshingNetwork ? (
-            <InternetGatewaysPage
-              network={network}
-              activeTabKey={activeTabKey}
-              internetGatewaysTableRef={internetGatewaysTableRef}
-              createInternetGatewayButtonRef={createInternetGatewayButtonRef}
-              internetGatewaysConnectedHostsTableRef={internetGatewaysConnectedHostsTableRef}
-              internetGatewaysUpdateConnectedHostsRef={internetGatewaysUpdateConnectedHostsRef}
-              createInternetGatewayModalSelectHostRef={createInternetGatewayModalSelectHostRef}
-              createInternetGatewayModalSelectConnectedHostsRef={createInternetGatewayModalSelectConnectedHostsRef}
-              updateInternetGatewayModalSelectConnectedHostsRef={updateInternetGatewayModalSelectConnectedHostsRef}
-              isAddInternetGatewayModalOpen={isAddInternetGatewayModalOpen}
-              setIsAddInternetGatewayModalOpen={setIsAddInternetGatewayModalOpen}
-            />
-          ) : (
-            <Skeleton active />
-          ),
+        children: <Skeleton active />,
+        // network && !isRefreshingNetwork ? (
+        //   <NetworkInternetGatewaysPage
+        //     network={network}
+        //     activeTabKey={activeTabKey}
+        //     // internetGatewaysTableRef={internetGatewaysTableRef}
+        //     // createInternetGatewayButtonRef={createInternetGatewayButtonRef}
+        //     // internetGatewaysConnectedHostsTableRef={internetGatewaysConnectedHostsTableRef}
+        //     // internetGatewaysUpdateConnectedHostsRef={internetGatewaysUpdateConnectedHostsRef}
+        //     // createInternetGatewayModalSelectHostRef={createInternetGatewayModalSelectHostRef}
+        //     // createInternetGatewayModalSelectConnectedHostsRef={createInternetGatewayModalSelectConnectedHostsRef}
+        //     // updateInternetGatewayModalSelectConnectedHostsRef={updateInternetGatewayModalSelectConnectedHostsRef}
+        //     // isAddInternetGatewayModalOpen={isAddInternetGatewayModalOpen}
+        //     // setIsAddInternetGatewayModalOpen={setIsAddInternetGatewayModalOpen}
+        //   />
+        // ) : (
+        //   <Skeleton active />
+        // ),
       });
       if (hasNetworkAdminPriviledges(store.user!, networkId)) {
         tabs.splice(5, 0, {

@@ -15,11 +15,11 @@ export default function NodeStatus(props: StatusProps) {
     switch (props.nodeHealth) {
       case 'healthy':
       case 'enabled':
-        return '#07C98D';
+        return '#00ba34';
       case 'warning':
         return '#C98C07';
       case 'error':
-        return '#E32C08';
+        return '#f43f5e';
       case 'disconnected':
       case 'disabled':
         return '#D4D4D4';
@@ -55,7 +55,7 @@ export default function NodeStatus(props: StatusProps) {
       case 'enabled':
         return infoModalTitle ? (
           <span className="inline-flex justify-center">
-            <CircleCheckIcon className="text-green-600 inline-block mr-2" /> Node{' '}
+            <CircleCheckIcon className="inline-block mr-2 text-success" /> Node{' '}
             {props.nodeHealth === 'enabled' ? ' Enabled' : ' Connected'}
           </span>
         ) : props.nodeHealth === 'enabled' ? (
@@ -66,7 +66,7 @@ export default function NodeStatus(props: StatusProps) {
       case 'warning':
         return infoModalTitle ? (
           <span className="inline-flex justify-center">
-            <TriangleAlertIcon className="text-yellow-600 inline-block mr-2" /> Degraded Performance
+            <TriangleAlertIcon className="inline-block mr-2 text-yellow-600" /> Degraded Performance
           </span>
         ) : (
           'Warning'
@@ -74,7 +74,7 @@ export default function NodeStatus(props: StatusProps) {
       case 'error':
         return infoModalTitle ? (
           <span className="inline-flex justify-center">
-            <CircleXIcon className="text-red-600 inline-block mr-2" /> Connection Lost
+            <CircleXIcon className="inline-block mr-2 text-critical" /> Connection Lost
           </span>
         ) : (
           'Error'
@@ -83,7 +83,7 @@ export default function NodeStatus(props: StatusProps) {
       case 'disabled':
         return infoModalTitle ? (
           <span className="inline-flex justify-center">
-            <CircleSlashIcon className="text-neutral-600 inline-block mr-2" /> Node{' '}
+            <CircleSlashIcon className="inline-block mr-2 text-neutral-600" /> Node{' '}
             {props.nodeHealth === 'disabled' ? ' Disabled' : ' Disconnected'}
           </span>
         ) : props.nodeHealth === 'disabled' ? (
@@ -94,7 +94,7 @@ export default function NodeStatus(props: StatusProps) {
       default:
         return infoModalTitle ? (
           <span className="inline-flex justify-center">
-            <CircleSlashIcon className="text-neutral-600 inline-block mr-2" /> Unknown Node Status
+            <CircleSlashIcon className="inline-block mr-2 text-neutral-600" /> Unknown Node Status
           </span>
         ) : (
           'Unknown'

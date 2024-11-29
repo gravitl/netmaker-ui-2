@@ -13,6 +13,10 @@ on:
           - 'v0.24.3'
           - 'v0.25.0'
           - 'v0.26.0'
+      branch:
+        description: 'Branch to deploy from'
+        required: true
+        type: string
       environment:
         description: 'Environment to deploy to'
         required: true
@@ -22,16 +26,16 @@ on:
           - 'staging'
           - 'prod'
 
-run-name: NMUI SaaS Deployment - ${{ inputs.environment }} - ${{ inputs.version }}
+run-name: 'NMUI SaaS Deployment - Env: ${{ inputs.environment }} - Version: ${{ inputs.version }} - Branch: ${{ inputs.branch }}'
 
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: 'Checkout to release-${{ github.event.inputs.version }}'
+      - name: 'Checkout to branch: ${{ github.event.inputs.branch }}'
         uses: actions/checkout@v4
         with:
-          ref: release-${{ github.event.inputs.version }}
+          ref: ${{ github.event.inputs.branch }}
 
       - name: Set release tag
         run: |

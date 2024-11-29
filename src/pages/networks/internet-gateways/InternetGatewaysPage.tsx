@@ -1,11 +1,14 @@
 import AddInternetGatewayModal from '@/components/modals/add-internet-gateway-modal/AddInternetGatewayModal';
 import UpdateInternetGatewayModal from '@/components/modals/update-internet-gateway-modal/UpdateInternetGatewayModal';
+import { ExternalLinks } from '@/constants/LinkAndImageConstants';
+import PageLayout from '@/layouts/PageLayout';
 import { Network } from '@/models/Network';
 import { ExtendedNode, Node } from '@/models/Node';
 import { NodesService } from '@/services/NodesService';
 import { useStore } from '@/store/store';
 import { getExtendedNode } from '@/utils/NodeUtils';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
+import { useGetActiveNetwork } from '@/utils/Utils';
 import {
   DeleteOutlined,
   EditOutlined,
@@ -14,68 +17,75 @@ import {
   QuestionCircleOutlined,
   SearchOutlined,
 } from '@ant-design/icons';
-import { EllipsisHorizontalIcon } from '@heroicons/react/24/solid';
+import { ArrowsRightLeftIcon, EllipsisHorizontalIcon } from '@heroicons/react/24/solid';
 import { Button, Card, Col, Dropdown, Input, Modal, Row, Table, TableColumnProps, Tooltip, Typography } from 'antd';
 import useNotification from 'antd/es/notification/useNotification';
-import { RefObject, useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useParams } from 'react-router-dom';
 
-interface InternetGatewaysPageProps {
-  network: Network;
-  activeTabKey: string;
-  internetGatewaysTableRef: RefObject<HTMLDivElement>;
-  createInternetGatewayButtonRef: RefObject<HTMLDivElement>;
-  internetGatewaysConnectedHostsTableRef: RefObject<HTMLDivElement>;
-  internetGatewaysUpdateConnectedHostsRef: RefObject<HTMLDivElement>;
-  createInternetGatewayModalSelectHostRef: RefObject<HTMLDivElement>;
-  createInternetGatewayModalSelectConnectedHostsRef: RefObject<HTMLDivElement>;
-  updateInternetGatewayModalSelectConnectedHostsRef: RefObject<HTMLDivElement>;
-  isAddInternetGatewayModalOpen: boolean;
-  setIsAddInternetGatewayModalOpen: (isOpen: boolean) => void;
+interface NetworkInternetGatewaysPageProps {
+  isFullScreen: boolean;
+  networkId?: Network['netid'];
+  // activeTabKey?: string;
+  // internetGatewaysTableRef?: RefObject<HTMLDivElement>;
+  // createInternetGatewayButtonRef?: RefObject<HTMLDivElement>;
+  // internetGatewaysConnectedHostsTableRef?: RefObject<HTMLDivElement>;
+  // internetGatewaysUpdateConnectedHostsRef?: RefObject<HTMLDivElement>;
+  // createInternetGatewayModalSelectHostRef?: RefObject<HTMLDivElement>;
+  // createInternetGatewayModalSelectConnectedHostsRef?: RefObject<HTMLDivElement>;
+  // updateInternetGatewayModalSelectConnectedHostsRef?: RefObject<HTMLDivElement>;
+  // isAddInternetGatewayModalOpen: boolean;
+  // setIsAddInternetGatewayModalOpen: (isOpen: boolean) => void;
 }
 
-const INTERNET_GATEWAYS_DOCS_URL = 'https://docs.netmaker.io/docs/features/internet-gateways-pro';
+// const INTERNET_GATEWAYS_DOCS_URL = 'https://docs.netmaker.io/pro/internet-gateways.html';
 
-export function InternetGatewaysPage({
-  network,
-  activeTabKey,
-  internetGatewaysTableRef,
-  createInternetGatewayButtonRef,
-  internetGatewaysConnectedHostsTableRef,
-  internetGatewaysUpdateConnectedHostsRef,
-  createInternetGatewayModalSelectHostRef,
-  createInternetGatewayModalSelectConnectedHostsRef,
-  updateInternetGatewayModalSelectConnectedHostsRef,
-  isAddInternetGatewayModalOpen,
-  setIsAddInternetGatewayModalOpen,
-}: InternetGatewaysPageProps) {
+export function NetworkInternetGatewaysPage({
+  isFullScreen,
+  // network,
+  // activeTabKey,
+  // internetGatewaysTableRef,
+  // createInternetGatewayButtonRef,
+  // internetGatewaysConnectedHostsTableRef,
+  // internetGatewaysUpdateConnectedHostsRef,
+  // createInternetGatewayModalSelectHostRef,
+  // createInternetGatewayModalSelectConnectedHostsRef,
+  // updateInternetGatewayModalSelectConnectedHostsRef,
+  // isAddInternetGatewayModalOpen,
+  // setIsAddInternetGatewayModalOpen,
+}: NetworkInternetGatewaysPageProps) {
   const store = useStore();
   const [notify, notifyCtx] = useNotification();
+  const { networkId } = useParams<{ networkId: string }>();
+  const resolvedNetworkId = networkId || store.activeNetwork;
+  const { network, isLoadingNetwork } = useGetActiveNetwork(resolvedNetworkId);
 
   const [searchConnectedHosts, setSearchConnectedHosts] = useState('');
   const [searchInternetGateways, setSearchInternetGateways] = useState('');
   const [selectedGateway, setSelectedGateway] = useState<Node | null>(null);
   const [isUpdateInternetGatewayModalOpen, setIsUpdateInternetGatewayModalOpen] = useState(false);
+  const [isAddInternetGatewayModalOpen, setIsAddInternetGatewayModalOpen] = useState(false);
 
   const networkNodesMap = useMemo(
     () =>
       store.nodes.reduce(
         (acc, node) => {
-          if (node.network === network.netid) acc[node.id] = node;
+          if (node.network === resolvedNetworkId) acc[node.id] = node;
           return acc;
         },
         {} as Record<Node['id'], Node>,
       ),
-    [network.netid, store.nodes],
+    [resolvedNetworkId, store.nodes],
   );
 
   const networkInternetGateways = useMemo<ExtendedNode[]>(
     () =>
       store.nodes
         .filter((node) => {
-          return node.network === network.netid && node.isinternetgateway;
+          return node.network === resolvedNetworkId && node.isinternetgateway;
         })
         .map((node) => getExtendedNode(node, store.hostsCommonDetails)),
-    [network.netid, store.hostsCommonDetails, store.nodes],
+    [resolvedNetworkId, store.hostsCommonDetails, store.nodes],
   );
 
   const networkInternetGatewaysMap = useMemo<Record<Node['id'], ExtendedNode>>(
@@ -97,7 +107,7 @@ export function InternetGatewaysPage({
         content: `Are you sure you want to delete this internet gateway?`,
         onOk: async () => {
           try {
-            await NodesService.deleteInternetGateway(gateway.id, network.netid);
+            await NodesService.deleteInternetGateway(gateway.id, resolvedNetworkId);
             const newGateway = {
               ...gateway,
               isinternetgateway: false,
@@ -115,7 +125,7 @@ export function InternetGatewaysPage({
         },
       });
     },
-    [network.netid, store, networkInternetGateways, notify],
+    [resolvedNetworkId, store, networkInternetGateways, notify],
   );
 
   const confirmDisconnectHost = useCallback(
@@ -128,7 +138,7 @@ export function InternetGatewaysPage({
             const assocInetGw = networkInternetGatewaysMap[host.internetgw_node_id];
             const newConnectedHosts =
               assocInetGw.inet_node_req.inet_node_client_ids?.filter((id) => id !== host.id) ?? [];
-            await NodesService.updateInternetGateway(assocInetGw.id, network.netid, {
+            await NodesService.updateInternetGateway(assocInetGw.id, resolvedNetworkId, {
               inet_node_client_ids: newConnectedHosts,
             });
             const newGateway = {
@@ -148,7 +158,7 @@ export function InternetGatewaysPage({
         },
       });
     },
-    [network.netid, networkInternetGatewaysMap, notify, store],
+    [resolvedNetworkId, networkInternetGatewaysMap, notify, store],
   );
 
   const filteredInternetGateways = useMemo(() => {
@@ -314,17 +324,28 @@ export function InternetGatewaysPage({
     [confirmDisconnectHost, networkInternetGatewaysMap],
   );
 
-  useEffect(() => {
-    if (activeTabKey === 'internet-gateways') {
-      const autoSelectedGateway = filteredInternetGateways?.[0] ?? null;
-      setSelectedGateway(autoSelectedGateway);
-    }
-  }, [activeTabKey]);
+  // useEffect(() => {
+  //   if (activeTabKey === 'internet-gateways') {
+  //     const autoSelectedGateway = filteredInternetGateways?.[0] ?? null;
+  //     setSelectedGateway(autoSelectedGateway);
+  //   }
+  // }, [activeTabKey]);
 
   const isEmpty = networkInternetGateways.length === 0;
 
   return (
-    <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+    <PageLayout
+      title="Internet Gateways"
+      isFullScreen
+      description={
+        <>
+          Access the internet securely through virtual gateways while masking your true IP address.
+          <br />
+          Route network traffic through designated gateways to bypass restrictions and enhance privacy.
+        </>
+      }
+      icon={<ArrowsRightLeftIcon className=" size-5" />}
+    >
       {isEmpty && (
         <Row
           className="page-padding"
@@ -397,7 +418,6 @@ export function InternetGatewaysPage({
                   type="primary"
                   onClick={() => setIsAddInternetGatewayModalOpen(true)}
                   className="full-width-button-xs"
-                  ref={createInternetGatewayButtonRef}
                   style={{ marginBottom: '.5rem' }}
                 >
                   <PlusOutlined /> Create Gateway
@@ -405,7 +425,7 @@ export function InternetGatewaysPage({
                 <Button
                   title="Go to internet gateways documentation"
                   style={{ marginLeft: '1rem', marginBottom: '.5rem' }}
-                  href={INTERNET_GATEWAYS_DOCS_URL}
+                  href={ExternalLinks.INTERNET_GATEWAYS_DOCS_URL}
                   target="_blank"
                   referrerPolicy="no-referrer"
                   icon={<QuestionCircleOutlined />}
@@ -418,7 +438,6 @@ export function InternetGatewaysPage({
                   <Table
                     columns={internetGatewaysTableCols}
                     dataSource={filteredInternetGateways}
-                    ref={internetGatewaysTableRef}
                     rowKey="id"
                     size="small"
                     scroll={{ x: true }}
@@ -459,7 +478,6 @@ export function InternetGatewaysPage({
                     style={{ marginRight: '1rem', marginBottom: '.5rem' }}
                     onClick={() => setIsUpdateInternetGatewayModalOpen(true)}
                     className="full-width-button-xs"
-                    ref={internetGatewaysUpdateConnectedHostsRef}
                   >
                     <EditOutlined /> Update Connected Hosts
                   </Button>
@@ -475,7 +493,6 @@ export function InternetGatewaysPage({
                     rowKey="id"
                     size="small"
                     scroll={{ x: true }}
-                    ref={internetGatewaysConnectedHostsTableRef}
                   />
                 </div>
               </Col>
@@ -485,9 +502,10 @@ export function InternetGatewaysPage({
       )}
 
       {/* misc */}
+      {notifyCtx}
       <AddInternetGatewayModal
         isOpen={isAddInternetGatewayModalOpen}
-        networkId={network.netid}
+        networkId={resolvedNetworkId}
         onCreateInternetGateway={(newNode: Node) => {
           store.updateNode(newNode.id, newNode);
           setSelectedGateway(getExtendedNode(newNode, store.hostsCommonDetails));
@@ -496,12 +514,10 @@ export function InternetGatewaysPage({
         onCancel={() => {
           setIsAddInternetGatewayModalOpen(false);
         }}
-        selectHostRef={createInternetGatewayModalSelectHostRef}
-        selectConnectedHostsRef={createInternetGatewayModalSelectConnectedHostsRef}
       />
       {selectedGateway && (
         <UpdateInternetGatewayModal
-          networkId={network.netid}
+          networkId={resolvedNetworkId}
           key={`update-internet-gateway-${selectedGateway.id}`}
           isOpen={isUpdateInternetGatewayModalOpen}
           internetGateway={selectedGateway}
@@ -513,10 +529,8 @@ export function InternetGatewaysPage({
           onCancel={() => {
             setIsUpdateInternetGatewayModalOpen(false);
           }}
-          selectConnectedHostsRef={updateInternetGatewayModalSelectConnectedHostsRef}
         />
       )}
-      {notifyCtx}
-    </div>
+    </PageLayout>
   );
 }

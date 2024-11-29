@@ -50,7 +50,8 @@ import InviteUserModal from '@/components/modals/invite-user-modal/InviteUserMod
 import { useNavigate } from 'react-router-dom';
 import { AppRoutes } from '@/routes';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
-import { EllipsisHorizontalIcon } from '@heroicons/react/24/solid';
+import { EllipsisHorizontalIcon, UsersIcon } from '@heroicons/react/24/solid';
+import PageLayout from '@/layouts/PageLayout';
 
 const USERS_DOCS_URL = 'https://docs.netmaker.io/docs/features/users-management-pro';
 
@@ -123,6 +124,7 @@ export default function UsersPage(props: PageProps) {
   const pendingUsersDenyAllUsersButtonRef = useRef(null);
   const pendingUsersSearchInputRef = useRef(null);
   const reloadPendingUsersButtonRef = useRef(null);
+  const addUserButtonContainerRef = useRef(null);
 
   const loadUsers = useCallback(
     async (showLoading = true) => {
@@ -676,7 +678,7 @@ export default function UsersPage(props: PageProps) {
       {
         title: 'Add a User',
         description: 'Click here to add a user either by creating a new user or inviting a user',
-        target: () => addUserButtonRef.current,
+        target: () => addUserButtonContainerRef.current,
         placement: 'bottom',
         onNext: () => {
           setIsAddUserModalOpen(true);
@@ -869,11 +871,11 @@ export default function UsersPage(props: PageProps) {
       <>
         <Row className="mb-4">
           <Col xs={24} md={16}>
-            <Typography className="text-xl secondary text-text-secondary">
+            <p className="text-base text-text-secondary">
               Identify users and control access to the platform.
               <br />
               Create users, assign roles, and organize them into groups to manage access levels effectively.
-            </Typography>
+            </p>
           </Col>
           <Col xs={24} md={8} style={{ textAlign: 'right' }}>
             <Button
@@ -917,54 +919,67 @@ export default function UsersPage(props: PageProps) {
               <ReloadOutlined /> Reload users
             </Button>
             {isSaasBuild && (
-              <Button
-                size="large"
-                type="primary"
-                style={{ display: 'inline', marginRight: '0.5rem' }}
-                onClick={onInviteUser}
-              >
-                <PlusOutlined /> Invite User(s)
-              </Button>
+              <div ref={addUserButtonContainerRef}>
+                <Button
+                  size="large"
+                  type="primary"
+                  style={{ display: 'inline', marginRight: '0.5rem' }}
+                  onClick={onInviteUser}
+                  ref={addUserButtonRef}
+                >
+                  <PlusOutlined /> Invite User(s)
+                </Button>
+              </div>
             )}
             {!isSaasBuild && (
               <>
                 {isServerEE && (
-                  <Dropdown
-                    placement="bottomRight"
-                    menu={{
-                      items: [
-                        {
-                          key: 'invite',
-                          label: 'Invite a User',
-                          onClick: onInviteUser,
-                        },
-                        {
-                          key: 'add',
-                          label: 'Create a User',
-                          onClick: onAddUser,
-                        },
-                      ],
-                    }}
-                  >
-                    <Button size="large" type="primary" style={{ display: 'inline', marginRight: '0.5rem' }}>
-                      <PlusOutlined /> Add a User
-                    </Button>
-                  </Dropdown>
+                  <div ref={addUserButtonContainerRef}>
+                    <Dropdown
+                      placement="bottomRight"
+                      menu={{
+                        items: [
+                          {
+                            key: 'invite',
+                            label: 'Invite a User',
+                            onClick: onInviteUser,
+                          },
+                          {
+                            key: 'add',
+                            label: 'Create a User',
+                            onClick: onAddUser,
+                          },
+                        ],
+                      }}
+                    >
+                      <Button
+                        size="large"
+                        type="primary"
+                        style={{ display: 'inline', marginRight: '0.5rem' }}
+                        ref={addUserButtonRef}
+                      >
+                        <PlusOutlined /> Add a User
+                      </Button>
+                    </Dropdown>
+                  </div>
                 )}
                 {!isServerEE && (
-                  <Button
-                    size="large"
-                    type="primary"
-                    style={{ display: 'inline', marginRight: '0.5rem' }}
-                    onClick={onAddUser}
-                  >
-                    <PlusOutlined /> Create a User
-                  </Button>
+                  <div ref={addUserButtonContainerRef}>
+                    <Button
+                      size="large"
+                      type="primary"
+                      style={{ display: 'inline', marginRight: '0.5rem' }}
+                      onClick={onAddUser}
+                      ref={addUserButtonRef}
+                    >
+                      <PlusOutlined /> Create a User
+                    </Button>
+                  </div>
                 )}
               </>
             )}
           </Col>
-        </Row>
+        </Row>{' '}
         <Row className="" style={{ marginTop: '1rem' }}>
           <Col xs={24}>
             <div className="table-wrapper">
@@ -992,11 +1007,11 @@ export default function UsersPage(props: PageProps) {
       <>
         <Row className="mb-4">
           <Col xs={24} md={16}>
-            <Typography className="text-xl secondary text-text-secondary">
+            <p className="text-base text-text-secondary">
               User invitations allow you to add users to your network or server via email.
               <br />
               Simply enter the user&apos;s email address, and they&apos;ll receive a link to join your network.
-            </Typography>
+            </p>
           </Col>
           <Col xs={24} md={8} style={{ textAlign: 'right' }}>
             <Button
@@ -1092,12 +1107,12 @@ export default function UsersPage(props: PageProps) {
       <>
         <Row className="mb-4">
           <Col xs={24} md={16}>
-            <Typography className="text-xl secondary text-text-secondary">
+            <p className="text-base text-text-secondary">
               Pending users are individuals who initiated signup through the web UI or RAC and are awaiting approval to
               join your network or server.
               <br />
               You can review their requests to approve or deny access as needed.
-            </Typography>
+            </p>
           </Col>
           <Col xs={24} md={8} style={{ textAlign: 'right' }}>
             <Button
@@ -1275,29 +1290,26 @@ export default function UsersPage(props: PageProps) {
   }, [loadUsers, isServerEE, loadInvites, loadPendingUsers, loadGroups]);
 
   return (
-    <Layout.Content
-      className="UsersPage"
-      style={{ position: 'relative', height: '100%', padding: props.isFullScreen ? 0 : 24 }}
+    <PageLayout
+      title="Users"
+      isFullScreen
+      description={
+        <>
+          Centralize user management and permission controls across your entire network.
+          <br />
+          Handle invites, create, modify, and organize user groups.
+        </>
+      }
+      icon={<UsersIcon className=" size-5" />}
     >
-      <Skeleton loading={isLoadingUsers} active title={true} className="page-padding">
+      <Skeleton loading={isLoadingUsers} active title={true}>
         {users.length === 0 && (
           <>
             <Row
-              className="page-padding"
               style={{
                 background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
               }}
             >
-              <Col xs={24} xl={(24 * 2) / 3}>
-                <Typography.Title level={3} style={{ color: 'white ' }}>
-                  User Management
-                </Typography.Title>
-                <Typography.Text style={{ color: 'white ' }}>
-                  {branding.productName} allows you to perform Identity and Access Management (IAM) with users, roles
-                  and groups. You can create multiple users, assign them roles and groups to restrict access to
-                  networks, devices and other resources.
-                </Typography.Text>
-              </Col>
               <Col xs={24} xl={(24 * 1) / 3} style={{ position: 'relative' }}>
                 <Card className="header-card" style={{ height: '20rem', position: 'absolute', width: '100%' }}>
                   <Typography.Title level={3}>Add a User</Typography.Title>
@@ -1360,13 +1372,7 @@ export default function UsersPage(props: PageProps) {
         )}
         {users.length > 0 && (
           <>
-            <Row className="page-row-padding">
-              <Col xs={24}>
-                <Typography.Title level={3}>User Management</Typography.Title>
-              </Col>
-            </Row>
-
-            <Row className="page-row-padding" justify="space-between">
+            <Row justify="space-between">
               <Col xs={24}>
                 <Tabs
                   defaultActiveKey={defaultTabKey}
@@ -1487,6 +1493,6 @@ export default function UsersPage(props: PageProps) {
           inviteUserModalPlatformAccessLevelRef={inviteUserModalPlatformAccessLevelRef}
         />
       )}
-    </Layout.Content>
+    </PageLayout>
   );
 }

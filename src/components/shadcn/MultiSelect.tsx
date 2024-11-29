@@ -16,6 +16,7 @@ import {
   CommandSeparator,
 } from '@/components/shadcn/Command';
 import { AvailableThemes } from '@/models/AvailableThemes';
+import { Tooltip } from 'antd';
 
 /**
  * Variants for the multi-select component to handle different styles.
@@ -169,6 +170,12 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
       }
     };
 
+    const renderTruncatedText = (text: string) => (
+      <Tooltip title={text} mouseEnterDelay={0.5}>
+        <span className="truncate">{text}</span>
+      </Tooltip>
+    );
+
     return (
       <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen} modal={modalPopover}>
         <PopoverTrigger asChild className="border-stroke-default">
@@ -190,13 +197,18 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
                     return (
                       <Badge
                         key={value}
-                        className={cn(isAnimating ? 'animate-bounce' : '', 'p-2', multiSelectVariants({ variant }))}
+                        className={cn(
+                          isAnimating ? 'animate-bounce' : '',
+                          'p-2',
+                          multiSelectVariants({ variant }),
+                          'max-w-64  ',
+                        )}
                         style={{ animationDuration: `${animation}s`, backgroundColor: '#3F3F46' }}
                       >
-                        {IconComponent && <IconComponent className="inline w-4 h-4 mr-2" />}
-                        {option?.label}
+                        {IconComponent && <IconComponent className="inline w-4 h-4 mr-2 shrink-0" />}
+                        {renderTruncatedText(option?.label || '')}{' '}
                         <XCircle
-                          className="w-4 h-4 ml-2 cursor-pointer"
+                          className="w-4 h-4 ml-2 cursor-pointer shrink-0"
                           onClick={(event) => {
                             event.stopPropagation();
                             toggleOption(value);
@@ -214,9 +226,10 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
                       )}
                       style={{ animationDuration: `${animation}s` }}
                     >
-                      {`+ ${selectedValues.length - maxCount} more`}
+                      <span>{`+ ${selectedValues.length - maxCount} more`}</span>
+
                       <XCircle
-                        className="w-4 h-4 ml-2 cursor-pointer"
+                        className="w-4 h-4 ml-2 cursor-pointer shrink-0"
                         onClick={(event) => {
                           event.stopPropagation();
                           clearExtraOptions();
@@ -265,24 +278,28 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
                     {selectedValues.length === options.length && <CheckIcon className="inline w-4 h-4" />}
                   </div>
                 </CommandItem>
-                {options.map((option) => {
-                  const isSelected = selectedValues.includes(option.value);
-                  return (
-                    <CommandItem
-                      key={option.value}
-                      onSelect={() => toggleOption(option.value)}
-                      className="cursor-pointer"
-                    >
-                      <div className="flex justify-between" style={{ width: '100%' }}>
-                        <span>
-                          {option.icon && <option.icon className="inline w-4 h-4 mr-2 text-muted-foreground" />}
-                          <span className="mr-2">{option.label}</span>
-                        </span>
-                        {isSelected && <CheckIcon className="w-4 h-4" />}
-                      </div>
-                    </CommandItem>
-                  );
-                })}
+                <div className="h-40 overflow-y-auto">
+                  {options.map((option) => {
+                    const isSelected = selectedValues.includes(option.value);
+                    return (
+                      <CommandItem
+                        key={option.value}
+                        onSelect={() => toggleOption(option.value)}
+                        className="cursor-pointer"
+                      >
+                        <div className="flex justify-between w-full ">
+                          <span className="flex max-w-96 ">
+                            {option.icon && (
+                              <option.icon className="inline w-4 h-4 mr-2 text-muted-foreground shrink-0" />
+                            )}
+                            {renderTruncatedText(option.label)}
+                          </span>
+                          {isSelected && <CheckIcon className="w-4 h-4 ml-4 shrink-0 ml" />}
+                        </div>
+                      </CommandItem>
+                    );
+                  })}
+                </div>
               </CommandGroup>
               <CommandSeparator />
               <CommandGroup>

@@ -613,7 +613,7 @@ const AddNodeDialog: React.FC<{
         },
         {
           title: 'Docker Compose',
-          description: 'Note: It might take a few minutes for the host to show up in the network(s)',
+          description: 'Note: It might take a few minutes for the device to show up in the network(s)',
           Code: `services:
   netclient:
     image: gravitl/netclient:${store.serverConfig?.Version ?? '<version>'}

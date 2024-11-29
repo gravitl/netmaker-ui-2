@@ -222,7 +222,7 @@ function App() {
   }, [isServerEE]);
 
   return (
-    <div className={`App ${isDarkMode ? 'dark' : ''}`}>
+    <div className={`App  ${isDarkMode ? 'dark' : ''} bg-bg-default text-text-primary`}>
       {' '}
       {/* Conditionally add .dark class */}
       <ConfigProvider

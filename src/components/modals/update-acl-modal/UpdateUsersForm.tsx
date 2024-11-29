@@ -21,6 +21,7 @@ import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { NotificationInstance } from 'antd/es/notification/interface';
 import { Link } from 'react-router-dom';
 import { useServerLicense } from '@/utils/Utils';
+import arrowBidirectional from '@/assets/arrow-bidirectional.svg';
 
 interface Item {
   id: string;
@@ -226,6 +227,11 @@ const SelectDropdown: React.FC<SelectDropdownProps> = ({
   );
 };
 
+const cleanTagName = (tagName: string) => {
+  const lastDotIndex = tagName.lastIndexOf('.');
+  return lastDotIndex !== -1 ? tagName.substring(lastDotIndex + 1) : tagName;
+};
+
 const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
   value = [],
   onChange,
@@ -257,7 +263,7 @@ const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
       }
       const tagItem: Item = {
         id: tag.id,
-        name: tag.tag_name,
+        name: cleanTagName(tag.tag_name),
         type: 'tag',
       };
       const isSelected = value.some((v) => v.id === tag.id);
@@ -277,7 +283,7 @@ const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
 
   const filteredTags = useMemo(() => {
     const searchLower = searchText.toLowerCase();
-    return tags.filter((tag) => tag.tag_name.toLowerCase().includes(searchLower));
+    return tags.filter((tag) => cleanTagName(tag.tag_name).toLowerCase().includes(searchLower));
   }, [searchText, tags]);
 
   return (
@@ -367,6 +373,7 @@ const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
               {filteredTags.map((tag) => {
                 const isSelected = value.some((v) => v.id === tag.id);
                 const isDisabled = value.some((v) => v.id === '*');
+                const displayName = cleanTagName(tag.tag_name);
 
                 return (
                   <div
@@ -386,7 +393,7 @@ const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
                     aria-disabled={isDisabled}
                   >
                     <TagIcon className="w-4 h-4 shrink-0 text-text-secondary" aria-hidden="true" />
-                    <span className="flex-1">{tag.tag_name}</span>
+                    <span className="flex-1">{displayName}</span>
                     {isSelected && !isDisabled && <div className="w-4 h-4 ml-auto text-primary-500">✓</div>}
                   </div>
                 );
@@ -435,11 +442,10 @@ const UpdateUsersForm: React.FC<UpdateUsersFormProps> = ({
     (sourceTypes: SourceTypeValue[]): Item[] => {
       return sourceTypes.map((source) => {
         if (source.id === 'user-group') {
-          // Look up the group name from groupsList
           const group = groupsList.find((g) => g.id === source.value);
           return {
             id: source.value,
-            name: group?.name || source.value, // Fallback to value if group not found
+            name: group?.name || source.value,
             type: 'group',
           };
         }
@@ -453,13 +459,28 @@ const UpdateUsersForm: React.FC<UpdateUsersFormProps> = ({
     [groupsList],
   );
 
-  const convertDestinationTypeToItems = useCallback((destinationTypes: DestinationTypeValue[]): Item[] => {
-    return destinationTypes.map((dest) => ({
-      id: dest.value,
-      name: dest.value === '*' ? 'All Resources' : dest.value,
-      type: 'tag',
-    }));
-  }, []);
+  const convertDestinationTypeToItems = useCallback(
+    (destinationTypes: DestinationTypeValue[]): Item[] => {
+      return destinationTypes.map((dest) => {
+        if (dest.value === '*') {
+          return {
+            id: dest.value,
+            name: 'All Resources',
+            type: 'tag',
+          };
+        }
+
+        const matchingTag = tagsList.find((tag) => tag.id === dest.value || tag.tag_name === dest.value);
+
+        return {
+          id: dest.value,
+          name: matchingTag ? cleanTagName(matchingTag.tag_name) : cleanTagName(dest.value),
+          type: 'tag',
+        };
+      });
+    },
+    [tagsList],
+  );
 
   useEffect(() => {
     setValue('name', selectedPolicy.name);
@@ -511,7 +532,6 @@ const UpdateUsersForm: React.FC<UpdateUsersFormProps> = ({
 
     fetchUsers();
     isServerEE && fetchGroups();
-    console.log(isServerEE);
     fetchTags();
   }, [networkId, isServerEE]);
 
@@ -610,7 +630,7 @@ const UpdateUsersForm: React.FC<UpdateUsersFormProps> = ({
 
           <div className="flex flex-col items-center justify-center w-2/3 gap-2">
             <img
-              src="/arrow-bidirectional.svg"
+              src={arrowBidirectional}
               className="w-full px-4 py-2 text-sm border rounded-lg bg-bg-default border-stroke-default"
               alt="Bidirectional arrow"
             />

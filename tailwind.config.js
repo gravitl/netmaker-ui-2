@@ -24,6 +24,7 @@ export default {
           800: 'var(--color-neutral-800)',
           850: 'var(--color-neutral-850)',
           900: 'var(--color-neutral-900)',
+          950: 'var(--color-neutral-950)',
         },
 
         primary: {
@@ -38,19 +39,33 @@ export default {
           800: 'var(--color-primary-800)',
           900: 'var(--color-primary-900)',
         },
+
+        success: 'var(--color-success)',
+        critical: 'var(--color-critical)',
+
         bg: {
           default: 'var(--color-bg-default)',
           hover: 'var(--color-bg-hover)',
           contrastDefault: 'var(--color-bg-contrast-default)',
           contrastHover: 'var(--color-bg-contrast-hover)',
+          contrastActive: 'var(--color-bg-contrast-active)',
         },
+
         stroke: {
           default: 'var(--color-stroke-default)',
+          hover: 'var(--color-stroke-hover)',
+          active: 'var(--color-stroke-active)',
+          error: 'var(--color-stroke-error)',
         },
+
         text: {
           primary: 'var(--color-text-primary)',
           secondary: 'var(--color-text-secondary)',
+          disabled: 'var(--color-text-disabled)',
+          success: 'var(--color-text-success)',
+          critical: 'var(--color-text-critical)',
         },
+
         button: {
           primary: {
             fill: {

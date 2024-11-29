@@ -63,6 +63,7 @@ export default function AddNetworkModal({
       );
       store.addNetwork(network);
       notify.success({ message: `Network ${network.netid} created` });
+      store.setActiveNetwork(network.netid);
       onCreateNetwork(network);
       resetModal();
     } catch (err) {
@@ -177,7 +178,7 @@ export default function AddNetworkModal({
               <Row justify="space-between" style={{ marginBottom: isIpv4Val ? '.5rem' : '0px' }}>
                 <Col>
                   IPv4
-                  <Tooltip title="An IPv4 Address Range can be added to your network, and each machine will be given a private IPv4 address which is accessible from other hosts in the network.">
+                  <Tooltip title="An IPv4 Address Range can be added to your network, and each machine will be given a private IPv4 address which is accessible from other nodes in the network.">
                     <InfoCircleOutlined style={{ marginLeft: '.5rem', opacity: '.7' }} />
                   </Tooltip>
                 </Col>
@@ -245,7 +246,7 @@ export default function AddNetworkModal({
               <Row justify="space-between" style={{ marginBottom: isIpv6Val ? '.5rem' : '0px' }}>
                 <Col>
                   IPv6
-                  <Tooltip title="An IPv6 Address Range can be added to your network, and each machine will be given a private IPv6 address which is accessible from other hosts in the network.">
+                  <Tooltip title="An IPv6 Address Range can be added to your network, and each machine will be given a private IPv6 address which is accessible from other nodes in the network.">
                     <InfoCircleOutlined style={{ marginLeft: '.5rem', opacity: '.7' }} />
                   </Tooltip>
                 </Col>

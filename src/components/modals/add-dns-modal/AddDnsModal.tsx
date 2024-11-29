@@ -17,8 +17,8 @@ interface AddDnsModalProps {
   closeModal?: () => void;
   onOk?: (e: MouseEvent<HTMLButtonElement>) => void;
   onCancel?: (e: MouseEvent<HTMLButtonElement>) => void;
-  addDNSModalDNSNameRef: Ref<HTMLDivElement>;
-  addDNSModalAddressToAliasRef: Ref<HTMLDivElement>;
+  addDNSModalDNSNameRef?: Ref<HTMLDivElement>;
+  addDNSModalAddressToAliasRef?: Ref<HTMLDivElement>;
 }
 
 export default function AddDnsModal({

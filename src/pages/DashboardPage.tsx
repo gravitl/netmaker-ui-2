@@ -28,7 +28,7 @@ import { PageProps } from '../models/Page';
 import { AppRoutes } from '../routes';
 import { Link, useNavigate } from 'react-router-dom';
 import AddNetworkModal from '@/components/modals/add-network-modal/AddNetworkModal';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useStore } from '@/store/store';
 import { getAmuiUrl, getNetworkRoute, resolveAppRoute } from '@/utils/RouteUtils';
 import NewHostModal from '@/components/modals/new-host-modal/NewHostModal';
@@ -38,6 +38,7 @@ import QuickSetupModal from '@/components/modals/quick-setup-modal/QuickSetupMod
 import { Network } from '@/models/Network';
 import RacModal from '@/components/modals/rac-modal/RacModal';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
+import { extractErrorMsg } from '@/utils/ServiceUtils';
 
 export type TourType =
   | 'relays'
@@ -68,6 +69,7 @@ export default function DashboardPage(props: PageProps) {
   const [searchText, setSearchText] = useState('');
   const [notify, notifyCtx] = notification.useNotification();
   const [isRacModalOpen, setIsRacModalOpen] = useState(false);
+  const [isNetworksLoading, setIsNetworksLoading] = useState(false);
 
   const jumpToTourPage = (tourType: TourType, netId?: string) => {
     if (store.networks.length === 0) {
@@ -116,7 +118,7 @@ export default function DashboardPage(props: PageProps) {
     [store.networks, searchText],
   );
 
-  const tableColumns: TableColumnsType<Network> = [
+  const networksTableColumns: TableColumnsType<Network> = [
     {
       title: 'Name',
       dataIndex: 'netid',
@@ -128,7 +130,10 @@ export default function DashboardPage(props: PageProps) {
       render: (netId) => (
         <Link
           className="text-button-primary-fill-default"
-          to={`${resolveAppRoute(AppRoutes.NETWORKS_ROUTE)}/${encodeURIComponent(netId)}`}
+          to={AppRoutes.NETWORK_NODES_ROUTE.replace(':networkId', netId)}
+          onClick={() => {
+            store.setActiveNetwork(netId);
+          }}
         >
           {netId}
         </Link>
@@ -189,6 +194,20 @@ export default function DashboardPage(props: PageProps) {
       ),
     },
   ];
+
+  const reloadNetworks = useCallback(async () => {
+    try {
+      setIsNetworksLoading(true);
+      await store.fetchNetworks();
+    } catch (err) {
+      notify.error({
+        message: 'Failed to fetch networks',
+        description: extractErrorMsg(err as any),
+      });
+    } finally {
+      setIsNetworksLoading(false);
+    }
+  }, [notify, store]);
 
   useEffect(() => {
     if (!isServerEE && !isSaasBuild && !store.serverStatus.status?.is_on_trial_license) {
@@ -446,7 +465,7 @@ export default function DashboardPage(props: PageProps) {
                     />
                   </Col>
                   <Col xs={24} md={16} style={{ textAlign: 'right' }} className="networks-table-button">
-                    <Button size="large" style={{ marginRight: '0.5em' }} onClick={() => store.fetchNetworks()}>
+                    <Button size="large" style={{ marginRight: '0.5em' }} onClick={() => reloadNetworks()}>
                       <ReloadOutlined /> Reload Networks
                     </Button>
                     <Button type="primary" size="large" onClick={() => setIsAddNetworkModalOpen(true)}>
@@ -459,10 +478,11 @@ export default function DashboardPage(props: PageProps) {
                   <Col xs={24}>
                     <div className="table-wrapper">
                       <Table
-                        columns={tableColumns}
+                        columns={networksTableColumns}
                         dataSource={filteredNetworks}
                         rowKey="netid"
                         scroll={{ x: true }}
+                        loading={isNetworksLoading}
                         onRow={(network) => {
                           return {
                             onClick: () => {

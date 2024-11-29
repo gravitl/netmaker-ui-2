@@ -24,9 +24,12 @@ import AddNetworkModal from '../../components/modals/add-network-modal/AddNetwor
 import { PageProps } from '../../models/Page';
 import { useStore } from '../../store/store';
 import './NetworksPage.scss';
-import { getNetworkRoute, resolveAppRoute } from '@/utils/RouteUtils';
+import { getNetworkPageRoute, getNetworkRoute, resolveAppRoute } from '@/utils/RouteUtils';
 import { NetworksService } from '@/services/NetworksService';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
+import PageLayout from '@/layouts/PageLayout';
+import { GlobeAltIcon } from '@heroicons/react/24/solid';
+import { NodesService } from '@/services/NodesService';
 
 export default function NetworksPage(props: PageProps) {
   const store = useStore();
@@ -47,27 +50,46 @@ export default function NetworksPage(props: PageProps) {
   const [tourStep, setTourStep] = useState(0);
   const [notify, notifyCtx] = notification.useNotification();
 
-  const confirmNetworkDelete = useCallback((netId: string) => {
-    Modal.confirm({
-      title: `Are you sure you want to the delete the network ${netId}?`,
-      content: `This action cannot be undone.`,
-      onOk: async () => {
-        try {
-          const network = await NetworksService.deleteNetwork(netId);
-          store.deleteNetwork(netId);
-          notify.success({
-            message: 'Network deleted',
-            description: `Network ${netId} has been deleted`,
-          });
-        } catch (err) {
-          notify.error({
-            message: 'Failed to delete network',
-            description: extractErrorMsg(err as any),
-          });
-        }
-      },
-    });
+  const loadNetworks = useCallback(async () => {
+    await store.fetchNetworks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const confirmNetworkDelete = useCallback(
+    (netId: string) => {
+      Modal.confirm({
+        title: `Are you sure you want to the delete the network ${netId}?`,
+        content: `This action cannot be undone.`,
+        onOk: async () => {
+          try {
+            await NetworksService.deleteNetwork(netId);
+            notify.success({
+              message: 'Network deleted',
+              description: `Network ${netId} has been deleted`,
+            });
+            // if (netId === store.activeNetwork) {
+            //   const response = await NetworksService.getNetworks();
+            //   const fallbackNetwork = response.data[0]?.netid;
+            //   store.setActiveNetwork(fallbackNetwork);
+            //   console.log(fallbackNetwork);
+            // }
+            if (netId === store.activeNetwork && store.networks.length > 1) {
+              const fallbackNetwork = store.networks[1]?.netid;
+              store.setActiveNetwork(fallbackNetwork);
+              console.log(store.networks);
+            }
+            store.deleteNetwork(netId);
+          } catch (err) {
+            notify.error({
+              message: 'Failed to delete network',
+              description: extractErrorMsg(err as any),
+            });
+          }
+        },
+      });
+    },
+    [store],
+  );
 
   const checkIfNetworkDeleteIsPossible = useCallback(
     (netId: string) => {
@@ -85,12 +107,15 @@ export default function NetworksPage(props: PageProps) {
         compare: (a, b) => a.netid.localeCompare(b.netid),
       },
       defaultSortOrder: 'ascend',
-      render: (netId, network) => (
+      render: (netId) => (
         <Link
+          to={AppRoutes.NETWORK_NODES_ROUTE.replace(':networkId', netId)}
+          onClick={() => {
+            store.setActiveNetwork(netId);
+          }}
           className="text-button-primary-fill-default"
-          to={`${resolveAppRoute(AppRoutes.NETWORKS_ROUTE)}/${encodeURIComponent(netId)}`}
         >
-          {network.displayName}
+          {netId}
         </Link>
       ),
     },
@@ -185,11 +210,6 @@ export default function NetworksPage(props: PageProps) {
     [networks, searchText],
   );
 
-  const loadNetworks = useCallback(async () => {
-    await store.fetchNetworks();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const tourSteps: TourProps['steps'] = [
     {
       title: 'Network details',
@@ -253,23 +273,27 @@ export default function NetworksPage(props: PageProps) {
   }, [loadNetworks]);
 
   return (
-    <Layout.Content
-      className="NetworksPage"
-      style={{ position: 'relative', height: '100%', padding: props.isFullScreen ? 0 : 24 }}
+    <PageLayout
+      title="Networks"
+      isFullScreen
+      description={
+        <>
+          Create and manage secure overlay networks across multiple locations and environments.
+          <br />
+          Connect distributed devices into unified, private networks with centralized control.
+        </>
+      }
+      icon={<GlobeAltIcon className=" size-5" />}
     >
-      <Skeleton loading={store.isFetchingNetworks} active title={true} className="page-padding">
+      <Skeleton loading={store.isFetchingNetworks} active title={true}>
         {networks.length === 0 && (
           <>
             <Row
-              className="page-padding"
               style={{
                 background: 'linear-gradient(90deg, #52379F 0%, #B66666 100%)',
               }}
             >
               <Col xs={24} xl={(24 * 2) / 3}>
-                <Typography.Title level={3} style={{ color: 'white ' }}>
-                  Networks
-                </Typography.Title>
                 <Typography.Text style={{ color: 'white ' }}>
                   A network is how your hosts and clients communicate. Each machine gets a private IP address within the
                   defined subnet and communicates securely with all the other devices in the network. The network is
@@ -359,13 +383,7 @@ export default function NetworksPage(props: PageProps) {
         )}
         {networks.length > 0 && (
           <>
-            <Row className="page-row-padding">
-              <Col xs={24}>
-                <Typography.Title level={3}>Networks</Typography.Title>
-              </Col>
-            </Row>
-
-            <Row className="page-row-padding" justify="space-between">
+            <Row justify="space-between">
               <Col xs={24} md={8}>
                 <Input
                   size="large"
@@ -401,9 +419,9 @@ export default function NetworksPage(props: PageProps) {
               </Col>
             </Row>
 
-            <Row className="page-row-padding" justify="space-between">
+            <Row justify="space-between">
               <Col xs={24}>
-                <div className="table-wrapper">
+                <div className="table-wrapper mt-7">
                   <Table
                     columns={tableColumns}
                     dataSource={filteredNetworks}
@@ -412,7 +430,8 @@ export default function NetworksPage(props: PageProps) {
                     onRow={(network) => {
                       return {
                         onClick: () => {
-                          navigate(getNetworkRoute(network));
+                          store.setActiveNetwork(network.netid);
+                          navigate(getNetworkPageRoute('nodes', network.netid));
                         },
                       };
                     }}
@@ -451,6 +470,6 @@ export default function NetworksPage(props: PageProps) {
       />
 
       {notifyCtx}
-    </Layout.Content>
+    </PageLayout>
   );
 }

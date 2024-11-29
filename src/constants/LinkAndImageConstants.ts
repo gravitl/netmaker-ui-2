@@ -20,6 +20,13 @@ const USER_MGMT_DOCS_INVITES_URL =
 const APPLE_STORE_LINK = 'https://apps.apple.com/us/app/netmaker-rac/id6479694220?itsct=apps_box_badge&amp;itscg=30200';
 const PLAY_STORE_LINK =
   'https://play.google.com/store/apps/details?id=com.net.netmaker&pli=1&utm_source=nmui&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1';
+const HOSTS_DOCS_URL = 'https://docs.netmaker.io/ui-reference.html#hosts';
+const ACLS_DOCS_URL = 'https://docs.netmaker.io/acls.html';
+const RELAYS_DOCS_URL = 'https://docs.netmaker.io/pro/pro-relay-server.html';
+const EGRESS_DOCS_URL = 'https://docs.netmaker.io/egress-gateway.html';
+const GATEWAYS_DOCS_URL = 'https://docs.netmaker.io/external-clients.html';
+const CLIENTS_DOCS_URL = 'https://docs.netmaker.io/external-clients.html#adding-clients-to-a-gateway';
+const INTERNET_GATEWAYS_DOCS_URL = 'https://docs.netmaker.io/pro/internet-gateways.html';
 
 const EGRESS_IMG = '/egress.webp';
 const RAG_IMG = '/rag.webp';
@@ -51,6 +58,13 @@ export const ExternalLinks = {
   PLAY_STORE_LINK,
   RAC_DOCS_URL,
   TAGS_DOCS_URL,
+  HOSTS_DOCS_URL,
+  ACLS_DOCS_URL,
+  RELAYS_DOCS_URL,
+  EGRESS_DOCS_URL,
+  GATEWAYS_DOCS_URL,
+  CLIENTS_DOCS_URL,
+  INTERNET_GATEWAYS_DOCS_URL,
 };
 
 export const AppImages = {

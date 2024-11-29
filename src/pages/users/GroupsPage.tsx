@@ -7,7 +7,6 @@ import { useServerLicense } from '@/utils/Utils';
 import {
   DeleteOutlined,
   InfoCircleOutlined,
-  MoreOutlined,
   PlusOutlined,
   QuestionCircleOutlined,
   SearchOutlined,
@@ -105,6 +104,7 @@ export default function GroupsPage({
       {
         title: 'Name',
         dataIndex: 'id',
+        width: '20%',
         render(id, group) {
           return (
             <>
@@ -125,11 +125,14 @@ export default function GroupsPage({
       {
         title: 'Description',
         dataIndex: 'meta_data',
-        width: '50%',
+        width: '40%',
         render(desc) {
           return (
             <>
-              <Typography.Text ellipsis={{ tooltip: desc }} style={{ width: '100%' }}>
+              <Typography.Text
+                ellipsis={{ tooltip: desc }}
+                style={{ width: '100%', whiteSpace: 'break-spaces', textWrap: 'wrap' }}
+              >
                 {desc ?? ''}
               </Typography.Text>
             </>
@@ -267,11 +270,11 @@ export default function GroupsPage({
         <>
           <Row className="mb-4">
             <Col xs={24} md={16}>
-              <Typography className="text-xl secondary text-text-secondary">
+              <p className="text-base text-text-secondary">
                 Groups help manage users within specific categories, such as Admins, Developers, and QA.
                 <br />
                 Create groups to organize users and assign roles to clearly define permissions.
-              </Typography>
+              </p>
             </Col>
             <Col xs={24} md={8} style={{ textAlign: 'right' }}>
               <Button
@@ -348,6 +351,10 @@ export default function GroupsPage({
                   //     setSelectedGroup(group);
                   //   },
                   // }}
+                  pagination={{
+                    pageSize: 15,
+                    hideOnSinglePage: true,
+                  }}
                 />
               </div>
             </Col>

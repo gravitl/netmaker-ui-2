@@ -640,7 +640,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
               >
                 <Col xs={12}>
                   <Typography.Text disabled style={{ color: '#A6A6A6' }}>
-                    Default Host
+                    Default Device
                   </Typography.Text>
                 </Col>
                 <Col xs={12}>
