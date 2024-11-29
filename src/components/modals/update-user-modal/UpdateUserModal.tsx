@@ -41,10 +41,10 @@ export default function UpdateUserModal({ isOpen, user, onUpdateUser, onCancel }
         return [true, ''];
       }
       if (store.user?.platform_role_id === 'admin') {
-        if (user.platform_role_id === 'super-admin') {
+        if (user?.platform_role_id === 'super-admin') {
           return [false, 'Cannot change password of the super admin'];
         }
-        if (user.platform_role_id === 'admin') {
+        if (user?.platform_role_id === 'admin') {
           return [false, "Cannot change another admin' password"];
         }
         return [true, ''];

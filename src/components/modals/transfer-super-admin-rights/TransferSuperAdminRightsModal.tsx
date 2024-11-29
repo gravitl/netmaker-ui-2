@@ -24,7 +24,7 @@ export default function TransferSuperAdminRightsModal({
   const loadUsers = useCallback(async () => {
     try {
       const users = (await UsersService.getUsers()).data;
-      setAdmins(users.filter((user) => isAdminUserOrRole(user) && user.platform_role_id !== 'super-admin'));
+      setAdmins(users.filter((user) => isAdminUserOrRole(user) && user?.platform_role_id !== 'super-admin'));
     } catch (err) {
       notify.error({
         message: 'Failed to load users',
