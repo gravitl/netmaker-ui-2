@@ -568,8 +568,8 @@ const UsersForm: React.FC<UsersFormProps> = ({ networkId, onClose, fetchACLRules
         dst_type: values.destination.map(convertDestinationItemToTypeValue),
         allowed_traffic_direction: direction,
         enabled: isPolicyEnabled,
-        protocol: values.service,
-        type: protocolType,
+        protocol: protocolType,
+        type: values.service,
         ports: convertPortsToArray(values.port),
       };
 
@@ -772,7 +772,7 @@ const UsersForm: React.FC<UsersFormProps> = ({ networkId, onClose, fetchACLRules
             </div>
           </div>
         </div>
-        {showUnidirectionalWarning && (
+        {/* {showUnidirectionalWarning && (
           <Alert
             message="Unidirectional Mode"
             description="Only Linux machines are supported in unidirectional mode."
@@ -782,7 +782,7 @@ const UsersForm: React.FC<UsersFormProps> = ({ networkId, onClose, fetchACLRules
             className="[&_.ant-alert-message]:!text-sm-semibold  [&_.ant-alert-description]:!text-xs [&_.anticon]:!size-5 p-4"
             onClose={() => setShowUnidirectionalWarning(false)}
           />
-        )}
+        )} */}
 
         <div className="flex w-full gap-2 p-4 mt-4 border rounded-md border-stroke-default">
           <div className="flex flex-col w-full gap-1">

@@ -247,10 +247,7 @@ const UpdateResourcesForm: React.FC<UpdateResourcesFormProps> = ({
   const [aclTypes, setAclTypes] = useState<ACLType[]>([]);
   const [selectedService, setSelectedService] = useState<ACLType | null>(null);
   const [showUnidirectionalWarning, setShowUnidirectionalWarning] = useState(false);
-  const [protocolType, setProtocolType] = useState<'tcp' | 'udp'>(
-    (selectedPolicy.ports[0].split('/')[1] as 'tcp' | 'udp') || 'tcp',
-  );
-
+  const [protocolType, setProtocolType] = useState<'tcp' | 'udp'>((selectedPolicy.protocol || 'tcp') as 'tcp' | 'udp');
   const {
     register,
     handleSubmit,
@@ -263,7 +260,7 @@ const UpdateResourcesForm: React.FC<UpdateResourcesFormProps> = ({
       name: selectedPolicy.name,
       source: [],
       destination: [],
-      service: selectedPolicy.protocol,
+      service: selectedPolicy.type,
       port: selectedPolicy.ports[0].split('/')[0],
     },
   });
@@ -351,7 +348,7 @@ const UpdateResourcesForm: React.FC<UpdateResourcesFormProps> = ({
         const types = response?.data?.Response?.ProtocolTypes || [];
         if (Array.isArray(types)) {
           setAclTypes(types);
-          const service = types.find((t) => t.name === selectedPolicy.protocol);
+          const service = types.find((t) => t.name === selectedPolicy.type);
           setSelectedService(service || null);
         }
       } catch (error) {
@@ -431,8 +428,8 @@ const UpdateResourcesForm: React.FC<UpdateResourcesFormProps> = ({
         dst_type: dstType,
         enabled: isPolicyEnabled,
         allowed_traffic_direction: direction,
-        protocol: values.service,
-        type: protocolType,
+        protocol: protocolType,
+        type: values.service,
         ports: [`${values.port}`],
       };
 
@@ -544,7 +541,6 @@ const UpdateResourcesForm: React.FC<UpdateResourcesFormProps> = ({
             {errors.port && <span className="text-sm text-red-500">Invalid port number</span>}
           </div>
         </div>
-
         <div className="flex w-full gap-7">
           <div className="w-full">
             <div className="flex flex-col w-full gap-2">
@@ -596,7 +592,7 @@ const UpdateResourcesForm: React.FC<UpdateResourcesFormProps> = ({
             </div>
           </div>
         </div>
-
+        {/* 
         {showUnidirectionalWarning && (
           <Alert
             message="Unidirectional Mode"
@@ -607,7 +603,7 @@ const UpdateResourcesForm: React.FC<UpdateResourcesFormProps> = ({
             className="[&_.ant-alert-message]:!text-sm-semibold [&_.ant-alert-description]:!text-xs [&_.anticon]:!size-5 p-4"
             onClose={() => setShowUnidirectionalWarning(false)}
           />
-        )}
+        )} */}
 
         <div className="flex w-full gap-2 p-4 mt-4 border rounded-md border-stroke-default">
           <div className="flex flex-col w-full gap-1">

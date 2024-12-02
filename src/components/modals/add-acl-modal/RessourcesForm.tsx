@@ -421,10 +421,12 @@ const ResourcesForm: React.FC<ResourcesFormProps> = ({ networkId, onClose, fetch
         dst_type: dstType,
         allowed_traffic_direction: direction,
         enabled: isPolicyEnabled,
-        protocol: values.service,
+        protocol: protocolType,
         ports: convertPortsToArray(values.port),
-        type: protocolType,
+        type: values.service,
       };
+
+      console.log(payload, '🔥');
 
       await ACLService.createACLRule(payload, networkId);
       notify.success({ message: `Resources policy created` });
@@ -599,7 +601,7 @@ const ResourcesForm: React.FC<ResourcesFormProps> = ({ networkId, onClose, fetch
           </div>
         </div>
 
-        {showUnidirectionalWarning && (
+        {/* {showUnidirectionalWarning && (
           <Alert
             message="Unidirectional Mode"
             description="Only Linux machines are supported in unidirectional mode."
@@ -609,7 +611,7 @@ const ResourcesForm: React.FC<ResourcesFormProps> = ({ networkId, onClose, fetch
             className="[&_.ant-alert-message]:!text-sm-semibold  [&_.ant-alert-description]:!text-xs [&_.anticon]:!size-5 p-4"
             onClose={() => setShowUnidirectionalWarning(false)}
           />
-        )}
+        )} */}
 
         <div className="flex w-full gap-2 p-4 mt-4 border rounded-md border-stroke-default">
           <div className="flex flex-col w-full gap-1">

@@ -411,9 +411,7 @@ const UpdateUsersForm: React.FC<UpdateUsersFormProps> = ({
   const [aclTypes, setAclTypes] = useState<ACLType[]>([]);
   const [selectedService, setSelectedService] = useState<ACLType | null>(null);
   const [showUnidirectionalWarning, setShowUnidirectionalWarning] = useState(false);
-  const [protocolType, setProtocolType] = useState<'tcp' | 'udp'>(
-    (selectedPolicy.ports[0].split('/')[1] as 'tcp' | 'udp') || 'tcp',
-  );
+  const [protocolType, setProtocolType] = useState<'tcp' | 'udp'>((selectedPolicy.protocol || 'tcp') as 'tcp' | 'udp');
 
   const { isServerEE } = useServerLicense();
 
@@ -429,7 +427,7 @@ const UpdateUsersForm: React.FC<UpdateUsersFormProps> = ({
       name: selectedPolicy.name,
       source: [],
       destination: [],
-      service: selectedPolicy.protocol,
+      service: selectedPolicy.type,
       port: selectedPolicy.ports.map((port) => port.split('/')[0]).join(','),
     },
   });
@@ -518,7 +516,7 @@ const UpdateUsersForm: React.FC<UpdateUsersFormProps> = ({
         const types = response?.data?.Response?.ProtocolTypes || [];
         if (Array.isArray(types)) {
           setAclTypes(types);
-          const service = types.find((t) => t.name === selectedPolicy.protocol);
+          const service = types.find((t) => t.name === selectedPolicy.type);
           setSelectedService(service || null);
         }
       } catch (error) {
@@ -637,8 +635,8 @@ const UpdateUsersForm: React.FC<UpdateUsersFormProps> = ({
         dst_type: values.destination.map(convertDestinationItemToTypeValue),
         enabled: isPolicyEnabled,
         allowed_traffic_direction: direction,
-        protocol: values.service,
-        type: protocolType, // Use state value directly
+        protocol: protocolType,
+        type: values.service,
         ports: convertPortsToArray(values.port),
       };
 
@@ -813,7 +811,7 @@ const UpdateUsersForm: React.FC<UpdateUsersFormProps> = ({
           </div>
         </div>
 
-        {showUnidirectionalWarning && (
+        {/* {showUnidirectionalWarning && (
           <Alert
             message="Unidirectional Mode"
             description="Only Linux machines are supported in unidirectional mode."
@@ -823,7 +821,7 @@ const UpdateUsersForm: React.FC<UpdateUsersFormProps> = ({
             className="[&_.ant-alert-message]:!text-sm-semibold [&_.ant-alert-description]:!text-xs [&_.anticon]:!size-5 p-4"
             onClose={() => setShowUnidirectionalWarning(false)}
           />
-        )}
+        )} */}
 
         <div className="flex w-full gap-2 p-4 mt-4 border rounded-md border-stroke-default">
           <div className="flex flex-col w-full gap-1">
