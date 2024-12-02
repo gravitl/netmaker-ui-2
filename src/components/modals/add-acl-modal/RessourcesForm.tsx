@@ -45,7 +45,7 @@ interface ResourcesFormProps {
 interface ACLType {
   name: string;
   allowed_protocols: string[];
-  port_range: number;
+  port_range: number | string;
   allow_port_setting: boolean;
 }
 
@@ -240,7 +240,7 @@ const ResourcesForm: React.FC<ResourcesFormProps> = ({ networkId, onClose, fetch
   const [aclTypes, setAclTypes] = useState<ACLType[]>([]);
   const [selectedService, setSelectedService] = useState<ACLType | null>(null);
   const [showUnidirectionalWarning, setShowUnidirectionalWarning] = useState(false);
-  const [protocolType, setProtocolType] = useState<'tcp' | 'udp'>('tcp');
+  const [protocolType, setProtocolType] = useState<'tcp' | 'udp' | 'icmp'>('tcp');
 
   const {
     register,
@@ -260,32 +260,31 @@ const ResourcesForm: React.FC<ResourcesFormProps> = ({ networkId, onClose, fetch
   });
 
   const validatePortFormat = (value: string): boolean => {
+    if (protocolType === 'icmp') return true;
+    if (selectedService?.port_range === 'All ports' && selectedService?.name !== 'Custom') return true;
+
+    if (value === '') return true;
+
     if (!value) return false;
 
-    // Remove all whitespace
     const sanitizedValue = value.replace(/\s/g, '');
-
-    // Check if the format matches the pattern: numbers and dashes separated by commas
     const isValidFormat = /^(\d+(-\d+)?)(,\d+(-\d+)?)*$/.test(sanitizedValue);
     if (!isValidFormat) return false;
 
-    // Split by comma and validate each part
     const parts = sanitizedValue.split(',');
-
     return parts.every((part) => {
       if (part.includes('-')) {
-        // Validate range
         const [start, end] = part.split('-').map(Number);
         return !isNaN(start) && !isNaN(end) && start >= 1 && start <= 65535 && end >= 1 && end <= 65535 && start < end;
-      } else {
-        // Validate single port
-        const port = Number(part);
-        return !isNaN(port) && port >= 1 && port <= 65535;
       }
+      const port = Number(part);
+      return !isNaN(port) && port >= 1 && port <= 65535;
     });
   };
-
   const convertPortsToArray = (portString: string): string[] => {
+    if (protocolType === 'icmp' || (selectedService?.port_range === 'All ports' && selectedService?.name !== 'Custom'))
+      return [];
+
     const ports: string[] = [];
     const entries = portString.split(',').map((entry) => entry.trim());
 
@@ -363,15 +362,15 @@ const ResourcesForm: React.FC<ResourcesFormProps> = ({ networkId, onClose, fetch
     setSelectedService(service || null);
 
     if (service) {
-      if (service.allow_port_setting) {
-        setValue('port', '8000');
-        setProtocolType(protocolType);
-      } else {
-        setValue('port', service.port_range.toString());
-        if (service.allowed_protocols && service.allowed_protocols.length > 0) {
-          setProtocolType(service.allowed_protocols[0] as 'tcp' | 'udp');
-        }
-      }
+      setProtocolType(service.allowed_protocols[0] as 'tcp' | 'udp' | 'icmp');
+      setValue(
+        'port',
+        service.allow_port_setting
+          ? '8000'
+          : service.port_range === 'All ports'
+            ? 'All ports'
+            : service.port_range.toString(),
+      );
     } else {
       setValue('port', '8000');
       setProtocolType('tcp');
@@ -422,7 +421,7 @@ const ResourcesForm: React.FC<ResourcesFormProps> = ({ networkId, onClose, fetch
         allowed_traffic_direction: direction,
         enabled: isPolicyEnabled,
         protocol: protocolType,
-        ports: convertPortsToArray(values.port),
+        ports: protocolType === 'icmp' ? [] : convertPortsToArray(values.port),
         type: values.service,
       };
 
@@ -507,46 +506,50 @@ const ResourcesForm: React.FC<ResourcesFormProps> = ({ networkId, onClose, fetch
             </div>
           )}
 
-          <div className="flex flex-col w-32 gap-2">
-            <label htmlFor="port" className="block text-sm font-semibold text-text-primary">
-              Port
-            </label>
-            <div className="flex items-center gap-2">
-              <Controller
-                name="port"
-                control={control}
-                rules={{
-                  required: true,
-                  validate: (value) => {
-                    if (selectedService?.allow_port_setting) {
-                      return validatePortFormat(value);
-                    }
-                    return true;
-                  },
-                }}
-                render={({ field: { onChange, value } }) => (
-                  <Input
-                    onChange={(e) => onChange(e.target.value)}
-                    value={value}
-                    disabled={!selectedService?.allow_port_setting}
-                    placeholder="80,443,8000-9000"
-                    className="w-full"
+          {!selectedService?.allowed_protocols.includes('icmp') && (
+            <>
+              <div className="flex flex-col w-32 gap-2">
+                <label htmlFor="port" className="block text-sm font-semibold text-text-primary">
+                  Port
+                </label>
+                <div className="flex items-center gap-2">
+                  <Controller
+                    name="port"
+                    control={control}
+                    rules={{
+                      required: true,
+                      validate: (value) => {
+                        if (selectedService?.allow_port_setting) {
+                          return validatePortFormat(value);
+                        }
+                        return true;
+                      },
+                    }}
+                    render={({ field: { onChange, value } }) => (
+                      <Input
+                        onChange={(e) => onChange(e.target.value)}
+                        value={value}
+                        disabled={!selectedService?.allow_port_setting}
+                        placeholder="80,443,8000-9000"
+                        className="w-full"
+                      />
+                    )}
                   />
+                  {selectedService?.allow_port_setting && (
+                    <Tooltip title="Use single ports, ranges (e.g., 8000-9000), or comma-separated ports (80,443) or both.">
+                      <InformationCircleIcon className="w-4 h-4 text-text-secondary cursor-help shrink-0" />
+                    </Tooltip>
+                  )}
+                </div>
+                {errors.port && (
+                  <span className="text-sm text-red-500">
+                    Invalid port format. Use single ports, ranges (e.g., 8000-9000), or comma-separated ports (80,443)
+                    or both.
+                  </span>
                 )}
-              />
-              {selectedService?.name === 'Custom' && (
-                <Tooltip title="Use single ports, ranges (e.g., 8000-9000), or comma-separated ports (80,443) or both.">
-                  <InformationCircleIcon className="w-4 h-4 text-text-secondary cursor-help shrink-0" />
-                </Tooltip>
-              )}
-            </div>
-            {errors.port && (
-              <span className="text-sm text-red-500">
-                Invalid port format. Use single ports, ranges (e.g., 8000-9000), or comma-separated ports (80,443) or
-                both.
-              </span>
-            )}
-          </div>
+              </div>{' '}
+            </>
+          )}
         </div>
 
         <div className="flex w-full gap-7">
