@@ -67,8 +67,10 @@ const testNode: Node = {
     dns: '',
     extraallowedips: [],
     tags: {},
+    status: 'offline',
   },
   tags: {},
+  status: 'offline',
 };
 
 const hostRegistry: Record<Host['id'], HostCommonDetails> = {
@@ -93,7 +95,7 @@ describe('NodeUtils', () => {
   it('determines the node health', () => {
     expect(getConnectivityStatus(testNode.lastcheckin - 400)).toEqual('warning');
     expect(getConnectivityStatus(testNode.lastcheckin - 8000)).toEqual('error');
-    expect(getNodeConnectivityStatus({ ...testNode, lastcheckin: testNode.lastcheckin - 10 })).toEqual('healthy');
+    expect(getNodeConnectivityStatus({ ...testNode })).toEqual('offline');
   });
 
   it("can deduce a node's associated host details", () => {

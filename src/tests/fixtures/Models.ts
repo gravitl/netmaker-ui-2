@@ -173,8 +173,10 @@ export const stubNode1: Node = {
     dns: '',
     extraallowedips: [],
     tags: {},
+    status: 'offline',
   },
   tags: {},
+  status: 'offline',
 };
 
 export const stubNode2: Node = {
@@ -241,8 +243,10 @@ export const stubNode2: Node = {
     dns: '',
     extraallowedips: [],
     tags: {},
+    status: 'offline',
   },
   tags: {},
+  status: 'offline',
 };
 
 export const stubNodes: Node[] = [stubNode1, stubNode2];

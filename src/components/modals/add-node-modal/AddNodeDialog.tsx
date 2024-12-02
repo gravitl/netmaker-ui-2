@@ -981,6 +981,14 @@ sudo dnf install remote-client
               <XMarkIcon className="w-5 h-5 text-button-outline-text-default" />
             </button>
           </div>
+          <div className="flex items-start justify-between w-full gap-6 py-6 pl-8 pr-3 border-b border-stroke-default bg-bg-default rounded-t-xl">
+            <div className="flex flex-col gap-1">
+              <h5 className="text-text-primary">Firewall Requirements</h5>
+              <p className="text-text-secondary">
+                Allow outbound connection to Server IP ({store.serverConfig?.PublicIp}) and port 443
+              </p>
+            </div>
+          </div>
           <div>
             <div className="flex flex-col gap-2 px-8 py-5 border-b border-stroke-default">
               <div className="flex items-center gap-2 text-text-primary">

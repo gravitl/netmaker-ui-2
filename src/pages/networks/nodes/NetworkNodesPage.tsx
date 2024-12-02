@@ -519,6 +519,7 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
                                 postup: node.static_node?.postup,
                                 postdown: node.static_node?.postdown,
                                 tags: node.static_node?.tags ?? {},
+                                status: node.static_node.status,
                               };
                               setTargetClient(clientData);
                               setIsClientDetailsModalOpen(true);
@@ -645,7 +646,7 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
                         <NodeStatus nodeHealth="disabled" clickable />
                       );
                     } else if (!extendedNode.connected) {
-                      return <NodeStatus nodeHealth="disconnected" clickable />;
+                      return <NodeStatus nodeHealth="offline" clickable />;
                     }
                     return getHostHealth(node.hostid, [node]);
                   },
@@ -712,6 +713,7 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
                             postup: node.static_node?.postup,
                             postdown: node.static_node?.postdown,
                             tags: node.static_node.tags,
+                            status: node.static_node.status,
                           };
                           setTargetClient(clientData);
                           setIsUpdateClientModalOpen(true);
@@ -745,6 +747,7 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
                             postup: node.static_node?.postup,
                             postdown: node.static_node?.postdown,
                             tags: node.static_node.tags,
+                            status: node.static_node.status,
                           };
                           toggleClientStatus(clientData, !node.static_node?.enabled);
                         },
@@ -785,6 +788,7 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
                             postup: node.static_node?.postup,
                             postdown: node.static_node?.postdown,
                             tags: node.static_node.tags,
+                            status: node.static_node.status,
                           };
                           setTargetClient(clientData);
                           setIsClientConfigModalOpen(true);
@@ -822,6 +826,7 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
                             postup: node.static_node?.postup,
                             postdown: node.static_node?.postdown,
                             tags: node.static_node.tags,
+                            status: node.static_node.status,
                           };
                           confirmDeleteClient(clientData);
                         },

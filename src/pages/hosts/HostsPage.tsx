@@ -384,62 +384,62 @@ export default function HostsPage(props: PageProps) {
       //     );
       //   },
       // },
-      {
-        title: 'Status',
-        filters: [
-          {
-            text: 'Healthy',
-            value: HOST_HEALTH_STATUS.healthy,
-          },
-          {
-            text: 'Warning',
-            value: HOST_HEALTH_STATUS.warning,
-          },
-          {
-            text: 'Error',
-            value: HOST_HEALTH_STATUS.error,
-          },
-          {
-            text: 'Unknown',
-            value: HOST_HEALTH_STATUS.unknown,
-          },
-        ],
-        onFilter: (value: React.Key | boolean, record: any) => filterByHostHealthStatus(value, record),
-        render(_, host) {
-          const nodeHealths = store.nodes
-            .filter((n) => n.hostid === host.id)
-            .map((n) => getNodeConnectivityStatus(n))
-            .map((h) => {
-              switch (h) {
-                case 'healthy':
-                  return 3;
-                case 'warning':
-                  return 2;
-                case 'error':
-                  return 1;
-                default:
-                  return 0;
-              }
-            })
-            .filter((h) => h !== 0);
+      // {
+      //   title: 'Status',
+      //   filters: [
+      //     {
+      //       text: 'Healthy',
+      //       value: HOST_HEALTH_STATUS.healthy,
+      //     },
+      //     {
+      //       text: 'Warning',
+      //       value: HOST_HEALTH_STATUS.warning,
+      //     },
+      //     {
+      //       text: 'Error',
+      //       value: HOST_HEALTH_STATUS.error,
+      //     },
+      //     {
+      //       text: 'Unknown',
+      //       value: HOST_HEALTH_STATUS.unknown,
+      //     },
+      //   ],
+      //   onFilter: (value: React.Key | boolean, record: any) => filterByHostHealthStatus(value, record),
+      //   render(_, host) {
+      //     const nodeHealths = store.nodes
+      //       .filter((n) => n.hostid === host.id)
+      //       .map((n) => getNodeConnectivityStatus(n))
+      //       .map((h) => {
+      //         switch (h) {
+      //           case 'healthy':
+      //             return 3;
+      //           case 'warning':
+      //             return 2;
+      //           case 'error':
+      //             return 1;
+      //           default:
+      //             return 0;
+      //         }
+      //       })
+      //       .filter((h) => h !== 0);
 
-          let worstHealth = Number.MAX_SAFE_INTEGER;
-          nodeHealths.forEach((h) => {
-            worstHealth = Math.min(worstHealth, h);
-          });
+      //     let worstHealth = Number.MAX_SAFE_INTEGER;
+      //     nodeHealths.forEach((h) => {
+      //       worstHealth = Math.min(worstHealth, h);
+      //     });
 
-          switch (worstHealth) {
-            default:
-              return <NodeStatus nodeHealth="unknown" />;
-            case 1:
-              return <NodeStatus nodeHealth="error" />;
-            case 2:
-              return <NodeStatus nodeHealth="warning" />;
-            case 3:
-              return <NodeStatus nodeHealth="healthy" />;
-          }
-        },
-      },
+      //     switch (worstHealth) {
+      //       default:
+      //         return <NodeStatus nodeHealth="unknown" />;
+      //       case 1:
+      //         return <NodeStatus nodeHealth="error" />;
+      //       case 2:
+      //         return <NodeStatus nodeHealth="warning" />;
+      //       case 3:
+      //         return <NodeStatus nodeHealth="healthy" />;
+      //     }
+      //   },
+      // },
       {
         title: '',
         width: '5rem',
@@ -529,8 +529,6 @@ export default function HostsPage(props: PageProps) {
       },
     ],
     [
-      filterByHostHealthStatus,
-      store.nodes,
       requestHostPull,
       checkIfUpgradeButtonShouldBeDisabled,
       confirmToggleHostDefaultness,

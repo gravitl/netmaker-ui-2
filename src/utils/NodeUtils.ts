@@ -18,7 +18,7 @@ export function getConnectivityStatus(lastCheckInTime: number): NodeConnectivity
   if (lastCheckInTime === undefined || lastCheckInTime === null) return 'unknown';
   else if (currentTime - lastCheckInTime >= ERROR_THRESHOLD) return 'error';
   else if (currentTime - lastCheckInTime >= WARNING_THRESHOLD) return 'warning';
-  else return 'healthy';
+  else return 'online';
 }
 
 /**
@@ -27,7 +27,8 @@ export function getConnectivityStatus(lastCheckInTime: number): NodeConnectivity
  * @param {Node} node the node whose connectivity is to be checked
  */
 export function getNodeConnectivityStatus(node: Node | ExternalClient): NodeConnectivityStatus {
-  return getConnectivityStatus((node as Node).lastcheckin);
+  return node.status;
+  // return getConnectivityStatus((node as Node).lastcheckin);
 }
 
 /**

@@ -111,8 +111,10 @@ export const NULL_NODE: Node = {
     dns: '',
     extraallowedips: [],
     tags: {},
+    status: 'offline',
   },
   tags: {},
+  status: 'offline',
 };
 
 export const NULL_NETWORK_PROSETTINGS: ProSettings = {

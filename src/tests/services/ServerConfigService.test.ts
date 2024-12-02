@@ -60,6 +60,7 @@ describe('ServerConfigService', () => {
       TurnUserName: '',
       UseTurn: false,
       UsersLimit: 0,
+      PublicIp: '',
     };
     mock.onGet(ApiRoutes.SERVER_CONFIG).replyOnce(200, mockRes);
 

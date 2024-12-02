@@ -80,7 +80,7 @@ export default function HostDetailsPage(props: PageProps) {
       .map((n) => getNodeConnectivityStatus(n))
       .map((h) => {
         switch (h) {
-          case 'healthy':
+          case 'online':
             return 3;
           case 'warning':
             return 2;
@@ -105,7 +105,7 @@ export default function HostDetailsPage(props: PageProps) {
       case 2:
         return <NodeStatus nodeHealth="warning" />;
       case 3:
-        return <NodeStatus nodeHealth="healthy" />;
+        return <NodeStatus nodeHealth="online" />;
     }
   }, [host?.id, store.nodes]);
 
