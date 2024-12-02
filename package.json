@@ -73,7 +73,7 @@
     "zustand": "^5.0.1"
   },
   "devDependencies": {
-    "@playwright/test": "^1.47.2",
+    "@playwright/test": "^1.49.0",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^16.0.1",
     "@types/lodash": "^4.17.9",
