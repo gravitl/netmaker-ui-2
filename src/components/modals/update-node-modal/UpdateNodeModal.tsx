@@ -87,12 +87,12 @@ export default function UpdateNodeModal({ isOpen, node, onUpdateNode, onCancel }
           });
         }
       }
-      notification.success({ message: `Host ${node.id} updated` });
+      notification.success({ message: `Device ${node.id} updated` });
       storeUpdateNode(newNode.id, newNode);
       onUpdateNode(newNode);
     } catch (err) {
       notification.error({
-        message: 'Failed to update host',
+        message: 'Failed to update device',
         description: extractErrorMsg(err as any),
       });
     }
@@ -106,7 +106,7 @@ export default function UpdateNodeModal({ isOpen, node, onUpdateNode, onCancel }
     <Modal
       title={
         <Typography.Title style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>
-          Update host&apos;s Network Settings
+          Update device&apos;s Network Settings
           <br />
           <small>(ID: {node.id})</small>
         </Typography.Title>
@@ -185,11 +185,11 @@ export default function UpdateNodeModal({ isOpen, node, onUpdateNode, onCancel }
             </Form.Item>
 
             <Form.Item label="Endpoint IP (IPv4)" name="endpointip" data-nmui-intercom="update-node-form_endpointip">
-              <Input placeholder="Endpoint IP" disabled title="To edit, click Global Host Settings below" />
+              <Input placeholder="Endpoint IP" disabled title="To edit, click Device Settings below" />
             </Form.Item>
 
             <Form.Item label="Endpoint IP (IPv6)" name="endpointipv6" data-nmui-intercom="update-node-form_endpointip">
-              <Input placeholder="Endpoint IP" disabled title="To edit, click Global Host Settings below" />
+              <Input placeholder="Endpoint IP" disabled title="To edit, click Device Settings below" />
             </Form.Item>
 
             <Form.Item
@@ -275,14 +275,14 @@ export default function UpdateNodeModal({ isOpen, node, onUpdateNode, onCancel }
             <Col xs={12}>
               <Form.Item noStyle data-nmui-intercom="update-node-form_editglobalhost">
                 <Button onClick={() => navigate(getHostRoute(node.hostid, { edit: 'true' }))}>
-                  Go to Global Host Settings
+                  Go to Device Settings
                 </Button>
               </Form.Item>
             </Col>
             <Col xs={12} style={{ textAlign: 'right' }}>
               <Form.Item noStyle data-nmui-intercom="update-node-form_submit">
                 <Button type="primary" onClick={updateNode} loading={isLoading}>
-                  Update Host
+                  Update Device
                 </Button>
               </Form.Item>
             </Col>
