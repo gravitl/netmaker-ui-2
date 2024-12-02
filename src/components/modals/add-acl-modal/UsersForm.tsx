@@ -516,13 +516,29 @@ const UsersForm: React.FC<UsersFormProps> = ({ networkId, onClose, fetchACLRules
             Rule name
           </label>
           <input
-            {...register('name', { required: true })}
+            name="name"
+            onChange={
+              register('name', {
+                required: true,
+                maxLength: {
+                  value: 30,
+                  message: 'Rule name cannot exceed 30 characters',
+                },
+              }).onChange
+            }
+            onBlur={register('name').onBlur}
+            ref={register('name').ref}
             type="text"
             id="name"
             placeholder="e.g. devops-team"
             className="w-full p-2 text-sm border rounded-lg bg-bg-default border-stroke-default"
           />
-          {errors.name && <span className="text-sm text-red-500">Rule name is required</span>}
+          {errors.name?.type === 'required' && (
+            <span className="text-sm text-text-critical">Rule name is required</span>
+          )}
+          {errors.name?.type === 'maxLength' && (
+            <span className="text-sm text-text-critical">{errors.name.message}</span>
+          )}{' '}
         </div>
 
         <div className="flex w-full gap-7">
@@ -544,7 +560,7 @@ const UsersForm: React.FC<UsersFormProps> = ({ networkId, onClose, fetchACLRules
                   />
                 )}
               />
-              {errors.source && <span className="text-sm text-red-500">Source is required</span>}
+              {errors.source && <span className="text-sm text-text-critical">Source is required</span>}
             </div>
           </div>
 
@@ -572,7 +588,7 @@ const UsersForm: React.FC<UsersFormProps> = ({ networkId, onClose, fetchACLRules
                   />
                 )}
               />
-              {errors.destination && <span className="text-sm text-red-500">Destination is required</span>}
+              {errors.destination && <span className="text-sm text-text-critical">Destination is required</span>}
             </div>
           </div>
         </div>
