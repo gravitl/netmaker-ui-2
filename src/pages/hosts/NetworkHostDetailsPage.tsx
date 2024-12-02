@@ -113,7 +113,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
     const host = store.hosts.find((h) => h.id === hostId);
     const node = store.nodes.find((n) => n.network === networkId && n.hostid === hostId);
     if (!host || !node) {
-      notify.error({ message: `Host ${hostId} not found` });
+      notify.error({ message: `Device ${hostId} not found` });
       navigate(getNetworkRoute(networkId));
       return;
     }
@@ -127,17 +127,17 @@ export default function NetworkHostDetailsPage(props: PageProps) {
     async (forceDelete: boolean) => {
       try {
         if (!hostId || !node || !networkId) {
-          throw new Error('Host or network not found');
+          throw new Error('Device or network not found');
         }
         await NodesService.deleteNode(node?.id, networkId, forceDelete);
         if (forceDelete) {
           storeDeleteNode(node.id);
         }
-        notify.success({ message: `Host ${hostId} deleted` });
+        notify.success({ message: `Device ${hostId} deleted` });
         navigate(getNetworkRoute(networkId));
       } catch (err) {
         notify.error({
-          message: 'Failed to delete host from network',
+          message: 'Failed to delete device from network',
           description: extractErrorMsg(err as any),
         });
       }
@@ -149,17 +149,17 @@ export default function NetworkHostDetailsPage(props: PageProps) {
     async (newStatus: boolean) => {
       try {
         if (!hostId || !node || !networkId) {
-          throw new Error('Host or network not found');
+          throw new Error('Device or network not found');
         }
         const updatedNode = (await NodesService.updateNode(node.id, networkId, { ...node, connected: newStatus })).data;
         store.updateNode(node.id, updatedNode);
         notify.success({
           message: `Successfully ${newStatus ? 'connected' : 'disconnected'}`,
-          description: `Host is now ${newStatus ? 'connected to' : 'disconnected from'} network ${networkId}.`,
+          description: `Device is now ${newStatus ? 'connected to' : 'disconnected from'} network ${networkId}.`,
         });
       } catch (err) {
         notify.error({
-          message: `Failed to ${newStatus ? 'connect' : 'disconnect'} host ${newStatus ? 'to' : 'from'} network`,
+          message: `Failed to ${newStatus ? 'connect' : 'disconnect'} device ${newStatus ? 'to' : 'from'} network`,
           description: extractErrorMsg(err as any),
         });
       }
@@ -169,7 +169,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
 
   const promptConfirmDisconnect = () => {
     Modal.confirm({
-      title: `Do you want to ${node?.connected ? 'disconnect' : 'connect'} host ${host?.name} ${
+      title: `Do you want to ${node?.connected ? 'disconnect' : 'connect'} device ${host?.name} ${
         node?.connected ? 'from' : 'to'
       } network ${networkId}?`,
       icon: <ExclamationCircleFilled />,
@@ -183,7 +183,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
     let forceDelete = false;
 
     Modal.confirm({
-      title: `Do you want to remove host ${host?.name} from network ${networkId}?`,
+      title: `Do you want to remove device ${host?.name} from network ${networkId}?`,
       content: (
         <>
           <Row>
@@ -215,18 +215,18 @@ export default function NetworkHostDetailsPage(props: PageProps) {
   const refreshHostKeys = useCallback(() => {
     if (!hostId) return;
     Modal.confirm({
-      title: 'Refresh host keys',
-      content: "Are you sure you want to refresh this host's keys?",
+      title: 'Refresh device keys',
+      content: "Are you sure you want to refresh this device's keys?",
       onOk: async () => {
         try {
           await HostsService.refreshHostKeys(hostId);
           notify.success({
-            message: 'Host keys refreshing...',
-            description: 'Host key pairs are refreshing. This may take a while.',
+            message: 'Device keys refreshing...',
+            description: 'Device key pairs are refreshing. This may take a while.',
           });
         } catch (err) {
           notify.error({
-            message: 'Failed to refresh host keys',
+            message: 'Failed to refresh device keys',
             description: extractErrorMsg(err as any),
           });
         }
@@ -250,16 +250,16 @@ export default function NetworkHostDetailsPage(props: PageProps) {
       >
         <Card style={{ width: '50%', marginTop: '2rem' }}>
           <Typography.Title level={5} style={{ marginTop: '0rem' }}>
-            Host Network settings
+            Device Network settings
           </Typography.Title>
 
           <Row
             style={{ borderBottom: `1px solid ${themeToken.colorBorder}`, padding: '.5rem 0rem' }}
-            data-nmui-intercom="network-host-details_nodeid"
+            data-nmui-intercom="network-device-details_nodeid"
           >
             <Col xs={12}>
               <Typography.Text disabled style={{ color: '#A6A6A6' }}>
-                Host Network ID
+                Device Network ID
               </Typography.Text>
             </Col>
             <Col xs={12}>
@@ -779,7 +779,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                         key: 'refresh-key',
                         label: 'Refresh Key',
                         disabled: node?.pendingdelete !== false,
-                        title: node?.pendingdelete !== false ? 'Host is being removed from network' : '',
+                        title: node?.pendingdelete !== false ? 'Device is being removed from network' : '',
                         onClick: (ev) => {
                           ev.domEvent.stopPropagation();
                           refreshHostKeys();
@@ -789,7 +789,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                         key: 'edit',
                         label: 'Edit',
                         disabled: node?.pendingdelete !== false,
-                        title: node?.pendingdelete !== false ? 'Host is being removed from network' : '',
+                        title: node?.pendingdelete !== false ? 'Device is being removed from network' : '',
                         onClick: (ev) => {
                           ev.domEvent.stopPropagation();
                           setIsEditingNode(true);
@@ -797,7 +797,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                       },
                       {
                         key: 'global-hpst',
-                        label: 'View Global Host',
+                        label: 'View Global Device',
                         onClick: (ev) => {
                           ev.domEvent.stopPropagation();
                           navigate(getHostRoute(hostId ?? ''));
@@ -827,7 +827,7 @@ export default function NetworkHostDetailsPage(props: PageProps) {
                   }}
                 >
                   <Button type="default" style={{ marginRight: '.5rem' }}>
-                    <SettingOutlined /> Host Settings
+                    <SettingOutlined /> Device Settings
                   </Button>
                 </Dropdown>
               </Col>
