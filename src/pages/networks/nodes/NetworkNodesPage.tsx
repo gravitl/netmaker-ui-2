@@ -73,6 +73,7 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
   const branding = useBranding();
   const { network, isLoadingNetwork } = useGetActiveNetwork(resolvedNetworkId);
   const [notify, notifyCtx] = notification.useNotification();
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
   const [searchHost, setSearchHost] = useState('');
   const [isAddNewHostModalOpen, setIsAddNewHostModalOpen] = useState(false);
@@ -116,8 +117,7 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
             return node.is_static && !node.is_user_node;
           case 'Active Users':
             return node.is_user_node;
-          case 'All':
-            return true;
+
           default:
             return true;
         }
@@ -132,7 +132,6 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
   const filters = useMemo(
     () =>
       [
-        { name: 'All', icon: null },
         { name: 'Netclient', icon: ServerIcon },
         { name: 'Config files', icon: DocumentIcon },
       ].concat(isServerEE ? [{ name: 'Active Users', icon: UserIcon }] : []),
@@ -390,6 +389,180 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
     [loadAcls, notify, storeFetchNodes],
   );
 
+  const handleBulkDelete = useCallback(() => {
+    const nodesToDelete = filteredNetworkNodes.filter((node) =>
+      selectedRowKeys.includes(node.is_static ? node.static_node.clientid : node.id),
+    );
+
+    const title = activeNodeFilter === 'Netclient' ? 'Remove Selected from Network' : 'Delete Selected';
+
+    Modal.confirm({
+      title,
+      content: (
+        <>
+          <Typography.Text>
+            Are you sure you want to{' '}
+            {activeNodeFilter === 'Netclient' ? 'remove these nodes from the network' : 'delete'}{' '}
+            {selectedRowKeys.length} nodes?
+          </Typography.Text>
+          <ul className="pl-4 mt-2 list-disc">
+            {nodesToDelete.map((node) => (
+              <li key={node.id}>
+                {node.is_user_node
+                  ? node.static_node?.ownerid
+                  : node.is_static
+                    ? node.static_node?.clientid
+                    : node.name}
+              </li>
+            ))}
+          </ul>
+        </>
+      ),
+      okText: 'Yes',
+      okType: 'danger',
+      cancelText: 'No',
+      onOk: async () => {
+        try {
+          await Promise.all(
+            nodesToDelete.map(async (node) => {
+              if (node.is_static) {
+                await NodesService.deleteExternalClient(node.static_node.clientid, networkId!);
+              } else {
+                await HostsService.updateHostsNetworks(node.hostid, networkId!, 'leave', true);
+              }
+            }),
+          );
+
+          notify.success({
+            message:
+              activeNodeFilter === 'Netclient'
+                ? 'Successfully removed selected nodes from network'
+                : 'Successfully deleted selected nodes',
+          });
+          storeFetchNodes();
+          setSelectedRowKeys([]);
+        } catch (err) {
+          notify.error({
+            message:
+              activeNodeFilter === 'Netclient' ? 'Failed to remove nodes from network' : 'Failed to delete nodes',
+            description: extractErrorMsg(err as any),
+          });
+        }
+      },
+    });
+  }, [selectedRowKeys, filteredNetworkNodes, networkId, notify, storeFetchNodes, activeNodeFilter]);
+
+  const handleBulkToggleStaticFiles = useCallback(() => {
+    const selectedNodes = filteredNetworkNodes.filter((node) =>
+      selectedRowKeys.includes(node.is_static ? node.static_node.clientid : node.id),
+    );
+    const enabling = selectedNodes.some((node) => (node.is_static ? !node.static_node.enabled : !node.connected));
+
+    Modal.confirm({
+      title: `${enabling ? 'Enable' : 'Disable'} Selected ${activeNodeFilter}`,
+      content: (
+        <>
+          <Typography.Text>
+            Are you sure you want to {enabling ? 'enable' : 'disable'} these {selectedNodes.length}{' '}
+            {activeNodeFilter.toLowerCase()}?
+          </Typography.Text>
+          <ul className="pl-4 mt-2 list-disc">
+            {selectedNodes.map((node) => (
+              <li key={node.is_static ? node.static_node.clientid : node.id}>
+                {node.is_user_node ? node.static_node.ownerid : node.is_static ? node.static_node.clientid : node.name}
+              </li>
+            ))}
+          </ul>
+        </>
+      ),
+      onOk: async () => {
+        try {
+          await Promise.all(
+            selectedNodes.map((node) => {
+              if (node.is_static) {
+                const clientData: ExternalClient = {
+                  clientid: node.static_node.clientid,
+                  description: '',
+                  privatekey: node.static_node.privatekey,
+                  publickey: node.static_node.publickey,
+                  network: networkId!,
+                  address: node.static_node.address,
+                  address6: node.static_node.address6,
+                  ingressgatewayid: node.static_node.ingressgatewayid,
+                  ingressgatewayendpoint: node.static_node.ingressgatewayendpoint,
+                  lastmodified: node.lastmodified,
+                  enabled: enabling,
+                  ownerid: node.static_node.ownerid,
+                  internal_ip_addr: '',
+                  internal_ip_addr6: '',
+                  dns: node.static_node.dns,
+                  extraallowedips: node.static_node.extraallowedips,
+                  postup: node.static_node.postup,
+                  postdown: node.static_node.postdown,
+                  tags: node.static_node.tags,
+                };
+                return NodesService.updateExternalClient(clientData.clientid, networkId!, clientData);
+              } else {
+                return NodesService.updateNode(node.id, networkId!, { ...node, connected: enabling });
+              }
+            }),
+          );
+
+          notify.success({
+            message: `Successfully ${enabling ? 'enabled' : 'disabled'} selected ${activeNodeFilter.toLowerCase()}`,
+          });
+          storeFetchNodes();
+          setSelectedRowKeys([]);
+        } catch (err) {
+          notify.error({
+            message: `Failed to ${enabling ? 'enable' : 'disable'} ${activeNodeFilter.toLowerCase()}`,
+            description: extractErrorMsg(err as any),
+          });
+        }
+      },
+    });
+  }, [selectedRowKeys, filteredNetworkNodes, networkId, notify, storeFetchNodes, activeNodeFilter]);
+
+  const handleBulkConnectionToggle = useCallback(() => {
+    const nodesToToggle = filteredNetworkNodes.filter((node) => selectedRowKeys.includes(node.id));
+
+    // Check if we're connecting or disconnecting
+    const connecting = nodesToToggle.some((node) => !node.connected);
+
+    Modal.confirm({
+      title: `${connecting ? 'Connect' : 'Disconnect'} Selected Nodes`,
+      content: (
+        <>
+          <Typography.Text>
+            Are you sure you want to {connecting ? 'connect' : 'disconnect'} these {nodesToToggle.length} nodes?
+          </Typography.Text>
+          <ul className="pl-4 mt-2 list-disc">
+            {nodesToToggle.map((node) => (
+              <li key={node.id}>{node.name}</li>
+            ))}
+          </ul>
+        </>
+      ),
+      onOk: async () => {
+        try {
+          await Promise.all(
+            nodesToToggle.map((node) =>
+              NodesService.updateNode(node.id, networkId!, { ...node, connected: connecting }),
+            ),
+          );
+          notify.success({ message: `Successfully ${connecting ? 'connected' : 'disconnected'} selected nodes` });
+          storeFetchNodes();
+          setSelectedRowKeys([]);
+        } catch (err) {
+          notify.error({
+            message: `Failed to ${connecting ? 'connect' : 'disconnect'} nodes`,
+            description: extractErrorMsg(err as any),
+          });
+        }
+      },
+    });
+  }, [selectedRowKeys, filteredNetworkNodes, networkId, notify, storeFetchNodes]);
+
   return (
     <PageLayout
       title="Nodes"
@@ -420,7 +593,10 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
               {filters.map((filter) => (
                 <button
                   key={filter.name}
-                  onClick={() => setActiveNodeFilter(filter.name)}
+                  onClick={() => {
+                    setActiveNodeFilter(filter.name);
+                    setSelectedRowKeys([]);
+                  }}
                   className={`flex items-center gap-2 px-3 py-2 rounded text-sm transition-colors duration-200 ${
                     activeNodeFilter === filter.name
                       ? 'bg-button-secondary-fill-default text-text-primary'
@@ -460,6 +636,38 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
               style={{ marginBottom: '1rem' }}
             />
           )} */}
+          <div className="flex justify-end w-full">
+            {selectedRowKeys.length > 0 && (
+              <div className="flex items-center gap-2 mb-4">
+                <Typography.Text>Selected {selectedRowKeys.length} items</Typography.Text>
+                {(activeNodeFilter === 'Config files' || activeNodeFilter === 'Active Users') && (
+                  <Button onClick={handleBulkToggleStaticFiles} icon={<PlayCircleOutlined />}>
+                    Enable/Disable Selection
+                  </Button>
+                )}{' '}
+                {activeNodeFilter === 'Netclient' && (
+                  <Button
+                    onClick={handleBulkConnectionToggle}
+                    icon={
+                      filteredNetworkNodes.some((n) => selectedRowKeys.includes(n.id) && !n.connected) ? (
+                        <PlayCircleOutlined />
+                      ) : (
+                        <StopOutlined />
+                      )
+                    }
+                  >
+                    {filteredNetworkNodes.some((n) => selectedRowKeys.includes(n.id) && !n.connected)
+                      ? 'Connect'
+                      : 'Disconnect'}{' '}
+                    Selection
+                  </Button>
+                )}{' '}
+                <Button danger onClick={handleBulkDelete} icon={<DeleteOutlined />}>
+                  {activeNodeFilter === 'Netclient' ? 'Remove Selection from Network' : 'Delete Selection'}
+                </Button>{' '}
+              </div>
+            )}
+          </div>
           {isServerEE && networkNodes.length > 0 && !isFailoverNodePresentInNetwork && (
             <Alert
               message="There's no failover host present in the network. Set one for redundancy, in case of failure."
@@ -485,6 +693,12 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
               scroll={{ x: true }}
               dataSource={filteredNetworkNodes}
               size="small"
+              rowSelection={{
+                selectedRowKeys,
+                onChange: (newSelectedRowKeys: React.Key[]) => {
+                  setSelectedRowKeys(newSelectedRowKeys);
+                },
+              }}
               columns={[
                 {
                   title: 'Node name',
