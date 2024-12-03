@@ -185,7 +185,7 @@ export function GatewaysCombobox({
             variant="default"
             role="combobox"
             aria-expanded={open}
-            className="justify-between w-full"
+            className="justify-between w-full "
             disabled={isLoading || node.isrelay}
           >
             <div className="flex items-center justify-between flex-1 gap-2">
