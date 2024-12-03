@@ -422,6 +422,7 @@ export default function NodeStatus(props: StatusProps) {
                         message: 'Node connected successfully',
                         description: 'The node has been connected to the network successfully.',
                       });
+                      setIsInfoModalOpen(false);
                     } catch (err) {
                       console.error(err);
                       notification.error({

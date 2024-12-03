@@ -641,12 +641,12 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
                     const extendedNode = getExtendedNode(node, store.hostsCommonDetails);
                     if (extendedNode.is_static) {
                       return node.static_node?.enabled ? (
-                        <NodeStatus nodeHealth="enabled" clickable />
+                        <NodeStatus nodeHealth="enabled" nodeId={node.id} clickable />
                       ) : (
-                        <NodeStatus nodeHealth="disabled" clickable />
+                        <NodeStatus nodeHealth="disabled" nodeId={node.id} clickable />
                       );
                     } else if (!extendedNode.connected) {
-                      return <NodeStatus nodeHealth="offline" clickable />;
+                      return <NodeStatus nodeHealth="offline" nodeId={node.id} clickable />;
                     }
                     return getHostHealth(node.hostid, [node]);
                   },
