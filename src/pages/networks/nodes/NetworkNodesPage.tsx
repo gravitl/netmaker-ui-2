@@ -6,6 +6,7 @@ import SetNetworkFailoverModal from '@/components/modals/set-network-failover-mo
 import UpdateClientModal from '@/components/modals/update-client-modal/UpdateClientModal';
 import UpdateNodeModal from '@/components/modals/update-node-modal/UpdateNodeModal';
 import RacDownloadBanner from '@/components/RacDownloadBanner';
+import { GatewaysCombobox } from '@/components/ui/GatewayCombobox';
 import NodeStatus from '@/components/ui/Status';
 import { ExternalLinks } from '@/constants/LinkAndImageConstants';
 import PageLayout from '@/layouts/PageLayout';
@@ -14,11 +15,13 @@ import { ExternalClient } from '@/models/ExternalClient';
 import { ExtendedNode, Node } from '@/models/Node';
 import { HOST_HEALTH_STATUS } from '@/models/NodeConnectivityStatus';
 import { isSaasBuild } from '@/services/BaseService';
+import UpdateIngressModal from '@/components/modals/update-remote-access-gateway-modal/UpdateRemoteAccessGatewayModal';
+
 import { HostsService } from '@/services/HostsService';
 import { NetworksService } from '@/services/NetworksService';
 import { NodesService } from '@/services/NodesService';
 import { useStore } from '@/store/store';
-import { getExtendedNode, getNodeConnectivityStatus } from '@/utils/NodeUtils';
+import { getExtendedNode, getNodeConnectivityStatus, isNodeRelay } from '@/utils/NodeUtils';
 import { getNetworkHostRoute } from '@/utils/RouteUtils';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import { hasNetworkAdminPriviledges } from '@/utils/UserMgmtUtils';
@@ -34,7 +37,15 @@ import {
   EyeOutlined,
   DeleteOutlined,
 } from '@ant-design/icons';
-import { DocumentIcon, EllipsisHorizontalIcon, PlusIcon, ServerIcon, UserIcon } from '@heroicons/react/24/solid';
+import {
+  Cog6ToothIcon,
+  DocumentIcon,
+  EllipsisHorizontalIcon,
+  InformationCircleIcon,
+  PlusIcon,
+  ServerIcon,
+  UserIcon,
+} from '@heroicons/react/24/solid';
 import { ComputerDesktopIcon } from '@heroicons/react/24/solid';
 import {
   Alert,
@@ -54,9 +65,11 @@ import {
   Typography,
 } from 'antd';
 import { AxiosError } from 'axios';
-import { WaypointsIcon } from 'lucide-react';
+import { ChevronsUpDown, WaypointsIcon } from 'lucide-react';
 import { Key, useCallback, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { Button as PButton } from '@/components/shadcn/Button';
+import { GatewaysFilterCombobox } from '@/components/ui/GatewayFilterCombobox';
 
 interface NetworkNodesPageProps {
   networkId?: string;
@@ -89,6 +102,9 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
   const [isClientConfigModalOpen, setIsClientConfigModalOpen] = useState(false);
   const [originalAcls, setOriginalAcls] = useState<NodeAclContainer>({});
   const [acls, setAcls] = useState<NodeAclContainer>({});
+  const [selectedGateway, setSelectedGateway] = useState<Node | null>(null);
+  const [isUpdateGatewayModalOpen, setIsUpdateGatewayModalOpen] = useState(false);
+  const [gatewayFilter, setGatewayFilter] = useState('all-nodes');
 
   const networkNodes = useMemo(
     () =>
@@ -101,6 +117,10 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
     [store.nodes, store.hostsCommonDetails, networkId],
   );
 
+  const isGateway = (node: ExtendedNode) => {
+    return node.isingressgateway && node.isrelay;
+  };
+
   const filteredNetworkNodes = useMemo<ExtendedNode[]>(() => {
     const filtered = networkNodes.filter((node) => {
       const nodeString =
@@ -109,7 +129,7 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
 
       if (!matchesSearch) return false;
 
-      const shouldInclude = (() => {
+      const matchesNodeType = (() => {
         switch (activeNodeFilter) {
           case 'Netclient':
             return !node.is_static && !node.is_user_node;
@@ -123,11 +143,29 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
         }
       })();
 
-      return shouldInclude;
+      if (!matchesNodeType) return false;
+
+      const matchesGatewayFilter = (() => {
+        const extendedNode = getExtendedNode(node, store.hostsCommonDetails);
+
+        switch (gatewayFilter) {
+          case 'gateways':
+            return isGateway(node);
+          case 'has-gateway-assigned': {
+            const hasGateway = !!extendedNode.static_node?.ingressgatewayid || !!extendedNode.relayedby;
+            return hasGateway;
+          }
+          case 'all-nodes':
+          default:
+            return true;
+        }
+      })();
+
+      return matchesGatewayFilter;
     });
 
     return filtered;
-  }, [searchHost, networkNodes, activeNodeFilter]);
+  }, [searchHost, networkNodes, activeNodeFilter, gatewayFilter, store.hostsCommonDetails]);
 
   const filters = useMemo(
     () =>
@@ -452,6 +490,75 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
     });
   }, [selectedRowKeys, filteredNetworkNodes, networkId, notify, storeFetchNodes, activeNodeFilter]);
 
+  const createGateway = async (node: ExtendedNode) => {
+    try {
+      if (!node.isingressgateway && networkId) {
+        await NodesService.createIngressNode(node.id, networkId, {
+          extclientdns: '',
+          is_internet_gw: false,
+          metadata: '',
+          mtu: 1420,
+          persistentkeepalive: 20,
+        });
+      }
+
+      if (!node.isrelay && networkId) {
+        await NodesService.createRelay(node.id, networkId, {
+          netid: networkId,
+          nodeid: node.id,
+          relayaddrs: [],
+        });
+      }
+      await store.fetchNodes();
+
+      notify.success({ message: `Gateway set successfully` });
+    } catch (err) {
+      notify.error({
+        message: 'Failed to set gateway',
+        description: extractErrorMsg(err as any),
+      });
+    }
+  };
+
+  const deleteGateway = async (node: ExtendedNode) => {
+    Modal.confirm({
+      title: `Unset gateway ${node.name}`,
+      content: (
+        <>
+          Are you sure you want to unset this node from acting as a gateway?
+          <br />
+          Any attached nodes be disconnected and any config file using this gateway will be deleted.
+        </>
+      ),
+      onOk: async () => {
+        try {
+          if (networkId && node.isingressgateway) {
+            await NodesService.deleteIngressNode(node.id, networkId);
+          }
+          if (networkId && node.isrelay) {
+            await NodesService.deleteRelay(node.id, networkId);
+          }
+
+          store.updateNode(node.id, {
+            ...node,
+            isingressgateway: false,
+            relaynodes: [],
+            isrelay: false,
+          });
+
+          store.fetchNodes();
+
+          notify.success({ message: 'Gateway unset successfully' });
+        } catch (err) {
+          notify.error({
+            message: 'Failed to unset gateway',
+            description: extractErrorMsg(err as any),
+          });
+        }
+      },
+    });
+  };
+
   const handleBulkToggleStaticFiles = useCallback(() => {
     const selectedNodes = filteredNetworkNodes.filter((node) =>
       selectedRowKeys.includes(node.is_static ? node.static_node.clientid : node.id),
@@ -525,8 +632,6 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
 
   const handleBulkConnectionToggle = useCallback(() => {
     const nodesToToggle = filteredNetworkNodes.filter((node) => selectedRowKeys.includes(node.id));
-
-    // Check if we're connecting or disconnecting
     const connecting = nodesToToggle.some((node) => !node.connected);
 
     Modal.confirm({
@@ -562,6 +667,13 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
       },
     });
   }, [selectedRowKeys, filteredNetworkNodes, networkId, notify, storeFetchNodes]);
+
+  const relays = useMemo<ExtendedNode[]>(() => {
+    if (!isServerEE) {
+      return [];
+    }
+    return networkNodes.filter((node) => isNodeRelay(node));
+  }, [networkNodes, isServerEE]);
 
   return (
     <PageLayout
@@ -608,6 +720,7 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
                 </button>
               ))}
             </div>
+            <GatewaysFilterCombobox onChange={setGatewayFilter} />
           </div>
           <div className="flex gap-2">
             <Button
@@ -706,55 +819,64 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
                     const hostName = getExtendedNode(node, store.hostsCommonDetails).name;
                     return (
                       <>
-                        <Link
-                          to={node.is_static ? '#' : getNetworkHostRoute(node.hostid, node.network)}
-                          title={`Network Host ID: ${node.is_static ? node.static_node.clientid : node.id}`}
-                          className="inline-flex items-center gap-2"
-                          onClick={(e) => {
-                            if (node.is_static) {
-                              e.preventDefault();
-                              const clientData: ExternalClient = {
-                                clientid: node.static_node?.clientid ?? '',
-                                description: '',
-                                privatekey: node.static_node?.privatekey ?? '',
-                                publickey: node.static_node?.publickey ?? '',
-                                network: networkId ?? '',
-                                address: node.static_node?.address ?? '',
-                                address6: node.static_node?.address6 ?? '',
-                                ingressgatewayid: node.static_node?.ingressgatewayid ?? '',
-                                ingressgatewayendpoint: node.static_node?.ingressgatewayendpoint ?? '',
-                                lastmodified: node.lastmodified ?? 0,
-                                enabled: node.static_node?.enabled ?? false,
-                                ownerid: node.static_node?.ownerid ?? '',
-                                internal_ip_addr: '',
-                                internal_ip_addr6: '',
-                                dns: node.static_node?.dns ?? '',
-                                extraallowedips: node.static_node?.extraallowedips ?? [],
-                                postup: node.static_node?.postup,
-                                postdown: node.static_node?.postdown,
-                                tags: node.static_node?.tags ?? {},
-                              };
-                              setTargetClient(clientData);
-                              setIsClientDetailsModalOpen(true);
-                            }
-                          }}
-                        >
-                          {getExtendedNode(node, store.hostsCommonDetails).is_static &&
-                          !getExtendedNode(node, store.hostsCommonDetails).is_user_node ? (
-                            <DocumentIcon className="w-4 h-4 shrink-0 text-text-primary" />
-                          ) : getExtendedNode(node, store.hostsCommonDetails).is_user_node ? (
-                            <UserIcon className="w-4 h-4 shrink-0 text-text-primary" />
-                          ) : (
-                            <ServerIcon className="w-4 h-4 shrink-0 text-text-primary" />
+                        <div className="inline-flex gap-2 ">
+                          <Link
+                            to={node.is_static ? '#' : getNetworkHostRoute(node.hostid, node.network)}
+                            title={`Network Host ID: ${node.is_static ? node.static_node.clientid : node.id}`}
+                            className="inline-flex items-center gap-2"
+                            onClick={(e) => {
+                              if (node.is_static) {
+                                e.preventDefault();
+                                const clientData: ExternalClient = {
+                                  clientid: node.static_node?.clientid ?? '',
+                                  description: '',
+                                  privatekey: node.static_node?.privatekey ?? '',
+                                  publickey: node.static_node?.publickey ?? '',
+                                  network: networkId ?? '',
+                                  address: node.static_node?.address ?? '',
+                                  address6: node.static_node?.address6 ?? '',
+                                  ingressgatewayid: node.static_node?.ingressgatewayid ?? '',
+                                  ingressgatewayendpoint: node.static_node?.ingressgatewayendpoint ?? '',
+                                  lastmodified: node.lastmodified ?? 0,
+                                  enabled: node.static_node?.enabled ?? false,
+                                  ownerid: node.static_node?.ownerid ?? '',
+                                  internal_ip_addr: '',
+                                  internal_ip_addr6: '',
+                                  dns: node.static_node?.dns ?? '',
+                                  extraallowedips: node.static_node?.extraallowedips ?? [],
+                                  postup: node.static_node?.postup,
+                                  postdown: node.static_node?.postdown,
+                                  tags: node.static_node?.tags ?? {},
+                                };
+                                setTargetClient(clientData);
+                                setIsClientDetailsModalOpen(true);
+                              }
+                            }}
+                          >
+                            {getExtendedNode(node, store.hostsCommonDetails).is_static &&
+                            !getExtendedNode(node, store.hostsCommonDetails).is_user_node ? (
+                              <DocumentIcon className="w-4 h-4 shrink-0 text-text-primary" />
+                            ) : getExtendedNode(node, store.hostsCommonDetails).is_user_node ? (
+                              <UserIcon className="w-4 h-4 shrink-0 text-text-primary" />
+                            ) : (
+                              <ServerIcon className="w-4 h-4 shrink-0 text-text-primary" />
+                            )}
+                            <span>
+                              {node.is_user_node
+                                ? node.static_node?.ownerid
+                                : node.is_static
+                                  ? node.static_node?.clientid
+                                  : hostName}
+                            </span>
+                          </Link>
+                          {isGateway(node) && (
+                            <Tooltip title="This node can be used as a gateway for other nodes.">
+                              <div className="inline-flex items-center justify-center h-6 px-3 rounded-full py-1/2 bg-button-primary-fill-default text-button-primary-text-default text-sm-semibold">
+                                Gateway
+                              </div>
+                            </Tooltip>
                           )}
-                          <span>
-                            {node.is_user_node
-                              ? node.static_node?.ownerid
-                              : node.is_static
-                                ? node.static_node?.clientid
-                                : hostName}
-                          </span>
-                        </Link>
+                        </div>
                         {node.pendingdelete && (
                           <Badge style={{ marginLeft: '1rem' }} status="processing" color="red" text="Removing..." />
                         )}
@@ -813,22 +935,87 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
                   },
                 },
                 {
-                  title: 'Gateway',
+                  title: (
+                    <div className="flex items-center">
+                      <span>Gateway</span>
+                      <Tooltip title="Gateways are specialized nodes that manage network connections">
+                        <InformationCircleIcon className="w-4 ml-2" />
+                      </Tooltip>
+                    </div>
+                  ),
                   render(_, node) {
                     const extendedNode = getExtendedNode(node, store.hostsCommonDetails);
                     const gatewayId = extendedNode.static_node?.ingressgatewayendpoint;
+                    const gatewayNode = networkNodes.find(
+                      (n) => n.id === node.static_node?.ingressgatewayid || node.relayedby === n.id,
+                    );
+                    const gatewayName = gatewayNode ? gatewayNode.name : 'gatewayId';
                     if (extendedNode.is_static && extendedNode.static_node && gatewayId) {
-                      const gatewayNode = networkNodes.find((n) => n.id === node.static_node?.ingressgatewayid);
-                      const gatewayName = gatewayNode ? gatewayNode.name : 'gatewayId';
-
                       return (
-                        <span className="flex items-center gap-2">
-                          <ServerIcon className="w-4 h-4 shrink-0 text-text-primary" />
-                          <span className="w-full break-words">{gatewayName}</span>
-                        </span>
+                        <div className="flex items-center w-full gap-2 ">
+                          <Tooltip
+                            title={
+                              node.is_user_node
+                                ? 'Cannot change gateway for user nodes'
+                                : 'Cannot change gateway for config files'
+                            }
+                          >
+                            <div className="inline-block w-full cursor-not-allowed">
+                              <PButton
+                                variant="default"
+                                role="combobox"
+                                aria-expanded={false}
+                                className="justify-between w-full "
+                                disabled={node.is_static}
+                              >
+                                <ServerIcon className="w-4 h-4 shrink-0 text-text-primary" />
+                                {gatewayName}
+                                <ChevronsUpDown className="w-4 h-4 ml-2 opacity-50 shrink-0" />
+                              </PButton>
+                            </div>
+                          </Tooltip>
+                          <Tooltip title="Configure this gateway">
+                            <Button
+                              type="text"
+                              icon={<Cog6ToothIcon className="w-4 h-4 m-auto text-text-primary" />}
+                              onClick={() => {
+                                if (gatewayNode) {
+                                  setSelectedGateway(gatewayNode);
+                                  setIsUpdateGatewayModalOpen(true);
+                                }
+                              }}
+                              disabled={isGateway(node)}
+                            />
+                          </Tooltip>
+                        </div>
                       );
                     } else {
-                      return '-';
+                      return (
+                        <div className="flex items-center gap-2">
+                          <GatewaysCombobox gateways={relays} node={node} networkId={networkId ?? ''} />
+                          {!node.isrelayed ||
+                            (!isGateway(node) && (
+                              <Tooltip title="Configure this gateway">
+                                <Button
+                                  type="text"
+                                  icon={
+                                    <Cog6ToothIcon
+                                      className={`w-4 h-4 m-auto text-text-primary ${isGateway(node) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    />
+                                  }
+                                  className="flex items-center justify-center"
+                                  onClick={() => {
+                                    if (gatewayNode) {
+                                      setSelectedGateway(gatewayNode);
+                                      setIsUpdateGatewayModalOpen(true);
+                                    }
+                                  }}
+                                  disabled={isGateway(node)}
+                                />
+                              </Tooltip>
+                            ))}
+                        </div>
+                      );
                     }
                   },
                 },
@@ -1062,6 +1249,24 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
                           ]
                         : []),
                       {
+                        key: 'gateway',
+                        label: !isGateway(node) ? 'Set as gateway' : 'Unset as gateway',
+                        onClick: () => (isGateway(node) ? deleteGateway(node) : createGateway(node)),
+                      },
+                      ...(isGateway(node)
+                        ? [
+                            {
+                              key: 'configure-gateway',
+                              label: 'Configure Gateway',
+                              onClick: () => {
+                                setSelectedGateway(node);
+                                setIsUpdateGatewayModalOpen(true);
+                              },
+                            },
+                          ]
+                        : []),
+
+                      {
                         key: 'disconnect',
                         label: node.connected ? 'Disconnect host' : 'Connect host',
                         disabled: node.pendingdelete !== false,
@@ -1165,6 +1370,19 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
             setIsUpdateClientModalOpen(false);
           }}
           onCancel={() => setIsUpdateClientModalOpen(false)}
+        />
+      )}
+      {selectedGateway && (
+        <UpdateIngressModal
+          key={`update-ingress-${selectedGateway.id}`}
+          isOpen={isUpdateGatewayModalOpen}
+          ingress={selectedGateway}
+          networkId={resolvedNetworkId}
+          onUpdateIngress={(newNode) => {
+            setIsUpdateGatewayModalOpen(false);
+            setSelectedGateway(newNode);
+          }}
+          onCancel={() => setIsUpdateGatewayModalOpen(false)}
         />
       )}
     </PageLayout>
