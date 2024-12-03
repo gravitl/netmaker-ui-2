@@ -12,6 +12,7 @@ import {
   DevicePhoneMobileIcon,
   UsersIcon,
   ArrowTopRightOnSquareIcon,
+  ShieldCheckIcon,
 } from '@heroicons/react/24/solid';
 import { getNetclientDownloadLink, getRACDownloadLink } from '@/utils/RouteUtils';
 import { useStore } from '@/store/store';
@@ -160,6 +161,27 @@ const NetclientSection: React.FC<{
   }, [netclientOS, netclientOSSteps, updateLinuxInstallCode, getDownloadLink]);
   return (
     <div className="flex flex-col">
+      <div className="flex items-start justify-between w-full gap-6 py-6 pl-8 pr-3 border-b border-stroke-default bg-bg-default rounded-t-xl">
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2 text-text-primary">
+            <ShieldCheckIcon className="w-4 h-4" />
+            <h3 className="text-sm-semibold">Firewall Requirements</h3>
+          </div>
+          <p className="text-text-secondary">
+            You will need to configure two outbound firewall rules:
+            <br />
+            <ul className="ml-4 list-disc">
+              <li>
+                Allow outbound traffic to Server IP:{' '}
+                <span className="text-base-semibold text-text-primary">[{store.serverConfig?.PublicIp}]</span>
+              </li>
+              <li>
+                Allow outbound traffic on port <span className="text-base-semibold text-text-primary">443</span>
+              </li>
+            </ul>
+          </p>
+        </div>
+      </div>
       <div className="flex flex-col gap-2 px-8 py-6 border-b border-stroke-default">
         <div className="flex items-center gap-2 text-text-primary">
           <CommandLineIcon className="w-4 h-4" />
@@ -981,14 +1003,7 @@ sudo dnf install remote-client
               <XMarkIcon className="w-5 h-5 text-button-outline-text-default" />
             </button>
           </div>
-          <div className="flex items-start justify-between w-full gap-6 py-6 pl-8 pr-3 border-b border-stroke-default bg-bg-default rounded-t-xl">
-            <div className="flex flex-col gap-1">
-              <h5 className="text-text-primary">Firewall Requirements</h5>
-              <p className="text-text-secondary">
-                Allow outbound connection to Server IP ({store.serverConfig?.PublicIp}) and port 443
-              </p>
-            </div>
-          </div>
+
           <div>
             <div className="flex flex-col gap-2 px-8 py-5 border-b border-stroke-default">
               <div className="flex items-center gap-2 text-text-primary">
