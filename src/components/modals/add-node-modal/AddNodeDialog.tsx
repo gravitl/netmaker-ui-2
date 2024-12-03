@@ -168,12 +168,12 @@ const NetclientSection: React.FC<{
             <h3 className="text-sm-semibold">Firewall Requirements</h3>
           </div>
           <p className="text-text-secondary">
-            You will need to configure two outbound firewall rules:
+            You will need to configure two outbound firewall rules
             <br />
             <ul className="ml-4 list-disc">
               <li>
-                Allow outbound traffic to Server IP:{' '}
-                <span className="text-base-semibold text-text-primary">[{store.serverConfig?.PublicIp}]</span>
+                Allow outbound traffic to Server IP{' '}
+                <span className="text-base-semibold text-text-primary">{store.serverConfig?.PublicIp}</span>
               </li>
               <li>
                 Allow outbound traffic on port <span className="text-base-semibold text-text-primary">443</span>

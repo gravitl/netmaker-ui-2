@@ -409,7 +409,6 @@ export default function NodeStatus(props: StatusProps) {
         {props.nodeHealth === 'offline' && !node?.connected && (
           <Row style={{ marginTop: '2rem' }}>
             <Col span={24}>
-              <p>This node has been disconnected from the network</p>
               <div className="text-right">
                 <Button
                   variant="default"
