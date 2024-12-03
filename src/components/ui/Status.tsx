@@ -308,7 +308,8 @@ export default function NodeStatus(props: StatusProps) {
   if (props.nodeId) {
     // deduce possible issues
     const node = store.nodes.find((n) => n.id === props.nodeId);
-    const networkHasFailover = store.nodes.some((n) => n.network === node?.network && node.is_fail_over);
+    const networkHasFailover = store.nodes.some((n) => n.is_fail_over);
+
     if (networkHasFailover) {
       if (node?.is_fail_over) {
         // check if the node is a the failover itself

@@ -2650,12 +2650,12 @@ export default function NetworkDetailsPage(props: PageProps) {
                       const extendedNode = getExtendedNode(node, store.hostsCommonDetails);
                       if (extendedNode.is_static) {
                         return node.static_node?.enabled ? (
-                          <NodeStatus nodeHealth="enabled" clickable />
+                          <NodeStatus nodeId={node.id} nodeHealth="enabled" />
                         ) : (
-                          <NodeStatus nodeHealth="disabled" clickable />
+                          <NodeStatus nodeId={node.id} nodeHealth="disabled" />
                         );
                       } else if (!extendedNode.connected) {
-                        return <NodeStatus nodeHealth="offline" clickable />;
+                        return <NodeStatus nodeHealth="offline" nodeId={node.id} clickable />;
                       }
                       return getHostHealth(node.hostid, [node]);
                     },

@@ -78,13 +78,13 @@ export function getHostHealth(
 
   switch (worstHealth) {
     default:
-      return shouldRender ? <NodeStatus nodeHealth="unknown" clickable /> : 'unknown';
+      return shouldRender ? <NodeStatus nodeId={hostId} nodeHealth="unknown" clickable /> : 'unknown';
     case 1:
-      return shouldRender ? <NodeStatus nodeHealth="error" clickable /> : 'error';
+      return shouldRender ? <NodeStatus nodeId={hostId} nodeHealth="error" clickable /> : 'error';
     case 2:
-      return shouldRender ? <NodeStatus nodeHealth="warning" clickable /> : 'warning';
+      return shouldRender ? <NodeStatus nodeId={hostId} nodeHealth="warning" clickable /> : 'warning';
     case 3:
-      return shouldRender ? <NodeStatus nodeHealth="online" clickable /> : 'online';
+      return shouldRender ? <NodeStatus nodeId={hostId} nodeHealth="online" clickable /> : 'online';
   }
 }
 
