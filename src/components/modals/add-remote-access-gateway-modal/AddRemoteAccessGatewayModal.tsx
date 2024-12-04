@@ -212,6 +212,23 @@ export default function AddRemoteAccessGatewayModal({
       <Form name="add-ingress-form" form={form} layout="vertical" initialValues={{}}>
         <div className="" style={{ maxHeight: '60vh', overflow: 'auto' }}>
           <div className="CustomModalBody">
+            {selectedGatewayHost && (
+              <Row>
+                <Col xs={24} className="pb-6">
+                  <h3 className="mb-2 font-bold">Firewall Requirements</h3>
+                  <Typography.Text>
+                    Allow outbound traffic
+                    {selectedGatewayHost && (
+                      <>
+                        {' on port '}
+                        <span className="text-base-semibold">{selectedGatewayHost.listenport}</span>
+                      </>
+                    )}
+                  </Typography.Text>
+                </Col>
+              </Row>
+            )}
+
             <Row>
               <Col xs={24} ref={addClientGatewayModalHostRef}>
                 <Form.Item
