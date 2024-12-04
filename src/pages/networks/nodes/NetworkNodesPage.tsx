@@ -641,9 +641,9 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
                     const extendedNode = getExtendedNode(node, store.hostsCommonDetails);
                     if (extendedNode.is_static) {
                       return node.static_node?.enabled ? (
-                        <NodeStatus nodeHealth="enabled" nodeId={node.id} />
+                        <NodeStatus nodeHealth="online" nodeId={node.id} />
                       ) : (
-                        <NodeStatus nodeHealth="disabled" nodeId={node.id} />
+                        <NodeStatus nodeHealth="offline" nodeId={node.id} />
                       );
                     } else if (!extendedNode.connected) {
                       return <NodeStatus nodeHealth="offline" nodeId={node.id} clickable />;
