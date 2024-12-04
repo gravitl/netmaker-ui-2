@@ -429,7 +429,12 @@ const UpdateUsersForm: React.FC<UpdateUsersFormProps> = ({
       source: [],
       destination: [],
       service: selectedPolicy.type,
-      port: selectedPolicy.ports.length > 0 ? selectedPolicy.ports.map((port) => port.split('/')[0]).join(',') : '',
+      port:
+        selectedPolicy.type === 'All TCP' || selectedPolicy.type === 'All UDP'
+          ? 'All ports'
+          : selectedPolicy.ports.length > 0
+            ? selectedPolicy.ports.map((port) => port.split('/')[0]).join(',')
+            : '',
     },
   });
 
