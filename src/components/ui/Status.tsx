@@ -172,8 +172,18 @@ export default function NodeStatus(props: StatusProps) {
             }
             return;
           case 'not-connected-to-failover':
-            await NodesService.removeNodeFailoverStatus(networkFailover?.id ?? '');
-            await NodesService.setNodeAsFailover(networkFailover?.id ?? '');
+            try {
+              await NodesService.resetFailover(node?.network ?? '');
+              notification.success({
+                message: 'Failover reset successful',
+              });
+            } catch (err) {
+              console.error(err);
+              notification.error({
+                message: 'Failed to reset failover',
+                description: 'An error occurred while trying to reset the failover. Please try again.',
+              });
+            }
             return;
           case 'failover-connection-not-working':
             if (firstDefaultNode?.isrelay) {

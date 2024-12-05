@@ -135,6 +135,10 @@ function removeNodeFailoverStatus(nodeId: Node['id']) {
   return axiosService.delete<Node>(`${ApiRoutes.NODE}/${encodeURIComponent(nodeId)}/failover`);
 }
 
+function resetFailover(networkId: Network['netid']) {
+  return axiosService.post<void>(`${ApiRoutes.NODE}/${encodeURIComponent(networkId)}/failover/reset`);
+}
+
 function createInternetGateway(nodeId: Node['id'], networkId: Network['netid'], payload: CreateInternetGatewayDto) {
   return axiosService.post<Node>(
     `${ApiRoutes.NODES}/${encodeURIComponent(networkId)}/${encodeURIComponent(nodeId)}/inet_gw`,
@@ -175,6 +179,7 @@ export const NodesService = {
   deleteRelay,
   setNodeAsFailover,
   removeNodeFailoverStatus,
+  resetFailover,
   createInternetGateway,
   updateInternetGateway,
   deleteInternetGateway,
