@@ -42,7 +42,7 @@ export function hasNetworkAdminPriviledges(
   // return roles.some((role) => role?.full_access || role?.id === 'global-network-admin');
 
   return (
-    isAdminUserOrRole(user.platform_role_id) ||
+    isAdminUserOrRole(user?.platform_role_id) ||
     !!user.user_group_ids['global-network-admin-grp'] ||
     (networkId ? !!user.user_group_ids[`${networkId}-network-admin-grp`] : false)
     // Object.keys(user.user_group_ids).some((groupId) => groupId.match(/^\w+-network-admin-grp/))

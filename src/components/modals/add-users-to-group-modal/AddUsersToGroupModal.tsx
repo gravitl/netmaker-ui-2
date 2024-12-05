@@ -98,10 +98,10 @@ export default function AddUsersToGroupModal({
                           <Button
                             size="small"
                             onClick={() => onUserSelected(user)}
-                            disabled={platformRole ? user.platform_role_id !== platformRole : false}
+                            disabled={platformRole ? user?.platform_role_id !== platformRole : false}
                             title={
-                              platformRole && user.platform_role_id !== platformRole
-                                ? `User's platform access lavel (${user.platform_role_id}) conflicts with this groups platform access level (${platformRole})`
+                              platformRole && user?.platform_role_id !== platformRole
+                                ? `User's platform access lavel (${user?.platform_role_id}) conflicts with this groups platform access level (${platformRole})`
                                 : ''
                             }
                           >

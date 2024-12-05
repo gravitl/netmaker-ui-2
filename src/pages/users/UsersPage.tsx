@@ -237,10 +237,10 @@ export default function UsersPage(props: PageProps) {
         return [true, ''];
       }
       if (store.user?.platform_role_id === 'admin') {
-        if (user.platform_role_id === 'super-admin') {
+        if (user?.platform_role_id === 'super-admin') {
           return [false, 'Cannot delete the super admin'];
         }
-        if (user.platform_role_id === 'admin') {
+        if (user?.platform_role_id === 'admin') {
           return [false, 'Cannot delete another admin'];
         }
         return [true, ''];
@@ -259,10 +259,10 @@ export default function UsersPage(props: PageProps) {
         return [true, ''];
       }
       if (store.user?.platform_role_id === 'admin') {
-        if (user.platform_role_id === 'super-admin') {
+        if (user?.platform_role_id === 'super-admin') {
           return [false, 'Cannot change password of the super admin'];
         }
-        if (user.platform_role_id === 'admin') {
+        if (user?.platform_role_id === 'admin') {
           return [false, "Cannot change another admin' password"];
         }
         return [true, ''];
@@ -406,7 +406,7 @@ export default function UsersPage(props: PageProps) {
       {
         title: 'Platform Access Level',
         render(_, user) {
-          return <Typography.Text>{snakeCaseToTitleCase(user.platform_role_id)}</Typography.Text>;
+          return <Typography.Text>{snakeCaseToTitleCase(user?.platform_role_id)}</Typography.Text>;
         },
       },
       {
@@ -430,7 +430,7 @@ export default function UsersPage(props: PageProps) {
                       },
                     },
                   ].concat(
-                    !isSaasBuild && user.platform_role_id === 'super-admin' && store.username === user.username
+                    !isSaasBuild && user?.platform_role_id === 'super-admin' && store.username === user.username
                       ? [
                           {
                             key: 'transfer',
