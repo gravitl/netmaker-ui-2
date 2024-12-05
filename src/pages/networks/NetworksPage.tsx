@@ -57,15 +57,16 @@ export default function NetworksPage(props: PageProps) {
 
   const confirmNetworkDelete = useCallback(
     (netId: string) => {
+      const network = store.networks.find((n) => n.netid === netId);
       Modal.confirm({
-        title: `Are you sure you want to the delete the network ${netId}?`,
+        title: `Are you sure you want to delete the network ${network?.name || netId}?`,
         content: `This action cannot be undone.`,
         onOk: async () => {
           try {
             await NetworksService.deleteNetwork(netId);
             notify.success({
-              message: 'Network deleted',
-              description: `Network ${netId} has been deleted`,
+              message: `Network ${network?.name || netId} has been deleted`,
+              description: `Network ${network?.name || netId} has been deleted`,
             });
             // if (netId === store.activeNetwork) {
             //   const response = await NetworksService.getNetworks();
@@ -101,21 +102,21 @@ export default function NetworksPage(props: PageProps) {
   const tableColumns: TableColumnsType<NetworkStat> = [
     {
       title: 'Name',
-      dataIndex: 'netid',
+      dataIndex: 'name',
       key: 'netid',
       sorter: {
-        compare: (a, b) => a.netid.localeCompare(b.netid),
+        compare: (a, b) => a.name.localeCompare(b.name),
       },
       defaultSortOrder: 'ascend',
-      render: (netId) => (
+      render: (name, record) => (
         <Link
-          to={AppRoutes.NETWORK_NODES_ROUTE.replace(':networkId', netId)}
+          to={AppRoutes.NETWORK_NODES_ROUTE.replace(':networkId', record.netid)}
           onClick={() => {
-            store.setActiveNetwork(netId);
+            store.setActiveNetwork(record.netid);
           }}
           className="text-button-primary-fill-default"
         >
-          {netId}
+          {name || record.netid}
         </Link>
       ),
     },

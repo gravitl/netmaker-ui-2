@@ -24,7 +24,7 @@ const NetworkSelector: React.FC<NetworkSelectorProps> = ({ isSidebarCollapsed = 
   const store = useStore();
 
   const networks = store.networks;
-  const activeNetwork = store.activeNetwork;
+  const activeNetwork = store.networks.find((network) => network.netid === store.activeNetwork)?.name;
 
   const autoFillButtonRef = useRef(null);
   const networkNameInputRef = useRef(null);
@@ -120,7 +120,7 @@ const NetworkSelector: React.FC<NetworkSelectorProps> = ({ isSidebarCollapsed = 
                   ) : (
                     <div className="size-4 shrink-0" />
                   )}
-                  <span className="truncate">{network.netid}</span>
+                  <span className="truncate">{network.name}</span>
                 </div>
               ))}
             </div>

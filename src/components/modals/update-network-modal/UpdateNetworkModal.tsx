@@ -59,7 +59,7 @@ export default function UpdateNetworkModal({
         (await NetworksService.createNetwork(convertUiNetworkToNetworkPayload(formData as unknown as Network))).data,
       );
       store.addNetwork(network);
-      notify.success({ message: `Network ${network.netid} created` });
+      notify.success({ message: `Network ${network.name || network.netid} created` });
       onCreateNetwork(network);
       resetModal();
     } catch (err) {

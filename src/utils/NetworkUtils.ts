@@ -40,7 +40,7 @@ export function convertUiNetworkToNetworkPayload(network: Network): NetworkPaylo
 export function convertNetworkPayloadToUiNetwork(network: NetworkPayload): Network {
   return {
     ...network,
-    displayName: network.netid.replace(/-+/g, ' '),
+    displayName: network.name || network.netid.replace(/-+/g, ' '),
     defaultmtu: Number(network.defaultmtu),
     defaultlistenport: Number(network.defaultlistenport),
     defaultkeepalive: Number(network.defaultkeepalive),

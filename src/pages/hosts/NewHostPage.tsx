@@ -106,7 +106,7 @@ export default function NewHostPage(props: PageProps) {
                     >
                       <List.Item.Meta
                         style={{ cursor: 'pointer' }}
-                        title={network.netid}
+                        title={network.name || network.netid}
                         description={`IPv4 Range: ${network.addressrange}, IPv6 Range: ${network.addressrange6}`}
                       />
                     </List.Item>
@@ -128,7 +128,8 @@ export default function NewHostPage(props: PageProps) {
               <p>
                 Connect host to{' '}
                 <span style={{ fontWeight: 'bold' }}>
-                  {selectedNetwork?.netid} ({`${selectedNetwork?.addressrange}, ${selectedNetwork?.addressrange6}`})
+                  {selectedNetwork?.name || selectedNetwork?.netid} (
+                  {`${selectedNetwork?.addressrange}, ${selectedNetwork?.addressrange6}`})
                 </span>{' '}
                 <Button type="link" size="small" onClick={() => setCurrentStep(0)}>
                   Change

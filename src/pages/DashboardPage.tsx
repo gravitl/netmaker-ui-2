@@ -121,21 +121,22 @@ export default function DashboardPage(props: PageProps) {
   const networksTableColumns: TableColumnsType<Network> = [
     {
       title: 'Name',
-      dataIndex: 'netid',
+      dataIndex: 'name',
       key: 'netid',
       sorter: {
-        compare: (a, b) => a.netid.localeCompare(b.netid),
+        compare: (a, b) => a.name.localeCompare(b.name),
       },
       defaultSortOrder: 'ascend',
-      render: (netId) => (
+      render: (name, record) => (
         <Link
-          className="text-button-primary-fill-default"
-          to={AppRoutes.NETWORK_NODES_ROUTE.replace(':networkId', netId)}
-          onClick={() => {
-            store.setActiveNetwork(netId);
+          to={getNetworkRoute(record)}
+          onClick={(ev) => {
+            ev.stopPropagation();
+            store.setActiveNetwork(record.netid);
           }}
+          className="text-button-primary-fill-default"
         >
-          {netId}
+          {name || record.netid}
         </Link>
       ),
     },
@@ -486,7 +487,8 @@ export default function DashboardPage(props: PageProps) {
                         onRow={(network) => {
                           return {
                             onClick: () => {
-                              navigate(getNetworkRoute(network));
+                              store.setActiveNetwork(network.netid);
+                              navigate(AppRoutes.NETWORK_NODES_ROUTE.replace(':networkId', network.netid));
                             },
                           };
                         }}

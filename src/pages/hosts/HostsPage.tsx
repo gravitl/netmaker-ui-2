@@ -623,10 +623,13 @@ export default function HostsPage(props: PageProps) {
       {
         title: 'Name',
         dataIndex: 'netid',
-        sorter(a, b) {
-          return a.netid.localeCompare(b.netid);
+        sorter: {
+          compare: (a, b) => a.netid.localeCompare(b.netid),
         },
-        defaultSortOrder: 'ascend',
+        render: (netid) => {
+          const network = store.networks.find((n) => n.netid === netid);
+          return network?.name || netid;
+        },
       },
       selectedHost
         ? {
