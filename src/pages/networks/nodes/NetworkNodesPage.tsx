@@ -396,6 +396,30 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
     [loadAcls, notify, storeFetchNodes],
   );
 
+  const requestHostPull = useCallback(
+    (node: ExtendedNode) => {
+      Modal.confirm({
+        title: 'Synchronise node',
+        content: `This will trigger the node (${node.name}) to pull latest network(s) state from the server. Proceed?`,
+        onOk: async () => {
+          try {
+            await HostsService.requestHostPull(node.hostid);
+            notify.success({
+              message: 'Node is syncing...',
+              description: `Node pull has been initiated for ${node.name}. This may take a while.`,
+            });
+          } catch (err) {
+            notify.error({
+              message: 'Failed to synchronise node',
+              description: extractErrorMsg(err as any),
+            });
+          }
+        },
+      });
+    },
+    [notify],
+  );
+
   return (
     <PageLayout
       title="Nodes"
@@ -843,7 +867,7 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
                         key: 'edit',
                         label: 'Edit',
                         disabled: node.pendingdelete !== false,
-                        title: node.pendingdelete !== false ? 'Host is being removed from network' : '',
+                        title: node.pendingdelete !== false ? 'Node is being removed from network' : '',
                         onClick: () => editNode(node),
                       },
                       ...(isServerEE
@@ -852,19 +876,24 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
                               key: 'failover',
                               label: node.is_fail_over ? 'Unset as failover' : 'Set as failover',
                               title: node.is_fail_over
-                                ? 'Stop this host as acting as the network failover'
-                                : 'Make this the network failover host. Any existing failover host will be replaced.',
+                                ? 'Stop this node as acting as the network failover'
+                                : 'Make this the network failover node. Any existing failover node will be replaced.',
                               onClick: () => confirmNodeFailoverStatusChange(node, !node.is_fail_over),
                             },
                           ]
                         : []),
                       {
                         key: 'disconnect',
-                        label: node.connected ? 'Disconnect host' : 'Connect host',
+                        label: node.connected ? 'Disconnect node' : 'Connect node',
                         disabled: node.pendingdelete !== false,
                         title: node.pendingdelete !== false ? 'Host is being disconnected from network' : '',
                         onClick: () =>
                           disconnectNodeFromNetwork(!node.connected, getExtendedNode(node, store.hostsCommonDetails)),
+                      },
+                      {
+                        key: 'sync',
+                        label: 'Sync node',
+                        onClick: () => requestHostPull(getExtendedNode(node, store.hostsCommonDetails)),
                       },
                       {
                         key: 'remove',
