@@ -40,20 +40,28 @@ import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AppRoutes } from '@/routes';
 import AccountDropdown from './components/AccountDropdown';
-import { useStore } from '@/store/store';
+import { BrowserStore, useStore } from '@/store/store';
 import AddNetworkModal from '../modals/add-network-modal/AddNetworkModal';
 import { getAmuiUrl, getNetworkPageRoute, isNetworkPage, NetworkPage } from '@/utils/RouteUtils';
 import { useServerLicense } from '@/utils/Utils';
 import UpgradeModal from '../modals/upgrade-modal/UpgradeModal';
 import NetworkSelector from './components/NetworkSelector';
 import RacModal from '../modals/rac-modal/RacModal';
+import { CloudSyncOutlined, LoadingOutlined } from '@ant-design/icons';
+import { Typography } from 'antd';
+import { ServerConfigService } from '@/services/ServerConfigService';
+import { isSaasBuild } from '@/services/BaseService';
 
 const Sidebar = ({
   isSidebarCollapsed,
   setIsSidebarCollapsed,
+  openVersionUpgradeModal,
+  canUpgrade,
 }: {
   isSidebarCollapsed: boolean;
   setIsSidebarCollapsed: (isCollapsed: boolean) => void;
+  openVersionUpgradeModal: () => void;
+  canUpgrade: boolean;
 }) => {
   const { isServerEE } = useServerLicense();
   const [isTenantCollapsed, setIsTenantCollapsed] = useState(false);
@@ -215,10 +223,10 @@ const Sidebar = ({
     if (!isServerEE)
       return (
         <span title="Click to upgrade" className="underline" onClick={() => setIsUpgradeModalOpen(true)}>
-          Community Edition
+          Community
         </span>
       );
-    return 'Pro Edition';
+    return 'Pro';
   }, [isServerEE]);
 
   useEffect(() => {
@@ -273,10 +281,44 @@ const Sidebar = ({
                     title="Manage Tenant"
                   />
                 )}
+                <span className="px-2 py-0.5 text-white bg-button-primary-fill-default rounded-full text-xs-semibold">
+                  {licenseType}
+                </span>
               </div>
-              <span className="px-2 py-0.5 text-white bg-button-primary-fill-default rounded-full text-xs-semibold">
-                {licenseType}
-              </span>
+              <div
+                style={{
+                  fontSize: '.8rem',
+                  cursor: canUpgrade ? 'pointer' : '',
+                }}
+                className="text-text-secondary"
+                title={canUpgrade ? 'A new version is available. Click to show version upgrade steps' : ''}
+                onClick={() => openVersionUpgradeModal()}
+              >
+                <span style={{ fontSize: 'inherit' }}>
+                  UI: {ServerConfigService.getUiVersion()}{' '}
+                  {isSaasBuild && !BrowserStore.hasNmuiVersionSynced() && <LoadingOutlined />}
+                  {canUpgrade && (
+                    <CloudSyncOutlined style={{ marginLeft: '.5rem' }} className="cursor-pointer update-btn" />
+                  )}
+                </span>
+                <br />
+                <span style={{ fontSize: 'inherit' }}>Server: {store.serverConfig?.Version ?? 'n/a'}</span>
+
+                {isSaasBuild && (
+                  <>
+                    <br />
+                    <Typography.Text
+                      style={{ fontSize: 'inherit', width: '100%' }}
+                      ellipsis={true}
+                      copyable={{ text: store.tenantId || store.serverConfig?.NetmakerTenantID || 'n/a' }}
+                      title={store.tenantId || store.serverConfig?.NetmakerTenantID || 'n/a'}
+                    >
+                      Tenant ID: {`${store.tenantId || store.serverConfig?.NetmakerTenantID || 'n/a'}`}
+                    </Typography.Text>
+                  </>
+                )}
+                <br />
+              </div>
             </div>
           )}
         </div>
