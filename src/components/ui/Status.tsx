@@ -334,7 +334,7 @@ export default function NodeStatus(props: StatusProps) {
         }
       }
     } else {
-      possibleIssues = ['failover-missing'];
+      possibleIssues = ['failover-missing', 'failover-connection-not-working'];
     }
   }
 
