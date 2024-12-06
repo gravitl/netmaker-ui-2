@@ -933,6 +933,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     (node: ExtendedNode, makeFailover: boolean) => {
       let title = `Set ${node.name} as the failover host`;
       let content = `Are you sure you want to make this host the network failover host (and override the current)? Setting this will route traffic through this host in case of failure.`;
+      const firewallContent = `Firewall Requirement: Inbound in port ${node.listenport}.`;
 
       if (!makeFailover) {
         title = `Unset ${node.name} as failover host`;
@@ -941,7 +942,13 @@ export default function NetworkDetailsPage(props: PageProps) {
 
       Modal.confirm({
         title: title,
-        content: content,
+        content: (
+          <>
+            {content}
+            <br /> <br />
+            {firewallContent}
+          </>
+        ),
         okText: 'Yes',
         cancelText: 'No',
         onOk: async () => {

@@ -232,7 +232,11 @@ export default function UpdateNodeModal({ isOpen, node, onUpdateNode, onCancel }
               <Form.Item
                 label={
                   <>
-                    <span>Network Failover</span>
+                    <div className="flex flex-col">
+                      <span>Network Failover</span>
+
+                      <p className="text-text-secondary">Firewall Requirement: Inbound in port {node.listenport}</p>
+                    </div>
                     <WarningOutlined
                       style={{
                         color: 'red',

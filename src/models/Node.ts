@@ -52,6 +52,7 @@ export interface Node {
   tags: Record<Tag['id'], null>;
   static_node: ExternalClient;
   status: NodeStatus;
+  listenport: number;
 }
 
 export type AddressType = 'address' | 'address6' | 'localaddress';
