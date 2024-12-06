@@ -111,7 +111,14 @@ export default function EnrollmentKeyDetailsModal({ isOpen, enrollmentKey, onCan
             <Typography.Text>Networks</Typography.Text>
           </Col>
           <Col xs={16}>
-            <Typography.Text>{enrollmentKey.networks.join(', ')}</Typography.Text>
+            <Typography.Text>
+              {enrollmentKey.networks
+                .map((netId) => {
+                  const network = store.networks.find((n) => n.netid === netId);
+                  return network?.name || netId;
+                })
+                .join(', ')}
+            </Typography.Text>
           </Col>
         </Row>
         {isServerEE && (
