@@ -60,6 +60,7 @@ export default function NetworkInfoPage({ isFullScreen }: NetworkInfoPageProps) 
       console.log(payload);
 
       await NetworksService.updateNetwork(network.netid, payload);
+      await store.fetchNetworks();
 
       notify.success({
         message: 'Success',
