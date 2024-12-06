@@ -2,7 +2,7 @@ import { Network } from '@/models/Network';
 
 // Types for ACL rules
 export type PolicyType = 'device-policy' | 'user-policy';
-export type SourceGroupType = 'user' | 'user-role' | 'user-group' | 'tag' | 'resource'; // Added 'resource'
+export type SourceGroupType = 'user' | 'user-group' | 'tag';
 export type DestinationGroupType = 'tag';
 
 // Base TypeValue interfaces
@@ -16,14 +16,25 @@ export interface DestinationTypeValue {
   value: string;
 }
 
+export interface ProtocolType {
+  name: string;
+  allowed_protocols: string[];
+  port_range: number;
+  allow_port_setting: boolean;
+}
+
 export interface ACLRule {
   id: string;
   default: boolean;
+  meta_data: string;
   name: string;
   network_id: Network['netid'];
   policy_type: PolicyType;
   src_type: SourceTypeValue[];
   dst_type: DestinationTypeValue[];
+  protocol: string;
+  ports: string[];
+  type: string;
   allowed_traffic_direction: 0 | 1; // 0 for unidirectional, 1 for bidirectional
   enabled: boolean;
   created_by: string;
@@ -32,10 +43,14 @@ export interface ACLRule {
 
 export interface CreateACLRuleDto {
   name: string;
+  meta_data?: string;
   network_id: Network['netid'];
   policy_type: PolicyType;
   src_type: SourceTypeValue[];
   dst_type: DestinationTypeValue[];
+  protocol?: string;
+  ports: string[];
+  type: string;
   allowed_traffic_direction?: 0 | 1;
   enabled?: boolean;
 }
@@ -47,6 +62,7 @@ export interface ToggleEnabledACLRuleDto {
 }
 
 export interface ACLTypesResponse {
+  ProtocolTypes: ProtocolType[];
   policy_types: PolicyType[];
   src_grp_types: SourceGroupType[];
   dst_grp_types: DestinationGroupType[];
