@@ -41,6 +41,7 @@ import { useBranding } from '@/utils/Utils';
 import UpdateEnrollmentKeyModal from '@/components/modals/update-enrollment-key-modal/UpdateEnrollmentKeyModal';
 import { EllipsisHorizontalIcon, KeyIcon } from '@heroicons/react/24/solid';
 import PageLayout from '@/layouts/PageLayout';
+import { useStore } from '@/store/store';
 
 export default function EnrollmentKeysPage(props: PageProps) {
   const [notify, notifyCtx] = notification.useNotification();
@@ -61,6 +62,8 @@ export default function EnrollmentKeysPage(props: PageProps) {
   const keyTypeSelectRef = useRef(null);
   const keyNetworksSelectRef = useRef(null);
   const keyRelaySelectRef = useRef(null);
+
+  const store = useStore();
 
   const confirmRemoveKey = useCallback(
     (key: EnrollmentKey) => {
@@ -118,9 +121,22 @@ export default function EnrollmentKeysPage(props: PageProps) {
     {
       title: 'Networks',
       dataIndex: 'networks',
-      render: (value) => value.join(', '),
+      render: (networkIds: string[]) => {
+        const networkNames = networkIds.map((netId) => {
+          const network = store.networks.find((n) => n.netid === netId);
+          return network?.name || netId;
+        });
+        return networkNames.join(', ');
+      },
       sorter(a, b) {
-        return a.networks.join('').localeCompare(b.networks.join(''));
+        const getNetworkNames = (ids: string[]) =>
+          ids
+            .map((id) => {
+              const network = store.networks.find((n) => n.netid === id);
+              return network?.name || id;
+            })
+            .join('');
+        return getNetworkNames(a.networks).localeCompare(getNetworkNames(b.networks));
       },
     },
     {

@@ -137,7 +137,13 @@ export default function UpdateEnrollmentKeyModal({
                 style={{ width: '100%' }}
                 options={[
                   { label: 'Select relay to join with key', value: NULL_NODE_ID, disabled: true },
-                  ...relays.map((node) => ({ label: `${node.name} (${node.network})`, value: node.id })),
+                  ...relays.map((node) => {
+                    const network = store.networks.find((n) => n.netid === node.network);
+                    return {
+                      label: `${node.name} (${network?.name || node.network})`,
+                      value: node.id,
+                    };
+                  }),
                 ]}
               />
             </Form.Item>
@@ -169,7 +175,13 @@ export default function UpdateEnrollmentKeyModal({
                     allowClear
                     mode="multiple"
                     style={{ width: '100%' }}
-                    options={filteredTags.map((tag) => ({ label: `${tag.tag_name} (${tag.network})`, value: tag.id }))}
+                    options={filteredTags.map((tag) => {
+                      const network = store.networks.find((n) => n.netid === tag.network);
+                      return {
+                        label: `${tag.tag_name} (${network?.name || tag.network})`,
+                        value: tag.id,
+                      };
+                    })}
                     disabled={enrollmentKey.networks?.length === 0}
                   />
                 </Form.Item>

@@ -80,6 +80,7 @@ export const stubNetwork1: Network = {
   defaultacl: 'yes',
   prosettings: undefined,
   displayName: 'net 1',
+  name: 'net 1',
 };
 
 export const stubNetwork2: Network = {
@@ -104,6 +105,7 @@ export const stubNetwork2: Network = {
   defaultacl: 'yes',
   prosettings: undefined,
   displayName: 'net 2',
+  name: 'net 2',
 };
 
 export const stubNetworks: Network[] = [stubNetwork1, stubNetwork2];

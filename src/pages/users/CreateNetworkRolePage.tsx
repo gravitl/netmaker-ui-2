@@ -589,7 +589,7 @@ export default function CreateNetworkRolePage(props: PageProps) {
                   style={{ width: '80%' }}
                 >
                   <Select
-                    options={availbleNetworks.map((n) => ({ label: n.netid, value: n.netid }))}
+                    options={availbleNetworks.map((n) => ({ label: n.name || n.netid, value: n.netid }))}
                     placeholder="Select a network"
                   />
                 </Form.Item>

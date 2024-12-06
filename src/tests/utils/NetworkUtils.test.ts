@@ -32,6 +32,7 @@ const network: Network = {
   nodelimit: 1,
   nodeslastmodified: 0,
   prosettings: undefined,
+  name: 'test',
 };
 
 describe('NetworkUtils', () => {

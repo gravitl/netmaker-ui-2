@@ -61,11 +61,12 @@ export default function AddNetworkModal({
       formData.netid = formData.netid?.trim() ?? '';
       formData.netid = formData.netid.replace(/\s+/g, '-');
       formData.netid = formData.netid.toLocaleLowerCase();
+      formData.name = formData.netid;
       const network = convertNetworkPayloadToUiNetwork(
         (await NetworksService.createNetwork(convertUiNetworkToNetworkPayload(formData as unknown as Network))).data,
       );
       store.addNetwork(network);
-      notify.success({ message: `Network ${network.netid} created` });
+      notify.success({ message: `Network ${network.name || network.netid} created` });
       store.setActiveNetwork(network.netid);
       resetModal();
       onCreateNetwork(network);

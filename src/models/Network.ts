@@ -23,6 +23,7 @@ export interface Network {
   defaultmtu: number;
   defaultacl: 'yes' | 'no';
   prosettings: ProSettings | undefined;
+  name: string;
 }
 
 export type NetworkPayload = Modify<
