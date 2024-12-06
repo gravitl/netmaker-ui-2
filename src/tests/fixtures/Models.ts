@@ -177,6 +177,7 @@ export const stubNode1: Node = {
   },
   tags: {},
   status: 'offline',
+  listenport: 0,
 };
 
 export const stubNode2: Node = {
@@ -247,6 +248,7 @@ export const stubNode2: Node = {
   },
   tags: {},
   status: 'offline',
+  listenport: 0,
 };
 
 export const stubNodes: Node[] = [stubNode1, stubNode2];

@@ -115,6 +115,7 @@ export const NULL_NODE: Node = {
   },
   tags: {},
   status: 'offline',
+  listenport: 0,
 };
 
 export const NULL_NETWORK_PROSETTINGS: ProSettings = {

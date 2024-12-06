@@ -71,6 +71,7 @@ const testNode: Node = {
   },
   tags: {},
   status: 'offline',
+  listenport: 0,
 };
 
 const hostRegistry: Record<Host['id'], HostCommonDetails> = {

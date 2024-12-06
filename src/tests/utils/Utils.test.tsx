@@ -82,6 +82,7 @@ const testNode1: Node = {
   },
   tags: {},
   status: 'offline',
+  listenport: 0,
 };
 
 const testNode2 = { ...testNode1, lastcheckin: testNode1.lastcheckin - 400 };
