@@ -15,6 +15,7 @@ import { HostsService } from '@/services/HostsService';
 import { Host } from '@/models/Host';
 import { isSaasBuild } from '@/services/BaseService';
 import { useIntercom } from 'react-use-intercom';
+import { useParams } from 'react-router-dom';
 
 interface StatusProps {
   nodeHealth: NodeConnectivityStatus;
@@ -35,6 +36,7 @@ export default function NodeStatus(props: StatusProps) {
   const { isServerEE } = useServerLicense();
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   let possibleIssues: PossibleIssue[] = [];
+  const { networkId } = useParams();
 
   const node = useMemo(() => store.nodes.find((n) => n.id === props.nodeId), [props.nodeId]);
 
@@ -173,7 +175,7 @@ export default function NodeStatus(props: StatusProps) {
             return;
           case 'not-connected-to-failover':
             try {
-              await NodesService.resetFailover(node?.network ?? '');
+              await NodesService.resetFailover(networkId ?? '');
               notification.success({
                 message: 'Failover reset successful',
               });
