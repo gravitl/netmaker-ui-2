@@ -217,7 +217,7 @@ export default function AddRemoteAccessGatewayModal({
                 <Col xs={24} className="pb-6">
                   <h3 className="mb-2 font-bold">Firewall Requirements</h3>
                   <Typography.Text>
-                    Allow outbound traffic
+                    Allow inbound traffic
                     {selectedGatewayHost && (
                       <>
                         {' on port '}
