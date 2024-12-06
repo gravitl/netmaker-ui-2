@@ -501,6 +501,8 @@ export default function MainLayout() {
           }}
         >
           <Sidebar
+            openVersionUpgradeModal={openVersionUpgradeModal}
+            canUpgrade={canUpgrade}
             isSidebarCollapsed={isSidebarComponentCollapsed}
             setIsSidebarCollapsed={setIsSidebarComponentCollapsed}
           />
