@@ -136,7 +136,7 @@ const ConfigFileForm = ({ networkId, form }: ConfigFileFormProps) => {
         return <span className="text-red-500">Error</span>;
       case 'warning':
         return <span className="text-yellow-500">Unstable</span>;
-      case 'healthy':
+      case 'online':
         return <span className="text-green-500">Healthy</span>;
       default:
         return <span className="text-gray-500">Unknown</span>;

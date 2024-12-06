@@ -51,8 +51,12 @@ export interface Node {
   is_user_node: boolean;
   tags: Record<Tag['id'], null>;
   static_node: ExternalClient;
+  status: NodeStatus;
+  listenport: number;
 }
 
 export type AddressType = 'address' | 'address6' | 'localaddress';
 
 export type ExtendedNode = Node & Partial<HostCommonDetails>;
+
+export type NodeStatus = 'online' | 'offline' | 'warning' | 'error' | 'unknown';

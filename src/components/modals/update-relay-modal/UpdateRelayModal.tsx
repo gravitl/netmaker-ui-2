@@ -65,7 +65,7 @@ export default function UpdateRelayModal({
   const getNodeConnectivity = useCallback((node: Node) => {
     if (getNodeConnectivityStatus(node) === 'error') return <Badge status="error" text="Error" />;
     else if (getNodeConnectivityStatus(node) === 'warning') return <Badge status="warning" text="Unstable" />;
-    else if (getNodeConnectivityStatus(node) === 'healthy') return <Badge status="success" text="Healthy" />;
+    else if (getNodeConnectivityStatus(node) === 'online') return <Badge status="success" text="Healthy" />;
     else return <Badge status="processing" text="Unknown" />;
   }, []);
 

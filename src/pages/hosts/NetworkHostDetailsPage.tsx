@@ -94,8 +94,8 @@ export default function NetworkHostDetailsPage(props: PageProps) {
         return <NodeStatus nodeHealth="error" />;
       case 'warning':
         return <NodeStatus nodeHealth="warning" />;
-      case 'healthy':
-        return <NodeStatus nodeHealth="healthy" />;
+      case 'online':
+        return <NodeStatus nodeHealth="online" />;
     }
   }, [node]);
 

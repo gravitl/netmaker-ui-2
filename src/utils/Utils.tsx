@@ -35,8 +35,8 @@ export function renderNodeHealth(health: NodeConnectivityStatus) {
       return <Tag color="error">Error</Tag>;
     case 'warning':
       return <Tag color="warning">Warning</Tag>;
-    case 'healthy':
-      return <Tag color="success">Healthy</Tag>;
+    case 'online':
+      return <Tag color="success">Online</Tag>;
   }
 }
 
@@ -59,7 +59,7 @@ export function getHostHealth(
     .map((n) => getNodeConnectivityStatus(n))
     .map((h) => {
       switch (h) {
-        case 'healthy':
+        case 'online':
           return 3;
         case 'warning':
           return 2;
@@ -78,13 +78,13 @@ export function getHostHealth(
 
   switch (worstHealth) {
     default:
-      return shouldRender ? <NodeStatus nodeHealth="unknown" clickable /> : 'unknown';
+      return shouldRender ? <NodeStatus nodeId={hostId} nodeHealth="unknown" clickable /> : 'unknown';
     case 1:
-      return shouldRender ? <NodeStatus nodeHealth="error" clickable /> : 'error';
+      return shouldRender ? <NodeStatus nodeId={hostId} nodeHealth="error" clickable /> : 'error';
     case 2:
-      return shouldRender ? <NodeStatus nodeHealth="warning" clickable /> : 'warning';
+      return shouldRender ? <NodeStatus nodeId={hostId} nodeHealth="warning" clickable /> : 'warning';
     case 3:
-      return shouldRender ? <NodeStatus nodeHealth="healthy" clickable /> : 'healthy';
+      return shouldRender ? <NodeStatus nodeId={hostId} nodeHealth="online" clickable /> : 'online';
   }
 }
 

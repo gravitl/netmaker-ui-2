@@ -933,6 +933,7 @@ export default function NetworkDetailsPage(props: PageProps) {
     (node: ExtendedNode, makeFailover: boolean) => {
       let title = `Set ${node.name} as the failover host`;
       let content = `Are you sure you want to make this host the network failover host (and override the current)? Setting this will route traffic through this host in case of failure.`;
+      const firewallContent = `Firewall Requirement: Inbound in port ${node.listenport}.`;
 
       if (!makeFailover) {
         title = `Unset ${node.name} as failover host`;
@@ -941,7 +942,13 @@ export default function NetworkDetailsPage(props: PageProps) {
 
       Modal.confirm({
         title: title,
-        content: content,
+        content: (
+          <>
+            {content}
+            <br /> <br />
+            {firewallContent}
+          </>
+        ),
         okText: 'Yes',
         cancelText: 'No',
         onOk: async () => {
@@ -2455,6 +2462,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                                     postup: node.static_node?.postup,
                                     postdown: node.static_node?.postdown,
                                     tags: node.static_node?.tags ?? {},
+                                    status: node.static_node?.status,
                                   };
                                   setTargetClient(clientData);
                                   setIsClientDetailsModalOpen(true);
@@ -2649,12 +2657,12 @@ export default function NetworkDetailsPage(props: PageProps) {
                       const extendedNode = getExtendedNode(node, store.hostsCommonDetails);
                       if (extendedNode.is_static) {
                         return node.static_node?.enabled ? (
-                          <NodeStatus nodeHealth="enabled" clickable />
+                          <NodeStatus nodeId={node.id} nodeHealth="enabled" />
                         ) : (
-                          <NodeStatus nodeHealth="disabled" clickable />
+                          <NodeStatus nodeId={node.id} nodeHealth="disabled" />
                         );
                       } else if (!extendedNode.connected) {
-                        return <NodeStatus nodeHealth="disconnected" clickable />;
+                        return <NodeStatus nodeHealth="offline" nodeId={node.id} clickable />;
                       }
                       return getHostHealth(node.hostid, [node]);
                     },
@@ -2721,6 +2729,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                               postup: node.static_node?.postup,
                               postdown: node.static_node?.postdown,
                               tags: node.static_node.tags,
+                              status: node.static_node?.status,
                             };
                             setTargetClient(clientData);
                             setIsUpdateClientModalOpen(true);
@@ -2754,6 +2763,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                               postup: node.static_node?.postup,
                               postdown: node.static_node?.postdown,
                               tags: node.static_node.tags,
+                              status: node.static_node?.status,
                             };
                             toggleClientStatus(clientData, !node.static_node?.enabled);
                           },
@@ -2794,6 +2804,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                               postup: node.static_node?.postup,
                               postdown: node.static_node?.postdown,
                               tags: node.static_node.tags,
+                              status: node.static_node?.status,
                             };
                             setTargetClient(clientData);
                             setIsClientConfigModalOpen(true);
@@ -2831,6 +2842,7 @@ export default function NetworkDetailsPage(props: PageProps) {
                               postup: node.static_node?.postup,
                               postdown: node.static_node?.postdown,
                               tags: node.static_node.tags,
+                              status: node.static_node?.status,
                             };
                             confirmDeleteClient(clientData);
                           },

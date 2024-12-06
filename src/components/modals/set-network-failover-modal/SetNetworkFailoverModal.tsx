@@ -45,9 +45,17 @@ export default function SetNetworkFailoverModal({
 
   const setAsNetworkFailover = useCallback(
     (node: ExtendedNode) => {
+      const content = `Are you sure you want to make this host the network failover host`;
+      const firewallContent = `Firewall Requirement: Inbound in port ${node.listenport}.`;
       Modal.confirm({
         title: `Set ${node.name} as the failover host`,
-        content: 'Are you sure you want to make this host the network failover host',
+        content: (
+          <>
+            {content}
+            <br /> <br />
+            {firewallContent}
+          </>
+        ),
         okText: 'Yes',
         cancelText: 'No',
         onOk: async () => {

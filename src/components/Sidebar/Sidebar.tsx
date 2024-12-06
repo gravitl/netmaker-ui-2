@@ -150,6 +150,7 @@ const Sidebar = ({
         iconSolid: <ComputerDesktopIconSolid className="size-5" />,
         iconOutline: <ComputerDesktopIconOutline className="size-5" />,
         route: null,
+        isEE: false,
       },
       {
         key: 'remote-access',
@@ -157,6 +158,7 @@ const Sidebar = ({
         iconSolid: <ViewfinderCircleIconSolid className="size-5" />,
         iconOutline: <ViewfinderCircleIconOutline className="size-5" />,
         route: null,
+        isEE: false,
       },
       {
         key: 'relays',
@@ -164,6 +166,7 @@ const Sidebar = ({
         iconSolid: <ArrowPathIconSolid className="size-5" />,
         iconOutline: <ArrowPathIconOutline className="size-5" />,
         route: null,
+        isEE: true,
       },
       {
         key: 'egress',
@@ -171,6 +174,7 @@ const Sidebar = ({
         iconSolid: <ArrowUpTrayIconSolid className="size-5" />,
         iconOutline: <ArrowUpTrayIconOutline className="size-5" />,
         route: null,
+        isEE: false,
       },
       {
         key: 'internet-gateways',
@@ -178,6 +182,7 @@ const Sidebar = ({
         iconSolid: <ArrowsRightLeftIconSolid className="size-5" />,
         iconOutline: <ArrowsRightLeftIconOutline className="size-5" />,
         route: null,
+        isEE: true,
       },
       {
         key: 'acls',
@@ -185,6 +190,7 @@ const Sidebar = ({
         iconSolid: <ShieldCheckIconSolid className="size-5" />,
         iconOutline: <ShieldCheckIconOutline className="size-5" />,
         route: null,
+        isEE: false,
       },
       {
         key: 'tags',
@@ -192,6 +198,7 @@ const Sidebar = ({
         iconSolid: <HashtagIconSolid className="size-5" />,
         iconOutline: <HashtagIconOutline className="size-5" />,
         route: null,
+        isEE: true,
       },
       {
         key: 'dns',
@@ -199,6 +206,7 @@ const Sidebar = ({
         iconSolid: <InboxStackIconSolid className="size-5" />,
         iconOutline: <InboxStackIconOutline className="size-5" />,
         route: null,
+        isEE: false,
       },
       {
         key: 'analytics',
@@ -206,6 +214,7 @@ const Sidebar = ({
         iconSolid: <ChartBarSquareIconSolid className="size-5" />,
         iconOutline: <ChartBarSquareIconOutline className="size-5" />,
         route: null,
+        isEE: true,
       },
     ],
     [],
@@ -306,9 +315,21 @@ const Sidebar = ({
           <div
             className={`flex flex-col gap-2 pt-2 ${isSidebarCollapsed ? '' : 'border-stroke-default border-l pl-2'}`}
           >
-            {networkMenuItems.map(({ key, title, iconSolid, iconOutline, route }) => {
-              return route ? (
-                <Link to={route} key={title}>
+            {networkMenuItems
+              .filter((item) => !item.isEE || isServerEE)
+              .map(({ key, title, iconSolid, iconOutline, route }) => {
+                return route ? (
+                  <Link to={route} key={title}>
+                    <MenuRow
+                      key={key}
+                      title={title}
+                      icon={selectedMenu === key ? iconSolid : iconOutline}
+                      selected={selectedMenu === key}
+                      onClick={() => handleMenuClick(key)}
+                      isSidebarCollapsed={isSidebarCollapsed}
+                    />
+                  </Link>
+                ) : (
                   <MenuRow
                     key={key}
                     title={title}
@@ -317,18 +338,8 @@ const Sidebar = ({
                     onClick={() => handleMenuClick(key)}
                     isSidebarCollapsed={isSidebarCollapsed}
                   />
-                </Link>
-              ) : (
-                <MenuRow
-                  key={key}
-                  title={title}
-                  icon={selectedMenu === key ? iconSolid : iconOutline}
-                  selected={selectedMenu === key}
-                  onClick={() => handleMenuClick(key)}
-                  isSidebarCollapsed={isSidebarCollapsed}
-                />
-              );
-            })}
+                );
+              })}{' '}
           </div>
         </div>
       </div>

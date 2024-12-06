@@ -29,6 +29,7 @@ export interface ServerConfig {
   OIDCIssuer: string;
   Platform: string;
   PublicIPService: string;
+  PublicIp: string;
   RestBackend: string;
   Server: string;
   ServerBrokerEndpoint: string;

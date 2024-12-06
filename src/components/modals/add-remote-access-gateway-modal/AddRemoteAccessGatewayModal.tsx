@@ -94,7 +94,7 @@ export default function AddRemoteAccessGatewayModal({
   const getNodeConnectivity = useCallback((node: Node) => {
     if (getNodeConnectivityStatus(node) === 'error') return <Badge status="error" text="Error" />;
     else if (getNodeConnectivityStatus(node) === 'warning') return <Badge status="warning" text="Unstable" />;
-    else if (getNodeConnectivityStatus(node) === 'healthy') return <Badge status="success" text="Healthy" />;
+    else if (getNodeConnectivityStatus(node) === 'online') return <Badge status="success" text="Healthy" />;
     else return <Badge status="processing" text="Unknown" />;
   }, []);
 
@@ -212,6 +212,23 @@ export default function AddRemoteAccessGatewayModal({
       <Form name="add-ingress-form" form={form} layout="vertical" initialValues={{}}>
         <div className="" style={{ maxHeight: '60vh', overflow: 'auto' }}>
           <div className="CustomModalBody">
+            {selectedGatewayHost && (
+              <Row>
+                <Col xs={24} className="pb-6">
+                  <h3 className="mb-2 font-bold">Firewall Requirements</h3>
+                  <Typography.Text>
+                    Allow inbound traffic
+                    {selectedGatewayHost && (
+                      <>
+                        {' on port '}
+                        <span className="text-base-semibold">{selectedGatewayHost.listenport}</span>
+                      </>
+                    )}
+                  </Typography.Text>
+                </Col>
+              </Row>
+            )}
+
             <Row>
               <Col xs={24} ref={addClientGatewayModalHostRef}>
                 <Form.Item

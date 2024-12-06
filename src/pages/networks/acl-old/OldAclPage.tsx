@@ -84,7 +84,7 @@ export function NetworkOldAclsPage({ isFullScreen }: NetworkOldAclPageProps) {
   const [aclRules, setAclRules] = useState<ACLRule[]>([]);
   const [originalAcls, setOriginalAcls] = useState<NodeAclContainer>({});
   const [acls, setAcls] = useState<NodeAclContainer>({});
-  const [aclVersion, setAclVersion] = useState(1);
+  const { aclVersion, setAclVersion } = store;
   const [clients, setClients] = useState<ExternalClient[]>([]);
   const [searchAclHost, setSearchAclHost] = useState('');
   const [showClientAcls, setShowClientAcls] = useState(false);
@@ -329,196 +329,189 @@ export function NetworkOldAclsPage({ isFullScreen }: NetworkOldAclPageProps) {
 
   return (
     <div className="NetworkAclsPage" style={{ position: 'relative', height: '100%', padding: isFullScreen ? 0 : 24 }}>
-      <div className={`${isFullScreen ? 'page-padding' : ''}`}>
-        <Row style={{ marginBottom: '1rem', width: '100%' }}>
-          <Col>
-            <Typography.Title level={2}>Access Control</Typography.Title>
-          </Col>
-        </Row>
-        {isServerEE && (
-          <div className="flex items-end w-full gap-4 p-5 mb-6 border border-stroke-default rounded-xl bg-bg-contrastDefault ">
-            <div className="flex flex-col items-start w-full gap-2">
-              <div className="flex items-center">
-                <h3 className="text-text-primary text-base-semibold">Introducing the New Access Control System</h3>
-                <span className="ml-2 px-2 py-0.5 text-white bg-button-primary-fill-default rounded-full text-xs">
-                  Beta
-                </span>
-              </div>
-              <p className="text-base text-text-secondary">Built to make access management easier and more secure.</p>
+      {isServerEE && (
+        <div className="flex items-end w-full gap-4 p-5 mb-6 border border-stroke-default rounded-xl bg-bg-contrastDefault ">
+          <div className="flex flex-col items-start w-full gap-2">
+            <div className="flex items-center">
+              <h3 className="text-text-primary text-base-semibold">Introducing the New Access Control System</h3>
+              <span className="ml-2 px-2 py-0.5 text-white bg-button-primary-fill-default rounded-full text-xs">
+                Beta
+              </span>
             </div>
-            <Button
-              type="primary"
-              onClick={() => {
-                setAclVersion(2);
-                navigate(getNetworkPageRoute('acls'));
-              }}
-            >
-              Try new ACL
-            </Button>{' '}
+            <p className="text-base text-text-secondary">Built to make access management easier and more secure.</p>
           </div>
-        )}
-        <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-          {networkHosts.length + clients.length > 50 ? (
-            <Row style={{ width: '100%' }}>
-              <Col xs={24}>
-                <Alert
-                  message="Too many ACLs to display"
-                  description={
-                    <>
-                      Please use{' '}
-                      <a
-                        rel="no-referrer noreferrer"
-                        href="https://docs.netmaker.io/docs/guide/references/nmctl#acls"
-                        target="_blank"
-                      >
-                        NMCTL
-                      </a>{' '}
-                      our commandline tool to manage ACLs.
-                    </>
-                  }
-                  type="warning"
-                  showIcon
-                  style={{ marginBottom: '1rem' }}
-                />
-              </Col>
-            </Row>
-          ) : (
-            <Row style={{ width: '100%' }}>
-              <Col xl={12} xs={24}>
-                <Input
-                  allowClear
-                  placeholder="Search host"
-                  value={searchAclHost}
-                  onChange={(ev) => setSearchAclHost(ev.target.value)}
-                  prefix={<SearchOutlined />}
-                  className="search-acl-host-input"
-                />
-                {isServerEE && (
-                  <span className="show-clients-toggle" data-nmui-intercom="network-details-acls_showclientstoggle">
-                    <label style={{ marginRight: '1rem' }} htmlFor="show-clients-acl-switch">
-                      Show Clients
-                    </label>
-                    <Switch
-                      id="show-clients-acl-switch"
-                      checked={showClientAcls}
-                      onChange={(newVal) => setShowClientAcls(newVal)}
-                    />
-                  </span>
-                )}
-              </Col>
-              <Col xl={12} xs={24} className="mt-10 acl-tab-buttons">
-                <Button
-                  title="Allow All"
-                  style={{ marginRight: '1rem', color: '#3C8618', borderColor: '#274916' }}
-                  icon={<CheckOutlined />}
-                  onClick={() => {
-                    setAcls((prevAcls) => {
-                      const newAcls = structuredClone(prevAcls);
-                      for (const nodeId1 in newAcls) {
-                        if (Object.prototype.hasOwnProperty.call(newAcls, nodeId1)) {
-                          const nodeAcl = newAcls[nodeId1];
-                          for (const nodeId in nodeAcl) {
-                            if (Object.prototype.hasOwnProperty.call(nodeAcl, nodeId)) {
-                              nodeAcl[nodeId] = 2;
-                            }
-                          }
-                        }
-                      }
-                      return newAcls;
-                    });
-                  }}
-                />
-                <Button
-                  danger
-                  title="Block All"
-                  style={{ marginRight: '1rem' }}
-                  icon={<StopOutlined />}
-                  onClick={() => {
-                    setAcls((prevAcls) => {
-                      const newAcls = structuredClone(prevAcls);
-                      for (const nodeId1 in newAcls) {
-                        if (Object.prototype.hasOwnProperty.call(newAcls, nodeId1)) {
-                          const nodeAcl = newAcls[nodeId1];
-                          for (const nodeId in nodeAcl) {
-                            if (Object.prototype.hasOwnProperty.call(nodeAcl, nodeId)) {
-                              nodeAcl[nodeId] = 1;
-                            }
-                          }
-                        }
-                      }
-                      return newAcls;
-                    });
-                  }}
-                />
-                <Button
-                  title="Reset"
-                  style={{ marginRight: '1rem' }}
-                  icon={<ReloadOutlined />}
-                  onClick={() => {
-                    setAcls(originalAcls);
-                  }}
-                  disabled={!hasAclsBeenEdited}
-                />
-                <Button
-                  type="primary"
-                  onClick={async () => {
-                    try {
-                      if (!networkId) return;
-                      setIsSubmittingAcls(true);
-                      const newAcls = (await NetworksService.updateAclsV2(networkId, acls)).data;
-                      setOriginalAcls(newAcls);
-                      setAcls(newAcls);
-                      notify.success({
-                        message: 'ACLs updated',
-                      });
-                    } catch (err) {
-                      notify.error({
-                        message: 'Error updating ACLs',
-                        description: extractErrorMsg(err as any),
-                      });
-                    } finally {
-                      setIsSubmittingAcls(false);
-                    }
-                  }}
-                  disabled={!hasAclsBeenEdited}
-                  loading={isSubmittingAcls}
-                >
-                  Submit Changes
-                </Button>
-                <Button
-                  style={{ marginLeft: '1rem' }}
-                  onClick={() => alert('not implemented')}
-                  icon={<InfoCircleOutlined />}
-                >
-                  Take Tour
-                </Button>
-                <Button
-                  title="Go to ACL documentation"
-                  style={{ marginLeft: '1rem' }}
-                  href={ExternalLinks.ACLS_DOCS_URL}
-                  target="_blank"
-                  icon={<QuestionCircleOutlined />}
-                />
-              </Col>
-
-              <Col xs={24} style={{ paddingTop: '1rem' }}>
-                <div className="" style={{ width: '100%', overflow: 'auto' }}>
-                  <VirtualisedTable
-                    columns={aclTableColsV2}
-                    dataSource={filteredAclDataV2}
-                    className="acl-table"
-                    rowKey="nodeOrClientId"
-                    size="small"
-                    pagination={false}
-                    scroll={{
-                      x: '100%',
-                    }}
-                  />
-                </div>
-              </Col>
-            </Row>
-          )}
+          <Button
+            type="primary"
+            onClick={() => {
+              setAclVersion(2);
+              navigate(getNetworkPageRoute('acls'));
+            }}
+          >
+            Try new ACL
+          </Button>{' '}
         </div>
+      )}
+      <div className="" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+        {networkHosts.length + clients.length > 50 ? (
+          <Row style={{ width: '100%' }}>
+            <Col xs={24}>
+              <Alert
+                message="Too many ACLs to display"
+                description={
+                  <>
+                    Please use{' '}
+                    <a
+                      rel="no-referrer noreferrer"
+                      href="https://docs.netmaker.io/docs/guide/references/nmctl#acls"
+                      target="_blank"
+                    >
+                      NMCTL
+                    </a>{' '}
+                    our commandline tool to manage ACLs.
+                  </>
+                }
+                type="warning"
+                showIcon
+                style={{ marginBottom: '1rem' }}
+              />
+            </Col>
+          </Row>
+        ) : (
+          <Row style={{ width: '100%' }}>
+            <Col xl={12} xs={24}>
+              <Input
+                allowClear
+                placeholder="Search host"
+                value={searchAclHost}
+                onChange={(ev) => setSearchAclHost(ev.target.value)}
+                prefix={<SearchOutlined />}
+                className="search-acl-host-input"
+              />
+              {isServerEE && (
+                <span className="show-clients-toggle" data-nmui-intercom="network-details-acls_showclientstoggle">
+                  <label style={{ marginRight: '1rem' }} htmlFor="show-clients-acl-switch">
+                    Show Clients
+                  </label>
+                  <Switch
+                    id="show-clients-acl-switch"
+                    checked={showClientAcls}
+                    onChange={(newVal) => setShowClientAcls(newVal)}
+                  />
+                </span>
+              )}
+            </Col>
+            <Col xl={12} xs={24} className="mt-10 acl-tab-buttons">
+              <Button
+                title="Allow All"
+                style={{ marginRight: '1rem', color: '#3C8618', borderColor: '#274916' }}
+                icon={<CheckOutlined />}
+                onClick={() => {
+                  setAcls((prevAcls) => {
+                    const newAcls = structuredClone(prevAcls);
+                    for (const nodeId1 in newAcls) {
+                      if (Object.prototype.hasOwnProperty.call(newAcls, nodeId1)) {
+                        const nodeAcl = newAcls[nodeId1];
+                        for (const nodeId in nodeAcl) {
+                          if (Object.prototype.hasOwnProperty.call(nodeAcl, nodeId)) {
+                            nodeAcl[nodeId] = 2;
+                          }
+                        }
+                      }
+                    }
+                    return newAcls;
+                  });
+                }}
+              />
+              <Button
+                danger
+                title="Block All"
+                style={{ marginRight: '1rem' }}
+                icon={<StopOutlined />}
+                onClick={() => {
+                  setAcls((prevAcls) => {
+                    const newAcls = structuredClone(prevAcls);
+                    for (const nodeId1 in newAcls) {
+                      if (Object.prototype.hasOwnProperty.call(newAcls, nodeId1)) {
+                        const nodeAcl = newAcls[nodeId1];
+                        for (const nodeId in nodeAcl) {
+                          if (Object.prototype.hasOwnProperty.call(nodeAcl, nodeId)) {
+                            nodeAcl[nodeId] = 1;
+                          }
+                        }
+                      }
+                    }
+                    return newAcls;
+                  });
+                }}
+              />
+              <Button
+                title="Reset"
+                style={{ marginRight: '1rem' }}
+                icon={<ReloadOutlined />}
+                onClick={() => {
+                  setAcls(originalAcls);
+                }}
+                disabled={!hasAclsBeenEdited}
+              />
+              <Button
+                type="primary"
+                onClick={async () => {
+                  try {
+                    if (!networkId) return;
+                    setIsSubmittingAcls(true);
+                    const newAcls = (await NetworksService.updateAclsV2(networkId, acls)).data;
+                    setOriginalAcls(newAcls);
+                    setAcls(newAcls);
+                    notify.success({
+                      message: 'ACLs updated',
+                    });
+                  } catch (err) {
+                    notify.error({
+                      message: 'Error updating ACLs',
+                      description: extractErrorMsg(err as any),
+                    });
+                  } finally {
+                    setIsSubmittingAcls(false);
+                  }
+                }}
+                disabled={!hasAclsBeenEdited}
+                loading={isSubmittingAcls}
+              >
+                Submit Changes
+              </Button>
+              <Button
+                style={{ marginLeft: '1rem' }}
+                onClick={() => alert('not implemented')}
+                icon={<InfoCircleOutlined />}
+              >
+                Take Tour
+              </Button>
+              <Button
+                title="Go to ACL documentation"
+                style={{ marginLeft: '1rem' }}
+                href={ExternalLinks.ACLS_DOCS_URL}
+                target="_blank"
+                icon={<QuestionCircleOutlined />}
+              />
+            </Col>
+
+            <Col xs={24} style={{ paddingTop: '1rem' }}>
+              <div className="" style={{ width: '100%', overflow: 'auto' }}>
+                <VirtualisedTable
+                  columns={aclTableColsV2}
+                  dataSource={filteredAclDataV2}
+                  className="acl-table"
+                  rowKey="nodeOrClientId"
+                  size="small"
+                  pagination={false}
+                  scroll={{
+                    x: '100%',
+                  }}
+                />
+              </div>
+            </Col>
+          </Row>
+        )}
       </div>
     </div>
   );

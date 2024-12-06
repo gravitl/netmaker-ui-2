@@ -174,7 +174,7 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
     (node: ExtendedNode, makeFailover: boolean) => {
       let title = `Set ${node.name} as the failover host`;
       let content = `Are you sure you want to make this host the network failover host (and override the current)? Setting this will route traffic through this host in case of failure.`;
-
+      const firewallContent = `Firewall Requirement: Inbound in port ${node.listenport}.`;
       if (!makeFailover) {
         title = `Unset ${node.name} as failover host`;
         content = `Are you sure you want to removing the failover status from this host?`;
@@ -182,7 +182,13 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
 
       Modal.confirm({
         title: title,
-        content: content,
+        content: (
+          <>
+            {content}
+            <br /> <br />
+            {firewallContent}
+          </>
+        ),
         okText: 'Yes',
         cancelText: 'No',
         onOk: async () => {
@@ -355,6 +361,10 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
               })
             ).data;
             setClients((prev) => prev.map((c) => (c.clientid === newClient.clientid ? newClient : c)));
+            notify.success({
+              message: `Successfully ${newStatus ? 'enabled' : 'disabled'} ${client.clientid}`,
+            });
+            storeFetchNodes();
           } catch (err) {
             notify.error({
               message: 'Failed to update client',
@@ -388,6 +398,30 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
       });
     },
     [loadAcls, notify, storeFetchNodes],
+  );
+
+  const requestHostPull = useCallback(
+    (node: ExtendedNode) => {
+      Modal.confirm({
+        title: 'Synchronise node',
+        content: `This will trigger the node (${node.name}) to pull latest network(s) state from the server. Proceed?`,
+        onOk: async () => {
+          try {
+            await HostsService.requestHostPull(node.hostid);
+            notify.success({
+              message: 'Node is syncing...',
+              description: `Node pull has been initiated for ${node.name}. This may take a while.`,
+            });
+          } catch (err) {
+            notify.error({
+              message: 'Failed to synchronise node',
+              description: extractErrorMsg(err as any),
+            });
+          }
+        },
+      });
+    },
+    [notify],
   );
 
   return (
@@ -519,6 +553,7 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
                                 postup: node.static_node?.postup,
                                 postdown: node.static_node?.postdown,
                                 tags: node.static_node?.tags ?? {},
+                                status: node.static_node.status,
                               };
                               setTargetClient(clientData);
                               setIsClientDetailsModalOpen(true);
@@ -640,12 +675,41 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
                     const extendedNode = getExtendedNode(node, store.hostsCommonDetails);
                     if (extendedNode.is_static) {
                       return node.static_node?.enabled ? (
-                        <NodeStatus nodeHealth="enabled" clickable />
+                        <NodeStatus nodeHealth="online" nodeId={node.id} clickable />
                       ) : (
-                        <NodeStatus nodeHealth="disabled" clickable />
+                        <NodeStatus
+                          nodeHealth="offline"
+                          nodeId={node.id}
+                          clickable
+                          toggleClientStatus={() => {
+                            const clientData: ExternalClient = {
+                              clientid: node.static_node?.clientid ?? '',
+                              description: '',
+                              privatekey: node.static_node?.privatekey ?? '',
+                              publickey: node.static_node?.publickey ?? '',
+                              network: networkId ?? '',
+                              address: node.static_node?.address ?? '',
+                              address6: node.static_node?.address6 ?? '',
+                              ingressgatewayid: node.static_node?.ingressgatewayid ?? '',
+                              ingressgatewayendpoint: node.static_node?.ingressgatewayendpoint ?? '',
+                              lastmodified: node.lastmodified ?? 0,
+                              enabled: node.static_node?.enabled ?? false,
+                              ownerid: node.static_node?.ownerid ?? '',
+                              internal_ip_addr: '',
+                              internal_ip_addr6: '',
+                              dns: node.static_node?.dns ?? '',
+                              extraallowedips: node.static_node?.extraallowedips ?? [],
+                              postup: node.static_node?.postup,
+                              postdown: node.static_node?.postdown,
+                              tags: node.static_node.tags,
+                              status: node.static_node.status,
+                            };
+                            toggleClientStatus(clientData, !node.static_node?.enabled);
+                          }}
+                        />
                       );
                     } else if (!extendedNode.connected) {
-                      return <NodeStatus nodeHealth="disconnected" clickable />;
+                      return <NodeStatus nodeHealth="offline" nodeId={node.id} clickable />;
                     }
                     return getHostHealth(node.hostid, [node]);
                   },
@@ -712,6 +776,7 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
                             postup: node.static_node?.postup,
                             postdown: node.static_node?.postdown,
                             tags: node.static_node.tags,
+                            status: node.static_node.status,
                           };
                           setTargetClient(clientData);
                           setIsUpdateClientModalOpen(true);
@@ -745,6 +810,7 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
                             postup: node.static_node?.postup,
                             postdown: node.static_node?.postdown,
                             tags: node.static_node.tags,
+                            status: node.static_node.status,
                           };
                           toggleClientStatus(clientData, !node.static_node?.enabled);
                         },
@@ -785,6 +851,7 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
                             postup: node.static_node?.postup,
                             postdown: node.static_node?.postdown,
                             tags: node.static_node.tags,
+                            status: node.static_node.status,
                           };
                           setTargetClient(clientData);
                           setIsClientConfigModalOpen(true);
@@ -822,6 +889,7 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
                             postup: node.static_node?.postup,
                             postdown: node.static_node?.postdown,
                             tags: node.static_node.tags,
+                            status: node.static_node.status,
                           };
                           confirmDeleteClient(clientData);
                         },
@@ -832,7 +900,7 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
                         key: 'edit',
                         label: 'Edit',
                         disabled: node.pendingdelete !== false,
-                        title: node.pendingdelete !== false ? 'Host is being removed from network' : '',
+                        title: node.pendingdelete !== false ? 'Node is being removed from network' : '',
                         onClick: () => editNode(node),
                       },
                       ...(isServerEE
@@ -841,19 +909,24 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
                               key: 'failover',
                               label: node.is_fail_over ? 'Unset as failover' : 'Set as failover',
                               title: node.is_fail_over
-                                ? 'Stop this host as acting as the network failover'
-                                : 'Make this the network failover host. Any existing failover host will be replaced.',
+                                ? 'Stop this node as acting as the network failover'
+                                : 'Make this the network failover node. Any existing failover node will be replaced.',
                               onClick: () => confirmNodeFailoverStatusChange(node, !node.is_fail_over),
                             },
                           ]
                         : []),
                       {
                         key: 'disconnect',
-                        label: node.connected ? 'Disconnect host' : 'Connect host',
+                        label: node.connected ? 'Disconnect node' : 'Connect node',
                         disabled: node.pendingdelete !== false,
                         title: node.pendingdelete !== false ? 'Host is being disconnected from network' : '',
                         onClick: () =>
                           disconnectNodeFromNetwork(!node.connected, getExtendedNode(node, store.hostsCommonDetails)),
+                      },
+                      {
+                        key: 'sync',
+                        label: 'Sync node',
+                        onClick: () => requestHostPull(getExtendedNode(node, store.hostsCommonDetails)),
                       },
                       {
                         key: 'remove',

@@ -1,4 +1,4 @@
-import { Node } from './Node';
+import { Node, NodeStatus } from './Node';
 import { Tag } from './Tags';
 
 export interface ExternalClient {
@@ -22,6 +22,7 @@ export interface ExternalClient {
   postup?: string;
   postdown?: string;
   tags: Record<Tag['id'], null>;
+  status: NodeStatus;
 }
 
 export type ExtClientAcls = Record<Node['id'] | ExternalClient['clientid'], never>;
