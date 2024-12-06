@@ -21,6 +21,7 @@ interface StatusProps {
   nodeHealth: NodeConnectivityStatus;
   nodeId?: Node['id'];
   clickable?: boolean;
+  toggleClientStatus?: () => void;
 }
 
 type PossibleIssue =
@@ -38,7 +39,7 @@ export default function NodeStatus(props: StatusProps) {
   let possibleIssues: PossibleIssue[] = [];
   const { networkId } = useParams();
 
-  const node = useMemo(() => store.nodes.find((n) => n.id === props.nodeId), [props.nodeId]);
+  const node = useMemo(() => store.nodes.find((n) => n.id === props.nodeId), [props.nodeId, store.nodes]);
 
   const getTextColor = () => {
     switch (props.nodeHealth) {
@@ -320,7 +321,7 @@ export default function NodeStatus(props: StatusProps) {
   if (props.nodeId) {
     // deduce possible issues
     const node = store.nodes.find((n) => n.id === props.nodeId);
-    const networkHasFailover = store.nodes.some((n) => n.is_fail_over);
+    const networkHasFailover = store.nodes.some((n) => n.is_fail_over && n.network === node?.network);
 
     if (networkHasFailover) {
       if (node?.is_fail_over) {
@@ -429,11 +430,18 @@ export default function NodeStatus(props: StatusProps) {
                   onClick={async () => {
                     try {
                       if (!node) return;
-                      await NodesService.updateNode(node.id, node.network, { ...node, connected: true });
-                      notification.success({
-                        message: 'Node connected successfully',
-                        description: 'The node has been connected to the network successfully.',
-                      });
+                      if (node.is_static) {
+                        if (props.toggleClientStatus) {
+                          await props.toggleClientStatus();
+                        }
+                      } else {
+                        await NodesService.updateNode(node.id, node.network, { ...node, connected: true });
+                        store.fetchNodes();
+                        notification.success({
+                          message: 'Node connected successfully',
+                          description: 'The node has been connected to the network successfully.',
+                        });
+                      }
                       setIsInfoModalOpen(false);
                     } catch (err) {
                       console.error(err);

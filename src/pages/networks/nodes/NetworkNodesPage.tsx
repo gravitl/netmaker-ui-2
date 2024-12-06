@@ -361,6 +361,10 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
               })
             ).data;
             setClients((prev) => prev.map((c) => (c.clientid === newClient.clientid ? newClient : c)));
+            notify.success({
+              message: `Successfully ${newStatus ? 'enabled' : 'disabled'} ${client.clientid}`,
+            });
+            storeFetchNodes();
           } catch (err) {
             notify.error({
               message: 'Failed to update client',
@@ -671,9 +675,38 @@ export default function NetworkNodesPage({ isFullScreen }: NetworkNodesPageProps
                     const extendedNode = getExtendedNode(node, store.hostsCommonDetails);
                     if (extendedNode.is_static) {
                       return node.static_node?.enabled ? (
-                        <NodeStatus nodeHealth="online" nodeId={node.id} />
+                        <NodeStatus nodeHealth="online" nodeId={node.id} clickable />
                       ) : (
-                        <NodeStatus nodeHealth="offline" nodeId={node.id} />
+                        <NodeStatus
+                          nodeHealth="offline"
+                          nodeId={node.id}
+                          clickable
+                          toggleClientStatus={() => {
+                            const clientData: ExternalClient = {
+                              clientid: node.static_node?.clientid ?? '',
+                              description: '',
+                              privatekey: node.static_node?.privatekey ?? '',
+                              publickey: node.static_node?.publickey ?? '',
+                              network: networkId ?? '',
+                              address: node.static_node?.address ?? '',
+                              address6: node.static_node?.address6 ?? '',
+                              ingressgatewayid: node.static_node?.ingressgatewayid ?? '',
+                              ingressgatewayendpoint: node.static_node?.ingressgatewayendpoint ?? '',
+                              lastmodified: node.lastmodified ?? 0,
+                              enabled: node.static_node?.enabled ?? false,
+                              ownerid: node.static_node?.ownerid ?? '',
+                              internal_ip_addr: '',
+                              internal_ip_addr6: '',
+                              dns: node.static_node?.dns ?? '',
+                              extraallowedips: node.static_node?.extraallowedips ?? [],
+                              postup: node.static_node?.postup,
+                              postdown: node.static_node?.postdown,
+                              tags: node.static_node.tags,
+                              status: node.static_node.status,
+                            };
+                            toggleClientStatus(clientData, !node.static_node?.enabled);
+                          }}
+                        />
                       );
                     } else if (!extendedNode.connected) {
                       return <NodeStatus nodeHealth="offline" nodeId={node.id} clickable />;
