@@ -28,8 +28,9 @@ import { getNetworkPageRoute, getNetworkRoute, resolveAppRoute } from '@/utils/R
 import { NetworksService } from '@/services/NetworksService';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import PageLayout from '@/layouts/PageLayout';
-import { GlobeAltIcon } from '@heroicons/react/24/solid';
+import { Cog6ToothIcon, GlobeAltIcon } from '@heroicons/react/24/solid';
 import { NodesService } from '@/services/NodesService';
+import InfoModal from '@/components/modals/info-modal/InfoModal';
 
 export default function NetworksPage(props: PageProps) {
   const store = useStore();
@@ -49,6 +50,7 @@ export default function NetworksPage(props: PageProps) {
   const [isTourOpen, setIsTourOpen] = useState(false);
   const [tourStep, setTourStep] = useState(0);
   const [notify, notifyCtx] = notification.useNotification();
+  const [openInfoModal, setOpenInfoModal] = useState(false);
 
   const loadNetworks = useCallback(async () => {
     await store.fetchNetworks();
@@ -179,7 +181,16 @@ export default function NetworksPage(props: PageProps) {
       key: 'action',
       dataIndex: 'netid',
       render: (netId: string) => (
-        <>
+        <div className="flex items-center gap-2">
+          <span
+            onClick={(ev) => {
+              ev.stopPropagation();
+              setOpenInfoModal(true);
+            }}
+            className="p-2 rounded-md cursor-pointer text-text-secondary hover:bg-bg-contrastHover hover:text-text-primary"
+          >
+            <Cog6ToothIcon className="size-5 " />
+          </span>
           <Tooltip
             title={
               checkIfNetworkDeleteIsPossible(netId)
@@ -198,7 +209,7 @@ export default function NetworksPage(props: PageProps) {
               Delete
             </Button>
           </Tooltip>
-        </>
+        </div>
       ),
     },
   ];
@@ -469,6 +480,7 @@ export default function NetworksPage(props: PageProps) {
         defaultAclInputRef={defaultAclInputRef}
         submitButtonRef={submitButtonRef}
       />
+      <InfoModal open={openInfoModal} onCancel={() => setOpenInfoModal(false)} />
 
       {notifyCtx}
     </PageLayout>
