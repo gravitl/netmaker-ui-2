@@ -51,6 +51,7 @@ export default function NetworksPage(props: PageProps) {
   const [tourStep, setTourStep] = useState(0);
   const [notify, notifyCtx] = notification.useNotification();
   const [openInfoModal, setOpenInfoModal] = useState(false);
+  const [selectedNetwork, setSelectedNetwork] = useState<Network | null>(null);
 
   const loadNetworks = useCallback(async () => {
     await store.fetchNetworks();
@@ -180,11 +181,12 @@ export default function NetworksPage(props: PageProps) {
       title: '',
       key: 'action',
       dataIndex: 'netid',
-      render: (netId: string) => (
+      render: (netId: string, network: Network) => (
         <div className="flex items-center gap-2">
           <span
             onClick={(ev) => {
               ev.stopPropagation();
+              setSelectedNetwork(network);
               setOpenInfoModal(true);
             }}
             className="p-2 rounded-md cursor-pointer text-text-secondary hover:bg-bg-contrastHover hover:text-text-primary"
@@ -480,7 +482,14 @@ export default function NetworksPage(props: PageProps) {
         defaultAclInputRef={defaultAclInputRef}
         submitButtonRef={submitButtonRef}
       />
-      <InfoModal open={openInfoModal} onCancel={() => setOpenInfoModal(false)} />
+      <InfoModal
+        open={openInfoModal}
+        onCancel={() => {
+          setOpenInfoModal(false);
+          setSelectedNetwork(null);
+        }}
+        network={selectedNetwork ?? undefined}
+      />
 
       {notifyCtx}
     </PageLayout>

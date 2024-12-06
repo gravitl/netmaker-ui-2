@@ -9,13 +9,14 @@ import { useParams } from 'react-router-dom';
 interface InfoModalProps {
   open: boolean;
   onCancel: () => void;
+  network?: Network;
 }
 
-export default function InfoModal({ open, onCancel }: InfoModalProps) {
+export default function InfoModal({ open, onCancel, network }: InfoModalProps) {
   const store = useStore();
   const { networkId } = useParams<{ networkId: string }>();
-  const resolvedNetworkId = networkId || store.activeNetwork;
-  const { network, isLoadingNetwork } = useGetActiveNetwork(resolvedNetworkId);
+  const resolvedNetworkId = network?.netid || networkId || store.activeNetwork;
+  const { network: fetchedNetwork, isLoadingNetwork } = useGetActiveNetwork(resolvedNetworkId);
   const [notify, notifyCtx] = notification.useNotification();
   const { token: themeToken } = theme.useToken();
 
@@ -28,17 +29,18 @@ export default function InfoModal({ open, onCancel }: InfoModalProps) {
 
   useEffect(() => {
     if (!isLoadingNetwork) {
-      form.setFieldsValue(network ?? {});
+      form.setFieldsValue(network ?? fetchedNetwork ?? {});
     }
     setIsInitialLoad(false);
-  }, [form, isInitialLoad, isLoadingNetwork, network]);
+  }, [form, isInitialLoad, isLoadingNetwork, network, fetchedNetwork]);
 
   useEffect(() => {
-    if (!isInitialLoad && network) {
-      const hasNameChanged = networkNameWatch !== network.name;
+    if (!isInitialLoad && (network ?? fetchedNetwork)) {
+      const currentNetwork = network ?? fetchedNetwork;
+      const hasNameChanged = networkNameWatch !== currentNetwork?.name;
       setHasChanges(hasNameChanged);
     }
-  }, [networkNameWatch, network, isInitialLoad]);
+  }, [networkNameWatch, network, fetchedNetwork, isInitialLoad]);
 
   const handleNetworkUpdate = async () => {
     if (!network) return;
