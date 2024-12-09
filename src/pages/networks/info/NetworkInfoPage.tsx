@@ -1,7 +1,8 @@
-import { Network } from '@/models/Network';
+import { Network, NetworkPayload } from '@/models/Network';
+import { NetworksService } from '@/services/NetworksService';
 import { useStore } from '@/store/store';
 import { useGetActiveNetwork } from '@/utils/Utils';
-import { Card, Col, Form, Input, notification, Row, Select, Switch, theme } from 'antd';
+import { Button, Card, Col, Form, Input, notification, Row, Select, Switch, theme } from 'antd';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
@@ -21,8 +22,10 @@ export default function NetworkInfoPage({ isFullScreen }: NetworkInfoPageProps) 
   const [form] = Form.useForm<Network>();
   const isIpv4Watch = Form.useWatch('isipv4', form);
   const isIpv6Watch = Form.useWatch('isipv6', form);
+  const networkNameWatch = Form.useWatch('name', form);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const [isEditingNetwork, setIsEditingNetwork] = useState(false);
+  // const [isEditingNetwork, setIsEditingNetwork] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
 
   useEffect(() => {
     if (!isLoadingNetwork) {
@@ -31,24 +34,72 @@ export default function NetworkInfoPage({ isFullScreen }: NetworkInfoPageProps) 
     setIsInitialLoad(false);
   }, [form, isInitialLoad, isLoadingNetwork, network]);
 
+  useEffect(() => {
+    if (!isInitialLoad && network) {
+      const hasNameChanged = networkNameWatch !== network.name;
+      setHasChanges(hasNameChanged);
+    }
+  }, [networkNameWatch, network, isInitialLoad]);
+
+  const handleNetworkUpdate = async () => {
+    if (!network) return;
+
+    try {
+      const values = await form.validateFields();
+
+      // Check if network name already exists
+      const nameExists = store.networks.some(
+        (n) =>
+          n.netid !== network.netid && // Don't compare with self
+          n.name === values.name, // Check name only
+      );
+
+      if (nameExists) {
+        notify.error({
+          message: 'Duplicate Network Name',
+          description: 'A network with this name already exists. Please choose a different name.',
+        });
+        return;
+      }
+
+      const payload: NetworkPayload = {
+        ...network,
+        isipv4: network.isipv4 ? ('yes' as const) : ('no' as const),
+        isipv6: network.isipv6 ? ('yes' as const) : ('no' as const),
+        defaultudpholepunch: network.defaultudpholepunch ? ('yes' as const) : ('no' as const),
+        // changed name
+        name: values.name,
+      };
+
+      await NetworksService.updateNetwork(network.netid, payload);
+      await store.fetchNetworks();
+
+      notify.success({
+        message: 'Success',
+        description: 'Network name updated successfully',
+      });
+
+      setHasChanges(false);
+    } catch (error) {
+      console.error('Network update failed:', error);
+      notify.error({
+        message: 'Error' + error,
+        description: 'Failed to update network name',
+      });
+    }
+  };
   return (
     <div className="relative h-full">
       <Row style={{ width: '100%', textAlign: 'center', justifyContent: 'center' }}>
         <Card className="overview-card" style={{ width: '50%', maxWidth: '1360px' }}>
-          <Form
-            name="network-details-form"
-            form={form}
-            layout="vertical"
-            initialValues={network ?? undefined}
-            disabled={!isEditingNetwork}
-          >
+          <Form name="network-details-form" form={form} layout="vertical" initialValues={network ?? undefined}>
             <Form.Item
               label="Network name"
-              name="netid"
+              name="name"
               rules={[{ required: true }]}
               data-nmui-intercom="network-details-form_netid"
             >
-              <Input placeholder="Network name" disabled={!isEditingNetwork} />
+              <Input placeholder="Network name" />
             </Form.Item>
 
             {/* ipv4 */}
@@ -70,7 +121,7 @@ export default function NetworkInfoPage({ isFullScreen }: NetworkInfoPageProps) 
                       style={{ marginBottom: '0px' }}
                       data-nmui-intercom="network-details-form_isipv4"
                     >
-                      <Switch disabled={!isEditingNetwork} />
+                      <Switch disabled />
                     </Form.Item>
                   </Col>
                 </Row>
@@ -82,7 +133,7 @@ export default function NetworkInfoPage({ isFullScreen }: NetworkInfoPageProps) 
                         style={{ marginBottom: '0px' }}
                         data-nmui-intercom="network-details-form_addressrange"
                       >
-                        <Input placeholder="Enter address CIDR (eg: 100.64.1.0/24)" disabled={!isEditingNetwork} />
+                        <Input placeholder="Enter address CIDR (eg: 100.64.1.0/24)" disabled />
                       </Form.Item>
                     </Col>
                   </Row>
@@ -121,10 +172,7 @@ export default function NetworkInfoPage({ isFullScreen }: NetworkInfoPageProps) 
                         style={{ marginBottom: '0px' }}
                         data-nmui-intercom="network-details-form_addressrange6"
                       >
-                        <Input
-                          placeholder="Enter address CIDR (eg: fd::1234:abcd:ffff:c0a8:101/64)"
-                          disabled={!isEditingNetwork}
-                        />
+                        <Input placeholder="Enter address CIDR (eg: fd::1234:abcd:ffff:c0a8:101/64)" disabled />
                       </Form.Item>
                     </Col>
                   </Row>
@@ -206,6 +254,14 @@ export default function NetworkInfoPage({ isFullScreen }: NetworkInfoPageProps) 
               </Col>
             </Row> */}
           </Form>
+
+          {hasChanges && (
+            <Row justify="end" style={{ marginTop: '1rem' }}>
+              <Button type="primary" onClick={handleNetworkUpdate}>
+                Update Network
+              </Button>
+            </Row>
+          )}
         </Card>
       </Row>
 

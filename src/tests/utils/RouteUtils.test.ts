@@ -57,6 +57,7 @@ const testNetwork: Network = {
   defaultmtu: 0,
   defaultacl: 'yes',
   prosettings: undefined,
+  name: 'test network',
 };
 
 describe('RouteUtils', () => {

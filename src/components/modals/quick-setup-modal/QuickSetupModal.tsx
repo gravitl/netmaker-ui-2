@@ -693,7 +693,7 @@ export default function QuickSetupModal(props: QuickSetupModalProps) {
 
     if (currentQuestion.key === 'networks') {
       const networkOptions = store.networks.map((network) => ({
-        label: network.netid,
+        label: network.name || network.netid,
         value: network.netid,
       }));
       initialOptions.push(...networkOptions);

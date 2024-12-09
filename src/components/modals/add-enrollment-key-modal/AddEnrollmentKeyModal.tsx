@@ -60,9 +60,17 @@ export default function AddEnrollmentKeyModal({
 
   const networkOptions = useMemo(() => {
     if (networkId) {
-      return store.networks.filter((n) => n.netid === networkId).map((n) => ({ label: n.netid, value: n.netid }));
+      return store.networks
+        .filter((n) => n.netid === networkId)
+        .map((n) => ({
+          label: n.name || n.netid,
+          value: n.netid,
+        }));
     }
-    return store.networks.map((n) => ({ label: n.netid, value: n.netid }));
+    return store.networks.map((n) => ({
+      label: n.name || n.netid,
+      value: n.netid,
+    }));
   }, [networkId, store.networks]);
 
   const [type, setType] = useState<'unlimited' | 'uses' | 'time'>('unlimited');

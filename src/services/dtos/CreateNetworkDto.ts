@@ -12,4 +12,5 @@ export interface CreateNetworkDto {
   prosettings?: ProSettings;
   defaultDns?: string;
   defaultUsecase?: NetworkUsecaseString;
+  name: string;
 }

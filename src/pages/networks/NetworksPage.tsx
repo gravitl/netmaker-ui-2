@@ -28,8 +28,9 @@ import { getNetworkPageRoute, getNetworkRoute, resolveAppRoute } from '@/utils/R
 import { NetworksService } from '@/services/NetworksService';
 import { extractErrorMsg } from '@/utils/ServiceUtils';
 import PageLayout from '@/layouts/PageLayout';
-import { GlobeAltIcon } from '@heroicons/react/24/solid';
+import { Cog6ToothIcon, GlobeAltIcon } from '@heroicons/react/24/solid';
 import { NodesService } from '@/services/NodesService';
+import InfoModal from '@/components/modals/info-modal/InfoModal';
 
 export default function NetworksPage(props: PageProps) {
   const store = useStore();
@@ -49,6 +50,8 @@ export default function NetworksPage(props: PageProps) {
   const [isTourOpen, setIsTourOpen] = useState(false);
   const [tourStep, setTourStep] = useState(0);
   const [notify, notifyCtx] = notification.useNotification();
+  const [openInfoModal, setOpenInfoModal] = useState(false);
+  const [selectedNetwork, setSelectedNetwork] = useState<Network | null>(null);
 
   const loadNetworks = useCallback(async () => {
     await store.fetchNetworks();
@@ -57,15 +60,16 @@ export default function NetworksPage(props: PageProps) {
 
   const confirmNetworkDelete = useCallback(
     (netId: string) => {
+      const network = store.networks.find((n) => n.netid === netId);
       Modal.confirm({
-        title: `Are you sure you want to the delete the network ${netId}?`,
+        title: `Are you sure you want to delete the network ${network?.name || netId}?`,
         content: `This action cannot be undone.`,
         onOk: async () => {
           try {
             await NetworksService.deleteNetwork(netId);
             notify.success({
-              message: 'Network deleted',
-              description: `Network ${netId} has been deleted`,
+              message: `Network ${network?.name || netId} has been deleted`,
+              description: `Network ${network?.name || netId} has been deleted`,
             });
             // if (netId === store.activeNetwork) {
             //   const response = await NetworksService.getNetworks();
@@ -101,21 +105,21 @@ export default function NetworksPage(props: PageProps) {
   const tableColumns: TableColumnsType<NetworkStat> = [
     {
       title: 'Name',
-      dataIndex: 'netid',
+      dataIndex: 'name',
       key: 'netid',
       sorter: {
-        compare: (a, b) => a.netid.localeCompare(b.netid),
+        compare: (a, b) => a.name.localeCompare(b.name),
       },
       defaultSortOrder: 'ascend',
-      render: (netId) => (
+      render: (name, record) => (
         <Link
-          to={AppRoutes.NETWORK_NODES_ROUTE.replace(':networkId', netId)}
+          to={AppRoutes.NETWORK_NODES_ROUTE.replace(':networkId', record.netid)}
           onClick={() => {
-            store.setActiveNetwork(netId);
+            store.setActiveNetwork(record.netid);
           }}
           className="text-button-primary-fill-default"
         >
-          {netId}
+          {name || record.netid}
         </Link>
       ),
     },
@@ -177,8 +181,18 @@ export default function NetworksPage(props: PageProps) {
       title: '',
       key: 'action',
       dataIndex: 'netid',
-      render: (netId: string) => (
-        <>
+      render: (netId: string, network: Network) => (
+        <div className="flex items-center gap-2">
+          <span
+            onClick={(ev) => {
+              ev.stopPropagation();
+              setSelectedNetwork(network);
+              setOpenInfoModal(true);
+            }}
+            className="p-2 rounded-md cursor-pointer text-text-secondary hover:bg-bg-contrastHover hover:text-text-primary"
+          >
+            <Cog6ToothIcon className="size-5 " />
+          </span>
           <Tooltip
             title={
               checkIfNetworkDeleteIsPossible(netId)
@@ -197,7 +211,7 @@ export default function NetworksPage(props: PageProps) {
               Delete
             </Button>
           </Tooltip>
-        </>
+        </div>
       ),
     },
   ];
@@ -467,6 +481,14 @@ export default function NetworksPage(props: PageProps) {
         ipv6InputRef={ipv6InputRef}
         defaultAclInputRef={defaultAclInputRef}
         submitButtonRef={submitButtonRef}
+      />
+      <InfoModal
+        open={openInfoModal}
+        onCancel={() => {
+          setOpenInfoModal(false);
+          setSelectedNetwork(null);
+        }}
+        network={selectedNetwork ?? undefined}
       />
 
       {notifyCtx}

@@ -32,7 +32,7 @@ export default function NetworkDropdown({
         {networks?.map((network) => (
           <MenuRow
             key={network.netid}
-            title={network.netid}
+            title={network.name || network.netid}
             icon={
               <div className="size-6" /> // Empty div for spacing
             }

@@ -61,11 +61,24 @@ export default function AddNetworkModal({
       formData.netid = formData.netid?.trim() ?? '';
       formData.netid = formData.netid.replace(/\s+/g, '-');
       formData.netid = formData.netid.toLocaleLowerCase();
+      formData.name = formData.netid;
+
+      // Check if network name already exists
+      const nameExists = store.networks.some((n) => n.name === formData.name);
+
+      if (nameExists) {
+        notify.error({
+          message: 'Duplicate Network Name',
+          description: 'A network with this name already exists. Please choose a different name.',
+        });
+        return;
+      }
+
       const network = convertNetworkPayloadToUiNetwork(
         (await NetworksService.createNetwork(convertUiNetworkToNetworkPayload(formData as unknown as Network))).data,
       );
       store.addNetwork(network);
-      notify.success({ message: `Network ${network.netid} created` });
+      notify.success({ message: `Network ${network.name || network.netid} created` });
       store.setActiveNetwork(network.netid);
       resetModal();
       onCreateNetwork(network);

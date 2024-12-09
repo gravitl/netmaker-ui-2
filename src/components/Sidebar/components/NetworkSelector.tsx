@@ -24,7 +24,7 @@ const NetworkSelector: React.FC<NetworkSelectorProps> = ({ isSidebarCollapsed = 
   const store = useStore();
 
   const networks = store.networks;
-  const activeNetwork = store.activeNetwork;
+  const activeNetwork = store.networks.find((network) => network.netid === store.activeNetwork)?.name;
 
   const autoFillButtonRef = useRef(null);
   const networkNameInputRef = useRef(null);
@@ -111,16 +111,16 @@ const NetworkSelector: React.FC<NetworkSelectorProps> = ({ isSidebarCollapsed = 
                 <div
                   key={network.netid}
                   className={`flex rounded-md items-center gap-2 px-3 py-2 text-sm-semibold cursor-pointer text-sm
-                  ${activeNetwork === network.netid ? 'bg-bg-contrastActive text-text-primary' : 'hover:bg-bg-contrastHover text-text-secondary'}
+                  ${activeNetwork === network.name ? 'bg-bg-contrastActive text-text-primary' : 'hover:bg-bg-contrastHover text-text-secondary'}
                   transition-colors duration-150`}
                   onClick={() => handleNetworkSelect(network.netid)}
                 >
-                  {activeNetwork === network.netid ? (
+                  {activeNetwork === network.name ? (
                     <CheckIcon className="size-4 shrink-0" />
                   ) : (
                     <div className="size-4 shrink-0" />
                   )}
-                  <span className="truncate">{network.netid}</span>
+                  <span className="truncate">{network.name}</span>
                 </div>
               ))}
             </div>
