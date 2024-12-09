@@ -41,10 +41,20 @@ export function hasNetworkAdminPriviledges(
   // const roles = Object.keys(user.network_roles).map((role) => networkRoles.find((r) => r.id === role));
   // return roles.some((role) => role?.full_access || role?.id === 'global-network-admin');
 
-  return (
-    isAdminUserOrRole(user?.platform_role_id) ||
-    !!user.user_group_ids['global-network-admin-grp'] ||
-    (networkId ? !!user.user_group_ids[`${networkId}-network-admin-grp`] : false)
-    // Object.keys(user.user_group_ids).some((groupId) => groupId.match(/^\w+-network-admin-grp/))
-  );
+  if (!user) return false;
+
+  // Check if user has admin platform role
+  if (isAdminUserOrRole(user?.platform_role_id)) return true;
+
+  // Check if user_group_ids exists
+  if (!user.user_group_ids) return false;
+
+  // Check for global network admin group
+  if (user.user_group_ids['global-network-admin-grp']) return true;
+
+  // Check for network-specific admin group if networkId is provided
+  if (networkId && user.user_group_ids[`${networkId}-network-admin-grp`]) return true;
+  // Object.keys(user.user_group_ids).some((groupId) => groupId.match(/^\w+-network-admin-grp/))
+
+  return false;
 }
