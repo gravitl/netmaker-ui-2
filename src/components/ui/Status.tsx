@@ -24,11 +24,7 @@ interface StatusProps {
   toggleClientStatus?: () => void;
 }
 
-type PossibleIssue =
-  | 'firewall-setup'
-  | 'not-connected-to-failover'
-  | 'failover-missing'
-  | 'failover-connection-not-working';
+type PossibleIssue = 'firewall-setup' | 'refresh-failover' | 'assign-failover' | 'relay-node';
 
 export default function NodeStatus(props: StatusProps) {
   const store = useStore();
@@ -164,7 +160,7 @@ export default function NodeStatus(props: StatusProps) {
         const anyOtherNonRelayNode = networkNodes.find((n) => n.id !== props.nodeId && !n.isrelay);
 
         switch (issue) {
-          case 'failover-missing':
+          case 'assign-failover':
             if (firstDefaultNode) {
               await NodesService.setNodeAsFailover(firstDefaultNode.id);
             } else {
@@ -174,7 +170,7 @@ export default function NodeStatus(props: StatusProps) {
               });
             }
             return;
-          case 'not-connected-to-failover':
+          case 'refresh-failover':
             try {
               await NodesService.resetFailover(networkId ?? '');
               notification.success({
@@ -188,7 +184,7 @@ export default function NodeStatus(props: StatusProps) {
               });
             }
             return;
-          case 'failover-connection-not-working':
+          case 'relay-node':
             if (firstDefaultNode?.isrelay) {
               await NodesService.updateNode(firstDefaultNode.id, firstDefaultNode.network, {
                 ...firstDefaultNode,
@@ -259,7 +255,7 @@ export default function NodeStatus(props: StatusProps) {
             </>
           ),
         };
-      case 'not-connected-to-failover':
+      case 'refresh-failover':
         return {
           title: 'Connect to the failover device',
           desc: (
@@ -276,7 +272,7 @@ export default function NodeStatus(props: StatusProps) {
             </>
           ),
         };
-      case 'failover-missing':
+      case 'assign-failover':
         return {
           title: 'Set a failover device',
           desc: (
@@ -297,7 +293,7 @@ export default function NodeStatus(props: StatusProps) {
             </>
           ),
         };
-      case 'failover-connection-not-working':
+      case 'relay-node':
         return {
           title: 'Ensure failover firewall settings',
           desc: (
@@ -330,14 +326,14 @@ export default function NodeStatus(props: StatusProps) {
       } else {
         if (!node?.failed_over_by && !node?.isrelay && !node?.isrelayed) {
           // check if the node is not being failed over
-          possibleIssues = ['not-connected-to-failover'];
+          possibleIssues = ['refresh-failover'];
         } else {
           // if it is being failed over already, allow firewall or advise to connect to a relay
-          possibleIssues = ['failover-connection-not-working'];
+          possibleIssues = ['refresh-failover', 'relay-node'];
         }
       }
     } else {
-      possibleIssues = ['failover-missing', 'failover-connection-not-working'];
+      possibleIssues = ['assign-failover'];
     }
   }
 
