@@ -5,6 +5,7 @@ import './VersionUpgradeModal.styles.scss';
 import { CloudSyncOutlined } from '@ant-design/icons';
 import { useStore } from '@/store/store';
 import { isSaasBuild } from '@/services/BaseService';
+import { useServerLicense } from '@/utils/Utils';
 
 const UPGRADE_DOCS_LINK = 'https://docs.netmaker.io/docs/upgrades';
 
@@ -17,6 +18,7 @@ interface VersionUpgradeModalProps {
 
 export default function VersionUpgradeModal({ isOpen, onCancel, latestNetmakerVersion }: VersionUpgradeModalProps) {
   const store = useStore();
+  const { isServerEE } = useServerLicense();
 
   return (
     // TODO: find a way to DRY the theme config provider
@@ -54,7 +56,7 @@ export default function VersionUpgradeModal({ isOpen, onCancel, latestNetmakerVe
                 </Typography.Text>
                 <br />
                 <pre className="code-bg">
-                  {`SERVER_IMAGE_TAG=${latestNetmakerVersion}
+                  {`SERVER_IMAGE_TAG=${isServerEE ? `${latestNetmakerVersion}-ee` : latestNetmakerVersion}
 UI_IMAGE_TAG=${latestNetmakerVersion.replace('-ee', '')}`}
                 </pre>
               </li>
