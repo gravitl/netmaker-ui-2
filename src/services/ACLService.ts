@@ -2,7 +2,7 @@ import { ApiRoutes } from '@/constants/ApiRoutes';
 import { axiosService } from './BaseService';
 import { GenericResponseDto } from './dtos/GenericDto';
 import { Network } from '@/models/Network';
-import { ACLRule, CreateACLRuleDto } from './dtos/ACLDtos';
+import { ACLRule, CreateACLRuleDto, ACLTypesResponse } from './dtos/ACLDtos';
 
 // ACL Service functions
 function getACLRules(networkId: Network['netid']) {
@@ -34,10 +34,15 @@ function updateACLRule(payload: ACLRule, networkId: Network['netid']) {
   return axiosService.put<ACLRule>(`${ApiRoutes.ACL_V1}?network=${encodeURIComponent(networkId)}`, payload);
 }
 
+function getACLTypes() {
+  return axiosService.get<GenericResponseDto<ACLTypesResponse>>(`${ApiRoutes.ACL_V1}/policy_types`);
+}
+
 export const ACLService = {
   getACLRules,
   createACLRule,
   deleteACLRule,
   toggleEnabeledACLRule,
   updateACLRule,
+  getACLTypes,
 };
