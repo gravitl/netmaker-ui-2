@@ -55,6 +55,18 @@ export default function UpdateNetworkModal({
   const createNetwork = async () => {
     try {
       const formData = await form.validateFields();
+
+      // Check if network name already exists
+      const nameExists = store.networks.some((n) => n.name === formData.name);
+
+      if (nameExists) {
+        notify.error({
+          message: 'Duplicate Network Name',
+          description: 'A network with this name already exists. Please choose a different name.',
+        });
+        return;
+      }
+
       const network = convertNetworkPayloadToUiNetwork(
         (await NetworksService.createNetwork(convertUiNetworkToNetworkPayload(formData as unknown as Network))).data,
       );

@@ -47,7 +47,21 @@ export default function InfoModal({ open, onCancel, network }: InfoModalProps) {
 
     try {
       const values = await form.validateFields();
-      console.log('before', network);
+
+      // Check if network name already exists
+      const nameExists = store.networks.some(
+        (n) =>
+          n.netid !== network.netid && // Don't compare with self
+          n.name === values.name, // Check both name and netid
+      );
+
+      if (nameExists) {
+        notify.error({
+          message: 'Duplicate Network Name',
+          description: 'A network with this name already exists. Please choose a different name.',
+        });
+        return;
+      }
 
       const payload: NetworkPayload = {
         ...network,
